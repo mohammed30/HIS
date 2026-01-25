@@ -1,0 +1,19 @@
+{
+  "Culture": "en",
+  "Texts": {
+    "AppName": "HIS",
+    "Menu:Home": "Home",
+    "Menu:Patients": "Patients",
+    "Menu:Administration": "Administration",
+    "Menu:Settings": "Settings",
+    "Menu:Definitions": "Definitions",
+    "Menu:Departments": "Departments",
+    "Menu:Specialties": "Specialties",
+    "Menu:Clinics": "Clinics",
+    "Menu:Doctors": "Doctors",
+    "Menu:Laboratories": "Laboratories",
+    "Menu:UserManagement": "User Management",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
+    "Welcome": "Welcome"
+  }
+}
