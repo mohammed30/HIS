@@ -56,6 +56,11 @@ public class Department : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public int SortOrder { get; set; }
 
+    /// <summary>
+    /// هل هو قسم طبي؟ إذا كان true يظهر في قائمة تعريف الأطباء
+    /// </summary>
+    public bool IsMedical { get; set; } = false;
+
     protected Department()
     {
     }

@@ -63,6 +63,13 @@ public class ActivityLogManager : ITransientDependency
             userAgent: userAgent
         );
 
+        // Parse UserAgent for device/browser info
+        var (deviceType, browserName, browserVersion, operatingSystem) = UserAgentParser.Parse(userAgent);
+        activityLog.DeviceType = deviceType;
+        activityLog.BrowserName = browserName;
+        activityLog.BrowserVersion = browserVersion;
+        activityLog.OperatingSystem = operatingSystem;
+
         await _repository.InsertAsync(activityLog);
         return activityLog;
     }
@@ -89,6 +96,13 @@ public class ActivityLogManager : ITransientDependency
             ipAddress: ipAddress,
             userAgent: userAgent
         );
+
+        // Parse UserAgent for device/browser info
+        var (deviceType, browserName, browserVersion, operatingSystem) = UserAgentParser.Parse(userAgent);
+        activityLog.DeviceType = deviceType;
+        activityLog.BrowserName = browserName;
+        activityLog.BrowserVersion = browserVersion;
+        activityLog.OperatingSystem = operatingSystem;
 
         await _repository.InsertAsync(activityLog);
     }

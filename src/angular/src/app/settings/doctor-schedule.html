@@ -1,0 +1,140 @@
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-white py-3">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="card-title mb-0 text-primary fw-bold">
+                    <i class="fa fa-user-md me-2"></i>{{ '::Menu:DoctorSchedule' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col-md-6">
+                <button id="create" class="btn btn-primary rounded-pill px-4 shadow-sm" type="button"
+                    (click)="createSchedule()">
+                    <i class="fa fa-plus me-1"></i>
+                    <span>{{ '::NewSchedule' | abpLocalization }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default class="material"
+            [headerHeight]="50" [footerHeight]="50" [rowHeight]="60">
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="100" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div ngbDropdown container="body" class="d-inline-block">
+                        <button class="btn btn-light btn-sm rounded-circle shadow-sm dropdown-toggle hide-arrow"
+                            data-toggle="dropdown" aria-haspopup="true" ngbDropdownToggle>
+                            <i class="fa fa-ellipsis-v text-muted"></i>
+                        </button>
+                        <div ngbDropdownMenu class="border-0 shadow">
+                            <button ngbDropdownItem (click)="editSchedule(row.id)">
+                                <i class="fa fa-pencil me-2 text-primary"></i> {{ '::Edit' | abpLocalization }}
+                            </button>
+                            <button ngbDropdownItem (click)="delete(row.id)">
+                                <i class="fa fa-trash me-2 text-danger"></i> {{ '::Delete' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Doctor' | abpLocalization" prop="doctorId">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle me-2 d-flex align-items-center justify-content-center"
+                            style="width: 32px; height: 32px;">
+                            <i class="fa fa-user-md"></i>
+                        </div>
+                        <span class="fw-medium">{{ getDoctorName(row.doctorId) }}</span>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::DayOfWeek' | abpLocalization" prop="dayOfWeek">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span
+                        class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2 rounded-pill">
+                        {{ getDayName(row.dayOfWeek) }}
+                    </span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::StartTime' | abpLocalization" prop="startTime">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <i class="fa fa-clock me-1 text-muted"></i> {{ value }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::EndTime' | abpLocalization" prop="endTime">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <i class="fa fa-clock me-1 text-muted"></i> {{ value }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::SlotDuration' | abpLocalization" prop="slotDuration">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value }} min
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ (selectedSchedule.id ? '::Edit' : '::NewSchedule') | abpLocalization }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="mb-4">
+                <label for="doctor-id" class="form-label text-muted small fw-bold">{{ '::Doctor' | abpLocalization
+                    }}</label>
+                <select id="doctor-id" class="form-select form-select-lg" formControlName="doctorId">
+                    <option [ngValue]="null">{{ '::SelectDoctor' | abpLocalization }}</option>
+                    <option *ngFor="let doc of doctors" [ngValue]="doc.id">{{ doc.nameAr }}</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small fw-bold d-block">{{ '::DayOfWeek' | abpLocalization }}</label>
+                <div class="d-flex flex-wrap gap-2">
+                    <div *ngFor="let day of daysOfWeek" class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" [id]="'day_' + day.value"
+                            [checked]="isDaySelected(day.value)" (change)="onDayChange($event, day.value)">
+                        <label class="form-check-label" [for]="'day_' + day.value">
+                            {{ '::Enum:DayOfWeek.' + day.value | abpLocalization }}
+                        </label>
+                    </div>
+                </div>
+                <div class="form-text text-danger small"
+                    *ngIf="form.get('selectedDays')?.invalid && form.get('selectedDays')?.touched">
+                    <i class="fa fa-exclamation-circle me-1"></i> Please select at least one day.
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6 mb-3">
+                    <label for="start-time" class="form-label text-muted small fw-bold">{{ '::StartTime' |
+                        abpLocalization }}</label>
+                    <input type="time" id="start-time" class="form-control" formControlName="startTime" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="end-time" class="form-label text-muted small fw-bold">{{ '::EndTime' | abpLocalization
+                        }}</label>
+                    <input type="time" id="end-time" class="form-control" formControlName="endTime" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="slot-duration" class="form-label text-muted small fw-bold">{{ '::SlotDuration' |
+                    abpLocalization }} (Minutes)</label>
+                <input type="number" id="slot-duration" class="form-control" formControlName="slotDuration" />
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>
+            {{ '::Cancel' | abpLocalization }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>

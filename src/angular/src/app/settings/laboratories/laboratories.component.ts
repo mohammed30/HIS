@@ -3,28 +3,29 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 interface Laboratory {
-    id: string;
-    code: string;
-    nameAr: string;
-    nameEn?: string;
-    description?: string;
-    location?: string;
-    departmentId?: string;
-    isActive: boolean;
-    sortOrder: number;
+  id: string;
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+  description?: string;
+  location?: string;
+  departmentId?: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 interface Lookup {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 @Component({
-    selector: 'app-laboratories',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-laboratories',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  template: `
     <div class="container-fluid py-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -92,6 +93,20 @@ interface Lookup {
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalCount > 0">
+            <ngb-pagination
+              [(page)]="page"
+              [pageSize]="pageSize"
+              [collectionSize]="totalCount"
+              (pageChange)="onPageChange($event)"
+              [maxSize]="5"
+              [boundaryLinks]="true">
+            </ngb-pagination>
+            <span class="text-muted">Total: {{ totalCount }}</span>
+          </div>
+
         </div>
       </div>
 
@@ -152,83 +167,98 @@ interface Lookup {
       }
     </div>
   `,
-    styles: [`
+  styles: [`
     .modal { z-index: 1050; }
     .table th, .table td { vertical-align: middle; }
   `]
 })
 export class LaboratoriesComponent implements OnInit {
-    private http = inject(HttpClient);
-    private apiUrl = environment.apis.default.url + '/api/app/laboratory';
+  private http = inject(HttpClient);
+  private apiUrl = environment.apis.default.url + '/api/app/laboratory';
 
-    items: Laboratory[] = [];
-    departments: Lookup[] = [];
-    searchText = '';
-    showForm = false;
-    editingItem: Laboratory | null = null;
-    formData: Partial<Laboratory> = this.getEmptyForm();
+  items: Laboratory[] = [];
+  departments: Lookup[] = [];
+  searchText = '';
+  showForm = false;
+  editingItem: Laboratory | null = null;
+  formData: Partial<Laboratory> = this.getEmptyForm();
 
-    ngOnInit() {
-        this.loadData();
-        this.loadDepartments();
+  // Pagination
+  page = 1;
+  pageSize = 10;
+  totalCount = 0;
+
+  ngOnInit() {
+    this.loadData();
+    this.loadDepartments();
+  }
+
+  getEmptyForm(): Partial<Laboratory> {
+    return { code: '', nameAr: '', nameEn: '', description: '', location: '', departmentId: '', isActive: true, sortOrder: 0 };
+  }
+
+  resetForm() {
+    this.formData = this.getEmptyForm();
+  }
+
+  loadData() {
+    const skipCount = (this.page - 1) * this.pageSize;
+    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
+      next: (res) => {
+        this.items = res.items || [];
+        this.totalCount = res.totalCount || 0;
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  onPageChange(page: number) {
+    this.page = page;
+    this.loadData();
+  }
+
+  loadDepartments() {
+    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/lookup').subscribe({
+      next: (res) => this.departments = res,
+      error: (err) => console.error(err)
+    });
+  }
+
+  getDepartmentName(id?: string): string {
+    return this.departments.find(d => d.id === id)?.name || '-';
+  }
+
+  search() {
+    this.page = 1;
+    this.loadData();
+  }
+
+  edit(item: Laboratory) {
+    this.editingItem = item;
+    this.formData = { ...item };
+    this.showForm = true;
+  }
+
+  save() {
+    if (this.editingItem) {
+      this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData).subscribe({
+        next: () => { this.showForm = false; this.loadData(); },
+        error: (err) => console.error(err)
+      });
+    } else {
+      this.http.post(this.apiUrl, this.formData).subscribe({
+        next: () => { this.showForm = false; this.loadData(); },
+        error: (err) => console.error(err)
+      });
     }
+  }
 
-    getEmptyForm(): Partial<Laboratory> {
-        return { code: '', nameAr: '', nameEn: '', description: '', location: '', departmentId: '', isActive: true, sortOrder: 0 };
+  delete(item: Laboratory) {
+    if (confirm('هل أنت متأكد من الحذف؟')) {
+      this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({
+        next: () => this.loadData(),
+        error: (err) => console.error(err)
+      });
     }
-
-    resetForm() {
-        this.formData = this.getEmptyForm();
-    }
-
-    loadData() {
-        this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}`).subscribe({
-            next: (res) => this.items = res.items || [],
-            error: (err) => console.error(err)
-        });
-    }
-
-    loadDepartments() {
-        this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/lookup').subscribe({
-            next: (res) => this.departments = res,
-            error: (err) => console.error(err)
-        });
-    }
-
-    getDepartmentName(id?: string): string {
-        return this.departments.find(d => d.id === id)?.name || '-';
-    }
-
-    search() {
-        this.loadData();
-    }
-
-    edit(item: Laboratory) {
-        this.editingItem = item;
-        this.formData = { ...item };
-        this.showForm = true;
-    }
-
-    save() {
-        if (this.editingItem) {
-            this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData).subscribe({
-                next: () => { this.showForm = false; this.loadData(); },
-                error: (err) => console.error(err)
-            });
-        } else {
-            this.http.post(this.apiUrl, this.formData).subscribe({
-                next: () => { this.showForm = false; this.loadData(); },
-                error: (err) => console.error(err)
-            });
-        }
-    }
-
-    delete(item: Laboratory) {
-        if (confirm('هل أنت متأكد من الحذف؟')) {
-            this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({
-                next: () => this.loadData(),
-                error: (err) => console.error(err)
-            });
-        }
-    }
+  }
 }

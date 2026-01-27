@@ -84,6 +84,36 @@ public class ActivityLog : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public string? AdditionalData { get; set; }
 
+    /// <summary>
+    /// Device type: Mobile, Desktop, Tablet
+    /// </summary>
+    public string? DeviceType { get; set; }
+
+    /// <summary>
+    /// Browser name (Chrome, Firefox, Safari, Edge)
+    /// </summary>
+    public string? BrowserName { get; set; }
+
+    /// <summary>
+    /// Browser version
+    /// </summary>
+    public string? BrowserVersion { get; set; }
+
+    /// <summary>
+    /// Operating system (Windows, iOS, Android, macOS, Linux)
+    /// </summary>
+    public string? OperatingSystem { get; set; }
+
+    /// <summary>
+    /// Country from IP geolocation
+    /// </summary>
+    public string? Country { get; set; }
+
+    /// <summary>
+    /// City from IP geolocation
+    /// </summary>
+    public string? City { get; set; }
+
     protected ActivityLog()
     {
     }

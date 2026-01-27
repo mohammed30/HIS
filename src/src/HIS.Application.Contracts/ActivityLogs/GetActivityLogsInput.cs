@@ -21,7 +21,7 @@ public class GetActivityLogsInput : PagedAndSortedResultRequestDto
     /// <summary>
     /// Filter by action type.
     /// </summary>
-    public ActivityAction? Action { get; set; }
+    public ActivityAction? ActivityActionFilter { get; set; }
 
     /// <summary>
     /// Filter by log level.

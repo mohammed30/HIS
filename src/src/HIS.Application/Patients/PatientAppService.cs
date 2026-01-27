@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HIS.ActivityLogs;
+using Microsoft.AspNetCore.Http;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -18,16 +20,22 @@ public class PatientAppService : ApplicationService, IPatientAppService
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
+    private readonly ActivityLogManager _activityLogManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private static int _mrnCounter = 1000;
 
     public PatientAppService(
         IRepository<Patient, Guid> patientRepository,
         IGuidGenerator guidGenerator,
-        ICurrentTenant currentTenant)
+        ICurrentTenant currentTenant,
+        ActivityLogManager activityLogManager,
+        IHttpContextAccessor httpContextAccessor)
     {
         _patientRepository = patientRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
+        _activityLogManager = activityLogManager;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<PagedResultDto<PatientDto>> GetListAsync(GetPatientsInput input)
@@ -99,12 +107,27 @@ public class PatientAppService : ApplicationService, IPatientAppService
 
         await _patientRepository.InsertAsync(patient);
 
+        // Log Activity
+        await _activityLogManager.LogActivityAsync(
+            module: "Patients",
+            action: ActivityAction.Create,
+            description: $"تم إنشاء مريض جديد: {patient.FullNameAr} (MRN: {patient.MRN})",
+            entityType: "Patient",
+            entityId: patient.Id.ToString(),
+            newValues: new { patient.MRN, patient.FullNameAr, patient.MobileNumber },
+            ipAddress: GetClientIp(),
+            userAgent: GetUserAgent()
+        );
+
         return MapToDto(patient);
     }
 
     public async Task<PatientDto> UpdateAsync(Guid id, CreateUpdatePatientDto input)
     {
         var patient = await _patientRepository.GetAsync(id);
+
+        // Store old values for logging
+        var oldValues = new { patient.FirstNameAr, patient.LastNameAr, patient.MobileNumber, patient.Email };
 
         patient.FirstNameAr = input.FirstNameAr;
         patient.MiddleNameAr = input.MiddleNameAr;
@@ -134,12 +157,40 @@ public class PatientAppService : ApplicationService, IPatientAppService
 
         await _patientRepository.UpdateAsync(patient);
 
+        // Log Activity
+        await _activityLogManager.LogActivityAsync(
+            module: "Patients",
+            action: ActivityAction.Update,
+            description: $"تم تعديل بيانات المريض: {patient.FullNameAr} (MRN: {patient.MRN})",
+            entityType: "Patient",
+            entityId: patient.Id.ToString(),
+            oldValues: oldValues,
+            newValues: new { patient.FirstNameAr, patient.LastNameAr, patient.MobileNumber, patient.Email },
+            ipAddress: GetClientIp(),
+            userAgent: GetUserAgent()
+        );
+
         return MapToDto(patient);
     }
 
     public async Task DeleteAsync(Guid id)
     {
+        var patient = await _patientRepository.GetAsync(id);
+        var patientInfo = new { patient.MRN, patient.FullNameAr };
+
         await _patientRepository.DeleteAsync(id);
+
+        // Log Activity
+        await _activityLogManager.LogActivityAsync(
+            module: "Patients",
+            action: ActivityAction.Delete,
+            description: $"تم حذف المريض: {patient.FullNameAr} (MRN: {patient.MRN})",
+            entityType: "Patient",
+            entityId: id.ToString(),
+            oldValues: patientInfo,
+            ipAddress: GetClientIp(),
+            userAgent: GetUserAgent()
+        );
     }
 
     public async Task<List<PatientLookupDto>> SearchAsync(string searchText)
@@ -276,4 +327,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
             _ => queryable.OrderByDescending(x => x.CreationTime)
         };
     }
+
+    private string? GetClientIp() => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+    private string? GetUserAgent() => _httpContextAccessor.HttpContext?.Request?.Headers["User-Agent"].ToString();
 }

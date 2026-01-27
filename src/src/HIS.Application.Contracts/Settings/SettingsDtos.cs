@@ -15,6 +15,7 @@ public class DepartmentDto : FullAuditedEntityDto<Guid>
     public Guid? ManagerId { get; set; }
     public bool IsActive { get; set; }
     public int SortOrder { get; set; }
+    public bool IsMedical { get; set; }
 }
 
 public class CreateUpdateDepartmentDto
@@ -28,12 +29,14 @@ public class CreateUpdateDepartmentDto
     public Guid? ManagerId { get; set; }
     public bool IsActive { get; set; } = true;
     public int SortOrder { get; set; }
+    public bool IsMedical { get; set; } = false;
 }
 
 public class GetDepartmentsInput : PagedAndSortedResultRequestDto
 {
     public string? SearchText { get; set; }
     public bool? IsActive { get; set; }
+    public bool? IsMedical { get; set; }
 }
 #endregion
 

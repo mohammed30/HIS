@@ -22,4 +22,12 @@ public class ActivityLogDto : FullAuditedEntityDto<Guid>
     public DateTime Timestamp { get; set; }
     public ActivityLogLevel Level { get; set; }
     public string? AdditionalData { get; set; }
+    
+    // Device & Location Info
+    public string? DeviceType { get; set; }
+    public string? BrowserName { get; set; }
+    public string? BrowserVersion { get; set; }
+    public string? OperatingSystem { get; set; }
+    public string? Country { get; set; }
+    public string? City { get; set; }
 }

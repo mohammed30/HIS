@@ -1,0 +1,121 @@
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-sitemap me-2"></i>
+                شجرة الحسابات - Chart of Accounts
+            </h5>
+            <button class="btn btn-primary" (click)="startAdd(null)">
+                <i class="fas fa-plus me-1"></i> حساب رئيسي جديد
+            </button>
+        </div>
+        <div class="card-body">
+            <div *ngIf="loading" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div *ngIf="!loading && tree.length === 0" class="text-center py-5 text-muted">
+                <i class="fas fa-folder-open fs-1 mb-3"></i>
+                <p>لا توجد حسابات مضافة. ابدأ بإضافة حساب رئيسي.</p>
+            </div>
+
+            <!-- Recursive Tree Template -->
+            <ng-template #nodeTemplate let-node="node" let-level="level">
+                <div class="tree-node mb-1" [style.padding-right.px]="level * 25">
+                    <div class="d-flex align-items-center p-2 border rounded bg-light hover-bg-white shadow-sm">
+                        <!-- Toggle Icon -->
+                        <button class="btn btn-sm btn-link text-decoration-none p-0 me-2" style="width: 20px;"
+                            (click)="toggleNode(node)" *ngIf="node.children && node.children.length > 0">
+                            <i class="fas" [class.fa-chevron-down]="node.expanded"
+                                [class.fa-chevron-left]="!node.expanded"></i>
+                        </button>
+                        <span class="me-2" style="width: 20px;" *ngIf="!node.children || node.children.length === 0">
+                            <i class="fas fa-circle" style="font-size: 8px; color: #ccc;"></i>
+                        </span>
+
+                        <!-- Account Info -->
+                        <div class="flex-grow-1">
+                            <span class="badge bg-primary me-2">{{ node.code }}</span>
+                            <span class="fw-bold">{{ node.nameAr }}</span>
+                            <span class="text-muted ms-2 small">{{ node.nameEn }}</span>
+                            <span class="badge bg-secondary ms-2 small">{{ getTypeLabel(node.type) }}</span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="actions">
+                            <button class="btn btn-sm btn-outline-success me-1" (click)="startAdd(node)"
+                                title="إضافة فرعي">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(node)" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" (click)="delete(node)" *ngIf="node.isLeaf"
+                                title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Children -->
+                <div *ngIf="node.expanded && node.children && node.children.length > 0">
+                    <ng-container *ngFor="let child of node.children">
+                        <ng-template [ngTemplateOutlet]="nodeTemplate"
+                            [ngTemplateOutletContext]="{ node: child, level: level + 1 }">
+                        </ng-template>
+                    </ng-container>
+                </div>
+            </ng-template>
+
+            <!-- Render Roots -->
+            <ng-container *ngFor="let root of tree">
+                <ng-template [ngTemplateOutlet]="nodeTemplate" [ngTemplateOutletContext]="{ node: root, level: 0 }">
+                </ng-template>
+            </ng-container>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal show d-block" *ngIf="showForm" style="background: rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{ editingItem ? 'تعديل حساب' : 'إضافة حساب جديد' }}
+                    </h5>
+                    <button type="button" class="btn-close" (click)="showForm = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info" *ngIf="parentAccount">
+                        <small>يضاف كفرع للحساب:</small> <br>
+                        <strong>{{ parentAccount.code }} - {{ parentAccount.nameAr }}</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">نوع الحساب *</label>
+                        <select class="form-select" [(ngModel)]="formData.type" [disabled]="!!parentAccount">
+                            <option *ngFor="let t of accountTypes" [ngValue]="t.value">{{ t.label }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">الاسم بالعربية *</label>
+                        <input type="text" class="form-control" [(ngModel)]="formData.nameAr" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Technical Name (English)</label>
+                        <input type="text" class="form-control text-start" dir="ltr" [(ngModel)]="formData.nameEn">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="showForm = false">إلغاء</button>
+                    <button type="button" class="btn btn-primary" (click)="save()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

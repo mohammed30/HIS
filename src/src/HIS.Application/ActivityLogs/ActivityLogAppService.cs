@@ -131,9 +131,9 @@ public class ActivityLogAppService : ApplicationService, IActivityLogAppService
             queryable = queryable.Where(x => x.Module == input.Module);
         }
 
-        if (input.Action.HasValue)
+        if (input.ActivityActionFilter.HasValue)
         {
-            queryable = queryable.Where(x => x.Action == input.Action);
+            queryable = queryable.Where(x => x.Action == input.ActivityActionFilter);
         }
 
         if (input.Level.HasValue)

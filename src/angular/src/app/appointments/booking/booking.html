@@ -1,0 +1,120 @@
+<div class="booking-container bg-light min-vh-100 p-4">
+    <div class="row g-4">
+        <!-- Sidebar Selection Panel -->
+        <div class="col-lg-3 col-md-4">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4 fw-bold text-primary">
+                        <i class="fa fa-filter me-2"></i>{{ '::BookNewAppointment' | abpLocalization }}
+                    </h5>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">{{ '::SelectClinic' | abpLocalization
+                            }}</label>
+                        <select class="form-select form-select-lg border-0 bg-light" [(ngModel)]="selectedClinicId"
+                            (change)="onClinicChange()">
+                            <option value="">{{ '::SelectClinic' | abpLocalization }}... </option>
+                            <option *ngFor="let clinic of clinics" [value]="clinic.id">{{ clinic.name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">{{ '::SelectDoctor' | abpLocalization
+                            }}</label>
+                        <select class="form-select form-select-lg border-0 bg-light" [(ngModel)]="selectedDoctorId"
+                            (change)="onDoctorChange()" [disabled]="!selectedClinicId">
+                            <option value="">{{ '::SelectDoctor' | abpLocalization }}... </option>
+                            <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.name }}</option>
+                        </select>
+                        <div *ngIf="doctors.length === 0 && selectedClinicId" class="form-text text-warning mt-2">
+                            <i class="fa fa-info-circle me-1"></i> No doctors available in this clinic.
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10" *ngIf="!selectedDoctorId">
+                        <i class="fa fa-arrow-up me-2"></i> {{ '::SelectDoctorFirst' | abpLocalization }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="card shadow-sm border-0 mt-3 rounded-3" *ngIf="selectedDoctorId">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="badge me-2 border" style="width: 15px; height: 15px; background-color: #eff1f2;">
+                            &nbsp;</div>
+                        <span class="small text-muted">Closed Hours</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2" *ngFor="let type of appointmentTypes">
+                        <div class="badge me-2" [style.background-color]="getTypeColor(type.value)"
+                            style="width: 15px; height: 15px;">&nbsp;</div>
+                        <span class="small text-muted">{{ '::Enum:AppointmentType.' + type.label | abpLocalization
+                            }}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="badge bg-white border me-2" style="width: 15px; height: 15px;">&nbsp;</div>
+                        <span class="small text-muted">Available</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Calendar Panel -->
+        <div class="col-lg-9 col-md-8">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-body p-3">
+                    <full-calendar #calendar [options]="calendarOptions"></full-calendar>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Updated Modal Content -->
+<abp-modal [(visible)]="isModalOpen" size="md">
+    <ng-template #abpHeader>
+        <h3 class="modal-title m-0">
+            <i class="fa fa-calendar-check me-2"></i>
+            {{ (bookingData['id'] ? '::EditAppointment' : '::BookNewAppointment') | abpLocalization }}
+        </h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <div class="mb-3">
+            <label class="form-label fw-bold">{{ '::Date' | abpLocalization }}</label>
+            <input type="text" class="form-control" [value]="bookingData.appointmentDate | date:'medium'" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">{{ '::Type' | abpLocalization }}</label>
+            <select class="form-select" [(ngModel)]="bookingData.type">
+                <option *ngFor="let t of appointmentTypes" [value]="t.value">
+                    {{ '::Enum:AppointmentType.' + t.label | abpLocalization }}
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Notes</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="bookingData.notes"></textarea>
+        </div>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <div class="d-flex w-100 justify-content-between">
+            <button *ngIf="bookingData['id']" type="button" class="btn btn-danger" (click)="cancelBooking()">
+                {{ '::CancelAppointment' | abpLocalization }}
+            </button>
+
+            <div class="ms-auto">
+                <button type="button" class="btn btn-light me-2" abpClose>
+                    {{ '::Close' | abpLocalization }}
+                </button>
+                <button type="button" class="btn btn-primary" (click)="saveBooking()">
+                    <i class="fa" [class.fa-check]="!bookingData['id']" [class.fa-save]="bookingData['id']"></i>
+                    {{ (bookingData['id'] ? '::Update' : '::Save') | abpLocalization }}
+                </button>
+            </div>
+        </div>
+    </ng-template>
+</abp-modal>

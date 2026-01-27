@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 interface Specialty {
   id: string;
@@ -17,7 +18,7 @@ interface Specialty {
 @Component({
   selector: 'app-specialties',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgbPaginationModule],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -84,6 +85,20 @@ interface Specialty {
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalCount > 0">
+            <ngb-pagination
+              [(page)]="page"
+              [pageSize]="pageSize"
+              [collectionSize]="totalCount"
+              (pageChange)="onPageChange($event)"
+              [maxSize]="5"
+              [boundaryLinks]="true">
+            </ngb-pagination>
+            <span class="text-muted">Total: {{ totalCount }}</span>
+          </div>
+
         </div>
       </div>
 
@@ -146,6 +161,11 @@ export class SpecialtiesComponent implements OnInit {
   editingItem: Specialty | null = null;
   formData: Partial<Specialty> = this.getEmptyForm();
 
+  // Pagination
+  page = 1;
+  pageSize = 10;
+  totalCount = 0;
+
   ngOnInit() {
     this.loadData();
   }
@@ -159,13 +179,23 @@ export class SpecialtiesComponent implements OnInit {
   }
 
   loadData() {
-    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}`).subscribe({
-      next: (res) => this.items = res.items || [],
+    const skipCount = (this.page - 1) * this.pageSize;
+    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
+      next: (res) => {
+        this.items = res.items || [];
+        this.totalCount = res.totalCount || 0;
+      },
       error: (err) => console.error(err)
     });
   }
 
+  onPageChange(page: number) {
+    this.page = page;
+    this.loadData();
+  }
+
   search() {
+    this.page = 1;
     this.loadData();
   }
 

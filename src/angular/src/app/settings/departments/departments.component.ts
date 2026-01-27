@@ -16,10 +16,12 @@ interface Department {
   sortOrder: number;
 }
 
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+
 @Component({
   selector: 'app-departments',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgbPaginationModule],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -86,8 +88,23 @@ interface Department {
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalCount > 0">
+            <ngb-pagination
+              [(page)]="page"
+              [pageSize]="pageSize"
+              [collectionSize]="totalCount"
+              (pageChange)="onPageChange($event)"
+              [maxSize]="5"
+              [boundaryLinks]="true">
+            </ngb-pagination>
+            <span class="text-muted">Total: {{ totalCount }}</span>
+          </div>
+
         </div>
       </div>
+
 
       <!-- Modal Form -->
       @if (showForm) {
@@ -156,6 +173,11 @@ export class DepartmentsComponent implements OnInit {
   editingItem: Department | null = null;
   formData: Partial<Department> = this.getEmptyForm();
 
+  // Pagination
+  page = 1;
+  pageSize = 10;
+  totalCount = 0;
+
   ngOnInit() {
     this.loadData();
   }
@@ -169,13 +191,23 @@ export class DepartmentsComponent implements OnInit {
   }
 
   loadData() {
-    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}`).subscribe({
-      next: (res) => this.items = res.items || [],
+    const skipCount = (this.page - 1) * this.pageSize;
+    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
+      next: (res) => {
+        this.items = res.items || [];
+        this.totalCount = res.totalCount || 0;
+      },
       error: (err) => console.error(err)
     });
   }
 
+  onPageChange(page: number) {
+    this.page = page;
+    this.loadData();
+  }
+
   search() {
+    this.page = 1;
     this.loadData();
   }
 

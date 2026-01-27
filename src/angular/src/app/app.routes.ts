@@ -32,6 +32,10 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard],
     children: [
       {
+        path: 'hospital',
+        loadComponent: () => import('./settings/hospital/hospital-settings.component').then(c => c.HospitalSettingsComponent)
+      },
+      {
         path: 'departments',
         loadComponent: () => import('./settings/departments/departments.component').then(c => c.DepartmentsComponent)
       },
@@ -50,6 +54,70 @@ export const APP_ROUTES: Routes = [
       {
         path: 'laboratories',
         loadComponent: () => import('./settings/laboratories/laboratories.component').then(c => c.LaboratoriesComponent)
+      },
+      {
+        path: 'doctor-schedule',
+        loadComponent: () => import('./settings/doctor-schedule').then(c => c.DoctorScheduleComponent)
+      }
+    ]
+  },
+  {
+    path: 'appointments',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'booking',
+        loadComponent: () => import('./appointments/booking/booking').then(c => c.BookingComponent)
+      },
+      {
+        path: 'my-appointments',
+        loadComponent: () => import('./appointments/my-appointments/my-appointments').then(c => c.MyAppointmentsComponent)
+      }
+    ]
+  },
+  {
+    path: 'financials',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'chart-of-accounts',
+        loadComponent: () => import('./financials/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent)
+      }
+    ]
+  },
+  {
+    path: 'reception',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'insurance-companies',
+        loadComponent: () => import('./reception/insurance/insurance-companies.component').then(c => c.InsuranceCompaniesComponent)
+      },
+      {
+        path: 'insurance-plans',
+        loadComponent: () => import('./reception/insurance/insurance-plans.component').then(c => c.InsurancePlansComponent)
+      },
+      {
+        path: 'invoices',
+        loadComponent: () => import('./reception/billing/invoices.component').then(c => c.InvoicesComponent)
+      },
+      {
+        path: 'payments',
+        loadComponent: () => import('./reception/billing/payments.component').then(c => c.PaymentsComponent)
+      },
+      {
+        path: 'deferred-payments',
+        loadComponent: () => import('./reception/billing/deferred-payments.component').then(c => c.DeferredPaymentsComponent)
+      }
+    ]
+  },
+  {
+    path: 'admin',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'activity-logs',
+        loadComponent: () => import('./admin/activity-logs/activity-logs.component').then(c => c.ActivityLogsComponent)
       }
     ]
   },

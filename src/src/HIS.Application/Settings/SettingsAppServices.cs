@@ -36,6 +36,18 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
         return items.Select(x => new LookupDto { Id = x.Id, Name = x.NameAr }).ToList();
     }
 
+    /// <summary>
+    /// يُرجع قائمة الأقسام الطبية فقط (للاستخدام في تعريف الأطباء)
+    /// </summary>
+    public async Task<List<LookupDto>> GetMedicalDepartmentsLookupAsync()
+    {
+        var queryable = await Repository.GetQueryableAsync();
+        var items = await AsyncExecuter.ToListAsync(
+            queryable.Where(x => x.IsActive && x.IsMedical).OrderBy(x => x.SortOrder).ThenBy(x => x.NameAr));
+        
+        return items.Select(x => new LookupDto { Id = x.Id, Name = x.NameAr }).ToList();
+    }
+
     protected override async Task<IQueryable<Department>> CreateFilteredQueryAsync(GetDepartmentsInput input)
     {
         var queryable = await Repository.GetQueryableAsync();
@@ -50,6 +62,9 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
 
         if (input.IsActive.HasValue)
             queryable = queryable.Where(x => x.IsActive == input.IsActive);
+
+        if (input.IsMedical.HasValue)
+            queryable = queryable.Where(x => x.IsMedical == input.IsMedical);
 
         return queryable;
     }

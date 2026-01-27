@@ -26,6 +26,98 @@ function configureRoutes() {
       order: 10,
       layout: eLayoutType.application,
     },
+    // Appointments
+    {
+      name: '::Menu:Appointments',
+      iconClass: 'fas fa-calendar-check',
+      order: 20,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/appointments/booking',
+      name: '::Menu:BookNewAppointment',
+      parentName: '::Menu:Appointments',
+      iconClass: 'fas fa-calendar-plus',
+      order: 21,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/appointments/my-appointments',
+      name: '::Menu:MyAppointments',
+      parentName: '::Menu:Appointments',
+      iconClass: 'fas fa-list-alt',
+      order: 22,
+      layout: eLayoutType.application,
+    },
+    // Accounts (Financials)
+    {
+      name: '::Menu:Accounts',
+      iconClass: 'fas fa-file-invoice-dollar',
+      order: 30,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/financials/chart-of-accounts',
+      name: '::Menu:ChartOfAccounts',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-sitemap',
+      order: 31,
+      layout: eLayoutType.application,
+    },
+    // Insurance
+    {
+      name: '::Menu:Insurance',
+      iconClass: 'fas fa-shield-alt',
+      order: 40,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/reception/insurance-companies',
+      name: '::Menu:InsuranceCompanies',
+      parentName: '::Menu:Insurance',
+      iconClass: 'fas fa-building',
+      order: 41,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/reception/insurance-plans',
+      name: '::Menu:InsurancePlans',
+      parentName: '::Menu:Insurance',
+      iconClass: 'fas fa-file-contract',
+      order: 42,
+      layout: eLayoutType.application,
+    },
+    // Billing
+    {
+      name: '::Menu:Billing',
+      iconClass: 'fas fa-money-bill-wave',
+      order: 50,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/reception/invoices',
+      name: '::Menu:Invoices',
+      parentName: '::Menu:Billing',
+      iconClass: 'fas fa-file-invoice',
+      order: 51,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/reception/payments',
+      name: '::Menu:Payments',
+      parentName: '::Menu:Billing',
+      iconClass: 'fas fa-cash-register',
+      order: 52,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/reception/deferred-payments',
+      name: '::Menu:DeferredPayments',
+      parentName: '::Menu:Billing',
+      iconClass: 'fas fa-clock',
+      order: 53,
+      layout: eLayoutType.application,
+    },
     // Definitions
     {
       name: '::Menu:Definitions',
@@ -73,6 +165,14 @@ function configureRoutes() {
       order: 105,
       layout: eLayoutType.application,
     },
+    {
+      path: '/settings/doctor-schedule',
+      name: '::Menu:DoctorSchedule',
+      parentName: '::Menu:Definitions',
+      iconClass: 'fas fa-clock',
+      order: 106,
+      layout: eLayoutType.application,
+    },
     // Administration
     {
       path: '/identity',
@@ -81,6 +181,13 @@ function configureRoutes() {
       order: 200,
       layout: eLayoutType.application,
       requiredPolicy: 'AbpIdentity.Users',
+    },
+    {
+      path: '/admin/activity-logs',
+      name: '::Menu:ActivityLogs',
+      iconClass: 'fas fa-history',
+      order: 210,
+      layout: eLayoutType.application,
     },
     {
       path: '/setting-management',

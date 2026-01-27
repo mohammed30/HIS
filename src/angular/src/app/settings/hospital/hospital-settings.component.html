@@ -1,0 +1,69 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::HospitalData' | abpLocalization }}
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="row">
+                <!-- Hospital Name -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ '::HospitalName' | abpLocalization }}</label>
+                    <input type="text" class="form-control" formControlName="hospitalName" />
+                    <div *ngIf="form.get('hospitalName').invalid && form.get('hospitalName').touched"
+                        class="text-danger small">
+                        {{ '::RequiredField' | abpLocalization }}
+                    </div>
+                </div>
+
+                <!-- Tax Number -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ '::TaxNumber' | abpLocalization }}</label>
+                    <input type="text" class="form-control" formControlName="hospitalTaxNumber" />
+                </div>
+
+                <!-- Address -->
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">{{ '::Address' | abpLocalization }}</label>
+                    <textarea class="form-control" formControlName="hospitalAddress" rows="2"></textarea>
+                </div>
+
+                <!-- Phone -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ '::Phone' | abpLocalization }}</label>
+                    <input type="text" class="form-control" formControlName="hospitalPhone" />
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ '::Email' | abpLocalization }}</label>
+                    <input type="email" class="form-control" formControlName="hospitalEmail" />
+                    <div *ngIf="form.get('hospitalEmail').invalid && form.get('hospitalEmail').touched"
+                        class="text-danger small">
+                        {{ '::InvalidEmail' | abpLocalization }}
+                    </div>
+                </div>
+
+                <!-- Logo URL (Temporary) -->
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">{{ '::LogoUrl' | abpLocalization }}</label>
+                    <input type="text" class="form-control" formControlName="hospitalLogo" placeholder="https://..." />
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button type="button" class="btn btn-secondary me-2" (click)="loadSettings()" [disabled]="loading">
+                    {{ '::Cancel' | abpLocalization }}
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
+                    <i class="fa fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

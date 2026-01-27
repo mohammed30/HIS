@@ -1,6 +1,7 @@
 using HIS.ActivityLogs;
 using HIS.Patients;
 using HIS.Settings;
+using HIS.Appointments;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -42,6 +43,22 @@ public class HISDbContext :
     public DbSet<Clinic> Clinics { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<Laboratory> Laboratories { get; set; }
+
+    // Appointments
+    public DbSet<Appointment> Appointments { get; set; }
+    public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
+    public DbSet<HIS.Financials.Account> Accounts { get; set; }
+
+    // Insurance
+    public DbSet<HIS.Insurance.InsuranceCompany> InsuranceCompanies { get; set; }
+    public DbSet<HIS.Insurance.InsurancePlan> InsurancePlans { get; set; }
+    public DbSet<HIS.Insurance.PatientInsurance> PatientInsurances { get; set; }
+
+    // Billing
+    public DbSet<HIS.Billing.Invoice> Invoices { get; set; }
+    public DbSet<HIS.Billing.InvoiceItem> InvoiceItems { get; set; }
+    public DbSet<HIS.Billing.Payment> Payments { get; set; }
+    public DbSet<HIS.Billing.DeferredPayment> DeferredPayments { get; set; }
 
     #region Entities from the modules
 
@@ -227,6 +244,158 @@ public class HISDbContext :
             b.Property(x => x.WorkingHours).HasMaxLength(128);
             
             b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        // Appointment
+        builder.Entity<Appointment>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Appointments", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Notes).HasMaxLength(2048);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.DoctorId);
+            b.HasIndex(x => x.ClinicId);
+            b.HasIndex(x => x.AppointmentDate);
+        });
+
+        // DoctorSchedule
+        builder.Entity<DoctorSchedule>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "DoctorSchedules", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.HasIndex(x => new { x.DoctorId, x.DayOfWeek }).IsUnique();
+        });
+
+        // Insurance Company
+        builder.Entity<HIS.Insurance.InsuranceCompany>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InsuranceCompanies", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+            b.Property(x => x.NameAr).HasMaxLength(256).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(256);
+            b.Property(x => x.Phone).HasMaxLength(32);
+            b.Property(x => x.Email).HasMaxLength(256);
+            b.Property(x => x.Address).HasMaxLength(512);
+            b.Property(x => x.ContactPerson).HasMaxLength(128);
+            b.Property(x => x.ContactPhone).HasMaxLength(32);
+            b.Property(x => x.Website).HasMaxLength(256);
+            
+            b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        // Insurance Plan
+        builder.Entity<HIS.Insurance.InsurancePlan>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InsurancePlans", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+            b.Property(x => x.NameAr).HasMaxLength(256).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(256);
+            b.Property(x => x.CoveragePercentage).HasPrecision(5, 2);
+            b.Property(x => x.MaxCoverageAmount).HasPrecision(18, 2);
+            b.Property(x => x.CoPaymentPercentage).HasPrecision(5, 2);
+            b.Property(x => x.DeductibleAmount).HasPrecision(18, 2);
+            
+            b.HasIndex(x => x.Code).IsUnique();
+            b.HasIndex(x => x.InsuranceCompanyId);
+        });
+
+        // Patient Insurance
+        builder.Entity<HIS.Insurance.PatientInsurance>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PatientInsurances", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.PolicyNumber).HasMaxLength(64).IsRequired();
+            b.Property(x => x.CardNumber).HasMaxLength(64);
+            b.Property(x => x.SubscriberName).HasMaxLength(256);
+            b.Property(x => x.RelationToSubscriber).HasMaxLength(64);
+            b.Property(x => x.EmployerName).HasMaxLength(256);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.InsurancePlanId);
+            b.HasIndex(x => x.PolicyNumber);
+        });
+
+        // Invoice
+        builder.Entity<HIS.Billing.Invoice>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Invoices", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.InvoiceNumber).HasMaxLength(32).IsRequired();
+            b.Property(x => x.TotalAmount).HasPrecision(18, 2);
+            b.Property(x => x.DiscountAmount).HasPrecision(18, 2);
+            b.Property(x => x.TaxPercentage).HasPrecision(5, 2);
+            b.Property(x => x.TaxAmount).HasPrecision(18, 2);
+            b.Property(x => x.NetAmount).HasPrecision(18, 2);
+            b.Property(x => x.PaidAmount).HasPrecision(18, 2);
+            b.Property(x => x.InsuranceCoverage).HasPrecision(18, 2);
+            b.Property(x => x.CoPaymentAmount).HasPrecision(18, 2);
+            b.Ignore(x => x.DueAmount);
+            
+            b.HasIndex(x => x.InvoiceNumber).IsUnique();
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.InvoiceDate);
+        });
+
+        // Invoice Item
+        builder.Entity<HIS.Billing.InvoiceItem>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InvoiceItems", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.ServiceCode).HasMaxLength(32);
+            b.Property(x => x.Description).HasMaxLength(512).IsRequired();
+            b.Property(x => x.Quantity).HasPrecision(10, 2);
+            b.Property(x => x.UnitPrice).HasPrecision(18, 2);
+            b.Property(x => x.DiscountPercentage).HasPrecision(5, 2);
+            b.Property(x => x.DiscountAmount).HasPrecision(18, 2);
+            b.Ignore(x => x.TotalPrice);
+            
+            b.HasIndex(x => x.InvoiceId);
+        });
+
+        // Payment
+        builder.Entity<HIS.Billing.Payment>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Payments", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.PaymentNumber).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+            b.Property(x => x.ReferenceNumber).HasMaxLength(64);
+            b.Property(x => x.ReceivedBy).HasMaxLength(128);
+            
+            b.HasIndex(x => x.PaymentNumber).IsUnique();
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.InvoiceId);
+            b.HasIndex(x => x.PaymentDate);
+        });
+
+        // Deferred Payment
+        builder.Entity<HIS.Billing.DeferredPayment>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "DeferredPayments", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.DeferredNumber).HasMaxLength(32).IsRequired();
+            b.Property(x => x.TotalAmount).HasPrecision(18, 2);
+            b.Property(x => x.PaidAmount).HasPrecision(18, 2);
+            b.Property(x => x.InstallmentAmount).HasPrecision(18, 2);
+            b.Property(x => x.Reason).HasMaxLength(512);
+            b.Property(x => x.ContactPhone).HasMaxLength(32);
+            b.Ignore(x => x.RemainingAmount);
+            
+            b.HasIndex(x => x.DeferredNumber).IsUnique();
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.DueDate);
         });
     }
 }
