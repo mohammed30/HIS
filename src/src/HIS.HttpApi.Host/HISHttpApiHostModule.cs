@@ -1,44 +1,44 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+﻿using HIS.EntityFrameworkCore;
+using HIS.HealthChecks;
+using HIS.MultiTenancy;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Extensions.DependencyInjection;
-using OpenIddict.Validation.AspNetCore;
-using OpenIddict.Server.AspNetCore;
-using HIS.EntityFrameworkCore;
-using HIS.MultiTenancy;
-using HIS.HealthChecks;
 using Microsoft.OpenApi.Models;
+using OpenIddict.Server;
+using OpenIddict.Server.AspNetCore;
+using OpenIddict.Validation.AspNetCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Volo.Abp;
-using Volo.Abp.Studio;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
-using Volo.Abp.Autofac;
-using Volo.Abp.Localization;
-using Volo.Abp.Modularity;
-using Volo.Abp.UI.Navigation.Urls;
-using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
-using Microsoft.AspNetCore.Hosting;
+using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
+using Volo.Abp.Autofac;
 using Volo.Abp.Identity;
+using Volo.Abp.Localization;
+using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
-using Volo.Abp.Swashbuckle;
-using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.Studio;
+using Volo.Abp.Studio.Client.AspNetCore;
+using Volo.Abp.Swashbuckle;
+using Volo.Abp.UI.Navigation.Urls;
+using Volo.Abp.VirtualFileSystem;
 
 namespace HIS;
 
@@ -53,13 +53,19 @@ namespace HIS;
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule)
-    )]
+)]
 public class HISHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
+
+        // ✅ Shared hosting: avoid access-token encryption to simplify cert requirements
+        PreConfigure<OpenIddictServerOptions>(options =>
+        {
+            options.DisableAccessTokenEncryption = true;
+        });
 
         PreConfigure<OpenIddictBuilder>(builder =>
         {
@@ -71,25 +77,60 @@ public class HISHttpApiHostModule : AbpModule
             });
         });
 
-        if (!hostingEnvironment.IsDevelopment())
+        // ✅ Shared hosting: NEVER use Dev certificates (they require Windows certificate store access)
+        PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
         {
-            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-            {
-                options.AddDevelopmentEncryptionAndSigningCertificate = false;
-            });
+            options.AddDevelopmentEncryptionAndSigningCertificate = false;
+        });
 
-            PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
+        var certPath = Path.Combine(hostingEnvironment.ContentRootPath, "openiddict.pfx");
+        var certPass = configuration["AuthServer:CertificatePassPhrase"];
+
+        PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
+        {
+            serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
+
+            var pfxLooksOk = File.Exists(certPath)
+                             && new FileInfo(certPath).Length > 0
+                             && !string.IsNullOrWhiteSpace(certPass);
+
+            if (pfxLooksOk)
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
-                serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
-            });
-        }
+                try
+                {
+                    // ✅ Load PFX in a way that works on shared hosting (no user profile required)
+                    var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(
+                        certPath,
+                        certPass,
+                        System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.MachineKeySet |
+                        System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.EphemeralKeySet |
+                        System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.Exportable
+                    );
+
+                    serverBuilder.AddEncryptionCertificate(cert);
+                    serverBuilder.AddSigningCertificate(cert);
+                }
+                catch
+                {
+                    // ✅ Fallback: Ephemeral keys (survive only until app restart)
+                    serverBuilder
+                        .AddEphemeralEncryptionKey()
+                        .AddEphemeralSigningKey();
+                }
+            }
+            else
+            {
+                // ✅ No PFX / passphrase: Ephemeral keys
+                serverBuilder
+                    .AddEphemeralEncryptionKey()
+                    .AddEphemeralSigningKey();
+            }
+        });
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
-        var hostingEnvironment = context.Services.GetHostingEnvironment();
 
         if (!configuration.GetValue<bool>("App:DisablePII"))
         {
@@ -103,7 +144,7 @@ public class HISHttpApiHostModule : AbpModule
             {
                 options.DisableTransportSecurityRequirement = true;
             });
-            
+
             Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
@@ -146,22 +187,15 @@ public class HISHttpApiHostModule : AbpModule
         {
             options.StyleBundles.Configure(
                 LeptonXLiteThemeBundles.Styles.Global,
-                bundle =>
-                {
-                    bundle.AddFiles("/global-styles.css");
-                }
+                bundle => { bundle.AddFiles("/global-styles.css"); }
             );
 
             options.ScriptBundles.Configure(
                 LeptonXLiteThemeBundles.Scripts.Global,
-                bundle =>
-                {
-                    bundle.AddFiles("/global-scripts.js");
-                }
+                bundle => { bundle.AddFiles("/global-scripts.js"); }
             );
         });
     }
-
 
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
@@ -171,10 +205,17 @@ public class HISHttpApiHostModule : AbpModule
         {
             Configure<AbpVirtualFileSystemOptions>(options =>
             {
-                options.FileSets.ReplaceEmbeddedByPhysical<HISDomainSharedModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Domain.Shared"));
-                options.FileSets.ReplaceEmbeddedByPhysical<HISDomainModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Domain"));
-                options.FileSets.ReplaceEmbeddedByPhysical<HISApplicationContractsModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Application.Contracts"));
-                options.FileSets.ReplaceEmbeddedByPhysical<HISApplicationModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Application"));
+                options.FileSets.ReplaceEmbeddedByPhysical<HISDomainSharedModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Domain.Shared"));
+
+                options.FileSets.ReplaceEmbeddedByPhysical<HISDomainModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Domain"));
+
+                options.FileSets.ReplaceEmbeddedByPhysical<HISApplicationContractsModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Application.Contracts"));
+
+                options.FileSets.ReplaceEmbeddedByPhysical<HISApplicationModule>(
+                    Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}HIS.Application"));
             });
         }
     }
@@ -191,8 +232,8 @@ public class HISHttpApiHostModule : AbpModule
     {
         context.Services.AddAbpSwaggerGenWithOidc(
             configuration["AuthServer:Authority"]!,
-            ["HIS"],
-            [AbpSwaggerOidcFlows.AuthorizationCode],
+            new[] { "HIS" },
+            new[] { AbpSwaggerOidcFlows.AuthorizationCode },
             null,
             options =>
             {
@@ -269,10 +310,10 @@ public class HISHttpApiHostModule : AbpModule
         app.UseAbpSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "HIS API");
-
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
         });
+
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();

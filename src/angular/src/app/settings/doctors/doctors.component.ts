@@ -7,8 +7,8 @@ import { environment } from '../../../environments/environment';
 interface Doctor {
   id: string;
   code: string;
-  firstName: string;
-  lastName: string;
+  nameAr: string;
+  nameEn: string;
   specialtyId: string;
   departmentId: string;
   mobile?: string;
@@ -56,7 +56,8 @@ interface Lookup {
               <thead class="table-dark">
                 <tr>
                   <th>الكود</th>
-                  <th>الاسم</th>
+                  <th>الاسم (عربي)</th>
+                  <th>الاسم (إنجليزي)</th>
                   <th>التخصص</th>
                   <th>القسم</th>
                   <th>الجوال</th>
@@ -68,7 +69,8 @@ interface Lookup {
                 @for (item of items; track item.id) {
                   <tr>
                     <td>{{ item.code }}</td>
-                    <td>{{ item.firstName }} {{ item.lastName }}</td>
+                    <td>{{ item.nameAr }}</td>
+                    <td>{{ item.nameEn }}</td>
                     <td>{{ getSpecialtyName(item.specialtyId) }}</td>
                     <td>{{ getDepartmentName(item.departmentId) }}</td>
                     <td>{{ item.mobile }}</td>
@@ -88,7 +90,7 @@ interface Lookup {
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="7" class="text-center text-muted py-4">لا توجد بيانات</td>
+                    <td colspan="8" class="text-center text-muted py-4">لا توجد بيانات</td>
                   </tr>
                 }
               </tbody>
@@ -109,12 +111,12 @@ interface Lookup {
               <div class="modal-body">
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">الاسم الأول *</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.firstName" required>
+                    <label class="form-label">الاسم بالعربية *</label>
+                    <input type="text" class="form-control" [(ngModel)]="formData.nameAr" required>
                   </div>
                    <div class="col-md-6 mb-3">
-                    <label class="form-label">اسم العائلة *</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.lastName" required>
+                    <label class="form-label">الاسم بالإنجليزية</label>
+                    <input type="text" class="form-control" [(ngModel)]="formData.nameEn">
                   </div>
                 </div>
                 
@@ -192,7 +194,7 @@ export class DoctorsComponent implements OnInit {
   }
 
   getEmptyForm(): Partial<Doctor> {
-    return { code: '', firstName: '', lastName: '', specialtyId: '', departmentId: '', mobile: '', email: '', nationalId: '', isActive: true };
+    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', mobile: '', email: '', nationalId: '', isActive: true };
   }
 
   resetForm() { this.formData = this.getEmptyForm(); }

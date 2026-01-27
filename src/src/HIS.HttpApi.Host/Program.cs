@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using Volo.Abp;
 
 namespace HIS;
 
 public class Program
 {
-    public async static Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Async(c => c.File("Logs/logs.txt"))
@@ -20,18 +22,26 @@ public class Program
         try
         {
             Log.Information("Starting HIS.HttpApi.Host.");
+
             var builder = WebApplication.CreateBuilder(args);
+
+            // ✅ IMPORTANT: Use Static Web Assets ONLY in Development
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.WebHost.UseStaticWebAssets();
+            }
+
             builder.Host
                 .AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog((context, services, loggerConfiguration) =>
                 {
                     loggerConfiguration
-                    #if DEBUG
+#if DEBUG
                         .MinimumLevel.Debug()
-                    #else
+#else
                         .MinimumLevel.Information()
-                    #endif
+#endif
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                         .Enrich.FromLogContext()
@@ -39,10 +49,14 @@ public class Program
                         .WriteTo.Async(c => c.Console())
                         .WriteTo.Async(c => c.AbpStudio(services));
                 });
+
             await builder.AddApplicationAsync<HISHttpApiHostModule>();
+
             var app = builder.Build();
+
             await app.InitializeApplicationAsync();
             await app.RunAsync();
+
             return 0;
         }
         catch (Exception ex)

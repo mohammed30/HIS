@@ -1,9 +1,9 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'http://localhost:4200';
+const baseUrl = 'https://asia.tryasp.net';
 
 const oAuthConfig = {
-  issuer: 'https://localhost:44382/',
+  issuer: 'https://asia.runasp.net/',
   redirectUri: baseUrl,
   clientId: 'HIS_App',
   responseType: 'code',
@@ -20,7 +20,7 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'https://localhost:44382',
+      url: 'https://asia.runasp.net',
       rootNamespace: 'HIS',
     },
     AbpAccountPublic: {
@@ -30,6 +30,6 @@ export const environment = {
   },
   remoteEnv: {
     url: '/getEnvConfig',
-    mergeStrategy: 'deepmerge'
-  }
+    mergeStrategy: 'deepmerge',
+  },
 } as Environment;
