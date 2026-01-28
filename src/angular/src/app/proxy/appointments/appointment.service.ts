@@ -1,5 +1,5 @@
-import type { AppointmentDto, CreateAppointmentDto, LookupDto } from './dtos/models';
-import { RestService, Rest } from '@abp/ng.core';
+import type { AppointmentDto, CreateAppointmentDto, LookupDto, WaitingListDto, CreateUpdateWaitingListDto } from './dtos/models';
+import { RestService, Rest, PagedResultDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
 
 @Injectable({
@@ -72,8 +72,41 @@ export class AppointmentService {
   getList = (doctorId?: string, startDate?: string, endDate?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AppointmentDto[]>({
       method: 'GET',
-      url: '/api/app/appointment', // NOTE: Query string might need to be explicitly built if standard ABP mapping maps simple params
+      url: '/api/app/appointment',
       params: { doctorId, startDate, endDate },
+    },
+      { apiName: this.apiName, ...config });
+
+  // --- WAITING LIST ---
+
+  getWaitingList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<WaitingListDto>>({
+      method: 'GET',
+      url: '/api/app/appointment/waiting-list',
+      params: input,
+    },
+      { apiName: this.apiName, ...config });
+
+  addToWaitingList = (input: CreateUpdateWaitingListDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, WaitingListDto>({
+      method: 'POST',
+      url: '/api/app/appointment/waiting-list',
+      body: input,
+    },
+      { apiName: this.apiName, ...config });
+
+  updateWaitingList = (id: string, input: CreateUpdateWaitingListDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, WaitingListDto>({
+      method: 'PUT',
+      url: `/api/app/appointment/waiting-list/${id}`,
+      body: input,
+    },
+      { apiName: this.apiName, ...config });
+
+  deleteFromWaitingList = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/appointment/waiting-list/${id}`,
     },
       { apiName: this.apiName, ...config });
 }

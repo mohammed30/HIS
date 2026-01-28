@@ -23,6 +23,16 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Doctor, DoctorDto>();
         CreateMap<CreateUpdateDoctorDto, Doctor>();
         
+        CreateMap<Appointments.Appointment, Appointments.Dtos.AppointmentDto>()
+             .ForMember(x => x.PatientName, map => map.MapFrom(s => "Patient Name")) // Ideally join with Patient Repository or lookup
+             .ForMember(x => x.DoctorName, map => map.MapFrom(s => "Doctor Name"))
+             .ForMember(x => x.ClinicName, map => map.MapFrom(s => "Clinic Name"));
+             
+        CreateMap<Appointments.Dtos.CreateAppointmentDto, Appointments.Appointment>();
+
+        CreateMap<Appointments.WaitingList, Appointments.Dtos.WaitingListDto>();
+        CreateMap<Appointments.Dtos.CreateUpdateWaitingListDto, Appointments.WaitingList>(); // Corrected type mapping
+        
         CreateMap<Laboratory, LaboratoryDto>();
         CreateMap<CreateUpdateLaboratoryDto, Laboratory>();
 
@@ -73,5 +83,19 @@ public class HISApplicationAutoMapperProfile : Profile
         
         CreateMap<MedicalRecords.PatientNote, MedicalRecords.PatientNoteDto>();
         CreateMap<MedicalRecords.CreateUpdatePatientNoteDto, MedicalRecords.PatientNote>();
+
+        // Services & Radiology
+        CreateMap<Services.ServiceItem, Services.ServiceItemDto>();
+        CreateMap<Services.CreateUpdateServiceItemDto, Services.ServiceItem>();
+        
+        CreateMap<Services.RadiologyItem, Services.RadiologyItemDto>();
+        CreateMap<Services.CreateUpdateRadiologyItemDto, Services.RadiologyItem>();
+
+        // Pricing
+        CreateMap<Pricing.PriceList, Pricing.PriceListDto>();
+        CreateMap<Pricing.CreateUpdatePriceListDto, Pricing.PriceList>();
+        
+        CreateMap<Pricing.ServicePrice, Pricing.ServicePriceDto>();
+        CreateMap<Pricing.CreateUpdateServicePriceDto, Pricing.ServicePrice>();
     }
 }

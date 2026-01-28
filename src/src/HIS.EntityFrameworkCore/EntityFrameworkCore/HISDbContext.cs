@@ -47,6 +47,7 @@ public class HISDbContext :
     // Appointments
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
+    public DbSet<WaitingList> WaitingLists { get; set; }
     public DbSet<HIS.Financials.Account> Accounts { get; set; }
 
     // Insurance
@@ -66,6 +67,14 @@ public class HISDbContext :
     public DbSet<HIS.MedicalRecords.VitalSign> VitalSigns { get; set; }
     public DbSet<HIS.MedicalRecords.Allergy> Allergies { get; set; }
     public DbSet<HIS.MedicalRecords.PatientNote> PatientNotes { get; set; }
+
+    // Services
+    public DbSet<HIS.Services.ServiceItem> ServiceItems { get; set; }
+    public DbSet<HIS.Services.RadiologyItem> RadiologyItems { get; set; }
+
+    // Pricing
+    public DbSet<HIS.Pricing.PriceList> PriceLists { get; set; }
+    public DbSet<HIS.Pricing.ServicePrice> ServicePrices { get; set; }
 
     #region Entities from the modules
 
@@ -276,6 +285,17 @@ public class HISDbContext :
             b.HasIndex(x => new { x.DoctorId, x.DayOfWeek }).IsUnique();
         });
 
+        // WaitingList
+        builder.Entity<WaitingList>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "WaitingLists", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.DepartmentId);
+            b.HasIndex(x => x.RequestDate);
+        });
+
         // Insurance Company
         builder.Entity<HIS.Insurance.InsuranceCompany>(b =>
         {
@@ -480,6 +500,49 @@ public class HISDbContext :
             
             b.HasIndex(x => x.PatientId);
             b.HasIndex(x => x.VisitId);
+        });
+
+        // Services
+        builder.Entity<HIS.Services.ServiceItem>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "ServiceItems", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Code).HasMaxLength(64).IsRequired();
+            b.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            
+            b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        // Radiology Item (TPH Inheritance)
+        builder.Entity<HIS.Services.RadiologyItem>(b =>
+        {
+            b.HasBaseType<HIS.Services.ServiceItem>();
+            b.Property(x => x.Modality).HasMaxLength(64);
+            b.Property(x => x.BodyPart).HasMaxLength(128);
+            b.Property(x => x.Instructions).HasMaxLength(1024);
+        });
+
+        // Price List
+        builder.Entity<HIS.Pricing.PriceList>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PriceLists", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+        });
+
+        // Service Price
+        builder.Entity<HIS.Pricing.ServicePrice>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "ServicePrices", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+            b.Property(x => x.CoPayAmount).HasPrecision(18, 2);
+            
+            b.HasIndex(x => x.PriceListId);
+            b.HasIndex(x => new { x.PriceListId, x.ServiceItemId }).IsUnique();
         });
     }
 }

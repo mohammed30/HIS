@@ -173,6 +173,31 @@ function configureRoutes() {
       order: 106,
       layout: eLayoutType.application,
     },
+    // Services & Pricing
+    {
+      path: '/services',
+      name: '::Menu:Services',
+      parentName: '::Menu:Definitions',
+      iconClass: 'fas fa-briefcase-medical',
+      order: 107,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/services/radiology',
+      name: '::Menu:Radiology',
+      parentName: '::Menu:Definitions',
+      iconClass: 'fas fa-x-ray',
+      order: 108,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/services/price-lists',
+      name: '::Menu:PriceLists',
+      parentName: '::Menu:Definitions',
+      iconClass: 'fas fa-tags',
+      order: 109,
+      layout: eLayoutType.application,
+    },
     // Administration
     {
       path: '/identity',

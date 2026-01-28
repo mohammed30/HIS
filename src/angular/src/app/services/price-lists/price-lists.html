@@ -1,0 +1,133 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="card-title mb-0">Price Lists & Tariffs</h5>
+            <small class="text-muted">Manage insurance and cash pricing strategies</small>
+        </div>
+        <button class="btn btn-primary" (click)="create()">
+            <i class="fa fa-plus me-1"></i> New Price List
+        </button>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+            <ngx-datatable-column name="Name" prop="name"></ngx-datatable-column>
+            <ngx-datatable-column name="Effective From" prop="effectiveFrom">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | date:'shortDate' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Default" prop="isDefault">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span *ngIf="value" class="badge bg-success">Default</span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Actions" sortable="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <button class="btn btn-sm btn-outline-info me-2" (click)="managePrices(row.id)">
+                        <i class="fa fa-dollar"></i> Prices
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(row.id)">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="delete(row.id)">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ selectedItem.id ? 'Edit Price List' : 'New Price List' }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
+            <div class="mb-3">
+                <label>List Name</label>
+                <input type="text" class="form-control" formControlName="name"
+                    placeholder="e.g. Standard Cash / Bupa Gold">
+            </div>
+            <div class="mb-3">
+                <label>Effective From</label>
+                <input type="date" class="form-control" formControlName="effectiveFrom">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" formControlName="isDefault" id="isDefault">
+                <label class="form-check-label" for="isDefault">Is Default List</label>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">Save</button>
+    </ng-template>
+</abp-modal>
+
+<!-- Manage Prices Modal -->
+<abp-modal [(visible)]="isPricesModalOpen" [suppressUnsavedChangesWarning]="true">
+    <ng-template #abpHeader>
+        <h3>Manage Prices for List</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <div class="row">
+            <!-- Add New Price Form -->
+            <div class="col-md-12 mb-4 border-bottom pb-3">
+                <h6>Add/Update Price</h6>
+                <form [formGroup]="priceForm" (ngSubmit)="savePrice()" class="d-flex align-items-end gap-2"
+                    *ngIf="priceForm">
+                    <div class="flex-grow-1">
+                        <label>Service</label>
+                        <select class="form-select" formControlName="serviceItemId">
+                            <option [ngValue]="null">Select Service...</option>
+                            <option *ngFor="let s of serviceItems" [ngValue]="s.id">{{ s.code }} - {{ s.name }}</option>
+                        </select>
+                    </div>
+                    <div style="width: 150px">
+                        <label>Price</label>
+                        <input type="number" class="form-control" formControlName="amount">
+                    </div>
+                    <div style="width: 150px">
+                        <label>Co-Pay</label>
+                        <input type="number" class="form-control" formControlName="coPayAmount">
+                    </div>
+                    <button class="btn btn-success" type="submit" [disabled]="priceForm.invalid"><i
+                            class="fa fa-save"></i> Set</button>
+                </form>
+            </div>
+
+            <!-- Prices List -->
+            <div class="col-md-12">
+                <h6>Existing Prices</h6>
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Amount</th>
+                            <th>Co-Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let p of servicePrices">
+                            <td>
+                                {{ serviceItems.find(s => s.id === p.serviceItemId)?.name || 'Unknown' }}
+                                <small class="text-muted">({{ serviceItems.find(s => s.id === p.serviceItemId)?.code
+                                    }})</small>
+                            </td>
+                            <td>{{ p.amount | currency }}</td>
+                            <td>{{ p.coPayAmount | currency }}</td>
+                        </tr>
+                        <tr *ngIf="servicePrices.length === 0">
+                            <td colspan="3" class="text-center text-muted">No prices specific to this list yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>Close</button>
+    </ng-template>
+</abp-modal>

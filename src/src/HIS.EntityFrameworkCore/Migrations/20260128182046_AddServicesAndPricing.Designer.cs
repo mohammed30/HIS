@@ -4,6 +4,7 @@ using HIS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace HIS.Migrations
 {
     [DbContext(typeof(HISDbContext))]
-    partial class HISDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260128182046_AddServicesAndPricing")]
+    partial class AddServicesAndPricing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -307,78 +310,6 @@ namespace HIS.Migrations
                         .IsUnique();
 
                     b.ToTable("AppDoctorSchedules", (string)null);
-                });
-
-            modelBuilder.Entity("HIS.Appointments.WaitingList", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<bool>("IsResolved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("TenantId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.HasIndex("PatientId");
-
-                    b.HasIndex("RequestDate");
-
-                    b.ToTable("AppWaitingLists", (string)null);
                 });
 
             modelBuilder.Entity("HIS.Billing.DeferredPayment", b =>

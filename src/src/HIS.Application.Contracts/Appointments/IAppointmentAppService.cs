@@ -16,4 +16,9 @@ public interface IAppointmentAppService : IApplicationService
     Task<List<DateTime>> GetAvailableSlotsAsync(Guid doctorId, DateTime date);
     Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId);
     Task<List<LookupDto<Guid>>> GetClinicLookupAsync();
+    // Waiting List
+    Task<PagedResultDto<WaitingListDto>> GetWaitingListAsync(PagedAndSortedResultRequestDto input);
+    Task<WaitingListDto> AddToWaitingListAsync(CreateUpdateWaitingListDto input);
+    Task<WaitingListDto> UpdateWaitingListAsync(Guid id, CreateUpdateWaitingListDto input);
+    Task DeleteFromWaitingListAsync(Guid id);
 }
