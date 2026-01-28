@@ -3,12 +3,12 @@ import { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
 export enum ServiceCategory {
-    Consultation = 1,
-    Laboratory = 2,
+    Consultation = 0,
+    Procedure = 1,
+    LabTest = 2,
     Radiology = 3,
-    Procedure = 4,
-    Surgery = 5,
-    Other = 6,
+    Surgery = 4,
+    Other = 5,
 }
 
 export interface ServiceItemDto {
@@ -99,7 +99,7 @@ export class ServiceItemService {
     updateRadiology = (id: string, input: CreateUpdateRadiologyItemDto) =>
         this.restService.request<any, RadiologyItemDto>({
             method: 'PUT',
-            url: `/api/app/service-item/${id}/radiology`,
+            url: `/api/app/service-item/radiology/${id}`,
             body: input,
         },
             { apiName: this.apiName });

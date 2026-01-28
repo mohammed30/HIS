@@ -58,6 +58,7 @@ export class RadiologyComponent implements OnInit {
       modality: [this.selectedItem.modality || null, [Validators.required]],
       bodyPart: [this.selectedItem.bodyPart || '', [Validators.required]],
       instructions: [this.selectedItem.instructions || ''],
+      departmentId: [null], // Explicitly send null
       isActive: [this.selectedItem.isActive !== false],
       // Fixed values
       category: [3], // Radiology enum value

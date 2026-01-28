@@ -7,12 +7,16 @@ import { Component, OnInit } from '@angular/core';
 import { DoctorScheduleService } from '../../proxy/appointments/doctor-schedule.service';
 import { DoctorScheduleDto } from '../../proxy/appointments/models';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-doctor-schedule',
   templateUrl: './doctor-schedule.html',
   styleUrls: ['./doctor-schedule.scss'],
+  standalone: true,
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
   providers: [ListService],
 })
 export class DoctorScheduleComponent implements OnInit {

@@ -661,7 +661,7 @@ body {
 [data-theme="dark"] app-footer,
 [data-theme="dark"] .abp-footer,
 [data-theme="dark"] .lpx-footer-container,
-[data-theme="dark"] div[class*="footer"] {
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) {
   background-color: var(--theme-bg-secondary) !important;
   border-top: 1px solid var(--theme-border-color) !important;
   color: var(--theme-text-muted) !important;
@@ -676,7 +676,7 @@ body {
 [data-theme="dark"] .lpx-footer *,
 [data-theme="dark"] footer *,
 [data-theme="dark"] .lp-footer *,
-[data-theme="dark"] div[class*="footer"] * {
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) * {
   color: var(--theme-text-muted) !important;
 }
 
@@ -684,7 +684,7 @@ body {
 [data-theme="dark"] .lpx-footer a,
 [data-theme="dark"] footer a,
 [data-theme="dark"] .lp-footer a,
-[data-theme="dark"] div[class*="footer"] a {
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) a {
   color: var(--theme-text-primary) !important;
 }
 
@@ -799,7 +799,7 @@ lpx-brand-logo a::after {
 [data-theme="dark"] app-footer,
 [data-theme="dark"] .abp-footer,
 [data-theme="dark"] .lpx-footer-container,
-[data-theme="dark"] div[class*="footer"] {
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) {
   display: none !important;
 }
 

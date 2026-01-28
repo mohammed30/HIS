@@ -82,6 +82,14 @@ export const APP_ROUTES: Routes = [
       {
         path: 'my-appointments',
         loadComponent: () => import('./appointments/my-appointments/my-appointments').then(c => c.MyAppointmentsComponent)
+      },
+      {
+        path: 'waiting-list',
+        loadComponent: () => import('./appointments/waiting-list/waiting-list').then(c => c.WaitingListComponent)
+      },
+      {
+        path: 'doctor-schedule',
+        loadComponent: () => import('./appointments/doctor-schedule/doctor-schedule').then(c => c.DoctorScheduleComponent)
       }
     ]
   },

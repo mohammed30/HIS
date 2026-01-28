@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HIS.Pricing;
 
@@ -65,6 +66,8 @@ public class PriceListAppService : ApplicationService, IPriceListAppService
 
     // --- SERVICE PRICES ---
 
+    [HttpGet]
+    [Route("/api/app/price-list/{priceListId}/prices")]
     public async Task<PagedResultDto<ServicePriceDto>> GetPricesAsync(Guid priceListId, PagedAndSortedResultRequestDto input)
     {
         var query = await _servicePriceRepository.GetQueryableAsync();
@@ -83,6 +86,8 @@ public class PriceListAppService : ApplicationService, IPriceListAppService
         );
     }
 
+    [HttpPost]
+    [Route("/api/app/price-list/price")]
     public async Task<ServicePriceDto> SetPriceAsync(CreateUpdateServicePriceDto input)
     {
         // Check if price already exists for this service in this list

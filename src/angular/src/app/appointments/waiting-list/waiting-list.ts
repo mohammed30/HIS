@@ -3,12 +3,16 @@ import { Component, OnInit } from '@angular/core';
 import { AppointmentService } from '../../proxy/appointments/appointment.service';
 import { WaitingListDto, CreateUpdateWaitingListDto } from '../../proxy/appointments/dtos/models';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-waiting-list',
   templateUrl: './waiting-list.html',
   styleUrls: ['./waiting-list.scss'],
+  standalone: true,
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
   providers: [ListService],
 })
 export class WaitingListComponent implements OnInit {

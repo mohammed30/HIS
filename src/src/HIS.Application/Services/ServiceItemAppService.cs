@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HIS.Services;
 
@@ -37,6 +38,7 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
         );
     }
 
+    [HttpGet("{id:guid}")]
     public async Task<ServiceItemDto> GetAsync(Guid id)
     {
         var item = await _serviceRepository.GetAsync(id);
@@ -80,7 +82,9 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
     }
 
     // --- RADIOLOGY SPECIFIC ---
-
+    
+    [HttpGet]
+    [Route("/api/app/service-item/radiology")]
     public async Task<PagedResultDto<RadiologyItemDto>> GetRadiologyListAsync(PagedAndSortedResultRequestDto input)
     {
         var queryable = await _radiologyRepository.GetQueryableAsync();
@@ -93,6 +97,8 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
         );
     }
 
+    [HttpPost]
+    [Route("/api/app/service-item/radiology")]
     public async Task<RadiologyItemDto> CreateRadiologyAsync(CreateUpdateRadiologyItemDto input)
     {
          var existing = await _serviceRepository.FirstOrDefaultAsync(x => x.Code == input.Code);
@@ -118,6 +124,8 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
         return ObjectMapper.Map<RadiologyItem, RadiologyItemDto>(item);
     }
 
+    [HttpPut]
+    [Route("/api/app/service-item/radiology/{id}")]
     public async Task<RadiologyItemDto> UpdateRadiologyAsync(Guid id, CreateUpdateRadiologyItemDto input)
     {
         var item = await _radiologyRepository.GetAsync(id);
