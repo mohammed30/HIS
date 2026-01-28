@@ -15,7 +15,8 @@ export const environment = {
   production: false,
   application: {
     baseUrl,
-    name: 'HIS',
+    name: 'AppName',
+    logoUrl: 'assets/images/logo/icon-lite.svg',
   },
   oAuthConfig,
   apis: {

@@ -70,3 +70,26 @@ td,
     background-image: url('assets/images/getting-started/x.svg');
   }
 }
+
+/* Fix for App Name visibility with Logo */
+/* The theme removes the text element when a logo is set, so we inject it via CSS */
+/* Note: Targeting lpx-brand-logo (tag) -> a (child) */
+lpx-brand-logo a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px;
+}
+
+lpx-brand-logo a::after {
+  content: 'Asia Hospital';
+  /* Default (English) */
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Localized name for Arabic/RTL */
+[dir="rtl"] lpx-brand-logo a::after {
+  content: 'مستشفى آسيا';
+}
