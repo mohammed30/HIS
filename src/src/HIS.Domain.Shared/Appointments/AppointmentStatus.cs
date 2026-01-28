@@ -2,7 +2,7 @@ namespace HIS.Appointments;
 
 public enum AppointmentStatus
 {
-    Pending = 0,
+    Scheduled = 0,
     Confirmed = 1,
     Cancelled = 2,
     Completed = 3,

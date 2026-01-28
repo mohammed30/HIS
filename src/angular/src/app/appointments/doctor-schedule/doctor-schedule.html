@@ -1,0 +1,92 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="card-title mb-0">Doctor Schedules</h5>
+            <small class="text-muted">Manage working hours and slots</small>
+        </div>
+        <button class="btn btn-primary" (click)="create()">
+            <i class="fa fa-plus me-1"></i> Add Schedule
+        </button>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+            <ngx-datatable-column name="Doctor" prop="doctorName">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <i class="fa fa-user-md me-1 text-muted"></i> {{ value || 'Unknown' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Day" prop="dayOfWeek">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <strong>{{ daysOfWeek[value]?.text || value }}</strong>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Start" prop="startTime"></ngx-datatable-column>
+            <ngx-datatable-column name="End" prop="endTime"></ngx-datatable-column>
+            <ngx-datatable-column name="Slot (min)" prop="slotDuration"></ngx-datatable-column>
+            <ngx-datatable-column name="Active" prop="isActive">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span class="badge" [class.bg-success]="value" [class.bg-secondary]="!value">{{ value ? 'Yes' : 'No'
+                        }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Actions" sortable="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(row.id)">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="delete(row.id)">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ selectedItem.id ? 'Edit Schedule' : 'New Schedule' }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
+            <div class="mb-3">
+                <label>Doctor (ID/Guid for MVP)</label>
+                <input type="text" class="form-control" formControlName="doctorId">
+            </div>
+
+            <div class="mb-3">
+                <label>Day of Week</label>
+                <select class="form-select" formControlName="dayOfWeek">
+                    <option *ngFor="let d of daysOfWeek" [ngValue]="d.value">{{ d.text }}</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Start Time (HH:mm:ss)</label>
+                    <input type="time" class="form-control" formControlName="startTime" step="1">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>End Time (HH:mm:ss)</label>
+                    <input type="time" class="form-control" formControlName="endTime" step="1">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label>Slot Duration (minutes)</label>
+                <input type="number" class="form-control" formControlName="slotDuration">
+            </div>
+
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" formControlName="isActive" id="isActive">
+                <label class="form-check-label" for="isActive">Is Active</label>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">Save</button>
+    </ng-template>
+</abp-modal>

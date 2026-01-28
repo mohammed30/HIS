@@ -7,6 +7,9 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
+using HIS.Services; // For ServiceCategory if needed
+using HIS.Appointments; // For Enums
+
 namespace HIS.Appointments;
 
 public class AppointmentAppService : ApplicationService, IAppointmentAppService

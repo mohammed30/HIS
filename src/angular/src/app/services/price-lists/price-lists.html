@@ -112,9 +112,8 @@
                     <tbody>
                         <tr *ngFor="let p of servicePrices">
                             <td>
-                                {{ serviceItems.find(s => s.id === p.serviceItemId)?.name || 'Unknown' }}
-                                <small class="text-muted">({{ serviceItems.find(s => s.id === p.serviceItemId)?.code
-                                    }})</small>
+                                {{ getServiceItem(p.serviceItemId)?.name || 'Unknown' }}
+                                <small class="text-muted">({{ getServiceItem(p.serviceItemId)?.code }})</small>
                             </td>
                             <td>{{ p.amount | currency }}</td>
                             <td>{{ p.coPayAmount | currency }}</td>

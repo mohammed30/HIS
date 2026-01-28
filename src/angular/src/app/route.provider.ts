@@ -173,6 +173,14 @@ function configureRoutes() {
       order: 106,
       layout: eLayoutType.application,
     },
+    {
+      path: '/appointments/waiting-list',
+      name: '::Menu:WaitingList',
+      parentName: '::Menu:Appointments',
+      iconClass: 'fas fa-list-ol',
+      order: 23,
+      layout: eLayoutType.application,
+    },
     // Services & Pricing
     {
       path: '/services',

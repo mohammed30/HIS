@@ -3,12 +3,16 @@ import { Component, OnInit } from '@angular/core';
 import { PriceListService, PriceListDto, ServicePriceDto } from '../../proxy/pricing/price-list.service';
 import { ServiceItemService, ServiceItemDto } from '../../proxy/services/service-item.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-price-lists',
   templateUrl: './price-lists.html',
   styleUrls: ['./price-lists.scss'],
+  standalone: true,
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
   providers: [ListService],
 })
 export class PriceListsComponent implements OnInit {
@@ -135,5 +139,9 @@ export class PriceListsComponent implements OnInit {
 
       this.priceForm.reset({ amount: 0, coPayAmount: 0 }); // Reset but keep list open
     });
+  }
+
+  getServiceItem(id: string): ServiceItemDto | undefined {
+    return this.serviceItems.find(x => x.id === id);
   }
 }

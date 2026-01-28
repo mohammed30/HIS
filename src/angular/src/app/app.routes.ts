@@ -14,6 +14,11 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'services',
+    loadChildren: () => import('./services/services-module').then(m => m.ServicesModule),
+    canActivate: [authGuard],
+  },
+  {
     path: 'patients',
     loadComponent: () => import('./patients/patients.component').then(c => c.PatientsComponent),
     canActivate: [authGuard],

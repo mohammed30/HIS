@@ -47,6 +47,25 @@ export interface CreateUpdateWaitingListDto {
   isResolved: boolean;
 }
 
+export interface DoctorScheduleDto extends AuditedEntityDto<string> {
+  doctorId: string;
+  doctorName?: string;
+  dayOfWeek: number;
+  startTime: string; // TimeSpan usually maps to string in Proxy unless configured
+  endTime: string;
+  slotDuration: number;
+  isActive: boolean;
+}
+
+export interface CreateUpdateDoctorScheduleDto {
+  doctorId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  slotDuration: number;
+  isActive: boolean;
+}
+
 export interface LookupDto<TKey> {
   id?: TKey;
   name?: string;

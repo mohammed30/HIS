@@ -64,6 +64,10 @@
     "Menu:Billing": "Billing",
     "Menu:Invoices": "Invoices",
     "Menu:Payments": "Payments",
-    "Menu:DeferredPayments": "Deferred Payments"
+    "Menu:DeferredPayments": "Deferred Payments",
+    "Menu:WaitingList": "Waiting List",
+    "Menu:Services": "Services",
+    "Menu:Radiology": "Radiology",
+    "Menu:PriceLists": "Price Lists"
   }
 }

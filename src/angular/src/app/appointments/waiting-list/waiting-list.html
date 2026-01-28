@@ -1,0 +1,93 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="card-title mb-0">Waiting List</h5>
+            <small class="text-muted">Manage patient requests for appointments</small>
+        </div>
+        <button class="btn btn-primary" (click)="create()">
+            <i class="fa fa-plus me-1"></i> Add Request
+        </button>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+            <ngx-datatable-column name="Priority" prop="priority">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span class="badge" [class.bg-danger]="value === 2" [class.bg-warning]="value === 1"
+                        [class.bg-info]="value === 0">
+                        {{ value === 2 ? 'Urgent' : (value === 1 ? 'High' : 'Normal') }}
+                    </span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Request Date" prop="requestDate">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | date:'shortDate' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Patient" prop="patientName"></ngx-datatable-column>
+            <ngx-datatable-column name="Department" prop="departmentName"></ngx-datatable-column>
+            <ngx-datatable-column name="Doctor" prop="doctorName">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value || 'Any Doctor' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column name="Actions" sortable="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(row.id)">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="delete(row.id)">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ selectedItem.id ? 'Edit Request' : 'New Waiting List Request' }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
+            <div class="mb-3">
+                <label>Patient (ID/Guid for MVP)</label>
+                <input type="text" class="form-control" formControlName="patientId">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Department</label>
+                    <input type="text" class="form-control" formControlName="departmentId">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Preferred Doctor (Optional)</label>
+                    <input type="text" class="form-control" formControlName="doctorId">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label>Request Date</label>
+                <input type="date" class="form-control" formControlName="requestDate">
+            </div>
+
+            <div class="mb-3">
+                <label>Priority</label>
+                <select class="form-select" formControlName="priority">
+                    <option *ngFor="let p of priorities" [ngValue]="p.value">{{ p.text }}</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Notes</label>
+                <textarea class="form-control" formControlName="notes" rows="3"></textarea>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">Save</button>
+    </ng-template>
+</abp-modal>

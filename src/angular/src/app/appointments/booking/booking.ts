@@ -7,14 +7,14 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import { AppointmentService } from '@proxy/appointments';
-import { LookupDto, CreateAppointmentDto, AppointmentDto } from '@proxy/appointments/dtos';
-import { AppointmentType } from '@proxy/appointments';
+import { AppointmentService } from '../../proxy/appointments/appointment.service';
+import { LookupDto, CreateAppointmentDto, AppointmentDto } from '../../proxy/appointments/dtos/models';
+import { AppointmentType } from '../../proxy/appointments/appointment-type.enum';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { LocalizationModule } from '@abp/ng.core';
-import { ThemeSharedModule } from '@abp/ng.theme.shared'; // Added import
-import { DoctorScheduleService } from '@proxy/appointments';
-import { DoctorScheduleDto } from '@proxy/appointments';
+import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { DoctorScheduleService } from '../../proxy/appointments/doctor-schedule.service';
+import { DoctorScheduleDto } from '../../proxy/appointments/models';
 import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({

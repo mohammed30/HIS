@@ -1,20 +1,19 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Usually SharedModule covers this
-import { SharedModule } from '../shared/shared.module';
+import { CommonModule } from '@angular/common';
+import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { ServicesRoutingModule } from './services-routing-module';
 import { ServicesComponent } from './services/services';
 import { PriceListsComponent } from './price-lists/price-lists';
 import { RadiologyComponent } from './radiology/radiology';
 
 @NgModule({
-  declarations: [
+  declarations: [],
+  imports: [
+    ThemeSharedModule,
+    ServicesRoutingModule,
     ServicesComponent,
     PriceListsComponent,
     RadiologyComponent
-  ],
-  imports: [
-    SharedModule,
-    ServicesRoutingModule
   ]
 })
 export class ServicesModule { }

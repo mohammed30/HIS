@@ -2,12 +2,16 @@ import { ListService, PagedResultDto } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
 import { ServiceItemService, RadiologyItemDto } from '../../proxy/services/service-item.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-radiology',
   templateUrl: './radiology.html',
   styleUrls: ['./radiology.scss'],
+  standalone: true,
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
   providers: [ListService],
 })
 export class RadiologyComponent implements OnInit {

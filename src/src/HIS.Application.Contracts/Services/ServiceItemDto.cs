@@ -1,6 +1,8 @@
 using System;
 using Volo.Abp.Application.Dtos;
 
+using HIS.Services;
+
 namespace HIS.Services;
 
 public class ServiceItemDto : AuditedEntityDto<Guid>

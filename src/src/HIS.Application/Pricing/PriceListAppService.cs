@@ -12,7 +12,7 @@ public class PriceListAppService : ApplicationService, IPriceListAppService
 {
     private readonly IRepository<PriceList, Guid> _priceListRepository;
     private readonly IRepository<ServicePrice, Guid> _servicePriceRepository;
-    private readonly IO<HIS.Services.ServiceItem, Guid> _serviceItemRepository; // For name lookup if needed, but we can do join query
+    private readonly IRepository<HIS.Services.ServiceItem, Guid> _serviceItemRepository; // For name lookup if needed, but we can do join query
 
     public PriceListAppService(
         IRepository<PriceList, Guid> priceListRepository,

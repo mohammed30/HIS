@@ -2,8 +2,9 @@ namespace HIS.Appointments;
 
 public enum AppointmentType
 {
-    FirstVisit = 0,
+    NewVisit = 0,
     FollowUp = 1,
     Emergency = 2,
-    Consultation = 3
+    Telemedicine = 3,
+    Procedure = 4
 }

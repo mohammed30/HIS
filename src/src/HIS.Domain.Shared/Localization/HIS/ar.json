@@ -97,6 +97,10 @@
     "Menu:Billing": "المدفوعات",
     "Menu:Invoices": "الفواتير",
     "Menu:Payments": "الدفعات",
-    "Menu:DeferredPayments": "الأقساط/المؤجل"
+    "Menu:DeferredPayments": "الأقساط/المؤجل",
+    "Menu:WaitingList": "قائمة الانتظار",
+    "Menu:Services": "الخدمات",
+    "Menu:Radiology": "الأشعة",
+    "Menu:PriceLists": "قوائم الأسعار"
   }
 }

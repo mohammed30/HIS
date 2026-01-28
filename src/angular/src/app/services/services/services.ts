@@ -2,12 +2,16 @@ import { ListService, PagedResultDto } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
 import { ServiceItemService, ServiceItemDto, ServiceCategory } from '../../proxy/services/service-item.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CommonModule } from '@angular/common'; // Important for structural directives like *ngIf
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-services',
   templateUrl: './services.html',
   styleUrls: ['./services.scss'],
+  standalone: true,
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
   providers: [ListService],
 })
 export class ServicesComponent implements OnInit {
