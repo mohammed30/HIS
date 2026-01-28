@@ -19,6 +19,11 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'patients/:id/medical-record',
+    loadComponent: () => import('./patients/medical-record/patient-medical-record.component').then(c => c.PatientMedicalRecordComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(c => c.createRoutes()),
   },

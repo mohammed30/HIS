@@ -57,5 +57,21 @@ public class HISApplicationAutoMapperProfile : Profile
         
         CreateMap<Billing.DeferredPayment, Billing.DeferredPaymentDto>();
         CreateMap<Billing.CreateDeferredPaymentDto, Billing.DeferredPayment>();
+
+        // Medical Records
+        CreateMap<MedicalRecords.MedicalHistory, MedicalRecords.MedicalHistoryDto>();
+        CreateMap<MedicalRecords.CreateUpdateMedicalHistoryDto, MedicalRecords.MedicalHistory>();
+        
+        CreateMap<MedicalRecords.Diagnosis, MedicalRecords.DiagnosisDto>();
+        CreateMap<MedicalRecords.CreateUpdateDiagnosisDto, MedicalRecords.Diagnosis>();
+        
+        CreateMap<MedicalRecords.VitalSign, MedicalRecords.VitalSignDto>();
+        CreateMap<MedicalRecords.CreateUpdateVitalSignDto, MedicalRecords.VitalSign>();
+        
+        CreateMap<MedicalRecords.Allergy, MedicalRecords.AllergyDto>();
+        CreateMap<MedicalRecords.CreateUpdateAllergyDto, MedicalRecords.Allergy>();
+        
+        CreateMap<MedicalRecords.PatientNote, MedicalRecords.PatientNoteDto>();
+        CreateMap<MedicalRecords.CreateUpdatePatientNoteDto, MedicalRecords.PatientNote>();
     }
 }

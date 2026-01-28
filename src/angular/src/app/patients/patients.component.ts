@@ -91,6 +91,9 @@ interface Patient {
                       </span>
                     </td>
                     <td>
+                      <a class="btn btn-sm btn-outline-success me-1" [href]="'/patients/' + item.id + '/medical-record'" title="السجل الطبي">
+                        <i class="fas fa-file-medical"></i>
+                      </a>
                       <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(item)" title="تعديل">
                         <i class="fas fa-edit"></i>
                       </button>

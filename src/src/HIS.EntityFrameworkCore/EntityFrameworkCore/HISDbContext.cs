@@ -60,6 +60,13 @@ public class HISDbContext :
     public DbSet<HIS.Billing.Payment> Payments { get; set; }
     public DbSet<HIS.Billing.DeferredPayment> DeferredPayments { get; set; }
 
+    // Medical Records
+    public DbSet<HIS.MedicalRecords.MedicalHistory> MedicalHistories { get; set; }
+    public DbSet<HIS.MedicalRecords.Diagnosis> Diagnoses { get; set; }
+    public DbSet<HIS.MedicalRecords.VitalSign> VitalSigns { get; set; }
+    public DbSet<HIS.MedicalRecords.Allergy> Allergies { get; set; }
+    public DbSet<HIS.MedicalRecords.PatientNote> PatientNotes { get; set; }
+
     #region Entities from the modules
 
     // Identity
@@ -397,6 +404,84 @@ public class HISDbContext :
             b.HasIndex(x => x.PatientId);
             b.HasIndex(x => x.DueDate);
         });
+
+        // Medical History
+        builder.Entity<HIS.MedicalRecords.MedicalHistory>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "MedicalHistories", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.ConditionAr).HasMaxLength(256).IsRequired();
+            b.Property(x => x.ConditionEn).HasMaxLength(256);
+            b.Property(x => x.ICD10Code).HasMaxLength(16);
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            
+            b.HasIndex(x => x.PatientId);
+        });
+
+        // Diagnosis
+        builder.Entity<HIS.MedicalRecords.Diagnosis>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Diagnoses", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.ICD10Code).HasMaxLength(16);
+            b.Property(x => x.DiagnosisNameAr).HasMaxLength(256).IsRequired();
+            b.Property(x => x.DiagnosisNameEn).HasMaxLength(256);
+            b.Property(x => x.DiagnosedByName).HasMaxLength(128);
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.VisitId);
+            b.HasIndex(x => x.DiagnosisDate);
+        });
+
+        // Vital Sign
+        builder.Entity<HIS.MedicalRecords.VitalSign>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "VitalSigns", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Temperature).HasPrecision(4, 1);
+            b.Property(x => x.OxygenSaturation).HasPrecision(5, 2);
+            b.Property(x => x.Weight).HasPrecision(5, 2);
+            b.Property(x => x.Height).HasPrecision(5, 2);
+            b.Property(x => x.RecordedByName).HasMaxLength(128);
+            b.Property(x => x.Notes).HasMaxLength(512);
+            b.Ignore(x => x.BMI);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.RecordedAt);
+        });
+
+        // Allergy
+        builder.Entity<HIS.MedicalRecords.Allergy>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Allergies", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.AllergenNameAr).HasMaxLength(256).IsRequired();
+            b.Property(x => x.AllergenNameEn).HasMaxLength(256);
+            b.Property(x => x.Reaction).HasMaxLength(512);
+            b.Property(x => x.Notes).HasMaxLength(512);
+            
+            b.HasIndex(x => x.PatientId);
+        });
+
+        // Patient Note
+        builder.Entity<HIS.MedicalRecords.PatientNote>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PatientNotes", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Title).HasMaxLength(256).IsRequired();
+            b.Property(x => x.Content).IsRequired();
+            b.Property(x => x.CreatedByName).HasMaxLength(128);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.VisitId);
+        });
     }
 }
+
 
