@@ -1,0 +1,241 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Volo.Abp.Account.Localization
+@using Volo.Abp.Account.Settings
+@using Volo.Abp.Settings
+@model HIS.HttpApi.Host.Pages.Account.LoginModel
+@inject IHtmlLocalizer<AccountResource> L
+@inject Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared.PageToolbars.IPageToolbarManager PageToolbarManager
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en" dir="@(System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@L["Login"] - Asia Hospital</title>
+    
+    <!-- Bootstrap & FontAwesome (Loaded from CDN for simplicity in host project, or reuse ABP libs) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --lpx-content-bg: #e6fffa; /* Light Mint/Teal tint */
+            --primary-color: #0e7490; /* Strong Teal */
+        }
+        
+        body {
+            background-color: var(--lpx-content-bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Abstract Background Shapes */
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; /* Organic shape */
+            z-index: -1;
+        }
+
+        /* Strong Dark Teal Shape (Right) */
+        body::before {
+            width: 900px;
+            height: 900px;
+            background: linear-gradient(135deg, #115e6e 0%, #0e7490 100%);
+            top: -200px;
+            right: -300px;
+            opacity: 0.9; /* High opacity for strong color */
+            transform: rotate(-15deg);
+        }
+
+        /* Bright Cyan/Teal Shape (Bottom Left) */
+        body::after {
+            width: 800px;
+            height: 800px;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            bottom: -300px;
+            left: -200px;
+            opacity: 0.8;
+            transform: rotate(20deg);
+        }
+
+        /* Geometric Accents */
+        .bg-shape {
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 150px;
+            height: 150px;
+            border: 15px solid rgba(14, 116, 144, 0.1);
+            transform: rotate(45deg);
+            z-index: -1;
+            border-radius: 30px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 48px;
+            position: relative;
+            z-index: 1;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #155e75;
+            border-color: #155e75;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-container {
+            margin-bottom: 1rem;
+        }
+        
+        /* Floating Animation */
+        .logo-container svg {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .form-control {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .login-footer {
+            border-top: 1px solid #e9ecef;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+        }
+        
+        [dir="rtl"] .form-check-input {
+            float: right;
+            margin-left: 0.5em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <!-- Header -->
+        <div class="login-header">
+            <div class="logo-container">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 500 500" fill="none">
+                   <circle cx="250" cy="250" r="240" fill="#4dabf7" fill-opacity="0.2"/>
+                   <path d="M250 100 C 250 100 300 180 350 180 C 400 180 400 250 350 250 C 300 250 250 330 250 330 C 250 330 200 250 150 250 C 100 250 100 180 150 180 C 200 180 250 100 250 100 Z" fill="#228be6"/>
+                </svg>
+            </div>
+            <h3 class="fw-bold">مستشفى آسيا</h3>
+            <p class="text-muted">Asia Hospital</p>
+        </div>
+
+        <!-- NOTE: Tenant Switch is intentionally REMOVED -->
+
+        <div class="login-body">
+            <h4 class="mb-3 text-center">@L["Login"]</h4>
+            
+            <form method="post">
+                @if (Model.EnableLocalLogin)
+                {
+                    <div class="mb-3">
+                        <label asp-for="LoginInput.UserNameOrEmailAddress" class="form-label">@L["UserNameOrEmailAddress"]</label>
+                        <input asp-for="LoginInput.UserNameOrEmailAddress" class="form-control" />
+                        <span asp-validation-for="LoginInput.UserNameOrEmailAddress" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="LoginInput.Password" class="form-label">@L["Password"]</label>
+                        <input asp-for="LoginInput.Password" type="password" class="form-control" />
+                        <span asp-validation-for="LoginInput.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input asp-for="LoginInput.RememberMe" class="form-check-input" />
+                            <label asp-for="LoginInput.RememberMe" class="form-check-label">@L["RememberMe"]</label>
+                        </div>
+                        <a href="@Url.Page("/Account/ForgotPassword")" class="text-decoration-none small">@L["ForgotPassword"]</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">@L["Login"]</button>
+                    
+                    @if (Model.VisibleExternalProviders.Any())
+                    {
+                        <div class="text-center mt-2">
+                             <hr />
+                             <h6>@L["OrLoginWith"]</h6>
+                             @foreach (var provider in Model.VisibleExternalProviders)
+                             {
+                                 <button type="submit" 
+                                         class="btn btn-outline-secondary btn-sm m-1" 
+                                         name="provider" 
+                                         value="@provider.AuthenticationScheme" 
+                                         title="@L["GivenTenantIsNotAvailable", provider.DisplayName]">
+                                     @provider.DisplayName
+                                 </button>
+                             }
+                        </div>
+                    }
+                }
+
+                @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
+                {
+                    <div class="alert alert-warning">
+                        @L["NoAllowedProvider"]
+                    </div>
+                }
+            </form>
+        </div>
+
+        <!-- Footer / Language Switch -->
+        <div class="login-footer text-center">
+             <vc:abp-application-configuration-script />
+             <vc:abp-include-application-layout-script />
+             
+             <!-- Language Switch Logic (Simplified for View) -->
+             <div class="d-flex justify-content-center align-items-center gap-2">
+                <i class="fas fa-globe text-muted"></i>
+                <a href="/Abp/Languages/Switch?culture=ar&uiCulture=ar&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))" class="text-decoration-none fw-bold small @(System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("ar") ? "text-primary" : "text-muted")">العربية</a>
+                <span class="text-muted">|</span>
+                <a href="/Abp/Languages/Switch?culture=en&uiCulture=en&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))" class="text-decoration-none fw-bold small @(System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("en") ? "text-primary" : "text-muted")">English</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

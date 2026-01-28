@@ -1,13 +1,26 @@
-import { Component } from '@angular/core';
-import { DynamicLayoutComponent } from '@abp/ng.core';
+import { Component, inject } from '@angular/core';
+import { DynamicLayoutComponent, ReplaceableComponentsService } from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
+import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
+import { eAccountComponents } from '@abp/ng.account';
+import { CustomLoginComponent } from './auth/login/custom-login.component';
 
 @Component({
   selector: 'app-root',
   template: `
     <abp-loader-bar />
     <abp-dynamic-layout />
+    <app-theme-toggle />
   `,
-  imports: [LoaderBarComponent, DynamicLayoutComponent],
+  imports: [LoaderBarComponent, DynamicLayoutComponent, ThemeToggleComponent],
 })
-export class AppComponent {}
+export class AppComponent {
+  private replaceableComponents = inject(ReplaceableComponentsService);
+
+  constructor() {
+    this.replaceableComponents.add({
+      component: CustomLoginComponent,
+      key: eAccountComponents.Login,
+    });
+  }
+}

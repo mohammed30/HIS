@@ -3,289 +3,344 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { PageModule } from '@abp/ng.components/page';
-import { RestService } from '@abp/ng.core';
+import { RestService, CoreModule } from '@abp/ng.core';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 
 @Component({
   selector: 'app-patient-medical-record',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageModule],
+  imports: [CommonModule, FormsModule, PageModule, CoreModule],
   template: `
-    <abp-page [title]="'السجل الطبي للمريض'">
+    <abp-page [title]="'السجل الطبي للمريض' | abpLocalization">
+      
+      <!-- Toolbar -->
       <abp-page-toolbar-container>
         <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-outline-secondary" (click)="refreshData()">
-            <i class="fas fa-sync"></i> تحديث
+          <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" (click)="refreshData()">
+            <i class="fas fa-sync-alt me-1"></i> تحديث البيانات
           </button>
         </div>
       </abp-page-toolbar-container>
 
-      <!-- Patient Summary Header -->
-      <div class="card mb-3" *ngIf="summary">
-        <div class="card-body">
+      <div class="container-fluid px-0">
+        
+        <!-- Modern Patient Header -->
+        <div class="patient-header-card p-4 mx-0" *ngIf="summary">
           <div class="row align-items-center">
-            <div class="col-md-4">
-              <h5 class="mb-1">{{ summary.patientName }}</h5>
-              <small class="text-muted">العمر: {{ summary.age }} سنة | فصيلة الدم: {{ summary.bloodType || 'غير محدد' }}</small>
-            </div>
-            <div class="col-md-8">
-              <div class="row text-center">
-                <div class="col">
-                  <span class="badge bg-danger fs-6 p-2">
-                    <i class="fas fa-allergies me-1"></i>
-                    {{ summary.activeAllergiesCount }} حساسية
-                  </span>
-                </div>
-                <div class="col">
-                  <span class="badge bg-warning text-dark fs-6 p-2">
-                    <i class="fas fa-heartbeat me-1"></i>
-                    {{ summary.chronicConditionsCount }} أمراض مزمنة
-                  </span>
-                </div>
-                <div class="col">
-                  <span class="badge bg-info fs-6 p-2">
-                    <i class="fas fa-diagnoses me-1"></i>
-                    {{ summary.activeDiagnosesCount }} تشخيص نشط
-                  </span>
-                </div>
+            <div class="col-auto">
+              <div class="patient-avatar">
+                <i class="fas fa-user"></i>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Latest Vitals Card -->
-      <div class="card mb-3" *ngIf="summary?.latestVitals">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <span><i class="fas fa-heartbeat text-danger me-2"></i>آخر العلامات الحيوية</span>
-          <small class="text-muted">{{ summary.latestVitals.recordedAt | date:'yyyy-MM-dd HH:mm' }}</small>
-        </div>
-        <div class="card-body">
-          <div class="row text-center">
-            <div class="col" *ngIf="summary.latestVitals.bloodPressureSystolic">
-              <div class="fw-bold">{{ summary.latestVitals.bloodPressureSystolic }}/{{ summary.latestVitals.bloodPressureDiastolic }}</div>
-              <small class="text-muted">ضغط الدم</small>
+            <div class="col">
+              <h3 class="fw-bold text-primary mb-1">{{ summary.patientName }}</h3>
+              <div class="d-flex gap-3 text-muted align-items-center">
+                <span><i class="fas fa-venus-mars me-1"></i> {{ summary.gender }}</span>
+                <span><i class="fas fa-birthday-cake me-1"></i> {{ summary.age }} سنة</span>
+                <span class="badge bg-secondary rounded-pill px-3"><i class="fas fa-tint me-1"></i> {{ summary.bloodType || 'غير محدد' }}</span>
+              </div>
             </div>
-            <div class="col" *ngIf="summary.latestVitals.heartRate">
-              <div class="fw-bold">{{ summary.latestVitals.heartRate }}</div>
-              <small class="text-muted">النبض</small>
-            </div>
-            <div class="col" *ngIf="summary.latestVitals.temperature">
-              <div class="fw-bold">{{ summary.latestVitals.temperature }}°</div>
-              <small class="text-muted">الحرارة</small>
-            </div>
-            <div class="col" *ngIf="summary.latestVitals.oxygenSaturation">
-              <div class="fw-bold">{{ summary.latestVitals.oxygenSaturation }}%</div>
-              <small class="text-muted">الأكسجين</small>
-            </div>
-            <div class="col" *ngIf="summary.latestVitals.weight">
-              <div class="fw-bold">{{ summary.latestVitals.weight }} كجم</div>
-              <small class="text-muted">الوزن</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs Navigation -->
-      <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'vitals'" (click)="activeTab = 'vitals'">
-            <i class="fas fa-heartbeat me-1"></i> العلامات الحيوية
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'diagnoses'" (click)="activeTab = 'diagnoses'">
-            <i class="fas fa-diagnoses me-1"></i> التشخيصات
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'allergies'" (click)="activeTab = 'allergies'">
-            <i class="fas fa-allergies me-1"></i> الحساسية
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
-            <i class="fas fa-history me-1"></i> التاريخ المرضي
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'notes'" (click)="activeTab = 'notes'">
-            <i class="fas fa-sticky-note me-1"></i> الملاحظات
-          </button>
-        </li>
-      </ul>
-
-      <!-- Tab Content -->
-      <div class="tab-content border border-top-0 p-3">
-        <!-- Vital Signs Tab -->
-        <div *ngIf="activeTab === 'vitals'">
-          <div class="d-flex justify-content-between mb-3">
-            <h5>العلامات الحيوية</h5>
-            <button class="btn btn-sm btn-primary" (click)="openVitalSignModal()">
-              <i class="fas fa-plus me-1"></i> إضافة قياس
-            </button>
-          </div>
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>ضغط الدم</th>
-                <th>النبض</th>
-                <th>الحرارة</th>
-                <th>الأكسجين</th>
-                <th>الوزن</th>
-                <th>الطول</th>
-                <th>BMI</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let v of vitalSigns">
-                <td>{{ v.recordedAt | date:'yyyy-MM-dd HH:mm' }}</td>
-                <td>{{ v.bloodPressureSystolic }}/{{ v.bloodPressureDiastolic }}</td>
-                <td>{{ v.heartRate }}</td>
-                <td>{{ v.temperature }}</td>
-                <td>{{ v.oxygenSaturation }}%</td>
-                <td>{{ v.weight }}</td>
-                <td>{{ v.height }}</td>
-                <td>{{ v.bmi | number:'1.1-1' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Diagnoses Tab -->
-        <div *ngIf="activeTab === 'diagnoses'">
-          <div class="d-flex justify-content-between mb-3">
-            <h5>التشخيصات</h5>
-            <button class="btn btn-sm btn-primary" (click)="openDiagnosisModal()">
-              <i class="fas fa-plus me-1"></i> إضافة تشخيص
-            </button>
-          </div>
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>التاريخ</th>
-                <th>ICD-10</th>
-                <th>التشخيص</th>
-                <th>النوع</th>
-                <th>الحالة</th>
-                <th>الطبيب</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let d of diagnoses">
-                <td>{{ d.diagnosisDate | date:'yyyy-MM-dd' }}</td>
-                <td><code>{{ d.icd10Code }}</code></td>
-                <td>{{ d.diagnosisNameAr }}</td>
-                <td>
-                  <span class="badge" [ngClass]="d.type === 0 ? 'bg-primary' : 'bg-secondary'">
-                    {{ d.type === 0 ? 'رئيسي' : 'ثانوي' }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge" [ngClass]="{'bg-success': d.status === 1, 'bg-warning text-dark': d.status === 2, 'bg-info': d.status === 0}">
-                    {{ d.status === 0 ? 'نشط' : d.status === 1 ? 'تم الشفاء' : 'مزمن' }}
-                  </span>
-                </td>
-                <td>{{ d.diagnosedByName }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Allergies Tab -->
-        <div *ngIf="activeTab === 'allergies'">
-          <div class="d-flex justify-content-between mb-3">
-            <h5>الحساسية</h5>
-            <button class="btn btn-sm btn-primary" (click)="openAllergyModal()">
-              <i class="fas fa-plus me-1"></i> إضافة حساسية
-            </button>
-          </div>
-          <div class="row">
-            <div class="col-md-4" *ngFor="let a of allergies">
-              <div class="card mb-3" [ngClass]="{'border-danger': a.severity >= 2}">
-                <div class="card-header d-flex justify-content-between">
-                  <span>
-                    <i class="fas fa-exclamation-triangle text-warning me-1" *ngIf="a.severity >= 2"></i>
-                    {{ a.allergenNameAr }}
-                  </span>
-                  <span class="badge" [ngClass]="{'bg-success': a.severity === 0, 'bg-warning text-dark': a.severity === 1, 'bg-danger': a.severity >= 2}">
-                    {{ getSeverityLabel(a.severity) }}
-                  </span>
+            <div class="col-auto">
+              <div class="d-flex gap-2">
+                <div class="stat-badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" *ngIf="summary.activeAllergiesCount > 0">
+                  <div class="stat-info text-center px-2">
+                    <span class="stat-value">{{ summary.activeAllergiesCount }}</span>
+                    <span class="stat-label">حساسية</span>
+                  </div>
+                  <i class="fas fa-allergies"></i>
                 </div>
-                <div class="card-body">
-                  <p class="mb-1"><strong>النوع:</strong> {{ getAllergenTypeLabel(a.allergenType) }}</p>
-                  <p class="mb-1" *ngIf="a.reaction"><strong>رد الفعل:</strong> {{ a.reaction }}</p>
-                  <span class="badge" [ngClass]="a.status === 0 ? 'bg-danger' : 'bg-secondary'">
-                    {{ a.status === 0 ? 'نشطة' : 'تم الشفاء' }}
-                  </span>
+                
+                <div class="stat-badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" *ngIf="summary.chronicConditionsCount > 0">
+                  <div class="stat-info text-center px-2">
+                    <span class="stat-value">{{ summary.chronicConditionsCount }}</span>
+                    <span class="stat-label">أمراض مزمنة</span>
+                  </div>
+                  <i class="fas fa-heartbeat"></i>
+                </div>
+
+                <div class="stat-badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                  <div class="stat-info text-center px-2">
+                    <span class="stat-value">{{ summary.activeDiagnosesCount }}</span>
+                    <span class="stat-label">تشخيص نشط</span>
+                  </div>
+                  <i class="fas fa-clipboard-check"></i>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Medical History Tab -->
-        <div *ngIf="activeTab === 'history'">
-          <div class="d-flex justify-content-between mb-3">
-            <h5>التاريخ المرضي</h5>
-            <button class="btn btn-sm btn-primary" (click)="openHistoryModal()">
-              <i class="fas fa-plus me-1"></i> إضافة حالة
-            </button>
-          </div>
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>الحالة</th>
-                <th>ICD-10</th>
-                <th>تاريخ التشخيص</th>
-                <th>مزمن</th>
-                <th>ملاحظات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let h of medicalHistories">
-                <td>{{ h.conditionAr }}</td>
-                <td><code>{{ h.icd10Code }}</code></td>
-                <td>{{ h.diagnosedDate | date:'yyyy-MM-dd' }}</td>
-                <td>
-                  <span class="badge" [ngClass]="h.isChronic ? 'bg-danger' : 'bg-secondary'">
-                    {{ h.isChronic ? 'مزمن' : 'غير مزمن' }}
-                  </span>
-                </td>
-                <td>{{ h.notes }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Latest Vitals Grid -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0"><i class="fas fa-heartbeat text-danger me-2"></i>آخر العلامات الحيوية</h5>
+          <small class="text-muted" *ngIf="summary?.latestVitals">
+             <i class="far fa-clock me-1"></i> {{ summary.latestVitals.recordedAt | date:'yyyy-MM-dd HH:mm' }}
+          </small>
         </div>
 
-        <!-- Notes Tab -->
-        <div *ngIf="activeTab === 'notes'">
-          <div class="d-flex justify-content-between mb-3">
-            <h5>الملاحظات الطبية</h5>
-            <button class="btn btn-sm btn-primary" (click)="openNoteModal()">
-              <i class="fas fa-plus me-1"></i> إضافة ملاحظة
-            </button>
+        <div class="row g-3 mb-4" *ngIf="summary?.latestVitals; else noVitals">
+          <div class="col-md-2 col-sm-4">
+            <div class="vital-card" style="border-right-color: #dc3545;">
+              <i class="fas fa-tachometer-alt vital-icon text-danger"></i>
+              <div class="vital-value">{{ summary.latestVitals.bloodPressureSystolic }}/{{ summary.latestVitals.bloodPressureDiastolic }}</div>
+              <div class="vital-label">ضغط الدم</div>
+            </div>
           </div>
-          <div class="row">
-            <div class="col-12 mb-3" *ngFor="let n of patientNotes">
-              <div class="card">
-                <div class="card-header d-flex justify-content-between">
-                  <span>
-                    <i class="fas fa-sticky-note me-1"></i>
-                    {{ n.title }}
-                  </span>
-                  <small class="text-muted">{{ n.creationTime | date:'yyyy-MM-dd HH:mm' }} - {{ n.createdByName }}</small>
-                </div>
-                <div class="card-body">
-                  <p class="mb-0" style="white-space: pre-wrap;">{{ n.content }}</p>
-                </div>
-              </div>
+          <div class="col-md-2 col-sm-4">
+            <div class="vital-card" style="border-right-color: #fd7e14;">
+              <i class="fas fa-heartbeat vital-icon text-warning"></i>
+              <div class="vital-value">{{ summary.latestVitals.heartRate }}</div>
+              <div class="vital-label">النبض (bpm)</div>
+            </div>
+          </div>
+          <div class="col-md-2 col-sm-4">
+            <div class="vital-card" style="border-right-color: #ffc107;">
+              <i class="fas fa-thermometer-half vital-icon text-warning"></i>
+              <div class="vital-value">{{ summary.latestVitals.temperature }}°</div>
+              <div class="vital-label">الحرارة (C)</div>
+            </div>
+          </div>
+          <div class="col-md-2 col-sm-4">
+            <div class="vital-card" style="border-right-color: #0dcaf0;">
+              <i class="fas fa-lungs vital-icon text-info"></i>
+              <div class="vital-value">{{ summary.latestVitals.oxygenSaturation }}%</div>
+              <div class="vital-label">الأكسجين (SpO2)</div>
+            </div>
+          </div>
+          <div class="col-md-2 col-sm-4">
+            <div class="vital-card" style="border-right-color: #198754;">
+              <i class="fas fa-weight vital-icon text-success"></i>
+              <div class="vital-value">{{ summary.latestVitals.weight }} <small class="fs-6 fw-normal text-muted">كجم</small></div>
+              <div class="vital-label">الوزن</div>
+            </div>
+          </div>
+           <!-- BMI Placeholder if calculated -->
+           <div class="col-md-2 col-sm-4">
+            <div class="vital-card" style="border-right-color: #6c757d;">
+              <i class="fas fa-calculator vital-icon text-secondary"></i>
+              <!-- Simple calculation if not provided -->
+              <div class="vital-value">-</div> 
+              <div class="vital-label">مؤشر الكتلة (BMI)</div>
             </div>
           </div>
         </div>
+        <ng-template #noVitals>
+          <div class="alert alert-light text-center border-0 shadow-sm mb-4">
+             <i class="fas fa-info-circle me-2"></i> لا توجد علامات حيوية مسجلة بعد.
+          </div>
+        </ng-template>
+
+        <!-- Tabs & Content -->
+        <div class="card shadow-sm border-0 rounded-3">
+          <div class="card-header bg-white border-bottom-0 pb-0">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'vitals'" (click)="activeTab = 'vitals'">
+                  <i class="fas fa-chart-line me-2"></i> العلامات الحيوية
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'diagnoses'" (click)="activeTab = 'diagnoses'">
+                  <i class="fas fa-stethoscope me-2"></i> التشخيصات
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'allergies'" (click)="activeTab = 'allergies'">
+                  <i class="fas fa-allergies me-2"></i> الحساسية
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
+                  <i class="fas fa-notes-medical me-2"></i> التاريخ المرضي
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'notes'" (click)="activeTab = 'notes'">
+                  <i class="fas fa-file-medical-alt me-2"></i> الملاحظات
+                </button>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="card-body p-4 bg-white rounded-bottom-3">
+             
+             <!-- Vital Signs Table -->
+             <div *ngIf="activeTab === 'vitals'">
+               <div class="text-end mb-3">
+                  <button class="btn btn-primary btn-sm rounded-pill" (click)="openVitalSignModal()">
+                    <i class="fas fa-plus me-1"></i> تسجيل قياس جديد
+                  </button>
+               </div>
+               <div class="table-responsive">
+                 <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>التاريخ</th>
+                        <th><i class="fas fa-tachometer-alt text-muted me-1"></i> ضغط الدم</th>
+                        <th><i class="fas fa-heartbeat text-muted me-1"></i> النبض</th>
+                        <th><i class="fas fa-thermometer-half text-muted me-1"></i> الحرارة</th>
+                        <th><i class="fas fa-lungs text-muted me-1"></i> الأكسجين</th>
+                        <th>الوزن</th>
+                        <th>الطول</th>
+                        <th>BMI</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let v of vitalSigns">
+                        <td>{{ v.recordedAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ v.bloodPressureSystolic }}/{{ v.bloodPressureDiastolic }}</span></td>
+                        <td>{{ v.heartRate }}</td>
+                        <td>{{ v.temperature }}</td>
+                        <td>{{ v.oxygenSaturation }}%</td>
+                        <td>{{ v.weight }}</td>
+                        <td>{{ v.height }}</td>
+                        <td>{{ v.bmi | number:'1.1-1' }}</td>
+                      </tr>
+                    </tbody>
+                 </table>
+               </div>
+             </div>
+
+             <!-- Diagnoses Table -->
+             <div *ngIf="activeTab === 'diagnoses'">
+                <div class="text-end mb-3">
+                  <button class="btn btn-primary btn-sm rounded-pill" (click)="openDiagnosisModal()">
+                    <i class="fas fa-plus me-1"></i> إضافة تشخيص
+                  </button>
+               </div>
+               <table class="table table-hover align-middle">
+                 <thead class="table-light">
+                   <tr>
+                     <th>التاريخ</th>
+                     <th>ICD-10</th>
+                     <th>التشخيص</th>
+                     <th>النوع</th>
+                     <th>الحالة</th>
+                     <th>الطبيب</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   <tr *ngFor="let d of diagnoses">
+                     <td>{{ d.diagnosisDate | date:'yyyy-MM-dd' }}</td>
+                     <td><span class="badge bg-secondary rounded-pill font-monospace">{{ d.icd10Code }}</span></td>
+                     <td class="fw-bold">{{ d.diagnosisNameAr }}</td>
+                     <td>
+                       <span class="badge" [ngClass]="d.type === 0 ? 'bg-primary' : 'bg-secondary'">
+                         {{ d.type === 0 ? 'رئيسي' : 'ثانوي' }}
+                       </span>
+                     </td>
+                     <td>
+                       <span class="badge rounded-pill" [ngClass]="{'bg-success': d.status === 1, 'bg-warning text-dark': d.status === 2, 'bg-info': d.status === 0}">
+                         {{ d.status === 0 ? 'نشط' : d.status === 1 ? 'تم الشفاء' : 'مزمن' }}
+                       </span>
+                     </td>
+                     <td><small>{{ d.diagnosedByName }}</small></td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
+
+             <!-- Allergies Cards -->
+             <div *ngIf="activeTab === 'allergies'">
+                <div class="text-end mb-3">
+                  <button class="btn btn-primary btn-sm rounded-pill" (click)="openAllergyModal()">
+                    <i class="fas fa-plus me-1"></i> إضافة حساسية
+                  </button>
+               </div>
+               <div class="row g-3">
+                  <div class="col-md-6 col-lg-4" *ngFor="let a of allergies">
+                    <div class="card h-100 border-0 shadow-sm" [ngClass]="{'border-start border-4 border-danger': a.severity >= 2}">
+                      <div class="card-body">
+                         <div class="d-flex justify-content-between align-items-start mb-2">
+                           <h6 class="fw-bold mb-0">
+                             <i class="fas fa-exclamation-circle text-danger me-2" *ngIf="a.severity >= 2"></i>
+                             {{ a.allergenNameAr }}
+                           </h6>
+                           <span class="badge rounded-pill" [ngClass]="{'bg-success': a.severity === 0, 'bg-warning text-dark': a.severity === 1, 'bg-danger': a.severity >= 2}">
+                              {{ getSeverityLabel(a.severity) }}
+                           </span>
+                         </div>
+                         <div class="small text-muted mb-2">
+                           <i class="fas fa-tag me-1"></i> {{ getAllergenTypeLabel(a.allergenType) }}
+                         </div>
+                         <p class="small mb-2 bg-light p-2 rounded" *ngIf="a.reaction">
+                           <strong>رد الفعل:</strong> {{ a.reaction }}
+                         </p>
+                         <div class="text-end">
+                            <span class="badge rounded-pill" [ngClass]="a.status === 0 ? 'bg-danger' : 'bg-secondary'">
+                              {{ a.status === 0 ? 'نشطة' : 'تم الشفاء' }}
+                            </span>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+               </div>
+             </div>
+             
+             <!-- History -->
+             <div *ngIf="activeTab === 'history'">
+                <div class="text-end mb-3">
+                  <button class="btn btn-primary btn-sm rounded-pill" (click)="openHistoryModal()">
+                    <i class="fas fa-plus me-1"></i> إضافة حالة
+                  </button>
+                </div>
+                <table class="table table-hover">
+                   <thead class="table-light">
+                     <tr>
+                        <th>الحالة</th>
+                        <th>ICD-10</th>
+                        <th>تاريخ التشخيص</th>
+                        <th>مزمن</th>
+                        <th>ملاحظات</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                      <tr *ngFor="let h of medicalHistories">
+                         <td class="fw-bold">{{ h.conditionAr }}</td>
+                         <td><code>{{ h.icd10Code }}</code></td>
+                         <td>{{ h.diagnosedDate | date:'yyyy-MM-dd' }}</td>
+                         <td>
+                           <span class="badge" [ngClass]="h.isChronic ? 'bg-danger' : 'bg-secondary'">
+                             {{ h.isChronic ? 'مزمن' : 'غير مزمن' }}
+                           </span>
+                         </td>
+                         <td class="text-truncate" style="max-width: 200px;">{{ h.notes }}</td>
+                      </tr>
+                   </tbody>
+                </table>
+             </div>
+
+             <!-- Notes -->
+             <div *ngIf="activeTab === 'notes'">
+                <div class="text-end mb-3">
+                  <button class="btn btn-primary btn-sm rounded-pill" (click)="openNoteModal()">
+                    <i class="fas fa-plus me-1"></i> إضافة ملاحظة
+                  </button>
+                </div>
+                <div class="row">
+                   <div class="col-12 mb-3" *ngFor="let n of patientNotes">
+                      <div class="card border-0 shadow-sm bg-light">
+                         <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                               <h6 class="fw-bold text-primary mb-0">
+                                  <i class="fas fa-comment-medical me-2"></i> {{ n.title }}
+                               </h6>
+                               <small class="text-muted">{{ n.creationTime | date:'yyyy-MM-dd HH:mm' }} <span class="mx-1">•</span> {{ n.createdByName }}</small>
+                            </div>
+                            <hr class="my-2 opacity-10">
+                            <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ n.content }}</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+          </div>
+        </div>
+
       </div>
 
+      <!-- Keep existing Modals as they are functional -->
       <!-- Add Vital Sign Modal -->
       <div class="modal fade show" id="vitalSignModal" tabindex="-1" *ngIf="showVitalSignModal" style="display: block;">
         <div class="modal-dialog modal-lg">
@@ -550,11 +605,136 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
     </abp-page>
   `,
   styles: [`
-    .modal.fade { display: block; opacity: 1; }
+    /* General Card & Layout */
+    .patient-header-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .patient-avatar {
+      width: 80px;
+      height: 80px;
+      background: #e9ecef;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #6c757d;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Stat Badge */
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      transition: transform 0.2s;
+    }
+    .stat-badge:hover { transform: translateY(-2px); }
+    .stat-badge i { font-size: 1.5rem; margin-left: 0.75rem; opacity: 0.8; }
+    .stat-badge .stat-info { display: flex; flex-direction: column; }
+    .stat-badge .stat-value { font-weight: bold; font-size: 1.1rem; }
+    .stat-badge .stat-label { font-size: 0.8rem; opacity: 0.9; }
+
+    /* Vitals Grid - Default (Light Mode) */
+    .vital-card {
+      background: #ffffff;
+      background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-right: 5px solid transparent; 
+      border-top: 1px solid rgba(0,0,0,0.05);
+      color: #212529;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .vital-card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1); 
+    }
+    
+    .vital-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+    }
+    .vital-value { font-size: 1.6rem; font-weight: 800; color: #343a40; }
+    .vital-label { color: #6c757d; font-size: 0.9rem; font-weight: 500; }
+
+    /* Custom Tabs */
+    .nav-tabs { border-bottom: 2px solid #dee2e6; gap: 0.5rem; }
+    .nav-link {
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #6c757d;
+      font-weight: 600;
+      padding: 1rem 1.5rem;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.2s;
+    }
+    .nav-link:hover { color: var(--lpx-theme-primary); background: #f8f9fa; }
+    .nav-link.active {
+      color: var(--lpx-theme-primary) !important;
+      border-bottom-color: var(--lpx-theme-primary);
+      background: rgba(var(--lpx-theme-primary-rgb), 0.05);
+    }
+
+    /* Modal Fixes */
+    .modal.fade { display: block; opacity: 1; background: rgba(0,0,0,0.5); }
     .modal.show { display: block !important; }
-    .modal-backdrop.show { opacity: 0.5; }
-    .nav-link { cursor: pointer; }
-    .badge { font-size: 0.85rem; }
+
+    /* 
+       DARK MODE OVERRIDES 
+       Using :host-context to detect [data-theme="dark"] on body/html 
+    */
+    :host-context([data-theme="dark"]) .patient-header-card { 
+      background: #212529; 
+      color: #e9ecef;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    
+    :host-context([data-theme="dark"]) .vital-card { 
+      background: #2c3035 !important; 
+      border: 1px solid #373b3e; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      color: #fff !important;
+    }
+    
+    :host-context([data-theme="dark"]) .vital-value { color: #fff !important; }
+    :host-context([data-theme="dark"]) .vital-label { color: #adb5bd !important; }
+    :host-context([data-theme="dark"]) .vital-icon { opacity: 0.9; }
+
+    :host-context([data-theme="dark"]) .card.shadow-sm { 
+      background-color: #212529 !important;
+      border: 1px solid #373b3e;
+    }
+    
+    :host-context([data-theme="dark"]) .card-header.bg-white {
+      background-color: #2c3035 !important;
+      border-bottom: 1px solid #373b3e !important;
+    }
+    :host-context([data-theme="dark"]) .card-body.bg-white {
+      background-color: #212529 !important;
+      color: #e9ecef;
+    }
+
+    :host-context([data-theme="dark"]) .nav-link { color: #adb5bd; }
+    :host-context([data-theme="dark"]) .nav-link:hover { background-color: #343a40; color: #fff; }
+    :host-context([data-theme="dark"]) .nav-link.active { 
+       background-color: #2c3035; 
+       color: #fff !important; 
+    }
   `]
 })
 export class PatientMedicalRecordComponent implements OnInit {
