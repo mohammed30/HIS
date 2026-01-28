@@ -84,6 +84,7 @@ public class HISDbContext :
     public DbSet<HIS.Inventory.Supplier> Suppliers { get; set; }
     public DbSet<HIS.Inventory.InventoryItem> InventoryItems { get; set; }
     public DbSet<HIS.Inventory.InventoryTransaction> InventoryTransactions { get; set; }
+    public DbSet<HIS.Inventory.InventoryBatch> InventoryBatches { get; set; }
 
     #region Entities from the modules
 
@@ -619,6 +620,19 @@ public class HISDbContext :
             b.Property(x => x.ReferenceNumber).HasMaxLength(64);
             b.HasIndex(x => x.InventoryItemId);
             b.HasIndex(x => x.TransactionDate);
+        });
+
+        builder.Entity<HIS.Inventory.InventoryBatch>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InventoryBatches", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Quantity).HasPrecision(18, 4);
+            b.Property(x => x.OriginalQuantity).HasPrecision(18, 4);
+            b.Property(x => x.UnitCost).HasPrecision(18, 4);
+            b.Property(x => x.BatchNumber).HasMaxLength(64);
+            b.Property(x => x.ReferenceNumber).HasMaxLength(64);
+            b.HasIndex(x => x.InventoryItemId);
+            b.HasIndex(x => x.ReceivedDate);
         });
     }
 }

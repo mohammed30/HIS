@@ -111,11 +111,15 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
             input.Quantity,
             input.ReferenceNumber
         );
+    }
+
     [HttpGet("item-transactions/{inventoryItemId}")]
     public async Task<List<InventoryTransactionDto>> GetItemTransactionsAsync(Guid inventoryItemId)
     {
         var transactions = await _inventoryTransactionRepository.GetListAsync(x => x.InventoryItemId == inventoryItemId);
         return ObjectMapper.Map<List<InventoryTransaction>, List<InventoryTransactionDto>>(transactions.OrderByDescending(x => x.TransactionDate).ToList());
+    }
+
     [HttpGet("item/{id}")]
     public async Task<InventoryItemDto> GetItemAsync(Guid id)
     {
