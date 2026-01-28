@@ -48,7 +48,6 @@ public class HISDbContext :
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
     public DbSet<WaitingList> WaitingLists { get; set; }
-    public DbSet<HIS.Financials.Account> Accounts { get; set; }
 
     // Insurance
     public DbSet<HIS.Insurance.InsuranceCompany> InsuranceCompanies { get; set; }
@@ -75,6 +74,16 @@ public class HISDbContext :
     // Pricing
     public DbSet<HIS.Pricing.PriceList> PriceLists { get; set; }
     public DbSet<HIS.Pricing.ServicePrice> ServicePrices { get; set; }
+
+    // Financial & Inventory
+    public DbSet<HIS.Accounting.Account> Accounts { get; set; }
+    public DbSet<HIS.Accounting.JournalEntry> JournalEntries { get; set; }
+    public DbSet<HIS.Accounting.JournalEntryLine> JournalEntryLines { get; set; }
+    
+    public DbSet<HIS.Inventory.Warehouse> Warehouses { get; set; }
+    public DbSet<HIS.Inventory.Supplier> Suppliers { get; set; }
+    public DbSet<HIS.Inventory.InventoryItem> InventoryItems { get; set; }
+    public DbSet<HIS.Inventory.InventoryTransaction> InventoryTransactions { get; set; }
 
     #region Entities from the modules
 
@@ -543,6 +552,73 @@ public class HISDbContext :
             
             b.HasIndex(x => x.PriceListId);
             b.HasIndex(x => new { x.PriceListId, x.ServiceItemId }).IsUnique();
+        });
+
+        // --- Financial & Inventory ---
+
+        builder.Entity<HIS.Accounting.Account>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Accounts", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        builder.Entity<HIS.Accounting.JournalEntry>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "JournalEntries", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.ReferenceNumber).HasMaxLength(64);
+            b.Property(x => x.Description).HasMaxLength(512);
+        });
+
+        builder.Entity<HIS.Accounting.JournalEntryLine>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "JournalEntryLines", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Debit).HasPrecision(18, 2);
+            b.Property(x => x.Credit).HasPrecision(18, 2);
+            b.HasIndex(x => x.JournalEntryId);
+            b.HasIndex(x => x.AccountId);
+        });
+
+        builder.Entity<HIS.Inventory.Warehouse>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Warehouses", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Location).HasMaxLength(256);
+        });
+
+        builder.Entity<HIS.Inventory.Supplier>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Suppliers", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.Property(x => x.ContactPerson).HasMaxLength(128);
+            b.Property(x => x.Phone).HasMaxLength(32);
+            b.Property(x => x.Email).HasMaxLength(128);
+        });
+
+        builder.Entity<HIS.Inventory.InventoryItem>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InventoryItems", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Quantity).HasPrecision(18, 4);
+            b.Property(x => x.AverageCost).HasPrecision(18, 4);
+            b.HasIndex(x => new { x.WarehouseId, x.ProductId }).IsUnique();
+        });
+
+        builder.Entity<HIS.Inventory.InventoryTransaction>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InventoryTransactions", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Quantity).HasPrecision(18, 4);
+            b.Property(x => x.UnitCost).HasPrecision(18, 4);
+            b.Property(x => x.ReferenceNumber).HasMaxLength(64);
+            b.HasIndex(x => x.InventoryItemId);
+            b.HasIndex(x => x.TransactionDate);
         });
     }
 }

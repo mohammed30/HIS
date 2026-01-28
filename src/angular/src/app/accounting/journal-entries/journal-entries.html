@@ -1,0 +1,46 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">{{ 'Menu:JournalEntries' | abpLocalization }}</h5>
+            </div>
+            <div class="text-end col col-md-6"></div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="journalEntries.items" [count]="journalEntries.totalCount" default>
+
+            <ngx-datatable-column [name]="'Date' | abpLocalization" prop="date">
+                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                    {{ value | date }}
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'Reference' | abpLocalization" prop="referenceNumber"></ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'Description' | abpLocalization" prop="description"></ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'Status' | abpLocalization" prop="isPosted">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span class="badge" [ngClass]="value ? 'bg-success' : 'bg-warning'">{{ value ? 'Posted' : 'Draft'
+                        }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <!-- Detail Row for Lines (simplified as a column for now, better as master-detail) -->
+            <ngx-datatable-column name="Lines" [sortable]="false" [width]="400">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div *ngFor="let line of row.lines" style="font-size: 0.85em;">
+                        <div class="d-flex justify-content-between">
+                            <span>{{line.accountName}}</span>
+                            <span *ngIf="line.debit > 0" class="text-success">Dr: {{line.debit | number:'1.2-2'}}</span>
+                            <span *ngIf="line.credit > 0" class="text-danger">Cr: {{line.credit |
+                                number:'1.2-2'}}</span>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+
+        </ngx-datatable>
+    </div>
+</div>

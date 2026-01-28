@@ -1,0 +1,78 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="card-title">
+                    {{ '::StockCard' | abpLocalization }}
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Item Header Info -->
+        <div class="row mb-4" *ngIf="item">
+            <div class="col-md-3">
+                <div class="label text-muted">{{ '::ProductName' | abpLocalization }}</div>
+                <div class="font-weight-bold h5">{{ item.productName }}</div>
+            </div>
+            <div class="col-md-3">
+                <div class="label text-muted">{{ '::InventoryItemType' | abpLocalization }}</div>
+                <div>
+                    <span class="badge bg-secondary" *ngIf="item.type === 0">{{ '::Enum:Medication' | abpLocalization
+                        }}</span>
+                    <span class="badge bg-info" *ngIf="item.type === 1">{{ '::Enum:Consumable' | abpLocalization
+                        }}</span>
+                    <span class="badge bg-primary" *ngIf="item.type === 2">{{ '::Enum:Asset' | abpLocalization }}</span>
+                    <span class="badge bg-warning" *ngIf="item.type === 3">{{ '::Enum:Reagent' | abpLocalization
+                        }}</span>
+                    <span class="badge bg-dark" *ngIf="item.type === 4">{{ '::Enum:Other' | abpLocalization }}</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="label text-muted">{{ '::CurrentStock' | abpLocalization }}</div>
+                <div class="font-weight-bold h5">{{ item.quantity }}</div>
+            </div>
+            <div class="col-md-3">
+                <div class="label text-muted">{{ '::AvgCost' | abpLocalization }}</div>
+                <div class="font-weight-bold h5">{{ item.averageCost | currency }}</div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Transactions Table -->
+        <h5>{{ '::TransactionHistory' | abpLocalization }}</h5>
+        <ngx-datatable [rows]="transactions" [count]="transactions.length" class="bootstrap" [headerHeight]="50"
+            [footerHeight]="50" [rowHeight]="'auto'" [limit]="10" [columnMode]="'force'">
+
+            <ngx-datatable-column [name]="'::Date' | abpLocalization" prop="transactionDate">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | date:'medium' }}
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Type' | abpLocalization" prop="transactionType">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span class="badge bg-success" *ngIf="value === 0">{{ '::Received' | abpLocalization }}</span>
+                    <span class="badge bg-danger" *ngIf="value === 1">{{ '::Issued' | abpLocalization }}</span>
+                    <span class="badge bg-warning" *ngIf="value === 2">{{ '::Adjustment' | abpLocalization }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Reference' | abpLocalization"
+                prop="referenceNumber"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Quantity' | abpLocalization" prop="quantity"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::UnitCost' | abpLocalization" prop="unitCost">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | currency }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Total' | abpLocalization" prop="totalValue">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | currency }}
+                </ng-template>
+            </ngx-datatable-column>
+
+        </ngx-datatable>
+    </div>
+</div>

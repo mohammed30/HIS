@@ -37,12 +37,19 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<CreateUpdateLaboratoryDto, Laboratory>();
 
         CreateMap<Appointments.DoctorSchedule, Appointments.DoctorScheduleDto>();
-        CreateMap<Appointments.CreateUpdateDoctorScheduleDto, Appointments.DoctorSchedule>();
+        // Financials (Accounting)
+        CreateMap<Accounting.Account, Accounting.Dtos.AccountDto>();
+        CreateMap<Accounting.Dtos.CreateUpdateAccountDto, Accounting.Account>();
+        
+        CreateMap<Accounting.JournalEntry, Accounting.Dtos.JournalEntryDto>();
+        CreateMap<Accounting.JournalEntryLine, Accounting.Dtos.JournalEntryLineDto>();
 
-        CreateMap<Financials.Account, Financials.Dtos.AccountDto>();
-        CreateMap<Financials.Dtos.CreateUpdateAccountDto, Financials.Account>();
+        // Inventory
+        CreateMap<Inventory.Warehouse, Inventory.Dtos.WarehouseDto>();
+        CreateMap<Inventory.Dtos.CreateUpdateWarehouseDto, Inventory.Warehouse>();
+        
+        CreateMap<Inventory.InventoryItem, Inventory.Dtos.InventoryItemDto>();
 
-        // Activity Logs
         CreateMap<ActivityLogs.ActivityLog, ActivityLogs.ActivityLogDto>();
 
         // Insurance

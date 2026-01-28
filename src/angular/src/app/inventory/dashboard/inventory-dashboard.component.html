@@ -1,0 +1,59 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::Menu:InventoryDashboard' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col col-md-6">
+                <!-- Future: Add Receive/Issue Stock Buttons -->
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>{{ '::SelectedWarehouse' | abpLocalization }}</label>
+                <select class="form-control" [(ngModel)]="selectedWarehouseId" (change)="onWarehouseChange()">
+                    <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+                </select>
+            </div>
+        </div>
+
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
+            <ngx-datatable-column [name]="'::ProductName' | abpLocalization" prop="productName"></ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::InventoryItemType' | abpLocalization" prop="type">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span class="badge bg-secondary" *ngIf="value === 0">{{ '::Enum:Medication' | abpLocalization
+                        }}</span>
+                    <span class="badge bg-info" *ngIf="value === 1">{{ '::Enum:Consumable' | abpLocalization }}</span>
+                    <span class="badge bg-primary" *ngIf="value === 2">{{ '::Enum:Asset' | abpLocalization }}</span>
+                    <span class="badge bg-warning" *ngIf="value === 3">{{ '::Enum:Reagent' | abpLocalization }}</span>
+                    <span class="badge bg-dark" *ngIf="value === 4">{{ '::Enum:Other' | abpLocalization }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Quantity' | abpLocalization" prop="quantity"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::AvgCost' | abpLocalization" prop="averageCost">
+                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                    {{ value | currency }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::TotalValue' | abpLocalization" prop="quantity">
+                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                    {{ (row.quantity * row.averageCost) | currency }}
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <a [routerLink]="['/inventory/item-card', row.id]" class="btn btn-sm btn-primary">
+                        {{ '::StockCard' | abpLocalization }}
+                    </a>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>

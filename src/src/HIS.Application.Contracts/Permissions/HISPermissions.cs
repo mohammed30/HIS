@@ -4,8 +4,11 @@ public static class HISPermissions
 {
     public const string GroupName = "HIS";
 
-
-    
-    //Add your own permission names. Example:
-    //public const string MyPermission1 = GroupName + ".MyPermission1";
+    public static class Inventory
+    {
+        public const string Default = GroupName + ".Inventory";
+        public const string ManageWarehouses = Default + ".ManageWarehouses";
+        public const string StockOperations = Default + ".StockOperations";
+    }
 }
+

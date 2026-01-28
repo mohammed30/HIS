@@ -57,11 +57,19 @@ function configureRoutes() {
       layout: eLayoutType.application,
     },
     {
-      path: '/financials/chart-of-accounts',
+      path: '/accounting/chart-of-accounts',
       name: '::Menu:ChartOfAccounts',
       parentName: '::Menu:Accounts',
       iconClass: 'fas fa-sitemap',
       order: 31,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/accounting/journal-entries',
+      name: '::Menu:JournalEntries',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-book',
+      order: 32,
       layout: eLayoutType.application,
     },
     // Insurance
@@ -220,6 +228,29 @@ function configureRoutes() {
       name: '::Menu:ActivityLogs',
       iconClass: 'fas fa-history',
       order: 210,
+      layout: eLayoutType.application,
+    },
+    // Inventory
+    {
+      name: '::Menu:Inventory',
+      iconClass: 'fas fa-boxes',
+      order: 35,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/inventory/dashboard',
+      name: '::Menu:InventoryDashboard',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-tachometer-alt',
+      order: 36,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/inventory/warehouse-management',
+      name: '::Menu:WarehouseManagement',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-warehouse',
+      order: 37,
       layout: eLayoutType.application,
     },
     {

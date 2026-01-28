@@ -140,8 +140,41 @@ export const APP_ROUTES: Routes = [
     ]
   },
   {
+    path: 'accounting',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'chart-of-accounts',
+        loadComponent: () => import('./accounting/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent)
+      },
+      {
+        path: 'journal-entries',
+        loadComponent: () => import('./accounting/journal-entries/journal-entries').then(c => c.JournalEntriesComponent)
+      }
+    ]
+  },
+  {
+    path: 'inventory',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./inventory/dashboard/inventory-dashboard.component').then(c => c.InventoryDashboardComponent)
+      },
+      {
+        path: 'warehouse-management',
+        loadComponent: () => import('./inventory/warehouse-management/warehouse-management.component').then(c => c.WarehouseManagementComponent)
+      },
+      {
+        path: 'item-card/:id',
+        loadComponent: () => import('./inventory/item-card/item-card.component').then(c => c.ItemCardComponent)
+      }
+    ]
+  },
+  {
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
     canActivate: [authGuard],
   },
 ];
+// Force rebuild

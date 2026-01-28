@@ -222,6 +222,40 @@ This document outlines the product requirements for a Hospital Information Syste
 
 ---
 
+### 3.8 Financial & Inventory Module (النظام المحاسبي والمخزون)
+
+> **Priority: HIGH (Per Client Request)**
+
+#### 3.8.1 Inventory & Purchasing (المخزون والمشتريات)
+- [ ] **Supplier Integration**: Link purchases directly to suppliers (`ربط المشتريات بالموردين`).
+- [ ] **Warehouse Management**: Link purchases to central stores (`ربط المشتريات بالمخزن`).
+- [ ] **Departmental Consumption**: Track consumption by service departments (`ربط المخزن بالأقسام الخدمية`).
+- [ ] **Inventory Valuation**: Implement **LIFO** (Last-In, First-Out) method for pricing (`اعتماد طريقة LIFO`).
+- [ ] **Stock Cards**: Detailed tracking of Incoming/Outgoing (Item, Quantity, Price, Total) (`كرت الصنف`).
+
+#### 3.8.2 Accounting Entries (القيود المحاسبية)
+- [ ] **Automated Receiving Entries**: 
+  - Debit: Warehouse/Department Sub-Account (`حساب المخزن الفرعي`).
+  - Credit: Suppliers (`حساب الموردين`).
+- [ ] **Automated Dispensing Entries**:
+  - Debit: Department Expense (`حساب القسم مدين`).
+  - Credit: Warehouse/Inventory (`حساب المخزن دائن`).
+- [ ] **Revenue Entries**: Track revenue per employee/doctor vs. cash/receivables.
+
+#### 3.8.3 Financial Statements (القوائم المالية)
+- [ ] **Income Statement** (`قائمة الدخل`):
+    - Medical Service Revenues.
+    - Cost of Sales (Beginning Inv + Purchases - Ending Inv).
+    - Administrative & General Expenses.
+- [ ] **Balance Sheet** (`الميزانية العمومية/المركز المالي`).
+- [ ] **Cash Flow Statement** (`التدفقات النقدية`).
+- [ ] **Statement of Changes in Equity** (`التغير في حقوق الملكية`).
+
+#### 3.8.4 Administrative Functions (الوظائف الإدارية)
+- [ ] **Organizational Structure**: Link administrative jobs/titles to specific departments (`ربط الوظائف الإدارية بالأقسام`).
+
+---
+
 ## 4. ABP Framework Implementation Structure
 
 ### 4.1 Solution Structure
