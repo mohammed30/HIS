@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ListService, PagedResultDto, CoreModule, LocalizationService } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AccountService } from '../../proxy/accounting/account.service';
 import { AccountDto, AccountType } from '../../proxy/accounting/models';
 
@@ -22,7 +22,7 @@ interface TreeAccountDto extends AccountDto {
     styleUrls: ['./chart-of-accounts.component.scss'],
     providers: [ListService],
     standalone: true,
-    imports: [CommonModule, ThemeSharedModule, CoreModule, ReactiveFormsModule, NgbDropdownModule]
+    imports: [CommonModule, ThemeSharedModule, CoreModule, ReactiveFormsModule, FormsModule, NgbDropdownModule]
 })
 export class ChartOfAccountsComponent implements OnInit {
     flatAccounts: TreeAccountDto[] = []; // The ordered flattened tree for display
@@ -38,6 +38,9 @@ export class ChartOfAccountsComponent implements OnInit {
         { value: 3, key: 'Revenue', color: 'primary' },
         { value: 4, key: 'Expense', color: 'warning' },
     ];
+
+    isAllExpanded = true;
+    searchText = '';
 
     constructor(
         public readonly list: ListService,
@@ -142,6 +145,48 @@ export class ChartOfAccountsComponent implements OnInit {
         // Let's filter roots from flatAccounts
         const roots = this.flatAccounts.filter(x => x.level === 0);
         setVisible(roots, true);
+    }
+
+    toggleExpandAll() {
+        this.isAllExpanded = !this.isAllExpanded;
+        this.flatAccounts.forEach(node => node.expanded = this.isAllExpanded);
+        this.updateVisibility();
+    }
+
+    filterAccounts() {
+        if (!this.searchText) {
+            // Reset to default state
+            this.flatAccounts.forEach(x => x.isVisible = true);
+            this.updateVisibility();
+            return;
+        }
+
+        const term = this.searchText.toLowerCase();
+
+        // 1. Reset all to hidden first
+        this.flatAccounts.forEach(x => x.isVisible = false);
+
+        // 2. Find matches
+        const matches = this.flatAccounts.filter(x =>
+            x.name.toLowerCase().includes(term) ||
+            x.code.toLowerCase().includes(term)
+        );
+
+        // 3. Reveal matches and their ancestors
+        const reveal = (node: TreeAccountDto) => {
+            node.isVisible = true;
+            // Also expand parents to make sure this path is open
+            if (node.parentCode) {
+                // Find parent in flat list (inefficient but safe) or Map if we kept it
+                const parent = this.flatAccounts.find(p => p.code === node.parentCode);
+                if (parent) {
+                    parent.expanded = true;
+                    reveal(parent);
+                }
+            }
+        };
+
+        matches.forEach(match => reveal(match));
     }
 
     createAccount() {

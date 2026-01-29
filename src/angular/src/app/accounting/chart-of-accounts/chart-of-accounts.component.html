@@ -7,8 +7,22 @@
                 </h5>
             </div>
             <div class="text-end col col-md-6">
-                <div class="text-lg-end pt-2">
-                    <button id="create" class="btn btn-primary" type="button" (click)="createAccount()">
+                <div class="d-flex justify-content-end align-items-center pt-2 gap-2">
+                    <!-- Search Input -->
+                    <div class="input-group input-group-sm w-auto">
+                        <input type="text" class="form-control" placeholder="{{ '::Search' | abpLocalization }}..."
+                            [(ngModel)]="searchText" (keyup)="filterAccounts()">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+
+                    <!-- Expand/Collapse All -->
+                    <button class="btn btn-outline-secondary btn-sm" (click)="toggleExpandAll()"
+                        title="{{ isAllExpanded ? 'Collapse All' : 'Expand All' }}">
+                        <i class="fa" [class.fa-compress]="isAllExpanded" [class.fa-expand]="!isAllExpanded"></i>
+                    </button>
+
+                    <!-- New Account -->
+                    <button id="create" class="btn btn-primary btn-sm" type="button" (click)="createAccount()">
                         <i class="fa fa-plus me-1"></i>
                         <span>{{ '::NewAccount' | abpLocalization }}</span>
                     </button>
