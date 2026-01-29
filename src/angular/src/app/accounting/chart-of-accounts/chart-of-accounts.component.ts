@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ListService, PagedResultDto, CoreModule, LocalizationService } from '@abp/ng.core';
+import { ListService, PagedResultDto, CoreModule, LocalizationService, SessionStateService } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AccountService } from '../../proxy/accounting/account.service';
 import { AccountDto, AccountType } from '../../proxy/accounting/models';
+
+declare var abp: any;
 
 interface TreeAccountDto extends AccountDto {
     level: number;
@@ -14,6 +16,7 @@ interface TreeAccountDto extends AccountDto {
     hasChildren: boolean;
     isVisible: boolean; // For filtering/collapsing
     parentCode?: string; // Helper for display
+    nameAr?: string; // Add NameAr
 }
 
 @Component({
@@ -46,8 +49,13 @@ export class ChartOfAccountsComponent implements OnInit {
         public readonly list: ListService,
         private accountService: AccountService,
         private fb: FormBuilder,
-        private confirmation: ConfirmationService
+        private confirmation: ConfirmationService,
+        private sessionState: SessionStateService
     ) { }
+
+    // ... (omitting intermediate methods for brevity if possible, targeting getLocalizedName)
+
+
 
     ngOnInit() {
         this.loadAccounts();
@@ -169,7 +177,8 @@ export class ChartOfAccountsComponent implements OnInit {
         // 2. Find matches
         const matches = this.flatAccounts.filter(x =>
             x.name.toLowerCase().includes(term) ||
-            x.code.toLowerCase().includes(term)
+            x.code.toLowerCase().includes(term) ||
+            (x.nameAr && x.nameAr.toLowerCase().includes(term))
         );
 
         // 3. Reveal matches and their ancestors
@@ -218,9 +227,18 @@ export class ChartOfAccountsComponent implements OnInit {
         this.form = this.fb.group({
             code: [this.selectedAccount.code || '', [Validators.required, Validators.maxLength(32)]],
             name: [this.selectedAccount.name || '', [Validators.required, Validators.maxLength(128)]],
+            nameAr: [this.selectedAccount.nameAr || '', [Validators.maxLength(128)]],
             type: [this.selectedAccount.type !== undefined ? this.selectedAccount.type : null, [Validators.required]],
             parentId: [this.selectedAccount.parentId || null],
         });
+    }
+
+    getLocalizedName(account: AccountDto): string {
+        const currentLang = this.sessionState.getLanguage();
+        if (currentLang && currentLang.startsWith('ar') && account.nameAr) {
+            return account.nameAr;
+        }
+        return account.name;
     }
 
     save() {

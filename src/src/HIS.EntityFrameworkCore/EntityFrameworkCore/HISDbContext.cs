@@ -563,6 +563,7 @@ public class HISDbContext :
             b.ConfigureByConvention();
             b.Property(x => x.Code).HasMaxLength(32).IsRequired();
             b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameAr).HasMaxLength(128);
             b.HasIndex(x => x.Code).IsUnique();
         });
 

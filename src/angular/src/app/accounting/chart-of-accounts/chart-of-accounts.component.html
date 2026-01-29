@@ -56,7 +56,7 @@
                                 </span>
                                 <span class="tree-toggle me-2" *ngIf="!row.hasChildren"></span> <!-- Spacer -->
 
-                                {{ row.name }}
+                                {{ getLocalizedName(row) }}
                             </div>
                         </td>
 
@@ -110,8 +110,13 @@
             </div>
 
             <div class="form-group mt-2">
-                <label for="account-name">{{ '::Name' | abpLocalization }}</label><span> * </span>
+                <label for="account-name">{{ '::Name' | abpLocalization }} (English)</label><span> * </span>
                 <input type="text" id="account-name" class="form-control" formControlName="name" />
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="account-name-ar">{{ '::Name' | abpLocalization }} (Arabic)</label>
+                <input type="text" id="account-name-ar" class="form-control" formControlName="nameAr" />
             </div>
 
             <div class="form-group mt-2">

@@ -11,6 +11,7 @@ export enum AccountType {
 export interface AccountDto extends AuditedEntityDto<string> {
     code: string;
     name: string;
+    nameAr?: string;
     type: AccountType;
     parentId?: string;
     parentName?: string;
@@ -20,6 +21,7 @@ export interface AccountDto extends AuditedEntityDto<string> {
 export interface CreateUpdateAccountDto {
     code: string;
     name: string;
+    nameAr?: string;
     type: AccountType;
     parentId?: string;
 }
