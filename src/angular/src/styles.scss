@@ -29,6 +29,15 @@ td,
 .form-control,
 .form-label {
   font-family: 'Cairo', sans-serif;
+  font-weight: 500;
+  /* Slightly bolder for readability */
+}
+
+/* Global Font Size Bump for Readability */
+html,
+body {
+  font-size: 15px;
+  /* Default is usually 14px or 16px. 15px is a good middle ground if 14 was too small */
 }
 
 /* ===== DARK/LIGHT MODE THEME VARIABLES ===== */
@@ -602,6 +611,17 @@ body {
   color: #ffffff !important;
   opacity: 1 !important;
   text-shadow: none !important;
+  font-weight: 500;
+  /* Improve readability */
+}
+
+/* Stronger Hover for Dark Mode */
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-row:hover,
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-row:hover .datatable-row-group {
+  background-color: rgba(13, 110, 253, 0.25) !important;
+  /* Blue tint for clear highlight */
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 [data-theme="dark"] .lpx-footer,

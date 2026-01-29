@@ -9,7 +9,7 @@ import { registerLocaleForEsBuild } from '@abp/ng.core/locale';
 import { provideThemeLeptonX } from '@abp/ng.theme.lepton-x';
 import { provideSideMenuLayout } from '@abp/ng.theme.lepton-x/layouts';
 import { provideLogo, withEnvironmentOptions } from "@volo/ngx-lepton-x.core";
-import { ApplicationConfig, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, DEFAULT_CURRENCY_CODE } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { environment } from '../environments/environment';
@@ -22,6 +22,7 @@ export const appConfig: ApplicationConfig = {
     APP_ROUTE_PROVIDER,
     provideAnimations(),
     { provide: LOCALE_ID, useValue: 'ar' },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'EGP' },
     provideAbpCore(
       withOptions({
         environment,

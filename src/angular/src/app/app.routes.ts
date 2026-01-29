@@ -168,6 +168,14 @@ export const APP_ROUTES: Routes = [
       {
         path: 'item-card/:id',
         loadComponent: () => import('./inventory/item-card/item-card.component').then(c => c.ItemCardComponent)
+      },
+      {
+        path: 'receive-stock',
+        loadComponent: () => import('./inventory/receive-stock/receive-stock.component').then(c => c.ReceiveStockComponent)
+      },
+      {
+        path: 'issue-stock',
+        loadComponent: () => import('./inventory/issue-stock/issue-stock.component').then(c => c.IssueStockComponent)
       }
     ]
   },

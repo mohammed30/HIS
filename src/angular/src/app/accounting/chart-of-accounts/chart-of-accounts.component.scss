@@ -1,0 +1,96 @@
+.tree-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--theme-border-color);
+    }
+
+    th {
+        background-color: var(--theme-bg-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    /* Account Type Colors (Subtle Backgrounds) */
+    .row-asset {
+        background-color: rgba(25, 135, 84, 0.05);
+        /* Success tint */
+        border-left: 4px solid #198754;
+    }
+
+    .row-liability {
+        background-color: rgba(220, 53, 69, 0.05);
+        /* Danger tint */
+        border-left: 4px solid #dc3545;
+    }
+
+    .row-equity {
+        background-color: rgba(13, 202, 240, 0.05);
+        /* Info/Purple tint */
+        border-left: 4px solid #0dcaf0;
+    }
+
+    .row-revenue {
+        background-color: rgba(13, 110, 253, 0.05);
+        /* Primary tint */
+        border-left: 4px solid #0d6efd;
+    }
+
+    .row-expense {
+        background-color: rgba(255, 193, 7, 0.05);
+        /* Warning tint */
+        border-left: 4px solid #ffc107;
+    }
+
+    /* Dark Mode Adjustments */
+    :host-context([data-theme="dark"]) {
+        .row-asset {
+            background-color: rgba(25, 135, 84, 0.15);
+        }
+
+        .row-liability {
+            background-color: rgba(220, 53, 69, 0.15);
+        }
+
+        .row-equity {
+            background-color: rgba(13, 202, 240, 0.15);
+        }
+
+        .row-revenue {
+            background-color: rgba(13, 110, 253, 0.15);
+        }
+
+        .row-expense {
+            background-color: rgba(255, 193, 7, 0.15);
+        }
+    }
+
+    .tree-toggle {
+        cursor: pointer;
+        display: inline-block;
+        width: 20px;
+        text-align: center;
+        color: var(--theme-text-muted);
+        transition: transform 0.2s;
+
+        &:hover {
+            color: var(--theme-text-primary);
+        }
+    }
+
+    .account-name {
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    tr:hover {
+        filter: brightness(0.95);
+        transition: filter 0.2s;
+    }
+}

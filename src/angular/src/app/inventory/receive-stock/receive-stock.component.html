@@ -1,0 +1,56 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">{{ '::ReceiveStock' | abpLocalization }}</h5>
+    </div>
+    <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                    <label>{{ '::Warehouse' | abpLocalization }} *</label>
+                    <select class="form-control" formControlName="warehouseId">
+                        <option [ngValue]="null">{{ '::SelectWarehouse' | abpLocalization }}</option>
+                        <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 form-group mb-3">
+                    <label>{{ '::ReferenceNumber' | abpLocalization }} *</label>
+                    <input type="text" class="form-control" formControlName="referenceNumber" placeholder="PO Number / Invoice No">
+                </div>
+
+                <div class="col-md-6 form-group mb-3">
+                    <label>{{ '::ProductName' | abpLocalization }} *</label>
+                    <input type="text" class="form-control" formControlName="productName">
+                    <small class="text-muted">{{ '::EnterProductName' | abpLocalization }}</small>
+                </div>
+
+                <div class="col-md-6 form-group mb-3">
+                    <label>{{ '::InventoryItemType' | abpLocalization }} *</label>
+                    <select class="form-control" formControlName="type">
+                        <option *ngFor="let t of itemTypes" [ngValue]="t.value">{{ t.label | abpLocalization }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 form-group mb-3">
+                    <label>{{ '::Quantity' | abpLocalization }} *</label>
+                    <input type="number" class="form-control" formControlName="quantity">
+                </div>
+
+                <div class="col-md-6 form-group mb-3">
+                    <label>{{ '::UnitCost' | abpLocalization }} *</label>
+                    <input type="number" class="form-control" formControlName="unitCost">
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="button" class="btn btn-secondary me-2" routerLink="/inventory/dashboard">
+                    {{ '::Cancel' | abpLocalization }}
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+                    <i class="fa fa-save me-1"></i>
+                    {{ '::Save' | abpLocalization }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
