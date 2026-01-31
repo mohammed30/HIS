@@ -17,7 +17,7 @@ public class HISDbContextFactory : IDesignTimeDbContextFactory<HISDbContext>
         HISEfCoreEntityExtensionMappings.Configure();
 
         var builder = new DbContextOptionsBuilder<HISDbContext>()
-            .UseSqlServer(configuration.GetConnectionString("Default"), builder => builder.EnableRetryOnFailure());
+            .UseSqlServer(configuration.GetConnectionString("Default"));
         
         return new HISDbContext(builder.Options);
     }
@@ -27,6 +27,7 @@ public class HISDbContextFactory : IDesignTimeDbContextFactory<HISDbContext>
         var builder = new ConfigurationBuilder()
             .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../HIS.DbMigrator/"))
             .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true)
             .AddEnvironmentVariables();
 
         return builder.Build();

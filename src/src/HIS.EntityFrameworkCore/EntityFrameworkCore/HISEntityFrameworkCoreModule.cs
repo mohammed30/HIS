@@ -57,7 +57,13 @@ public class HISEntityFrameworkCoreModule : AbpModule
             /* The main point to change your DBMS.
              * See also HISDbContextFactory for EF Core tooling. */
 
-            options.UseSqlServer(builder => builder.EnableRetryOnFailure());
+            options.UseSqlServer(builder =>
+            {
+                if (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name != "HIS.DbMigrator")
+                {
+                    builder.EnableRetryOnFailure();
+                }
+            });
 
         });
         
