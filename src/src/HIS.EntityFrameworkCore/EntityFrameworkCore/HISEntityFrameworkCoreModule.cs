@@ -57,7 +57,7 @@ public class HISEntityFrameworkCoreModule : AbpModule
             /* The main point to change your DBMS.
              * See also HISDbContextFactory for EF Core tooling. */
 
-            options.UseSqlServer();
+            options.UseSqlServer(builder => builder.EnableRetryOnFailure());
 
         });
         

@@ -17,7 +17,7 @@ public class HISDbContextFactory : IDesignTimeDbContextFactory<HISDbContext>
         HISEfCoreEntityExtensionMappings.Configure();
 
         var builder = new DbContextOptionsBuilder<HISDbContext>()
-            .UseSqlServer(configuration.GetConnectionString("Default"));
+            .UseSqlServer(configuration.GetConnectionString("Default"), builder => builder.EnableRetryOnFailure());
         
         return new HISDbContext(builder.Options);
     }
