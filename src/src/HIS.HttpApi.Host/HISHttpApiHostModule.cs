@@ -83,49 +83,42 @@ public class HISHttpApiHostModule : AbpModule
             options.AddDevelopmentEncryptionAndSigningCertificate = false;
         });
 
-        var certPath = Path.Combine(hostingEnvironment.ContentRootPath, "openiddict.pfx");
-        var certPass = configuration["AuthServer:CertificatePassPhrase"];
+            // TEMPORARY FIX: Force Ephemeral Keys to verify if PFX is the crash cause
+            // var certPath = Path.Combine(hostingEnvironment.ContentRootPath, "openiddict.pfx");
+            // var certPass = configuration["AuthServer:CertificatePassPhrase"];
 
-        PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
-        {
-            serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
+            // var pfxLooksOk = File.Exists(certPath)
+            //                  && new FileInfo(certPath).Length > 0
+            //                  && !string.IsNullOrWhiteSpace(certPass);
 
-            var pfxLooksOk = File.Exists(certPath)
-                             && new FileInfo(certPath).Length > 0
-                             && !string.IsNullOrWhiteSpace(certPass);
+            // if (pfxLooksOk)
+            // {
+            //     try
+            //     {
+            //         var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(
+            //             certPath,
+            //             certPass,
+            //             System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.MachineKeySet |
+            //             System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.EphemeralKeySet |
+            //             System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.Exportable
+            //         );
 
-            if (pfxLooksOk)
-            {
-                try
-                {
-                    // ✅ Load PFX in a way that works on shared hosting (no user profile required)
-                    var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(
-                        certPath,
-                        certPass,
-                        System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.MachineKeySet |
-                        System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.EphemeralKeySet |
-                        System.Security.Cryptography.X509Certificates.X509KeyStorageFlags.Exportable
-                    );
-
-                    serverBuilder.AddEncryptionCertificate(cert);
-                    serverBuilder.AddSigningCertificate(cert);
-                }
-                catch
-                {
-                    // ✅ Fallback: Ephemeral keys (survive only until app restart)
-                    serverBuilder
-                        .AddEphemeralEncryptionKey()
-                        .AddEphemeralSigningKey();
-                }
-            }
-            else
-            {
-                // ✅ No PFX / passphrase: Ephemeral keys
-                serverBuilder
+            //         serverBuilder.AddEncryptionCertificate(cert);
+            //         serverBuilder.AddSigningCertificate(cert);
+            //     }
+            //     catch
+            //     {
+            //         serverBuilder
+            //             .AddEphemeralEncryptionKey()
+            //             .AddEphemeralSigningKey();
+            //     }
+            // }
+            // else
+            // {
+                 serverBuilder
                     .AddEphemeralEncryptionKey()
                     .AddEphemeralSigningKey();
-            }
-        });
+            // }
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
