@@ -20,6 +20,12 @@ jobs:
       with:
         dotnet-version: '10.0.x'
         
+    - name: Install ABP CLI
+      run: dotnet tool install -g Volo.Abp.Cli
+
+    - name: Install Libs
+      run: abp install-libs src/src/HIS.HttpApi.Host/HIS.HttpApi.Host.csproj
+
     - name: Restore dependencies
       run: dotnet restore src/src/HIS.HttpApi.Host/HIS.HttpApi.Host.csproj
       
