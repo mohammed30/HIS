@@ -23,7 +23,6 @@ using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
-using Volo.Abp.AspNetCore.ExceptionHandling;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
@@ -149,12 +148,6 @@ public class HISHttpApiHostModule : AbpModule
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
             });
         }
-
-        // TEMPORARY: Send Exceptions to Clients to debug 500 error
-        Configure<AbpExceptionHandlingOptions>(options =>
-        {
-            options.SendExceptionsToClients = true;
-        });
 
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);
