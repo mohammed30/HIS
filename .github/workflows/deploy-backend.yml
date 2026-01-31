@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - EditDesign
   workflow_dispatch:
 
 jobs:
