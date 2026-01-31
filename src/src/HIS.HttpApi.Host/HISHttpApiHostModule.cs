@@ -83,6 +83,10 @@ public class HISHttpApiHostModule : AbpModule
             options.AddDevelopmentEncryptionAndSigningCertificate = false;
         });
 
+        PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
+        {
+            serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
+
             // TEMPORARY FIX: Force Ephemeral Keys to verify if PFX is the crash cause
             // var certPath = Path.Combine(hostingEnvironment.ContentRootPath, "openiddict.pfx");
             // var certPass = configuration["AuthServer:CertificatePassPhrase"];
@@ -119,6 +123,7 @@ public class HISHttpApiHostModule : AbpModule
                     .AddEphemeralEncryptionKey()
                     .AddEphemeralSigningKey();
             // }
+        });
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
