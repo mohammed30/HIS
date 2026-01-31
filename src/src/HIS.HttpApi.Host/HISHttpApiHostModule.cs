@@ -149,6 +149,12 @@ public class HISHttpApiHostModule : AbpModule
             });
         }
 
+        // TEMPORARY: Send Exceptions to Clients to debug 500 error
+        Configure<AbpExceptionHandlingOptions>(options =>
+        {
+            options.SendExceptionsToClients = true;
+        });
+
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);
         ConfigureBundles();
@@ -282,10 +288,12 @@ public class HISHttpApiHostModule : AbpModule
 
         app.UseAbpRequestLocalization();
 
-        if (!env.IsDevelopment())
-        {
-            app.UseErrorPage();
-        }
+        // TEMPORARY: Force Developer Exception Page in Production to see the error
+        app.UseDeveloperExceptionPage();
+        // if (!env.IsDevelopment())
+        // {
+        //     app.UseErrorPage();
+        // }
 
         app.UseRouting();
         app.MapAbpStaticAssets();
