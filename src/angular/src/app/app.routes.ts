@@ -1,4 +1,4 @@
-import { authGuard } from '@abp/ng.core';
+import { authGuard, permissionGuard } from '@abp/ng.core';
 import { Routes } from '@angular/router';
 
 export const APP_ROUTES: Routes = [
@@ -16,17 +16,20 @@ export const APP_ROUTES: Routes = [
   {
     path: 'services',
     loadChildren: () => import('./services/services-module').then(m => m.ServicesModule),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Settings' }
   },
   {
     path: 'patients',
     loadComponent: () => import('./patients/patients.component').then(c => c.PatientsComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Patients' }
   },
   {
     path: 'patients/:id/medical-record',
     loadComponent: () => import('./patients/medical-record/patient-medical-record.component').then(c => c.PatientMedicalRecordComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Patients' }
   },
   {
     path: 'account',
@@ -35,49 +38,68 @@ export const APP_ROUTES: Routes = [
   {
     path: 'identity',
     loadChildren: () => import('@abp/ng.identity').then(c => c.createRoutes()),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'AbpIdentity.Users' }
   },
   {
     path: 'settings',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    // data: { requiredPolicy: 'HIS.Settings' }, // Removed to allow granular child control
     children: [
       {
         path: 'hospital',
-        loadComponent: () => import('./settings/hospital/hospital-settings.component').then(c => c.HospitalSettingsComponent)
+        loadComponent: () => import('./settings/hospital/hospital-settings.component').then(c => c.HospitalSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       },
       {
         path: 'departments',
-        loadComponent: () => import('./settings/departments/departments.component').then(c => c.DepartmentsComponent)
+        loadComponent: () => import('./settings/departments/departments.component').then(c => c.DepartmentsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       },
       {
         path: 'specialties',
-        loadComponent: () => import('./settings/specialties/specialties.component').then(c => c.SpecialtiesComponent)
+        loadComponent: () => import('./settings/specialties/specialties.component').then(c => c.SpecialtiesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       },
       {
         path: 'clinics',
-        loadComponent: () => import('./settings/clinics/clinics.component').then(c => c.ClinicsComponent)
+        loadComponent: () => import('./settings/clinics/clinics.component').then(c => c.ClinicsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       },
       {
         path: 'doctors',
-        loadComponent: () => import('./settings/doctors/doctors.component').then(c => c.DoctorsComponent)
+        loadComponent: () => import('./settings/doctors/doctors.component').then(c => c.DoctorsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       },
       {
         path: 'laboratories',
-        loadComponent: () => import('./settings/laboratories/laboratories.component').then(c => c.LaboratoriesComponent)
+        loadComponent: () => import('./settings/laboratories/laboratories.component').then(c => c.LaboratoriesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Laboratory' }
       },
       {
         path: 'doctor-schedule',
-        loadComponent: () => import('./settings/doctor-schedule').then(c => c.DoctorScheduleComponent)
+        loadComponent: () => import('./settings/doctor-schedule').then(c => c.DoctorScheduleComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       }
     ]
   },
   {
     path: 'appointments',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Appointments' },
     children: [
       {
         path: 'booking',
-        loadComponent: () => import('./appointments/booking/booking').then(c => c.BookingComponent)
+        loadComponent: () => import('./appointments/booking/booking').then(c => c.BookingComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Appointments.Create' }
       },
       {
         path: 'my-appointments',
@@ -95,7 +117,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'financials',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Billing' },
     children: [
       {
         path: 'chart-of-accounts',
@@ -105,7 +128,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'reception',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Billing' },
     children: [
       {
         path: 'insurance-companies',
@@ -131,7 +155,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Settings' },
     children: [
       {
         path: 'activity-logs',
@@ -141,7 +166,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'accounting',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Billing' },
     children: [
       {
         path: 'chart-of-accounts',
@@ -155,7 +181,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'inventory',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Inventory' },
     children: [
       {
         path: 'dashboard',
@@ -163,7 +190,9 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'warehouse-management',
-        loadComponent: () => import('./inventory/warehouse-management/warehouse-management.component').then(c => c.WarehouseManagementComponent)
+        loadComponent: () => import('./inventory/warehouse-management/warehouse-management.component').then(c => c.WarehouseManagementComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.ManageWarehouses' }
       },
       {
         path: 'item-card/:id',
@@ -171,18 +200,23 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'receive-stock',
-        loadComponent: () => import('./inventory/receive-stock/receive-stock.component').then(c => c.ReceiveStockComponent)
+        loadComponent: () => import('./inventory/receive-stock/receive-stock.component').then(c => c.ReceiveStockComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       },
       {
         path: 'issue-stock',
-        loadComponent: () => import('./inventory/issue-stock/issue-stock.component').then(c => c.IssueStockComponent)
+        loadComponent: () => import('./inventory/issue-stock/issue-stock.component').then(c => c.IssueStockComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       }
     ]
   },
   {
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Settings' }
   },
 ];
 // Force rebuild

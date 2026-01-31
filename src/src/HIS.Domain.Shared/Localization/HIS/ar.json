@@ -137,6 +137,22 @@
     "Enum:Consumable": "مستهلك",
     "Enum:Asset": "أصل",
     "Enum:Reagent": "محلول",
-    "Enum:Other": "أخرى"
+    "Enum:Other": "أخرى",
+    "Permission:HIS": "نظام إدارة المستشفى",
+    "Permission:Settings": "الإعدادات",
+    "Permission:Patients": "إدارة المرضى",
+    "Permission:Appointments": "إدارة المواعيد",
+    "Permission:Laboratory": "إدارة المعمل",
+    "Permission:Inventory": "إدارة المخزون",
+    "Permission:Billing": "إدارة الفواتير",
+    "Permission:Create": "إضافة",
+    "Permission:Edit": "تعديل",
+    "Permission:Delete": "حذف",
+    "Permission:CreateSample": "إنشاء عينة",
+    "Permission:UpdateResults": "تحديث النتائج",
+    "Permission:ApproveResults": "اعتماد النتائج",
+    "Permission:ManageWarehouses": "إدارة المخازن",
+    "Permission:StockOperations": "عمليات المخزون",
+    "Permission:ManageInvoices": "إدارة الفواتير"
   }
 }

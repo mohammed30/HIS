@@ -25,6 +25,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-injured',
       order: 10,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Patients',
     },
     // Appointments
     {
@@ -32,6 +33,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-check',
       order: 20,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Appointments',
     },
     {
       path: '/appointments/booking',
@@ -40,6 +42,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-plus',
       order: 21,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Appointments.Create',
     },
     {
       path: '/appointments/my-appointments',
@@ -55,6 +58,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice-dollar',
       order: 30,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing',
     },
     {
       path: '/accounting/chart-of-accounts',
@@ -78,6 +82,7 @@ function configureRoutes() {
       iconClass: 'fas fa-shield-alt',
       order: 40,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing',
     },
     {
       path: '/reception/insurance-companies',
@@ -101,6 +106,7 @@ function configureRoutes() {
       iconClass: 'fas fa-money-bill-wave',
       order: 50,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing',
     },
     {
       path: '/reception/invoices',
@@ -132,6 +138,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cogs',
       order: 100,
       layout: eLayoutType.application,
+      // requiredPolicy: 'HIS.Settings', // Removed to allow granular child control
     },
     {
       path: '/settings/departments',
@@ -140,6 +147,7 @@ function configureRoutes() {
       iconClass: 'fas fa-building',
       order: 101,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/settings/specialties',
@@ -148,6 +156,7 @@ function configureRoutes() {
       iconClass: 'fas fa-stethoscope',
       order: 102,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/settings/clinics',
@@ -156,6 +165,7 @@ function configureRoutes() {
       iconClass: 'fas fa-clinic-medical',
       order: 103,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/settings/doctors',
@@ -164,6 +174,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-md',
       order: 104,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/settings/laboratories',
@@ -172,6 +183,7 @@ function configureRoutes() {
       iconClass: 'fas fa-flask',
       order: 105,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Laboratory',
     },
     {
       path: '/settings/doctor-schedule',
@@ -180,6 +192,7 @@ function configureRoutes() {
       iconClass: 'fas fa-clock',
       order: 106,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/appointments/waiting-list',
@@ -188,6 +201,7 @@ function configureRoutes() {
       iconClass: 'fas fa-list-ol',
       order: 23,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Appointments',
     },
     // Services & Pricing
     {
@@ -197,6 +211,7 @@ function configureRoutes() {
       iconClass: 'fas fa-briefcase-medical',
       order: 107,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/services/radiology',
@@ -205,6 +220,7 @@ function configureRoutes() {
       iconClass: 'fas fa-x-ray',
       order: 108,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/services/price-lists',
@@ -213,6 +229,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tags',
       order: 109,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     // Administration
     {
@@ -229,6 +246,7 @@ function configureRoutes() {
       iconClass: 'fas fa-history',
       order: 210,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     // Inventory
     {
@@ -236,6 +254,7 @@ function configureRoutes() {
       iconClass: 'fas fa-boxes',
       order: 35,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory',
     },
     {
       path: '/inventory/dashboard',
@@ -252,6 +271,7 @@ function configureRoutes() {
       iconClass: 'fas fa-warehouse',
       order: 37,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.ManageWarehouses',
     },
     {
       path: '/setting-management',
@@ -259,6 +279,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cog',
       order: 300,
       layout: eLayoutType.application,
-    },
+      requiredPolicy: 'HIS.Settings',
+    }
   ]);
 }

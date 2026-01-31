@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
 
 namespace HIS.Billing;
 
@@ -20,10 +22,25 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         IRepository<InvoiceItem, Guid> itemRepository) : base(repository)
     {
         _itemRepository = itemRepository;
+        
+        GetPolicyName = HISPermissions.Billing.Default;
+        GetListPolicyName = HISPermissions.Billing.Default;
+        CreatePolicyName = HISPermissions.Billing.ManageInvoices;
+        UpdatePolicyName = HISPermissions.Billing.ManageInvoices;
+        DeletePolicyName = HISPermissions.Billing.ManageInvoices;
     }
 
     public override async Task<InvoiceDto> CreateAsync(CreateUpdateInvoiceDto input)
     {
+        // ... implementation (this override will automatically be protected by CreatePolicyName check in base) ...
+        await CheckCreatePolicyAsync(); // Good practice to call this or rely on base. But since we have logic before base insert, we should check.
+        // Actually base.CreateAsync calls CheckCreatePolicyAsync() then MapToEntity then Repository.Insert.
+        // Since we are COMPLETELY overriding logic without calling base.CreateAsync, we MUST call CheckCreatePolicyAsync().
+        
+        // However, standard CreateAsync calls repository insert. We are doing custom logic.
+        // Let's call CheckCreatePolicyAsync() manually.
+        await CheckCreatePolicyAsync();
+
         var invoiceId = GuidGenerator.Create();
         var invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
         
@@ -72,6 +89,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
     public async Task<InvoiceDto> GetWithItemsAsync(Guid id)
     {
+        await CheckGetPolicyAsync();
         var invoice = await Repository.GetAsync(id);
         var dto = ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
         
@@ -82,6 +100,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         return dto;
     }
 
+    [Authorize(HISPermissions.Billing.ManageInvoices)]
     public async Task<InvoiceDto> UpdateStatusAsync(Guid id, InvoiceStatus status)
     {
         var invoice = await Repository.GetAsync(id);
@@ -132,10 +151,18 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         IRepository<Invoice, Guid> invoiceRepository) : base(repository)
     {
         _invoiceRepository = invoiceRepository;
+        
+        GetPolicyName = HISPermissions.Billing.Default;
+        GetListPolicyName = HISPermissions.Billing.Default;
+        CreatePolicyName = HISPermissions.Billing.ManageInvoices;
+        UpdatePolicyName = HISPermissions.Billing.ManageInvoices;
+        DeletePolicyName = HISPermissions.Billing.ManageInvoices;
     }
 
     public override async Task<PaymentDto> CreateAsync(CreatePaymentDto input)
     {
+        await CheckCreatePolicyAsync();
+
         var paymentId = GuidGenerator.Create();
         var paymentNumber = $"PAY-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
 
@@ -169,6 +196,8 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
 
     public async Task<decimal> GetTotalByDateRangeAsync(DateTime from, DateTime to)
     {
+        await CheckGetListPolicyAsync(); 
+
         var queryable = await Repository.GetQueryableAsync();
         var payments = await AsyncExecuter.ToListAsync(
             queryable.Where(x => x.PaymentDate >= from && x.PaymentDate <= to && x.Status == PaymentStatus.Completed));
@@ -215,10 +244,17 @@ public class DeferredPaymentAppService : CrudAppService<DeferredPayment, Deferre
 {
     public DeferredPaymentAppService(IRepository<DeferredPayment, Guid> repository) : base(repository)
     {
+        GetPolicyName = HISPermissions.Billing.Default;
+        GetListPolicyName = HISPermissions.Billing.Default;
+        CreatePolicyName = HISPermissions.Billing.ManageInvoices;
+        UpdatePolicyName = HISPermissions.Billing.ManageInvoices;
+        DeletePolicyName = HISPermissions.Billing.ManageInvoices;
     }
 
     public override async Task<DeferredPaymentDto> CreateAsync(CreateDeferredPaymentDto input)
     {
+        await CheckCreatePolicyAsync();
+
         var id = GuidGenerator.Create();
         var deferredNumber = $"DEF-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
         var installmentAmount = input.TotalAmount / input.NumberOfInstallments;
@@ -239,6 +275,7 @@ public class DeferredPaymentAppService : CrudAppService<DeferredPayment, Deferre
         return ObjectMapper.Map<DeferredPayment, DeferredPaymentDto>(deferred);
     }
 
+    [Authorize(HISPermissions.Billing.ManageInvoices)]
     public async Task<DeferredPaymentDto> RecordPaymentAsync(Guid id, decimal amount)
     {
         var deferred = await Repository.GetAsync(id);
@@ -253,6 +290,8 @@ public class DeferredPaymentAppService : CrudAppService<DeferredPayment, Deferre
 
     public async Task<List<DeferredPaymentDto>> GetOverdueAsync()
     {
+        await CheckGetListPolicyAsync();
+        
         var queryable = await Repository.GetQueryableAsync();
         var items = await AsyncExecuter.ToListAsync(
             queryable.Where(x => x.DueDate < DateTime.Now && x.Status == DeferredPaymentStatus.Active));

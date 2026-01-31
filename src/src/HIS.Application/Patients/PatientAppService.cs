@@ -9,12 +9,15 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
 
 namespace HIS.Patients;
 
 /// <summary>
 /// خدمة تطبيق المرضى
 /// </summary>
+[Authorize(HISPermissions.Patients.Default)]
 public class PatientAppService : ApplicationService, IPatientAppService
 {
     private readonly IRepository<Patient, Guid> _patientRepository;
@@ -68,6 +71,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         return MapToDto(patient);
     }
 
+    [Authorize(HISPermissions.Patients.Create)]
     public async Task<PatientDto> CreateAsync(CreateUpdatePatientDto input)
     {
         var mrn = GenerateMRN();
@@ -122,6 +126,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         return MapToDto(patient);
     }
 
+    [Authorize(HISPermissions.Patients.Edit)]
     public async Task<PatientDto> UpdateAsync(Guid id, CreateUpdatePatientDto input)
     {
         var patient = await _patientRepository.GetAsync(id);
@@ -173,6 +178,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         return MapToDto(patient);
     }
 
+    [Authorize(HISPermissions.Patients.Delete)]
     public async Task DeleteAsync(Guid id)
     {
         var patient = await _patientRepository.GetAsync(id);

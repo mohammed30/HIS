@@ -6,11 +6,15 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
+
 namespace HIS.Settings;
 
 /// <summary>
 /// خدمة تطبيق الأقسام
 /// </summary>
+[Authorize(HISPermissions.Settings.Default)]
 public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Guid, GetDepartmentsInput, CreateUpdateDepartmentDto>, IDepartmentAppService
 {
     public DepartmentAppService(IRepository<Department, Guid> repository) : base(repository)
@@ -25,7 +29,6 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
         }
         return await base.CreateAsync(input);
     }
-
 
     public async Task<List<LookupDto>> GetLookupAsync()
     {
@@ -78,6 +81,7 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
 /// <summary>
 /// خدمة تطبيق التخصصات
 /// </summary>
+[Authorize(HISPermissions.Settings.Default)]
 public class SpecialtyAppService : CrudAppService<Specialty, SpecialtyDto, Guid, GetSpecialtiesInput, CreateUpdateSpecialtyDto>, ISpecialtyAppService
 {
     public SpecialtyAppService(IRepository<Specialty, Guid> repository) : base(repository)
@@ -92,7 +96,6 @@ public class SpecialtyAppService : CrudAppService<Specialty, SpecialtyDto, Guid,
         }
         return await base.CreateAsync(input);
     }
-
 
     public async Task<List<LookupDto>> GetLookupAsync()
     {
@@ -130,6 +133,7 @@ public class SpecialtyAppService : CrudAppService<Specialty, SpecialtyDto, Guid,
 /// <summary>
 /// خدمة تطبيق العيادات
 /// </summary>
+[Authorize(HISPermissions.Settings.Default)]
 public class ClinicAppService : CrudAppService<Clinic, ClinicDto, Guid, GetClinicsInput, CreateUpdateClinicDto>, IClinicAppService
 {
     private readonly IRepository<Department, Guid> _departmentRepository;
@@ -149,7 +153,6 @@ public class ClinicAppService : CrudAppService<Clinic, ClinicDto, Guid, GetClini
         }
         return await base.CreateAsync(input);
     }
-
 
     public async Task<List<LookupDto>> GetLookupAsync()
     {
@@ -200,6 +203,7 @@ public class ClinicAppService : CrudAppService<Clinic, ClinicDto, Guid, GetClini
 /// <summary>
 /// خدمة تطبيق الأطباء
 /// </summary>
+[Authorize(HISPermissions.Settings.Default)]
 public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDoctorsInput, CreateUpdateDoctorDto>, IDoctorAppService
 {
     public DoctorAppService(IRepository<Doctor, Guid> repository) : base(repository)
@@ -214,7 +218,6 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
         }
         return await base.CreateAsync(input);
     }
-
 
     public async Task<List<LookupDto>> GetLookupAsync()
     {
@@ -278,6 +281,7 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
 /// <summary>
 /// خدمة تطبيق المعامل
 /// </summary>
+[Authorize(HISPermissions.Laboratory.Default)]
 public class LaboratoryAppService : CrudAppService<Laboratory, LaboratoryDto, Guid, GetLaboratoriesInput, CreateUpdateLaboratoryDto>, ILaboratoryAppService
 {
     public LaboratoryAppService(IRepository<Laboratory, Guid> repository) : base(repository)
@@ -292,8 +296,7 @@ public class LaboratoryAppService : CrudAppService<Laboratory, LaboratoryDto, Gu
         }
         return await base.CreateAsync(input);
     }
-
-
+    
     public async Task<List<LookupDto>> GetLookupAsync()
     {
         var queryable = await Repository.GetQueryableAsync();

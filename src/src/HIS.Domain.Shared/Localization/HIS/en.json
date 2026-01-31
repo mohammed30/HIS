@@ -104,6 +104,22 @@
     "Enum:Consumable": "Consumable",
     "Enum:Asset": "Asset",
     "Enum:Reagent": "Reagent",
-    "Enum:Other": "Other"
+    "Enum:Other": "Other",
+    "Permission:HIS": "Hospital Management System",
+    "Permission:Settings": "Settings",
+    "Permission:Patients": "Patients Management",
+    "Permission:Appointments": "Appointments Management",
+    "Permission:Laboratory": "Laboratory Management",
+    "Permission:Inventory": "Inventory Management",
+    "Permission:Billing": "Billing Management",
+    "Permission:Create": "Create",
+    "Permission:Edit": "Edit",
+    "Permission:Delete": "Delete",
+    "Permission:CreateSample": "Create Sample",
+    "Permission:UpdateResults": "Update Results",
+    "Permission:ApproveResults": "Approve Results",
+    "Permission:ManageWarehouses": "Manage Warehouses",
+    "Permission:StockOperations": "Stock Operations",
+    "Permission:ManageInvoices": "Manage Invoices"
   }
 }

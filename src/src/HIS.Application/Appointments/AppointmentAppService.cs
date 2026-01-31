@@ -10,8 +10,12 @@ using Volo.Abp.Domain.Repositories;
 using HIS.Services; // For ServiceCategory if needed
 using HIS.Appointments; // For Enums
 
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
+
 namespace HIS.Appointments;
 
+[Authorize(HISPermissions.Appointments.Default)]
 public class AppointmentAppService : ApplicationService, IAppointmentAppService
 {
     private readonly IRepository<Appointment, Guid> _appointmentRepository;
@@ -62,6 +66,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return ObjectMapper.Map<List<Appointment>, List<AppointmentDto>>(items);
     }
 
+    [Authorize(HISPermissions.Appointments.Create)]
     public async Task<AppointmentDto> CreateAsync(CreateAppointmentDto input)
     {
         var appt = await _appointmentManager.CreateAsync(
@@ -77,6 +82,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return ObjectMapper.Map<Appointment, AppointmentDto>(appt);
     }
 
+    [Authorize(HISPermissions.Appointments.Edit)]
     public async Task<AppointmentDto> UpdateAsync(Guid id, CreateAppointmentDto input)
     {
         // Simple update: reschedule
@@ -96,6 +102,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return ObjectMapper.Map<Appointment, AppointmentDto>(appt);
     }
 
+    [Authorize(HISPermissions.Appointments.Edit)]
     public async Task CancelAsync(Guid id)
     {
         var appt = await _appointmentRepository.GetAsync(id);
@@ -156,6 +163,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         );
     }
 
+    [Authorize(HISPermissions.Appointments.Create)]
     public async Task<WaitingListDto> AddToWaitingListAsync(CreateUpdateWaitingListDto input)
     {
         var item = new WaitingList(
@@ -175,6 +183,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return ObjectMapper.Map<WaitingList, WaitingListDto>(item);
     }
 
+    [Authorize(HISPermissions.Appointments.Edit)]
     public async Task<WaitingListDto> UpdateWaitingListAsync(Guid id, CreateUpdateWaitingListDto input)
     {
         var item = await _waitingListRepository.GetAsync(id);
@@ -186,6 +195,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return ObjectMapper.Map<WaitingList, WaitingListDto>(item);
     }
 
+    [Authorize(HISPermissions.Appointments.Delete)]
     public async Task DeleteFromWaitingListAsync(Guid id)
     {
         await _waitingListRepository.DeleteAsync(id);

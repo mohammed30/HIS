@@ -5,9 +5,12 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
 
 namespace HIS.Services;
 
+[Authorize(HISPermissions.Settings.Default)]
 public class ServiceItemAppService : ApplicationService, IServiceItemAppService
 {
     private readonly IRepository<ServiceItem, Guid> _serviceRepository;

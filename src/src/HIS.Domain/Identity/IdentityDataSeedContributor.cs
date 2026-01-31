@@ -45,18 +45,56 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         await CreateRoleAndUserAsync("Pharmacist", "pharmacist", "pharmacist@his.com", "Pharmacist", "User", "Abc.123");
         await CreateRoleAndUserAsync("Receptionist", "receptionist", "receptionist@his.com", "Receptionist", "User", "Abc.123");
         
-        await GrantInventoryPermissionsAsync("admin");
-        await GrantInventoryPermissionsAsync("AdminStaff");
+        await CreateRoleAndUserAsync("Security", "security", "security@his.com", "Security", "Officer", "Abc.123");
+        await CreateRoleAndUserAsync("StoreKeeper", "storekeeper", "storekeeper@his.com", "Store", "Keeper", "Abc.123");
+        await CreateRoleAndUserAsync("PatientsUser", "patient", "patient@his.com", "Patient", "User", "Abc.123");
+
+        // Grant Permissions
+        await GrantPermissionsAsync("Security", new[] { "HIS.Settings" });
+        await GrantPermissionsAsync("Receptionist", new[] { 
+            "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", 
+            "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit" 
+        });
+        await GrantPermissionsAsync("LabManager", new[] { 
+            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults" 
+        });
+        await GrantPermissionsAsync("LabTechnician", new[] { 
+            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults" 
+        });
+        await GrantPermissionsAsync("StoreKeeper", new[] { 
+            "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations" 
+        });
+        await GrantPermissionsAsync("PatientsUser", new[] { 
+            "HIS.Patients", "HIS.Appointments", "HIS.Billing" 
+        });
+        
+        await SetAdminPasswordAsync();
     }
 
-    private async Task GrantInventoryPermissionsAsync(string roleName)
+    private async Task SetAdminPasswordAsync()
     {
-        // Using hardcoded strings because HIS.Application.Contracts is not referenced
-        if (await _roleManager.FindByNameAsync(roleName) != null)
+        var adminUser = await _userManager.FindByNameAsync("admin");
+        if (adminUser != null)
         {
-            await _permissionManager.SetForRoleAsync(roleName, "HIS.Inventory.Inventory", true); // Default
-            await _permissionManager.SetForRoleAsync(roleName, "HIS.Inventory.Inventory.ManageWarehouses", true);
-            await _permissionManager.SetForRoleAsync(roleName, "HIS.Inventory.Inventory.StockOperations", true);
+            // Simple way to reset: Remove then Add. 
+            // Note: In production, do not hardcode passwords or force reset indiscriminately.
+            if(await _userManager.HasPasswordAsync(adminUser))
+            {
+                await _userManager.RemovePasswordAsync(adminUser);
+            }
+            await _userManager.AddPasswordAsync(adminUser, "Abc.123");
+        }
+    }
+
+    private async Task GrantPermissionsAsync(string roleName, string[] permissions)
+    {
+        var role = await _roleManager.FindByNameAsync(roleName);
+        if (role != null)
+        {
+            foreach (var permission in permissions)
+            {
+                await _permissionManager.SetForRoleAsync(roleName, permission, true);
+            }
         }
     }
 

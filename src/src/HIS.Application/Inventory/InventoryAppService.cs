@@ -48,6 +48,7 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     }
 
     [HttpPost("warehouse")]
+    [Authorize(HISPermissions.Inventory.ManageWarehouses)]
     public async Task<WarehouseDto> CreateWarehouseAsync(CreateUpdateWarehouseDto input)
     {
         var warehouse = new Warehouse(GuidGenerator.Create(), input.Name, input.Location);
@@ -56,6 +57,7 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     }
 
     [HttpPut("warehouse/{id}")]
+    [Authorize(HISPermissions.Inventory.ManageWarehouses)]
     public async Task<WarehouseDto> UpdateWarehouseAsync(Guid id, CreateUpdateWarehouseDto input)
     {
         var warehouse = await _warehouseRepository.GetAsync(id);
@@ -66,6 +68,7 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     }
 
     [HttpDelete("warehouse/{id}")]
+    [Authorize(HISPermissions.Inventory.ManageWarehouses)]
     public async Task DeleteWarehouseAsync(Guid id)
     {
         await _warehouseRepository.DeleteAsync(id);
@@ -88,6 +91,7 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     }
 
     [HttpPost("receive-stock")]
+    [Authorize(HISPermissions.Inventory.StockOperations)]
     public async Task ReceiveStockAsync(ReceiveStockDto input)
     {
         await _inventoryManager.ReceiveStockAsync(
@@ -102,6 +106,7 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     }
 
     [HttpPost("issue-stock")]
+    [Authorize(HISPermissions.Inventory.StockOperations)]
     public async Task IssueStockAsync(IssueStockDto input)
     {
         // TODO: Pass DepartmentId to Manager if needed for Accounting
