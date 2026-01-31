@@ -32,6 +32,6 @@ jobs:
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'asiahospitalback-ffdkapgqauaherbd'
+        app-name: 'asiahospitalback'
         package: ${{env.DOTNET_ROOT}}/myapp
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
