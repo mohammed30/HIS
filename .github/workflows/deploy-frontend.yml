@@ -29,6 +29,15 @@ jobs:
     - name: Build
       run: npm run build:prod
       working-directory: src/angular
+
+    - name: Consolidate Build Artifacts
+      run: |
+        # Move stray files from dist/HIS to dist/HIS/browser
+        cp src/angular/dist/HIS/dynamic-env.json src/angular/dist/HIS/browser/ || true
+        cp src/angular/dist/HIS/web.config src/angular/dist/HIS/browser/ || true
+        # Using -r for directories like media
+        cp -r src/angular/dist/HIS/media src/angular/dist/HIS/browser/ || true
+      shell: bash
       
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
