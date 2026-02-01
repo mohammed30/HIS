@@ -67,6 +67,7 @@ function configureRoutes() {
       iconClass: 'fas fa-sitemap',
       order: 31,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.ChartOfAccounts',
     },
     {
       path: '/accounting/journal-entries',
@@ -75,6 +76,7 @@ function configureRoutes() {
       iconClass: 'fas fa-book',
       order: 32,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.JournalEntries',
     },
     // Insurance
     {

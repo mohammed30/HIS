@@ -120,6 +120,8 @@
     "Permission:ApproveResults": "Approve Results",
     "Permission:ManageWarehouses": "Manage Warehouses",
     "Permission:StockOperations": "Stock Operations",
-    "Permission:ManageInvoices": "Manage Invoices"
+    "Permission:ManageInvoices": "Manage Invoices",
+    "Permission:ChartOfAccounts": "Chart of Accounts",
+    "Permission:JournalEntries": "Journal Entries"
   }
 }

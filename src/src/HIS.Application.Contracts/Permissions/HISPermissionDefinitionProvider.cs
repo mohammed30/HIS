@@ -40,6 +40,8 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         // Billing
         var billing = hisGroup.AddPermission(HISPermissions.Billing.Default, L("Permission:Billing"));
         billing.AddChild(HISPermissions.Billing.ManageInvoices, L("Permission:ManageInvoices"));
+        billing.AddChild(HISPermissions.Billing.ChartOfAccounts, L("Permission:ChartOfAccounts"));
+        billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
     }
 
     private static LocalizableString L(string name)

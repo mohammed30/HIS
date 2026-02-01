@@ -153,6 +153,8 @@
     "Permission:ApproveResults": "اعتماد النتائج",
     "Permission:ManageWarehouses": "إدارة المخازن",
     "Permission:StockOperations": "عمليات المخزون",
-    "Permission:ManageInvoices": "إدارة الفواتير"
+    "Permission:ManageInvoices": "إدارة الفواتير",
+    "Permission:ChartOfAccounts": "شجرة الحسابات",
+    "Permission:JournalEntries": "القيود اليومية"
   }
 }

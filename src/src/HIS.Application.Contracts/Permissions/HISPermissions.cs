@@ -44,6 +44,8 @@ public static class HISPermissions
     {
         public const string Default = GroupName + ".Billing";
         public const string ManageInvoices = Default + ".ManageInvoices";
+        public const string ChartOfAccounts = Default + ".ChartOfAccounts";
+        public const string JournalEntries = Default + ".JournalEntries";
     }
 }
 
