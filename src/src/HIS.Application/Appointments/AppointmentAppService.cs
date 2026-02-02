@@ -75,6 +75,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
             input.ClinicId,
             input.AppointmentDate,
             input.Type,
+            input.IsWalkIn,
             input.Notes
         );
 
@@ -107,6 +108,43 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
     {
         var appt = await _appointmentRepository.GetAsync(id);
         await _appointmentManager.CancelAsync(appt);
+        await _appointmentRepository.UpdateAsync(appt);
+    }
+
+    [Authorize(HISPermissions.Appointments.Edit)]
+    public async Task CheckInAsync(Guid id)
+    {
+        var appt = await _appointmentRepository.GetAsync(id);
+        if (appt.Status != AppointmentStatus.Scheduled && appt.Status != AppointmentStatus.Confirmed)
+        {
+             // Allow check-in if scheduled/confirmed
+             throw new Volo.Abp.UserFriendlyException("Cannot check-in. Appointment is not in Scheduled or Confirmed state.");
+        }
+        appt.Status = AppointmentStatus.CheckedIn;
+        await _appointmentRepository.UpdateAsync(appt);
+    }
+
+    [Authorize(HISPermissions.Appointments.Edit)]
+    public async Task StartConsultationAsync(Guid id)
+    {
+        var appt = await _appointmentRepository.GetAsync(id);
+        if (appt.Status != AppointmentStatus.CheckedIn)
+        {
+             throw new Volo.Abp.UserFriendlyException("Patient must be Checked-In first.");
+        }
+        appt.Status = AppointmentStatus.InConsultation;
+        await _appointmentRepository.UpdateAsync(appt);
+    }
+
+    [Authorize(HISPermissions.Appointments.Edit)]
+    public async Task CompleteConsultationAsync(Guid id)
+    {
+        var appt = await _appointmentRepository.GetAsync(id);
+        if (appt.Status != AppointmentStatus.InConsultation)
+        {
+             throw new Volo.Abp.UserFriendlyException("Appointments must be In-Consultation to complete.");
+        }
+        appt.Status = AppointmentStatus.Completed;
         await _appointmentRepository.UpdateAsync(appt);
     }
 

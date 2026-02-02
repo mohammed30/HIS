@@ -14,6 +14,10 @@ public interface IAppointmentAppService : IApplicationService
     Task<AppointmentDto> CreateAsync(CreateAppointmentDto input);
     Task<AppointmentDto> UpdateAsync(Guid id, CreateAppointmentDto input); // Reusing Create DTO for simplicity
     Task CancelAsync(Guid id);
+    Task CheckInAsync(Guid id);
+    Task StartConsultationAsync(Guid id);
+    Task CompleteConsultationAsync(Guid id);
+
     Task<List<DateTime>> GetAvailableSlotsAsync(Guid doctorId, DateTime date);
     Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId);
     Task<List<LookupDto<Guid>>> GetClinicLookupAsync();

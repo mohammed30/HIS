@@ -181,6 +181,7 @@ export class BookingComponent implements OnInit {
       clinicId: this.selectedClinicId,
       appointmentDate: selectInfo.startStr, // ISO string with timezone
       type: AppointmentType.FirstVisit,
+      isWalkIn: false,
       notes: ''
     };
 

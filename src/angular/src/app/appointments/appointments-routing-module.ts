@@ -13,6 +13,10 @@ const routes: Routes = [
   {
     path: 'waiting-list',
     component: WaitingListComponent
+  },
+  {
+    path: 'flow',
+    loadComponent: () => import('./clinic-flow/clinic-flow.component').then(m => m.ClinicFlowComponent)
   }
 ];
 

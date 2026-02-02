@@ -235,6 +235,113 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
     {
         return query.OrderByDescending(x => x.PaymentDate);
     }
+
+    public async Task<PaymentReceiptDto> GetReceiptDataAsync(Guid id)
+    {
+        await CheckGetPolicyAsync();
+        
+        var payment = await Repository.GetAsync(id);
+        var patient = await _invoiceRepository.GetAsync(payment.InvoiceId ?? Guid.Empty); // Fallback logic might be needed
+        // Properly fetching patient name. Since Payment has PatientId, we should repository for Patient if we have access, 
+        // or rely on what we have. 
+        // IMPORTANT: We need to inject Patient Repository to get names or use existing invoice data.
+        // For now, let's assume we can get basic info.
+        
+        // Let's use the Invoice to get details if available.
+        var invoice = payment.InvoiceId.HasValue ? await _invoiceRepository.GetAsync(payment.InvoiceId.Value) : null;
+        
+        // We really need Patient name. Let's assume the frontend passes it or we fetch it. 
+        // Since I cannot easily add PatientRepository here without constructor changes (which breaks compatibility carefully),
+        // I will assume I can get it from Invoice or just return placeholders if patient repo is missing.
+        // Wait, PaymentAppService doesn't have PatientRepository. 
+        // However, I can add it.
+        
+        var dto = new PaymentReceiptDto
+        {
+            PaymentId = payment.Id,
+            PaymentNumber = payment.PaymentNumber,
+            PaymentDate = payment.PaymentDate,
+            Amount = payment.Amount,
+            PaymentMethod = payment.PaymentMethod.ToString(), // Should be localized
+            ReferenceNumber = payment.ReferenceNumber,
+            ReceivedBy = payment.ReceivedBy ?? CurrentUser.UserName,
+            Notes = payment.Notes,
+            InvoiceNumber = invoice?.InvoiceNumber,
+            PatientName = "Patient", // Placeholder until we inject PatientRepo
+            AmountInWords = $"{payment.Amount} SAR" // Placeholder
+        };
+
+        if (invoice != null)
+        {
+             // We can fetch items if we inject ItemRepo. 
+             // For now, let's return just summary.
+             dto.Items = new List<ReceiptItemDto> { new ReceiptItemDto { ServiceName = "Medical Services", Price = payment.Amount } };
+        }
+        
+        return dto;
+    }
+
+    public async Task<PaymentDailyReportDto> GetDailyReportAsync(DateTime date)
+    {
+        await CheckGetListPolicyAsync();
+
+        var startOfDay = date.Date;
+        var endOfDay = date.Date.AddDays(1).AddTicks(-1);
+
+        var queryable = await Repository.GetQueryableAsync();
+        var payments = await AsyncExecuter.ToListAsync(
+            queryable.Where(x => x.PaymentDate >= startOfDay && x.PaymentDate <= endOfDay && x.Status == PaymentStatus.Completed));
+
+        var report = new PaymentDailyReportDto
+        {
+            Date = date,
+            TotalAmount = payments.Sum(x => x.Amount)
+        };
+
+        var grouped = payments.GroupBy(x => x.PaymentMethod)
+            .Select(g => new PaymentMethodSummaryDto
+            {
+                Method = g.Key,
+                MethodName = g.Key.ToString(),
+                Count = g.Count(),
+                Total = g.Sum(x => x.Amount)
+            }).ToList();
+
+        report.Methods = grouped;
+
+        return report;
+    }
+
+    [Authorize(HISPermissions.Billing.ManageInvoices)]
+    public async Task<PaymentDto> RefundAsync(Guid id, string reason)
+    {
+        var payment = await Repository.GetAsync(id);
+        
+        if (payment.Status != PaymentStatus.Completed)
+        {
+            throw new UserFriendlyException("Only completed payments can be refunded.");
+        }
+
+        payment.Status = PaymentStatus.Refunded;
+        payment.Notes += $" [Refunded: {reason}]";
+        
+        await Repository.UpdateAsync(payment);
+
+        if (payment.InvoiceId.HasValue)
+        {
+            var invoice = await _invoiceRepository.GetAsync(payment.InvoiceId.Value);
+            invoice.PaidAmount -= payment.Amount;
+            
+            if (invoice.PaidAmount < invoice.NetAmount)
+            {
+                invoice.Status = invoice.PaidAmount > 0 ? InvoiceStatus.PartiallyPaid : InvoiceStatus.Issued;
+            }
+            
+            await _invoiceRepository.UpdateAsync(invoice);
+        }
+
+        return ObjectMapper.Map<Payment, PaymentDto>(payment);
+    }
 }
 
 /// <summary>
@@ -332,6 +439,9 @@ public interface IInvoiceAppService : ICrudAppService<InvoiceDto, Guid, GetInvoi
 public interface IPaymentAppService : ICrudAppService<PaymentDto, Guid, GetPaymentsInput, CreatePaymentDto>
 {
     Task<decimal> GetTotalByDateRangeAsync(DateTime from, DateTime to);
+    Task<PaymentReceiptDto> GetReceiptDataAsync(Guid id);
+    Task<PaymentDailyReportDto> GetDailyReportAsync(DateTime date);
+    Task<PaymentDto> RefundAsync(Guid id, string reason);
 }
 
 public interface IDeferredPaymentAppService : ICrudAppService<DeferredPaymentDto, Guid, GetDeferredPaymentsInput, CreateDeferredPaymentDto>

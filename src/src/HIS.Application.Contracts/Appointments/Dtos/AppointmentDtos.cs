@@ -15,6 +15,7 @@ public class AppointmentDto : AuditedEntityDto<Guid>
     public DateTime AppointmentDate { get; set; }
     public AppointmentStatus Status { get; set; }
     public AppointmentType Type { get; set; }
+    public bool IsWalkIn { get; set; }
     
     public string Notes { get; set; }
 }
@@ -27,6 +28,7 @@ public class CreateAppointmentDto
     
     public DateTime AppointmentDate { get; set; }
     public AppointmentType Type { get; set; }
+    public bool IsWalkIn { get; set; }
     
     public string Notes { get; set; }
 }

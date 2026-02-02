@@ -12,6 +12,7 @@ export interface AppointmentDto extends AuditedEntityDto<string> {
   appointmentDate: string;
   status: AppointmentStatus;
   type: AppointmentType;
+  isWalkIn: boolean;
   notes?: string;
 }
 
@@ -21,6 +22,7 @@ export interface CreateAppointmentDto {
   clinicId: string;
   appointmentDate: string;
   type: AppointmentType;
+  isWalkIn: boolean;
   notes?: string;
 }
 

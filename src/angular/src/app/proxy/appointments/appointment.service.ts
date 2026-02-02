@@ -17,6 +17,27 @@ export class AppointmentService {
     },
       { apiName: this.apiName, ...config });
 
+  checkIn = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/appointment/${id}/check-in`,
+    },
+      { apiName: this.apiName, ...config });
+
+  startConsultation = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/appointment/${id}/start-consultation`,
+    },
+      { apiName: this.apiName, ...config });
+
+  completeConsultation = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/appointment/${id}/complete-consultation`,
+    },
+      { apiName: this.apiName, ...config });
+
 
   create = (input: CreateAppointmentDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AppointmentDto>({

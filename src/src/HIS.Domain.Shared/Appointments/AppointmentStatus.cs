@@ -6,5 +6,13 @@ public enum AppointmentStatus
     Confirmed = 1,
     Cancelled = 2,
     Completed = 3,
-    NoShow = 4
+    NoShow = 4,
+    /// <summary>
+    /// وصل المريض
+    /// </summary>
+    CheckedIn = 5,
+    /// <summary>
+    /// داخل العيادة
+    /// </summary>
+    InConsultation = 6
 }

@@ -15,6 +15,8 @@ public class Appointment : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public DateTime AppointmentDate { get; set; }
     public AppointmentStatus Status { get; set; }
     public AppointmentType Type { get; set; }
+    
+    public bool IsWalkIn { get; set; } = false;
 
     public string? Notes { get; set; }
 

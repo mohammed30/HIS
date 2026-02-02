@@ -205,6 +205,15 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Appointments',
     },
+    {
+      path: '/appointments/flow',
+      name: '::Menu:ClinicFlow',
+      parentName: '::Menu:Appointments',
+      iconClass: 'fas fa-stream',
+      order: 24,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Appointments',
+    },
     // Services & Pricing
     {
       path: '/services',

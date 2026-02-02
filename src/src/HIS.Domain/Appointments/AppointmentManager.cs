@@ -25,6 +25,7 @@ public class AppointmentManager : DomainService
         Guid clinicId,
         DateTime appointmentDate,
         AppointmentType type,
+        bool isWalkIn = false,
         string notes = null)
     {
         // 1. Validation: Doctor Schedule
@@ -83,7 +84,8 @@ public class AppointmentManager : DomainService
             type
         )
         {
-            Notes = notes
+            Notes = notes,
+            IsWalkIn = isWalkIn
         };
     }
 

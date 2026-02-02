@@ -48,9 +48,14 @@ const statusColors: { [key: number]: string } = {
             <i class="fas fa-money-bill-wave me-2"></i>
             المدفوعات - Payments
           </h5>
-          <button class="btn btn-primary" (click)="showForm = true; resetForm()">
-            <i class="fas fa-plus me-1"></i> تسجيل دفعة
-          </button>
+          <div>
+            <button class="btn btn-info me-2 text-white" (click)="showDailyReport()">
+              <i class="fas fa-chart-bar me-1"></i> التقرير اليومي
+            </button>
+            <button class="btn btn-primary" (click)="showForm = true; resetForm()">
+              <i class="fas fa-plus me-1"></i> تسجيل دفعة
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <!-- Filters -->
@@ -81,7 +86,7 @@ const statusColors: { [key: number]: string } = {
 
           <!-- Summary -->
           <div class="alert alert-info mb-3">
-            <strong>إجمالي المدفوعات:</strong> {{ totalAmount | number:'1.2-2' }} جنيه
+            <strong>إجمالي المعروض:</strong> {{ totalAmount | number:'1.2-2' }} جنيه
           </div>
 
           <!-- Table -->
@@ -114,8 +119,13 @@ const statusColors: { [key: number]: string } = {
                       </span>
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-info me-1" title="طباعة">
+                      <button class="btn btn-sm btn-outline-info me-1" (click)="printReceipt(item)" title="طباعة">
                         <i class="fas fa-print"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger me-1" 
+                              *ngIf="item.status === 1" 
+                              (click)="promptRefund(item)" title="استرداد">
+                        <i class="fas fa-undo"></i>
                       </button>
                       <button class="btn btn-sm btn-outline-secondary" (click)="viewDetails(item)">
                         <i class="fas fa-eye"></i>
@@ -202,6 +212,40 @@ const statusColors: { [key: number]: string } = {
           </div>
         </div>
       }
+      
+      <!-- Daily Report Modal -->
+      @if (showReport) {
+        <div class="modal show d-block" style="background: rgba(0,0,0,0.5)">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">التقرير اليومي - {{ reportDate | date:'yyyy-MM-dd' }}</h5>
+                <button type="button" class="btn-close" (click)="showReport = false"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3 text-center">
+                    <input type="date" class="form-control w-50 mx-auto" [(ngModel)]="reportDate" (change)="loadDailyReport()">
+                </div>
+                <ul class="list-group">
+                  @for (method of dailyReport?.methods; track method.method) {
+                     <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ method.methodName }}
+                        <span class="badge bg-primary rounded-pill">{{ method.total | number:'1.2-2' }}</span>
+                     </li>
+                  }
+                  <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-dark">
+                    <strong>الإجمالي الكلي</strong>
+                    <strong>{{ dailyReport?.totalAmount | number:'1.2-2' }}</strong>
+                  </li>
+                </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="showReport = false">إغلاق</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`.modal { z-index: 1050; }`]
@@ -218,6 +262,10 @@ export class PaymentsComponent implements OnInit {
   filterFromDate = '';
   filterToDate = '';
   showForm = false;
+  showReport = false;
+  reportDate = new Date().toISOString().split('T')[0];
+  dailyReport: any = null;
+
   formData: any = this.getEmptyForm();
   totalAmount = 0;
 
@@ -254,7 +302,7 @@ export class PaymentsComponent implements OnInit {
       next: (res) => {
         this.items = res.items || [];
         this.totalCount = res.totalCount || 0;
-        this.totalAmount = this.items.reduce((sum, p) => sum + p.amount, 0);
+        this.totalAmount = this.items.reduce((sum, p) => sum + p.amount, 0); // Summary of page only
       },
       error: (err) => console.error(err)
     });
@@ -276,6 +324,81 @@ export class PaymentsComponent implements OnInit {
 
   viewDetails(item: Payment) {
     alert(`رقم الدفعة: ${item.paymentNumber}\nالمبلغ: ${item.amount}\nالملاحظات: ${item.notes || 'لا يوجد'}`);
+  }
+
+  promptRefund(item: Payment) {
+    if (confirm('هل أنت متأكد من استرداد هذه الدفعة؟ سيتم عكس المبلغ من الفاتورة.')) {
+      this.http.post(`${this.apiUrl}/${item.id}/refund`, {}, { params: { reason: 'Requested by user' } }).subscribe({
+        next: () => {
+          alert('تم الاسترداد بنجاح');
+          this.loadData();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('حدث خطأ أثناء الاسترداد');
+        }
+      });
+    }
+  }
+
+  printReceipt(item: Payment) {
+    this.http.get<any>(`${this.apiUrl}/${item.id}/receipt-data`).subscribe({
+      next: (data) => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>سند قبض - ${data.paymentNumber}</title>
+                        <style>
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; padding: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                            .row { display: flex; margin-bottom: 10px; }
+                            .label { font-weight: bold; width: 120px; }
+                            .value { flex: 1; }
+                            .amount-box { border: 2px solid #333; padding: 10px; font-size: 20px; font-weight: bold; text-align: center; margin: 20px 0; }
+                            .footer { margin-top: 50px; text-align: center; font-size: 12px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>${data.hospitalName}</h2>
+                            <h3>سند قبض / Receipt</h3>
+                        </div>
+                        <div class="row"><div class="label">رقم السند:</div><div class="value">${data.paymentNumber}</div></div>
+                        <div class="row"><div class="label">التاريخ:</div><div class="value">${new Date(data.paymentDate).toLocaleString()}</div></div>
+                        <div class="row"><div class="label">استلمنا من:</div><div class="value">${data.patientName}</div></div>
+                        <div class="amount-box">
+                            ${data.amount} ${data.amountInWords || 'جنيه'}
+                        </div>
+                        <div class="row"><div class="label">وذلك عن:</div><div class="value">${data.items?.[0]?.serviceName || 'خدمات طبية'}</div></div>
+                        <div class="row"><div class="label">طريقة الدفع:</div><div class="value">${data.paymentMethod}</div></div>
+                        
+                        <div class="footer">
+                             <p>توقيع المستلم: ${data.receivedBy}</p>
+                             <p>شكراً لتعاملكم معنا</p>
+                        </div>
+                        <script>window.print();</script>
+                    </body>
+                    </html>
+                `);
+          printWindow.document.close();
+        }
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  showDailyReport() {
+    this.showReport = true;
+    this.loadDailyReport();
+  }
+
+  loadDailyReport() {
+    this.http.get<any>(`${this.apiUrl}/daily-report?date=${this.reportDate}`).subscribe({
+      next: (res) => this.dailyReport = res,
+      error: (err) => console.error(err)
+    });
   }
 
   save() {

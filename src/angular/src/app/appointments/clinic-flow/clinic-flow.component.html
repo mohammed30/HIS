@@ -1,0 +1,110 @@
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fas fa-stream me-2"></i> Clinic Flow & Queue</h3>
+        <div class="text-muted">{{ today | date:'fullDate' }}</div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Clinic</label>
+                    <select class="form-select" [(ngModel)]="selectedClinicId" (change)="onClinicChange()">
+                        <option value="">Select Clinic...</option>
+                        <option *ngFor="let c of clinics" [value]="c.id">{{c.name}}</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Doctor</label>
+                    <select class="form-select" [(ngModel)]="selectedDoctorId" (change)="loadFlow()" [disabled]="!selectedClinicId">
+                        <option value="">Select Doctor...</option>
+                        <option *ngFor="let d of doctors" [value]="d.id">{{d.name}}</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" (click)="loadFlow()" [disabled]="!selectedDoctorId">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Queue List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Today's Appointments</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>Notes</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of appointments" [class.table-warning]="item.isWalkIn">
+                        <td>
+                            <div class="fw-bold">{{ item.appointmentDate | date:'shortTime' }}</div>
+                            <small *ngIf="item.isWalkIn" class="text-danger fw-bold">WALK-IN</small>
+                        </td>
+                        <td>{{ item.patientName || 'Unknown' }}</td>
+                        <td>
+                            <span class="badge rounded-pill" [ngClass]="getStatusBadge(item.status)">
+                                {{ getStatusLabel(item.status) }}
+                            </span>
+                        </td>
+                        <td>
+                            <!-- Enum label resolving might need pipe or map, simpler for now -->
+                             {{ item.type === 2 ? 'Emergency' : (item.type === 0 ? 'First Visit' : 'Follow-up') }}
+                        </td>
+                        <td><small class="text-muted text-truncate d-inline-block" style="max-width: 150px;">{{ item.notes }}</small></td>
+                        <td class="text-end">
+                            <!-- Action Buttons based on Status -->
+                            
+                            <!-- Scheduled/Confirmed -> Check In -->
+                            <button *ngIf="item.status === 0 || item.status === 1" 
+                                    class="btn btn-sm btn-info text-white me-1" 
+                                    (click)="checkIn(item.id)" title="Check In">
+                                <i class="fas fa-sign-in-alt"></i> Check In
+                            </button>
+
+                            <!-- Checked In -> Start Consultation -->
+                            <button *ngIf="item.status === 5" 
+                                    class="btn btn-sm btn-warning me-1" 
+                                    (click)="startConsultation(item.id)" title="Start Consultation">
+                                <i class="fas fa-user-md"></i> Start
+                            </button>
+
+                            <!-- In Consultation -> Complete -->
+                            <button *ngIf="item.status === 6" 
+                                    class="btn btn-sm btn-success me-1" 
+                                    (click)="completeConsultation(item.id)" title="Complete">
+                                <i class="fas fa-check"></i> Complete
+                            </button>
+
+                             <!-- Cancel (if not completed) -->
+                             <button *ngIf="item.status !== 3 && item.status !== 2" 
+                                class="btn btn-sm btn-outline-danger" 
+                                (click)="cancel(item.id)" title="Cancel">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="appointments.length === 0 && !loading">
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fas fa-calendar-times mb-3 display-4"></i>
+                            <p>No appointments found for today.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

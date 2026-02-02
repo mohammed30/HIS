@@ -158,3 +158,46 @@ public class GetDeferredPaymentsInput : PagedAndSortedResultRequestDto
     public DeferredPaymentStatus? Status { get; set; }
 }
 #endregion
+
+#region Reporting DTOs
+public class PaymentReceiptDto
+{
+    public Guid PaymentId { get; set; }
+    public string PaymentNumber { get; set; }
+    public DateTime PaymentDate { get; set; }
+    public string PatientName { get; set; }
+    public string PatientFileNumber { get; set; }
+    public decimal Amount { get; set; }
+    public string AmountInWords { get; set; }
+    public string PaymentMethod { get; set; }
+    public string ReferenceNumber { get; set; }
+    public string ReceivedBy { get; set; }
+    public string Notes { get; set; }
+    public string InvoiceNumber { get; set; }
+    public List<ReceiptItemDto> Items { get; set; }
+    public string HospitalName { get; set; } = "Asia Hospital";
+    public string HospitalLogoUrl { get; set; }
+}
+
+public class ReceiptItemDto
+{
+    public string ServiceName { get; set; }
+    public decimal Price { get; set; }
+}
+
+public class PaymentDailyReportDto
+{
+    public DateTime Date { get; set; }
+    public List<PaymentMethodSummaryDto> Methods { get; set; } = new();
+    public decimal TotalAmount { get; set; }
+}
+
+public class PaymentMethodSummaryDto
+{
+    public PaymentMethod Method { get; set; }
+    public string MethodName { get; set; }
+    public int Count { get; set; }
+    public decimal Total { get; set; }
+}
+#endregion
+
