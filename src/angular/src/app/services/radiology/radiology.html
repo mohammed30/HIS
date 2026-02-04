@@ -5,7 +5,7 @@
             <small class="text-muted">Manage X-Ray, CT, MRI exams</small>
         </div>
         <button class="btn btn-primary" (click)="create()">
-            <i class="fa fa-plus me-1"></i> New Exam
+            <i class="fas fa-plus me-1"></i> New Exam
         </button>
     </div>
     <div class="card-body">
@@ -27,10 +27,10 @@
             <ngx-datatable-column name="Actions" sortable="false">
                 <ng-template let-row="row" ngx-datatable-cell-template>
                     <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(row.id)">
-                        <i class="fa fa-pencil"></i>
+                        <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger" (click)="delete(row.id)">
-                        <i class="fa fa-trash"></i>
+                        <i class="fas fa-trash"></i>
                     </button>
                 </ng-template>
             </ngx-datatable-column>

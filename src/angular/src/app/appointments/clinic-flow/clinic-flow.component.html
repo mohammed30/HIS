@@ -17,7 +17,8 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Doctor</label>
-                    <select class="form-select" [(ngModel)]="selectedDoctorId" (change)="loadFlow()" [disabled]="!selectedClinicId">
+                    <select class="form-select" [(ngModel)]="selectedDoctorId" (change)="loadFlow()"
+                        [disabled]="!selectedClinicId">
                         <option value="">Select Doctor...</option>
                         <option *ngFor="let d of doctors" [value]="d.id">{{d.name}}</option>
                     </select>
@@ -62,39 +63,36 @@
                         </td>
                         <td>
                             <!-- Enum label resolving might need pipe or map, simpler for now -->
-                             {{ item.type === 2 ? 'Emergency' : (item.type === 0 ? 'First Visit' : 'Follow-up') }}
+                            {{ item.type === 2 ? 'Emergency' : (item.type === 0 ? 'First Visit' : 'Follow-up') }}
                         </td>
-                        <td><small class="text-muted text-truncate d-inline-block" style="max-width: 150px;">{{ item.notes }}</small></td>
+                        <td><small class="text-muted text-truncate d-inline-block" style="max-width: 150px;">{{
+                                item.notes }}</small></td>
                         <td class="text-end">
                             <!-- Action Buttons based on Status -->
-                            
+
                             <!-- Scheduled/Confirmed -> Check In -->
-                            <button *ngIf="item.status === 0 || item.status === 1" 
-                                    class="btn btn-sm btn-info text-white me-1" 
-                                    (click)="checkIn(item.id)" title="Check In">
+                            <button *ngIf="item.status === 0 || item.status === 1"
+                                class="btn btn-sm btn-info text-white me-1" (click)="checkIn(item.id)" title="Check In">
                                 <i class="fas fa-sign-in-alt"></i> Check In
                             </button>
 
                             <!-- Checked In -> Start Consultation -->
-                            <button *ngIf="item.status === 5" 
-                                    class="btn btn-sm btn-warning me-1" 
-                                    (click)="startConsultation(item.id)" title="Start Consultation">
+                            <button *ngIf="item.status === 5" class="btn btn-sm btn-warning me-1"
+                                (click)="startConsultation(item.id)" title="Start Consultation">
                                 <i class="fas fa-user-md"></i> Start
                             </button>
 
                             <!-- In Consultation -> Complete -->
-                            <button *ngIf="item.status === 6" 
-                                    class="btn btn-sm btn-success me-1" 
-                                    (click)="completeConsultation(item.id)" title="Complete">
+                            <button *ngIf="item.status === 6" class="btn btn-sm btn-success me-1"
+                                (click)="completeConsultation(item.id)" title="Complete">
                                 <i class="fas fa-check"></i> Complete
                             </button>
 
-                             <!-- Cancel (if not completed) -->
-                             <button *ngIf="item.status !== 3 && item.status !== 2" 
-                                class="btn btn-sm btn-outline-danger" 
+                            <!-- Cancel (if not completed) -->
+                            <button *ngIf="item.status !== 3 && item.status !== 2" class="btn btn-sm btn-outline-danger"
                                 (click)="cancel(item.id)" title="Cancel">
-                            <i class="fas fa-times"></i>
-                        </button>
+                                <i class="fas fa-times"></i>
+                            </button>
                         </td>
                     </tr>
                     <tr *ngIf="appointments.length === 0 && !loading">

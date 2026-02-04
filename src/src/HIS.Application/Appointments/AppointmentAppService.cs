@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HIS.Appointments.Dtos;
+using HIS.Settings;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -21,17 +22,23 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
     private readonly IRepository<Appointment, Guid> _appointmentRepository;
     private readonly IRepository<WaitingList, Guid> _waitingListRepository;
     private readonly IRepository<DoctorSchedule, Guid> _scheduleRepository;
+    private readonly IRepository<Clinic, Guid> _clinicRepository;
+    private readonly IRepository<Doctor, Guid> _doctorRepository;
     private readonly AppointmentManager _appointmentManager;
 
     public AppointmentAppService(
         IRepository<Appointment, Guid> appointmentRepository,
         IRepository<WaitingList, Guid> waitingListRepository,
         IRepository<DoctorSchedule, Guid> scheduleRepository,
+        IRepository<Clinic, Guid> clinicRepository,
+        IRepository<Doctor, Guid> doctorRepository,
         AppointmentManager appointmentManager)
     {
         _appointmentRepository = appointmentRepository;
         _waitingListRepository = waitingListRepository;
         _scheduleRepository = scheduleRepository;
+        _clinicRepository = clinicRepository;
+        _doctorRepository = doctorRepository;
         _appointmentManager = appointmentManager;
     }
 
@@ -175,13 +182,36 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
 
     public async Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId)
     {
-        // Mock or simple query
-        return new List<LookupDto<Guid>>(); 
+        var query = await _doctorRepository.GetQueryableAsync();
+        
+        if (clinicId.HasValue)
+        {
+            // Get the clinic to find its DepartmentId
+            var clinic = await _clinicRepository.FindAsync(clinicId.Value);
+            if (clinic != null)
+            {
+                query = query.Where(d => d.DepartmentId == clinic.DepartmentId);
+            }
+        }
+        
+        var doctors = await AsyncExecuter.ToListAsync(query.Where(d => d.IsActive));
+        
+        return doctors.Select(d => new LookupDto<Guid>
+        {
+            Id = d.Id,
+            Name = d.NameAr ?? d.NameEn
+        }).ToList();
     }
 
     public async Task<List<LookupDto<Guid>>> GetClinicLookupAsync()
     {
-        return new List<LookupDto<Guid>>();
+        var clinics = await _clinicRepository.GetListAsync(c => c.IsActive);
+        
+        return clinics.Select(c => new LookupDto<Guid>
+        {
+            Id = c.Id,
+            Name = c.NameAr ?? c.NameEn
+        }).ToList();
     }
 
     // --- WAITING LIST ---

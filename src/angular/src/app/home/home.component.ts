@@ -1,7 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { AuthService } from '@abp/ng.core';
+import { CommonModule } from '@angular/common';
+import { AuthService, LocalizationModule } from '@abp/ng.core';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, LocalizationModule],
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],

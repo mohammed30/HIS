@@ -1054,7 +1054,7 @@
     "@napi-rs/nice-win32-ia32-msvc" "1.1.1"
     "@napi-rs/nice-win32-x64-msvc" "1.1.1"
 
-"@ng-bootstrap/ng-bootstrap@~19.0.0":
+"@ng-bootstrap/ng-bootstrap@^19.0.0", "@ng-bootstrap/ng-bootstrap@~19.0.0":
   version "19.0.1"
   resolved "https://registry.npmjs.org/@ng-bootstrap/ng-bootstrap/-/ng-bootstrap-19.0.1.tgz"
   integrity sha512-1lErAkwh0F+gWkzpiddViY4GfA9LVXkwLpgBsV9Mb3IC0zo6WNkY8WxCC+LqajirBTu20DCkZSqeRzrwaVLpZw==
@@ -1507,7 +1507,7 @@
     "@volo/ngx-lepton-x.core" "5.0.2"
     tslib "^2.3.0"
 
-"@volo/ngx-lepton-x.core@5.0.2":
+"@volo/ngx-lepton-x.core@~5.0.0", "@volo/ngx-lepton-x.core@5.0.2":
   version "5.0.2"
   resolved "https://registry.npmjs.org/@volo/ngx-lepton-x.core/-/ngx-lepton-x.core-5.0.2.tgz"
   integrity sha512-oqx7wt9KgeuY+A3iR0zDq8a9a3PsMdwq21ba3RGYsG3/qO4mdGiSoF4tYhzMrP8A+BQwhAsP6dB+qqACyIrdPQ==

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -50,20 +51,44 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
 
     public async Task<ServiceItemDto> CreateAsync(CreateUpdateServiceItemDto input)
     {
-        // Validation: Check code uniqueness
-        var existing = await _serviceRepository.FirstOrDefaultAsync(x => x.Code == input.Code);
+        // Auto-generate code if not provided
+        var code = string.IsNullOrWhiteSpace(input.Code) 
+            ? await GenerateServiceCodeAsync(input.Category)
+            : input.Code;
+            
+        // Check code uniqueness
+        var existing = await _serviceRepository.FirstOrDefaultAsync(x => x.Code == code);
         if (existing != null)
         {
-            throw new Volo.Abp.UserFriendlyException($"Service Code {input.Code} already exists.");
+            throw new Volo.Abp.UserFriendlyException($"Service Code {code} already exists.");
         }
 
-        var item = new ServiceItem(GuidGenerator.Create(), input.Code, input.Name, input.Category, input.DepartmentId)
+        var item = new ServiceItem(GuidGenerator.Create(), code, input.Name, input.Category, input.DepartmentId)
         {
-            IsActive = input.IsActive
+            IsActive = input.IsActive,
+            Price = input.Price.GetValueOrDefault(),
+            Unit = input.Unit,
+            ReferenceRange = input.ReferenceRange,
+            Instructions = input.Instructions
         };
 
         await _serviceRepository.InsertAsync(item);
         return ObjectMapper.Map<ServiceItem, ServiceItemDto>(item);
+    }
+    
+    private async Task<string> GenerateServiceCodeAsync(ServiceCategory category)
+    {
+        var count = await _serviceRepository.CountAsync(x => x.Category == category);
+        var prefix = category switch
+        {
+            ServiceCategory.LabTest => "LAB",
+            ServiceCategory.Radiology => "RAD",
+            ServiceCategory.Consultation => "CON",
+            ServiceCategory.Procedure => "PRO",
+            ServiceCategory.Surgery => "SUR",
+            _ => "SVC"
+        };
+        return $"{prefix}-{(count + 1).ToString("D3")}";
     }
 
     public async Task<ServiceItemDto> UpdateAsync(Guid id, CreateUpdateServiceItemDto input)
@@ -73,7 +98,11 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
         item.Category = input.Category;
         item.DepartmentId = input.DepartmentId;
         item.IsActive = input.IsActive;
-        // Code usually shouldn't change, or needs validation
+        item.Price = input.Price.GetValueOrDefault();
+        item.Unit = input.Unit;
+        item.ReferenceRange = input.ReferenceRange;
+        item.Instructions = input.Instructions;
+        // Code usually shouldn't change
 
         await _serviceRepository.UpdateAsync(item);
         return ObjectMapper.Map<ServiceItem, ServiceItemDto>(item);

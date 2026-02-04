@@ -33,6 +33,13 @@ td,
   /* Slightly bolder for readability */
 }
 
+/* Fix FontAwesome override by Cairo */
+.fa, .fas, .far, .fab {
+  font-family: "Font Awesome 5 Free" !important;
+}
+.fas { font-weight: 900 !important; }
+.far { font-weight: 400 !important; }
+
 /* Global Font Size Bump for Readability */
 html,
 body {

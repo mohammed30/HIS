@@ -5,32 +5,45 @@
             <small class="text-muted">Manage standard billable services</small>
         </div>
         <button class="btn btn-primary" (click)="create()">
-            <i class="fa fa-plus me-1"></i> New Service
+            <i class="fas fa-plus me-1"></i> New Service
         </button>
     </div>
     <div class="card-body">
         <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
-            <ngx-datatable-column name="Code" prop="code"></ngx-datatable-column>
-            <ngx-datatable-column name="Name" prop="name"></ngx-datatable-column>
-            <ngx-datatable-column name="Category" prop="category">
-                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
-                    <span class="badge bg-info">{{ value }}</span>
-                    <!-- Enum mapping needed in UI or pipe, simple display for now -->
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column name="Active" prop="isActive">
+            <ngx-datatable-column [name]="'::Code' | abpLocalization" prop="code"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="name"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Price' | abpLocalization" prop="price">
                 <ng-template let-value="value" ngx-datatable-cell-template>
-                    <span class="badge" [class.bg-success]="value" [class.bg-secondary]="!value">{{ value ? 'Active' :
-                        'Inactive' }}</span>
+                    {{ value | number:'1.2-2' }} <small class="text-muted">ج.م</small>
                 </ng-template>
             </ngx-datatable-column>
-            <ngx-datatable-column name="Actions" sortable="false">
+            <ngx-datatable-column [name]="'::Category' | abpLocalization" prop="category">
+                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                    <span class="badge" [ngClass]="{
+                        'bg-success': value === 2,
+                        'bg-primary': value === 3,
+                        'bg-info': value === 0,
+                        'bg-warning': value === 1,
+                        'bg-danger': value === 4,
+                        'bg-secondary': value === 5
+                    }">{{ getCategoryName(value) }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Active' | abpLocalization" prop="isActive">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span class="badge" [class.bg-success]="value" [class.bg-secondary]="!value">{{ value ? ('::Active'
+                        |
+                        abpLocalization) :
+                        ('::Inactive' | abpLocalization) }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" sortable="false">
                 <ng-template let-row="row" ngx-datatable-cell-template>
                     <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(row.id)">
-                        <i class="fa fa-pencil"></i>
+                        <i class="fas fa-pencil-alt"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger" (click)="delete(row.id)">
-                        <i class="fa fa-trash"></i>
+                        <i class="fas fa-trash"></i>
                     </button>
                 </ng-template>
             </ngx-datatable-column>
@@ -46,23 +59,54 @@
     <ng-template #abpBody>
         <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
             <div class="mb-3">
-                <label>Code</label>
-                <input type="text" class="form-control" formControlName="code">
+                <label class="form-label">{{ '::Code' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="code"
+                    placeholder="يتم توليده تلقائياً إذا تُرك فارغاً">
             </div>
             <div class="mb-3">
-                <label>Name</label>
-                <input type="text" class="form-control" formControlName="name">
+                <label class="form-label">{{ '::Name' | abpLocalization }} *</label>
+                <input type="text" class="form-control" formControlName="name" required>
             </div>
-            <div class="mb-3">
-                <label>Category</label>
-                <select class="form-select" formControlName="category">
-                    <option [ngValue]="null">Select Category</option>
-                    <option *ngFor="let cat of categories" [ngValue]="cat.key">{{ cat.value }}</option>
-                </select>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ '::Category' | abpLocalization }} *</label>
+                    <select class="form-select" formControlName="category">
+                        <option [ngValue]="null">{{ '::SelectCategory' | abpLocalization }}</option>
+                        <option *ngFor="let cat of categories" [ngValue]="cat.key">{{ cat.value }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ '::Price' | abpLocalization }}</label>
+                    <input type="number" class="form-control" formControlName="price" placeholder="0">
+                </div>
             </div>
+
+            <!-- Lab-specific fields (shown when category = LabTest = 2) -->
+            <div *ngIf="form.get('category')?.value === 2" class="border rounded p-3 mb-3 bg-light">
+                <h6 class="text-muted mb-3"><i class="fas fa-microscope me-1"></i> {{ '::LabTestDetails' |
+                    abpLocalization }}
+                </h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ '::Unit' | abpLocalization }}</label>
+                        <input type="text" class="form-control" formControlName="unit"
+                            placeholder="mg/dL, mmol/L, etc.">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ '::ReferenceRange' | abpLocalization }}</label>
+                        <input type="text" class="form-control" formControlName="referenceRange" placeholder="70-100">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ '::Instructions' | abpLocalization }}</label>
+                    <textarea class="form-control" formControlName="instructions" rows="2"
+                        placeholder="فاطر، صائم، إلخ"></textarea>
+                </div>
+            </div>
+
             <div class="form-check">
                 <input type="checkbox" class="form-check-input" formControlName="isActive" id="isActive">
-                <label class="form-check-label" for="isActive">Is Active</label>
+                <label class="form-check-label" for="isActive">{{ '::Active' | abpLocalization }}</label>
             </div>
         </form>
     </ng-template>

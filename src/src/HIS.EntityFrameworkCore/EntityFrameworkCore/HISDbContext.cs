@@ -42,12 +42,20 @@ public class HISDbContext :
     public DbSet<Specialty> Specialties { get; set; }
     public DbSet<Clinic> Clinics { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
-    public DbSet<Laboratory> Laboratories { get; set; }
+    public DbSet<HIS.Settings.Laboratory> Laboratories { get; set; }
 
     // Appointments
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
     public DbSet<WaitingList> WaitingLists { get; set; }
+
+    // Laboratory Module (New)
+    public DbSet<HIS.Laboratory.LabTest> LabTests { get; set; }
+    public DbSet<HIS.Laboratory.LabRequest> LabRequests { get; set; }
+    public DbSet<HIS.Laboratory.LabAppointment> LabAppointments { get; set; }
+
+    // Emergency Module (New)
+    public DbSet<HIS.Emergency.EmergencyVisit> EmergencyVisits { get; set; }
 
     // Insurance
     public DbSet<HIS.Insurance.InsuranceCompany> InsuranceCompanies { get; set; }
@@ -255,8 +263,8 @@ public class HISDbContext :
             b.HasIndex(x => x.DepartmentId);
         });
 
-        // Laboratory
-        builder.Entity<Laboratory>(b =>
+        // Laboratory (Settings)
+        builder.Entity<HIS.Settings.Laboratory>(b =>
         {
             b.ToTable(HISConsts.DbTablePrefix + "Laboratories", HISConsts.DbSchema);
             b.ConfigureByConvention();
@@ -270,6 +278,61 @@ public class HISDbContext :
             b.Property(x => x.WorkingHours).HasMaxLength(128);
             
             b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        // --- Laboratory Module ---
+
+        builder.Entity<HIS.Laboratory.LabTest>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "LabTests", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Price).HasPrecision(18, 2);
+            b.Property(x => x.Instructions).HasMaxLength(1024);
+            b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        builder.Entity<HIS.Laboratory.LabRequest>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "LabRequests", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Result).HasMaxLength(2048);
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.RequestDate);
+            b.HasIndex(x => x.Status);
+        });
+
+        builder.Entity<HIS.Laboratory.LabAppointment>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "LabAppointments", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            b.Property(x => x.PreparationInstructions).HasMaxLength(2048);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.AppointmentDate);
+            b.HasIndex(x => x.Status);
+            b.HasIndex(x => x.ServiceItemId);
+        });
+
+        // --- Emergency Module ---
+
+        builder.Entity<HIS.Emergency.EmergencyVisit>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "EmergencyVisits", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.ChiefComplaint).HasMaxLength(1024).IsRequired();
+            b.Property(x => x.BloodPressure).HasMaxLength(16);
+            b.Property(x => x.Temperature).HasPrecision(4, 1);
+            b.Property(x => x.Notes).HasMaxLength(2048);
+
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.ArrivalTime);
+            b.HasIndex(x => x.Severity);
+            b.HasIndex(x => x.Status);
         });
 
         // Appointment
@@ -520,6 +583,7 @@ public class HISDbContext :
             
             b.Property(x => x.Code).HasMaxLength(64).IsRequired();
             b.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            b.Property(x => x.Price).HasPrecision(18, 2);
             
             b.HasIndex(x => x.Code).IsUnique();
         });

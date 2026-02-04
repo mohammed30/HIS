@@ -1,0 +1,863 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Cairo Font for Arabic */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+a,
+button,
+input,
+select,
+textarea,
+label,
+th,
+td,
+.nav-link,
+.menu-item,
+.sidebar-menu,
+.card,
+.card-title,
+.card-body,
+.btn,
+.form-control,
+.form-label {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 500;
+  /* Slightly bolder for readability */
+}
+
+/* Fix FontAwesome override by Cairo */
+.fa, .fas, .far, .fab {
+  font-family: "Font Awesome 5 Free" !important;
+}
+.fas { font-weight: 900 !important; }
+.far { font-weight: 400 !important; }
+
+/* Global Font Size Bump for Readability */
+html,
+body {
+  font-size: 15px;
+  /* Default is usually 14px or 16px. 15px is a good middle ground if 14 was too small */
+}
+
+/* ===== DARK/LIGHT MODE THEME VARIABLES ===== */
+:root {
+  /* Light Mode (Default) */
+  --lpx-theme-light-bg: url('assets/images/login/login-bg-img-light.svg');
+  --lpx-theme-dim-bg: url('assets/images/login/login-bg-img-dim.svg');
+  --lpx-theme-dark-bg: url('assets/images/login/login-bg-img-dark.svg');
+
+  --lpx-logo-icon: url('assets/images/logo/icon-lite.svg');
+  --lpx-logo-url: var(--lpx-logo-icon);
+  --lpx-logo: var(--lpx-logo-icon);
+
+  /* Theme Colors */
+  --theme-bg-primary: #f8f9fa;
+  --theme-bg-secondary: #ffffff;
+  --theme-bg-card: #ffffff;
+  --theme-text-primary: #212529;
+  --theme-text-secondary: #6c757d;
+  --theme-text-muted: #adb5bd;
+  --theme-border-color: #dee2e6;
+  --theme-shadow: rgba(0, 0, 0, 0.1);
+  --theme-input-bg: #ffffff;
+  --theme-table-stripe: rgba(0, 0, 0, 0.02);
+  --theme-hover-bg: rgba(0, 0, 0, 0.03);
+
+  .abp-logo {
+    background-repeat: no-repeat;
+  }
+
+  .abp-support {
+    width: 178px;
+    height: 30px;
+    background-image: url('assets/images/getting-started/abp-support.svg');
+  }
+
+  .abp-community {
+    width: 215px;
+    height: 30px;
+    background-image: url('assets/images/getting-started/abp-community.svg');
+  }
+
+  .abp-blog {
+    width: 142px;
+    height: 30px;
+    background-image: url('assets/images/getting-started/abp-blog.svg');
+  }
+
+  .logo-x {
+    width: 20px;
+    height: 20px;
+    background-image: url('assets/images/getting-started/x.svg');
+  }
+}
+
+/* ===== DARK MODE ===== */
+[data-theme="dark"] {
+  --theme-bg-primary: #1b1e24;
+  --theme-bg-secondary: #212631;
+  --theme-bg-card: #282d37;
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #f0f0f0;
+  --theme-text-muted: #d0d0d0;
+  --theme-border-color: #3c4252;
+  --theme-shadow: rgba(0, 0, 0, 0.4);
+  --theme-input-bg: #323846;
+  --theme-table-stripe: rgba(255, 255, 255, 0.04);
+  --theme-hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* Apply theme variables */
+body {
+  background-color: var(--theme-bg-primary) !important;
+  color: var(--theme-text-primary) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cards */
+.card {
+  background-color: var(--theme-bg-card) !important;
+  border-color: var(--theme-border-color) !important;
+  box-shadow: 0 2px 8px var(--theme-shadow) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.card-header {
+  background-color: var(--theme-bg-secondary) !important;
+  border-color: var(--theme-border-color) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+/* Tables */
+.table {
+  color: var(--theme-text-primary) !important;
+  --bs-table-bg: var(--theme-bg-card);
+  --bs-table-striped-bg: var(--theme-table-stripe);
+  --bs-table-hover-bg: var(--theme-hover-bg);
+}
+
+.table-dark {
+  background-color: var(--theme-bg-secondary) !important;
+}
+
+.table th,
+.table td {
+  border-color: var(--theme-border-color) !important;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd)>* {
+  background-color: var(--theme-table-stripe) !important;
+}
+
+/* Forms */
+.form-control,
+.form-select {
+  background-color: var(--theme-input-bg) !important;
+  color: var(--theme-text-primary) !important;
+  border-color: var(--theme-border-color) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--theme-input-bg) !important;
+  color: var(--theme-text-primary) !important;
+  border-color: #0d6efd !important;
+}
+
+.form-label {
+  color: var(--theme-text-primary) !important;
+}
+
+/* Modals */
+.modal-content {
+  background-color: var(--theme-bg-card) !important;
+  color: var(--theme-text-primary) !important;
+  border-color: var(--theme-border-color) !important;
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--theme-border-color) !important;
+}
+
+/* Dropdowns */
+.dropdown-menu {
+  background-color: var(--theme-bg-card) !important;
+  border-color: var(--theme-border-color) !important;
+}
+
+.dropdown-item {
+  color: var(--theme-text-primary) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--theme-hover-bg) !important;
+}
+
+/* Sidebar - Dark mode specific */
+[data-theme="dark"] .lpx-sidebar,
+[data-theme="dark"] .lpx-menu {
+  background-color: #1a1d21 !important;
+}
+
+[data-theme="dark"] .lpx-nav-item a {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .lpx-nav-item a:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Navbar - Dark mode */
+[data-theme="dark"] .lpx-navbar,
+[data-theme="dark"] .lpx-topbar {
+  background-color: #212529 !important;
+  border-color: #495057 !important;
+}
+
+/* Text utilities */
+.text-muted {
+  color: var(--theme-text-muted) !important;
+}
+
+/* Badges adjustments */
+[data-theme="dark"] .badge.bg-light {
+  background-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+/* Nav tabs */
+.nav-tabs {
+  border-color: var(--theme-border-color) !important;
+}
+
+.nav-tabs .nav-link {
+  color: var(--theme-text-secondary) !important;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: var(--theme-bg-card) !important;
+  color: var(--theme-text-primary) !important;
+  border-color: var(--theme-border-color) var(--theme-border-color) var(--theme-bg-card) !important;
+}
+
+/* ===== THEME TOGGLE BUTTON ===== */
+.theme-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Light mode button style */
+.theme-toggle-btn.light-mode {
+  background-color: #343a40;
+  color: #ffc107;
+}
+
+/* Dark mode button style */
+.theme-toggle-btn.dark-mode {
+  background-color: #ffc107;
+  color: #343a40;
+}
+
+[dir="rtl"] .theme-toggle-btn {
+  left: auto;
+  right: 20px;
+}
+
+/* ===== COMPREHENSIVE DARK MODE OVERRIDES ===== */
+
+/* ABP Lepton Theme - Main Layout */
+[data-theme="dark"] .lpx-wrapper,
+[data-theme="dark"] .lpx-content-container,
+[data-theme="dark"] .lpx-content {
+  background-color: #1a1d21 !important;
+}
+
+/* ABP Page Component */
+[data-theme="dark"] abp-page,
+[data-theme="dark"] .abp-page,
+[data-theme="dark"] .container-fluid {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* ABP Sidebar */
+[data-theme="dark"] .lpx-sidebar-container,
+[data-theme="dark"] .lpx-sidebar,
+[data-theme="dark"] .lpx-menu,
+[data-theme="dark"] .lpx-menu-container {
+  background-color: #212529 !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .lpx-menu-item,
+[data-theme="dark"] .lpx-menu-item a,
+[data-theme="dark"] .lpx-nav-item,
+[data-theme="dark"] .lpx-nav-item a {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .lpx-menu-item:hover,
+[data-theme="dark"] .lpx-nav-item:hover,
+[data-theme="dark"] .lpx-menu-item a:hover,
+[data-theme="dark"] .lpx-nav-item a:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .lpx-menu-item.active,
+[data-theme="dark"] .lpx-nav-item.active {
+  background-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+/* ABP Top Navbar */
+[data-theme="dark"] .lpx-topbar,
+[data-theme="dark"] .lpx-navbar,
+[data-theme="dark"] .lpx-toolbar,
+[data-theme="dark"] .lpx-header {
+  background-color: #212529 !important;
+  border-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .lpx-topbar *,
+[data-theme="dark"] .lpx-navbar * {
+  color: #ffffff !important;
+}
+
+/* ABP Breadcrumb */
+[data-theme="dark"] .lpx-breadcrumb,
+[data-theme="dark"] .breadcrumb {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .breadcrumb-item,
+[data-theme="dark"] .breadcrumb-item a {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ABP Card Extensions */
+[data-theme="dark"] .card,
+[data-theme="dark"] .card-body,
+[data-theme="dark"] .card-footer {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .card-header {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+/* ABP Table Extensions */
+[data-theme="dark"] table,
+[data-theme="dark"] .table {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  --bs-table-color: #ffffff;
+  --bs-table-striped-color: #ffffff;
+  --bs-table-active-color: #ffffff;
+  --bs-table-hover-color: #ffffff;
+  --bs-table-bg: #2d3238;
+}
+
+[data-theme="dark"] .table thead,
+[data-theme="dark"] .table-dark,
+[data-theme="dark"] thead.table-dark {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  --bs-table-bg: #343a40;
+}
+
+[data-theme="dark"] .table th,
+[data-theme="dark"] .table td {
+  border-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #ffffff !important;
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.04) !important;
+  --bs-table-color-type: #ffffff !important;
+}
+
+/* Force white text on all table cells with high specificity to override Bootstrap styles */
+[data-theme="dark"] .table> :not(caption)>*>* {
+  color: #ffffff !important;
+  --bs-table-color-type: #ffffff;
+}
+
+[data-theme="dark"] .table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ABP Forms */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--theme-text-muted) !important;
+}
+
+[data-theme="dark"] .input-group-text {
+  background-color: #495057 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+/* ABP Buttons - keep primary colors but adjust others */
+[data-theme="dark"] .btn-outline-secondary {
+  color: #ffffff !important;
+  border-color: #6c757d !important;
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background-color: #6c757d !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .btn-light {
+  background-color: #495057 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+/* ABP Modals */
+[data-theme="dark"] .modal-content {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .modal-title {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-close {
+  filter: invert(1) !important;
+}
+
+/* ABP Dropdowns */
+[data-theme="dark"] .dropdown-menu {
+  background-color: #2d3238 !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .dropdown-item {
+  color: #ffffff !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+  background-color: #495057 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .dropdown-divider {
+  border-color: #495057 !important;
+}
+
+/* ABP Alerts */
+[data-theme="dark"] .alert {
+  border-color: #495057 !important;
+}
+
+/* ABP Pagination */
+[data-theme="dark"] .page-link {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .page-link:hover {
+  background-color: #495057 !important;
+}
+
+[data-theme="dark"] .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+
+[data-theme="dark"] .page-item.disabled .page-link {
+  background-color: #2d3238 !important;
+  color: var(--theme-text-muted) !important;
+}
+
+/* ABP Tabs */
+[data-theme="dark"] .nav-tabs {
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link {
+  color: var(--theme-text-secondary) !important;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link:hover {
+  border-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  border-color: #495057 #495057 #2d3238 !important;
+}
+
+/* ABP List Groups */
+[data-theme="dark"] .list-group-item {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .list-group-item:hover {
+  background-color: #343a40 !important;
+}
+
+/* ABP Progress Bars */
+[data-theme="dark"] .progress {
+  background-color: #343a40 !important;
+}
+
+/* ABP Badges */
+[data-theme="dark"] .badge.bg-light {
+  background-color: #495057 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+/* Text colors in dark mode */
+[data-theme="dark"] .text-dark {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .text-muted {
+  color: var(--theme-text-muted) !important;
+}
+
+[data-theme="dark"] .text-body {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .small,
+[data-theme="dark"] small {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ngx-datatable overrides */
+[data-theme="dark"] .ngx-datatable {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-header {
+  background-color: #343a40 !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-header .datatable-header-cell {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-body {
+  background-color: #2d3238 !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-row {
+  background-color: #2d3238 !important;
+  border-top-color: #495057 !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-cell,
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-cell * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  font-weight: 500;
+  /* Improve readability */
+}
+
+/* Stronger Hover for Dark Mode */
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-row:hover,
+[data-theme="dark"] .ngx-datatable .datatable-body .datatable-body-row:hover .datatable-row-group {
+  background-color: rgba(13, 110, 253, 0.25) !important;
+  /* Blue tint for clear highlight */
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+[data-theme="dark"] .lpx-footer,
+[data-theme="dark"] footer,
+[data-theme="dark"] .lp-footer,
+[data-theme="dark"] .footer,
+[data-theme="dark"] app-footer,
+[data-theme="dark"] .abp-footer,
+[data-theme="dark"] .lpx-footer-container {
+  background-color: var(--theme-bg-secondary) !important;
+  border-top: 1px solid var(--theme-border-color) !important;
+  color: var(--theme-text-muted) !important;
+}
+
+/* Force all text inside footer to be muted light */
+[data-theme="dark"] .lpx-footer *,
+[data-theme="dark"] footer *,
+[data-theme="dark"] .lp-footer *,
+[data-theme="dark"] .footer * {
+  color: var(--theme-text-muted) !important;
+}
+
+/* Force links to be brighter */
+[data-theme="dark"] .lpx-footer a,
+[data-theme="dark"] footer a,
+[data-theme="dark"] .lp-footer a,
+[data-theme="dark"] .footer a {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-body-cell-label,
+[data-theme="dark"] .ngx-datatable .datatable-body-cell-label>* {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  border-color: #495057 !important;
+}
+
+/* 
+   --------------------------------------------------------
+   NUCLEAR OPTION FOR FOOTER OVERRIDES
+   --------------------------------------------------------
+*/
+[data-theme="dark"] .lpx-footer,
+[data-theme="dark"] footer,
+[data-theme="dark"] .lp-footer,
+[data-theme="dark"] .footer,
+[data-theme="dark"] app-footer,
+[data-theme="dark"] .abp-footer,
+[data-theme="dark"] .lpx-footer-container,
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) {
+  background-color: var(--theme-bg-secondary) !important;
+  border-top: 1px solid var(--theme-border-color) !important;
+  color: var(--theme-text-muted) !important;
+
+  /* ABP/Lepton Variable Overrides */
+  --lpx-footer-bg: var(--theme-bg-secondary) !important;
+  --lpx-footer-border-color: var(--theme-border-color) !important;
+  --lpx-footer-text-color: var(--theme-text-muted) !important;
+}
+
+/* Force text inside any footer-like element */
+[data-theme="dark"] .lpx-footer *,
+[data-theme="dark"] footer *,
+[data-theme="dark"] .lp-footer *,
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) * {
+  color: var(--theme-text-muted) !important;
+}
+
+/* Force links */
+[data-theme="dark"] .lpx-footer a,
+[data-theme="dark"] footer a,
+[data-theme="dark"] .lp-footer a,
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) a {
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li.active a {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] .h1,
+[data-theme="dark"] .h2,
+[data-theme="dark"] .h3,
+[data-theme="dark"] .h4,
+[data-theme="dark"] .h5,
+[data-theme="dark"] .h6 {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] .h1,
+[data-theme="dark"] .h2,
+[data-theme="dark"] .h3,
+[data-theme="dark"] .h4,
+[data-theme="dark"] .h5,
+[data-theme="dark"] .h6 {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] label {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] a:not(.btn) {
+  color: #6ea8fe !important;
+}
+
+[data-theme="dark"] a:not(.btn):hover {
+  color: #9ec5fe !important;
+}
+
+/* ABP Specific Classes */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-light {
+  background-color: #2d3238 !important;
+}
+
+[data-theme="dark"] .border {
+  border-color: #495057 !important;
+}
+
+[data-theme="dark"] .shadow,
+[data-theme="dark"] .shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Code elements */
+[data-theme="dark"] code {
+  background-color: #343a40 !important;
+  color: #e685b5 !important;
+}
+
+[data-theme="dark"] pre {
+  background-color: #212529 !important;
+  color: #ffffff !important;
+}
+
+/* Fix for App Name visibility with Logo */
+/* The theme removes the text element when a logo is set, so we inject it via CSS */
+/* Note: Targeting lpx-brand-logo (tag) -> a (child) */
+lpx-brand-logo a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px;
+}
+
+lpx-brand-logo a::after {
+  content: 'Asia Hospital';
+  /* Default (English) */
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Localized name for Arabic/RTL */
+[dir="rtl"] lpx-brand-logo a::after {
+  content: 'مستشفى آسيا';
+}
+
+
+/* 
+   --------------------------------------------------------
+   NUCLEAR OPTION FOR FOOTER OVERRIDES - DARK MODE FIX
+   --------------------------------------------------------
+   Applying user requested styles using lpx-footbar class
+   Targeting both LTR and RTL explicitly with HIGH SPECIFICITY
+*/
+html body[data-theme='dark'] .lpx-wrapper .lpx-footbar-container .lpx-footbar,
+html[data-theme='dark'] body .lpx-wrapper .lpx-footbar-container .lpx-footbar,
+[data-theme='dark'] .lpx-footbar-container .lpx-footbar,
+[data-theme='dark'] .lpx-footer-container .lpx-footer,
+[data-theme='dark'] .lpx-footer,
+[data-theme='dark'] footer,
+[data-theme='dark'] app-footer,
+[data-theme='dark'] .abp-footer,
+[data-theme='dark'] .lpx-footer-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin: 0 auto !important;
+  background-color: #1a1d21 !important;
+  border-radius: 0 0 1em 1em !important;
+  border: 1px solid #3c4252 !important;
+  font-size: 0.725rem !important;
+  padding-left: 5px !important;
+  color: #adb5bd !important;
+  background-image: none !important;
+  width: 100% !important;
+}
+
+[data-theme='dark'] .lpx-footbar-container .lpx-footbar a,
+html[data-theme='dark'] body .lpx-footbar-container .lpx-footbar a {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+[data-theme='dark'] .lpx-footbar-container .lpx-footbar a:hover,
+html[data-theme='dark'] body .lpx-footbar-container .lpx-footbar a:hover {
+  color: #0d6efd !important;
+}
+
+/* Ensure light mode cards are distinct (Redundant check) */        
+body:not([data-theme='dark']) .vital-card,
+html:not([data-theme='dark']) .vital-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  color: #212529 !important;
+}
+

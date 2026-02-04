@@ -86,12 +86,44 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">{{ '::Type' | abpLocalization }}</label>
-            <select class="form-select" [(ngModel)]="bookingData.type">
-                <option *ngFor="let t of appointmentTypes" [value]="t.value">
-                    {{ '::Enum:AppointmentType.' + t.label | abpLocalization }}
+            <label class="form-label fw-bold">Search Patient (Name or MRN)</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" placeholder="Type at least 2 chars..."
+                    (input)="patientSearch$.next($event.target.value)">
+            </div>
+            <div *ngIf="isSearchingPatients" class="mt-1 small text-info">
+                <i class="fas fa-spinner fa-spin me-1"></i> Searching...
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Select Patient *</label>
+            <select class="form-select" [(ngModel)]="bookingData.patientId" [class.is-invalid]="!bookingData.patientId">
+                <option value="">-- Select Patient --</option>
+                <option *ngFor="let p of patients" [value]="p.id">
+                    {{ p.fullNameAr }} ({{ p.mrn }})
                 </option>
             </select>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">{{ '::Type' | abpLocalization }}</label>
+                <select class="form-select" [(ngModel)]="bookingData.type">
+                    <option *ngFor="let t of appointmentTypes" [value]="t.value">
+                        {{ '::Enum:AppointmentType.' + t.label | abpLocalization }}
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="isWalkIn" [(ngModel)]="bookingData.isWalkIn">
+                    <label class="form-check-label fw-bold text-danger" for="isWalkIn">
+                        Is Walk-In?
+                    </label>
+                </div>
+            </div>
         </div>
 
         <div class="mb-3">

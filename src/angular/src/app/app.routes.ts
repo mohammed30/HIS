@@ -112,6 +112,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'doctor-schedule',
         loadComponent: () => import('./appointments/doctor-schedule/doctor-schedule').then(c => c.DoctorScheduleComponent)
+      },
+      {
+        path: 'flow',
+        loadComponent: () => import('./appointments/clinic-flow/clinic-flow.component').then(c => c.ClinicFlowComponent)
       }
     ]
   },
@@ -211,6 +215,16 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       }
     ]
+  },
+  {
+    path: 'laboratory',
+    loadChildren: () => import('./laboratory/lab-module').then(m => m.LabModule),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'emergency',
+    loadChildren: () => import('./emergency/emergency-module').then(m => m.EmergencyModule),
+    canActivate: [authGuard],
   },
   {
     path: 'setting-management',

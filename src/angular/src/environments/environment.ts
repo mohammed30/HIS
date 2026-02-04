@@ -8,7 +8,10 @@ const oAuthConfig = {
   clientId: 'HIS_App',
   responseType: 'code',
   scope: 'offline_access HIS',
-  requireHttps: true,
+  requireHttps: false,
+  skipIssuerCheck: true,
+  strictDiscoveryDocumentValidation: false,
+  silentRefreshRedirectUri: baseUrl,
 };
 
 export const environment = {

@@ -10,6 +10,27 @@ public class ServiceItem : FullAuditedAggregateRoot<Guid>
     public ServiceCategory Category { get; set; }
     public Guid? DepartmentId { get; set; }
     public bool IsActive { get; set; }
+    
+    /// <summary>
+    /// السعر
+    /// </summary>
+    public decimal Price { get; set; }
+    
+    // Lab-specific fields (used when Category = LabTest)
+    /// <summary>
+    /// الوحدة (للتحاليل)
+    /// </summary>
+    public string? Unit { get; set; }
+    
+    /// <summary>
+    /// المرجع الطبيعي (للتحاليل)
+    /// </summary>
+    public string? ReferenceRange { get; set; }
+    
+    /// <summary>
+    /// تعليمات (للتحاليل - صائم، إلخ)
+    /// </summary>
+    public string? Instructions { get; set; }
 
     protected ServiceItem() { }
 

@@ -1,0 +1,154 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-ambulance me-2"></i> Emergency Room Dashboard
+                </h5>
+                <button class="btn btn-light btn-sm fw-bold text-danger" (click)="openRegister()">
+                    <i class="fas fa-plus-circle me-1"></i> Register Fast Track
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
+                    <ngx-datatable-column name="Priority" prop="severity" [maxWidth]="100">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge" [ngClass]="getSeverityBadge(row.severity)">
+                                Level {{ row.severity }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Time" prop="arrivalTime">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{ row.arrivalTime | date:'shortTime' }}</div>
+                            <small class="text-muted">{{ row.arrivalTime | date:'MMM d' }}</small>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Patient" prop="patientName">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div class="fw-bold">{{ row.patientName }}</div>
+                            <small class="text-danger" *ngIf="!row.patientName">Unknown / Unidentified</small>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Chief Complaint" prop="chiefComplaint"></ngx-datatable-column>
+
+                    <ngx-datatable-column name="Vitals" [sortable]="false">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div *ngIf="row.bloodPressure" class="small">
+                                <span class="badge bg-light text-dark border me-1">BP: {{row.bloodPressure}}</span>
+                                <span class="badge bg-light text-dark border me-1">HR: {{row.heartRate}}</span>
+                                <span class="badge bg-light text-dark border">O2: {{row.oxygenSaturation}}%</span>
+                            </div>
+                            <small *ngIf="!row.bloodPressure" class="text-muted">Not Triaged</small>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Actions" [sortable]="false" [maxWidth]="200">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <button class="btn btn-sm btn-outline-primary me-1" (click)="openTriage(row)"
+                                title="Triage">
+                                <i class="fas fa-notes-medical"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" (click)="discharge(row.id)"
+                                title="Discharge">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fast Track Registration Modal -->
+<abp-modal [(visible)]="isRegisterModalOpen">
+    <ng-template #abpHeader>
+        <h3 class="text-danger"><i class="fas fa-user-plus me-2"></i> Fast Track Registration</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <div class="mb-3">
+            <label class="form-label">Patient ID / MRN (Optional)</label>
+            <input type="text" class="form-control" [(ngModel)]="registerData.patientId"
+                placeholder="Leave empty for Anonymous">
+            <small class="text-muted">For MVP, enter existing Patient GUID if known.</small>
+        </div>
+        <div class="mb-3">
+            <label class="form-label required">Chief Complaint</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="registerData.chiefComplaint"
+                placeholder="e.g. Chest Pain, Severe Trauma..."></textarea>
+        </div>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="saveRegister()" [disabled]="!registerData.chiefComplaint">
+            Register
+        </button>
+    </ng-template>
+</abp-modal>
+
+<!-- Triage Modal -->
+<abp-modal [(visible)]="isTriageModalOpen">
+    <ng-template #abpHeader>
+        <h3><i class="fas fa-clipboard-list me-2"></i> Triage Assessment</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Vitals -->
+                <h6 class="border-bottom pb-2 mb-3">Vital Signs</h6>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label small">BP (mmHg)</label>
+                        <input type="text" class="form-control" [(ngModel)]="triageData.bloodPressure"
+                            placeholder="120/80">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Heart Rate (bpm)</label>
+                        <input type="number" class="form-control" [(ngModel)]="triageData.heartRate">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Resp. Rate</label>
+                        <input type="number" class="form-control" [(ngModel)]="triageData.respiratoryRate">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">O2 Sat (%)</label>
+                        <input type="number" class="form-control" [(ngModel)]="triageData.oxygenSaturation">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Temp (°C)</label>
+                        <input type="number" class="form-control" [(ngModel)]="triageData.temperature">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 border-start">
+                <!-- Assessment -->
+                <h6 class="border-bottom pb-2 mb-3">Assessment</h6>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Acuity Level (ESI)</label>
+                    <select class="form-select border-danger" [(ngModel)]="triageData.severity">
+                        <option [ngValue]="1">Level 1 - Resuscitation (Immediate)</option>
+                        <option [ngValue]="2">Level 2 - Emergent (Very Urgent)</option>
+                        <option [ngValue]="3">Level 3 - Urgent</option>
+                        <option [ngValue]="4">Level 4 - Less Urgent</option>
+                        <option [ngValue]="5">Level 5 - Non-Urgent</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" rows="4" [(ngModel)]="triageData.notes"></textarea>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>Close</button>
+        <button type="button" class="btn btn-primary" (click)="saveTriage()">
+            Save Assessment
+        </button>
+    </ng-template>
+</abp-modal>

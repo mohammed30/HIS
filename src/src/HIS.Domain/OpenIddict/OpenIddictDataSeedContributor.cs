@@ -17,6 +17,8 @@ namespace HIS.OpenIddict;
  */
 public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, IDataSeedContributor, ITransientDependency
 {
+    private readonly IOpenIddictApplicationRepository _applicationRepository;
+
     public OpenIddictDataSeedContributor(
         IConfiguration configuration,
         IOpenIddictApplicationRepository openIddictApplicationRepository,
@@ -25,6 +27,7 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
         IOpenIddictScopeManager scopeManager)
         : base(configuration, openIddictApplicationRepository, applicationManager, openIddictScopeRepository, scopeManager)
     {
+        _applicationRepository = openIddictApplicationRepository;
     }
 
     [UnitOfWork]
@@ -58,32 +61,36 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
         var configurationSection = Configuration.GetSection("OpenIddict:Applications");
 
 
-        //Console Test / Angular Client
+        //Console Test / Angular Client - ONLY create if not exists to prevent overwriting RedirectUris
         var consoleAndAngularClientId = configurationSection["HIS_App:ClientId"];
         if (!consoleAndAngularClientId.IsNullOrWhiteSpace())
         {
-            var consoleAndAngularClientRootUrl = configurationSection["HIS_App:RootUrl"]?.TrimEnd('/');
-            await CreateOrUpdateApplicationAsync(
-                applicationType: OpenIddictConstants.ApplicationTypes.Web,
-                name: consoleAndAngularClientId!,
-                type: OpenIddictConstants.ClientTypes.Public,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
-                displayName: "Console Test / Angular Application",
-                secret: null,
-                grantTypes: new List<string> {
-                    OpenIddictConstants.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.GrantTypes.Password,
-                    OpenIddictConstants.GrantTypes.ClientCredentials,
-                    OpenIddictConstants.GrantTypes.RefreshToken,
-                    "LinkLogin",
-                    "Impersonation"
-                },
-                scopes: commonScopes,
-                redirectUris: new List<string> { consoleAndAngularClientRootUrl },
-                postLogoutRedirectUris: new List<string> { consoleAndAngularClientRootUrl },
-                clientUri: consoleAndAngularClientRootUrl,
-                logoUri: "/images/clients/angular.svg"
-            );
+            var existingApp = await _applicationRepository.FindByClientIdAsync(consoleAndAngularClientId);
+            if (existingApp == null)
+            {
+                var consoleAndAngularClientRootUrl = configurationSection["HIS_App:RootUrl"]?.TrimEnd('/');
+                await CreateOrUpdateApplicationAsync(
+                    applicationType: OpenIddictConstants.ApplicationTypes.Web,
+                    name: consoleAndAngularClientId!,
+                    type: OpenIddictConstants.ClientTypes.Public,
+                    consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                    displayName: "Console Test / Angular Application",
+                    secret: null,
+                    grantTypes: new List<string> {
+                        OpenIddictConstants.GrantTypes.AuthorizationCode,
+                        OpenIddictConstants.GrantTypes.Password,
+                        OpenIddictConstants.GrantTypes.ClientCredentials,
+                        OpenIddictConstants.GrantTypes.RefreshToken,
+                        "LinkLogin",
+                        "Impersonation"
+                    },
+                    scopes: commonScopes,
+                    redirectUris: new List<string> { consoleAndAngularClientRootUrl },
+                    postLogoutRedirectUris: new List<string> { consoleAndAngularClientRootUrl },
+                    clientUri: consoleAndAngularClientRootUrl,
+                    logoUri: "/images/clients/angular.svg"
+                );
+            }
         }
 
         
@@ -92,25 +99,29 @@ public class OpenIddictDataSeedContributor : OpenIddictDataSeedContributorBase, 
 
 
 
-        // Swagger Client
+        // Swagger Client - ONLY create if not exists
         var swaggerClientId = configurationSection["HIS_Swagger:ClientId"];
         if (!swaggerClientId.IsNullOrWhiteSpace())
         {
-            var swaggerRootUrl = configurationSection["HIS_Swagger:RootUrl"]?.TrimEnd('/');
+            var existingSwagger = await _applicationRepository.FindByClientIdAsync(swaggerClientId);
+            if (existingSwagger == null)
+            {
+                var swaggerRootUrl = configurationSection["HIS_Swagger:RootUrl"]?.TrimEnd('/');
 
-            await CreateOrUpdateApplicationAsync(
-                applicationType: OpenIddictConstants.ApplicationTypes.Web,
-                name: swaggerClientId!,
-                type: OpenIddictConstants.ClientTypes.Public,
-                consentType: OpenIddictConstants.ConsentTypes.Implicit,
-                displayName: "Swagger Application",
-                secret: null,
-                grantTypes: new List<string> { OpenIddictConstants.GrantTypes.AuthorizationCode, },
-                scopes: commonScopes,
-                redirectUris: new List<string> { $"{swaggerRootUrl}/swagger/oauth2-redirect.html" },
-                clientUri: swaggerRootUrl.EnsureEndsWith('/') + "swagger",
-                logoUri: "/images/clients/swagger.svg"
-            );
+                await CreateOrUpdateApplicationAsync(
+                    applicationType: OpenIddictConstants.ApplicationTypes.Web,
+                    name: swaggerClientId!,
+                    type: OpenIddictConstants.ClientTypes.Public,
+                    consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                    displayName: "Swagger Application",
+                    secret: null,
+                    grantTypes: new List<string> { OpenIddictConstants.GrantTypes.AuthorizationCode, },
+                    scopes: commonScopes,
+                    redirectUris: new List<string> { $"{swaggerRootUrl}/swagger/oauth2-redirect.html" },
+                    clientUri: swaggerRootUrl.EnsureEndsWith('/') + "swagger",
+                    logoUri: "/images/clients/swagger.svg"
+                );
+            }
         }
 
 

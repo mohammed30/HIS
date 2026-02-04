@@ -33,8 +33,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Appointments.WaitingList, Appointments.Dtos.WaitingListDto>();
         CreateMap<Appointments.Dtos.CreateUpdateWaitingListDto, Appointments.WaitingList>(); // Corrected type mapping
         
-        CreateMap<Laboratory, LaboratoryDto>();
-        CreateMap<CreateUpdateLaboratoryDto, Laboratory>();
+        CreateMap<HIS.Settings.Laboratory, HIS.Settings.LaboratoryDto>();
+        CreateMap<HIS.Settings.CreateUpdateLaboratoryDto, HIS.Settings.Laboratory>();
 
         CreateMap<Appointments.DoctorSchedule, Appointments.DoctorScheduleDto>();
         // Financials (Accounting)
@@ -104,5 +104,27 @@ public class HISApplicationAutoMapperProfile : Profile
         
         CreateMap<Pricing.ServicePrice, Pricing.ServicePriceDto>();
         CreateMap<Pricing.CreateUpdateServicePriceDto, Pricing.ServicePrice>();
+
+        // Laboratory (Module)
+        CreateMap<HIS.Laboratory.LabTest, HIS.Laboratory.Dtos.LabTestDto>();
+        CreateMap<HIS.Laboratory.Dtos.CreateUpdateLabTestDto, HIS.Laboratory.LabTest>();
+        
+        CreateMap<HIS.Laboratory.LabRequest, HIS.Laboratory.Dtos.LabRequestDto>()
+            .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+            .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
+            .ForMember(dest => dest.TestName, opt => opt.Ignore())
+            .ForMember(dest => dest.TestCode, opt => opt.Ignore());
+            
+        CreateMap<HIS.Laboratory.Dtos.CreateLabRequestDto, HIS.Laboratory.LabRequest>();
+
+        // Emergency
+        CreateMap<Emergency.EmergencyVisit, Emergency.Dtos.EmergencyVisitDto>()
+             .ForMember(dest => dest.PatientName, opt => opt.Ignore());
+
+        // Lab Appointments
+        CreateMap<HIS.Laboratory.LabAppointment, HIS.Laboratory.Dtos.LabAppointmentDto>()
+            .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+            .ForMember(dest => dest.TestName, opt => opt.Ignore())
+            .ForMember(dest => dest.TestCode, opt => opt.Ignore());
     }
 }

@@ -18,14 +18,24 @@ export interface ServiceItemDto {
     category: ServiceCategory;
     departmentId?: string;
     isActive: boolean;
+    price?: number;
+    // Lab-specific fields (for LabTest category)
+    unit?: string;
+    referenceRange?: string;
+    instructions?: string;
 }
 
 export interface CreateUpdateServiceItemDto {
-    code: string;
+    code?: string; // Optional, auto-generated if empty
     name: string;
     category: ServiceCategory;
     departmentId?: string;
     isActive: boolean;
+    price?: number;
+    // Lab-specific fields (for LabTest category)
+    unit?: string;
+    referenceRange?: string;
+    instructions?: string;
 }
 
 export interface RadiologyItemDto extends ServiceItemDto {

@@ -1,0 +1,138 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">حجوزات المعمل</h5>
+            </div>
+            <div class="col col-md-6 text-end">
+                <button class="btn btn-primary btn-sm" (click)="createAppointment()">
+                    <i class="fa fa-plus me-1"></i>
+                    حجز جديد
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>المريض</th>
+                    <th>التحليل</th>
+                    <th>تاريخ الموعد</th>
+                    <th>الوقت</th>
+                    <th>صيام</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (item of data.items; track item.id) {
+                <tr>
+                    <td>{{ item.patientName }}</td>
+                    <td>{{ item.testName || '-' }}</td>
+                    <td>{{ item.appointmentDate | date:'shortDate' }}</td>
+                    <td>{{ item.preferredTime || '-' }}</td>
+                    <td>
+                        @if (item.isFasting) {
+                        <span class="badge bg-warning text-dark">نعم</span>
+                        } @else {
+                        <span class="badge bg-secondary">لا</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="badge" [ngClass]="getStatusClass(item.status)">
+                            {{ getStatusLabel(item.status) }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            @if (item.status === statuses.Scheduled) {
+                            <button class="btn btn-outline-primary" (click)="confirmAppointment(item.id)" title="تأكيد">
+                                <i class="fa fa-check"></i>
+                            </button>
+                            }
+                            @if (item.status === statuses.Confirmed) {
+                            <button class="btn btn-outline-info" (click)="checkInAppointment(item.id)"
+                                title="تسجيل وصول">
+                                <i class="fa fa-user-check"></i>
+                            </button>
+                            }
+                            @if (item.status === statuses.CheckedIn || item.status === statuses.SampleCollecting) {
+                            <button class="btn btn-outline-success" (click)="completeAppointment(item.id)"
+                                title="إكمال">
+                                <i class="fa fa-check-double"></i>
+                            </button>
+                            }
+                            @if (item.status !== statuses.Completed && item.status !== statuses.Cancelled) {
+                            <button class="btn btn-outline-secondary" (click)="editAppointment(item)" title="تعديل">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" (click)="cancelAppointment(item.id)" title="إلغاء">
+                                <i class="fa fa-times"></i>
+                            </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+                } @empty {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        لا توجد حجوزات
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+        <ngb-pagination [collectionSize]="data.totalCount" [(page)]="list.page" [pageSize]="list.maxResultCount"
+            (pageChange)="list.get()">
+        </ngb-pagination>
+    </div>
+</div>
+
+<!-- Modal -->
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h5>{{ isEditing ? 'تعديل الحجز' : 'حجز جديد' }}</h5>
+    </ng-template>
+    <ng-template #abpBody>
+        <form>
+            <div class="mb-3">
+                <label class="form-label">معرف المريض</label>
+                <input type="text" class="form-control" [(ngModel)]="selectedAppointment.patientId" name="patientId"
+                    required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">معرف التحليل (اختياري)</label>
+                <input type="text" class="form-control" [(ngModel)]="selectedAppointment.serviceItemId"
+                    name="serviceItemId">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">تاريخ الموعد</label>
+                <input type="date" class="form-control" [(ngModel)]="selectedAppointment.appointmentDate"
+                    name="appointmentDate" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">الوقت المفضل</label>
+                <input type="time" class="form-control" [(ngModel)]="selectedAppointment.preferredTime"
+                    name="preferredTime">
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="selectedAppointment.isFasting"
+                    name="isFasting" id="isFasting">
+                <label class="form-check-label" for="isFasting">يتطلب صيام</label>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">ملاحظات</label>
+                <textarea class="form-control" [(ngModel)]="selectedAppointment.notes" name="notes" rows="3"></textarea>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>إلغاء</button>
+        <button type="button" class="btn btn-primary" (click)="save()">
+            <i class="fa fa-save me-1"></i>
+            حفظ
+        </button>
+    </ng-template>
+</abp-modal>

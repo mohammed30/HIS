@@ -1,8 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, NgForm } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { CoreModule, ListService } from '@abp/ng.core';
+import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { environment } from '../../environments/environment';
 
 interface Patient {
@@ -32,218 +33,175 @@ interface Patient {
 @Component({
   selector: 'app-patients',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  imports: [CommonModule, CoreModule, ThemeSharedModule, FormsModule, ReactiveFormsModule],
+  providers: [ListService],
   template: `
-    <div class="container-fluid py-4">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-user-injured me-2"></i>
-            المرضى - Patients
-          </h5>
-          <button class="btn btn-primary" (click)="showForm = true; editingItem = null; resetForm()">
-            <i class="fas fa-plus me-1"></i> إضافة ملف جديد
-          </button>
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="card-title mb-0">{{ '::Menu:Patients' | abpLocalization }}</h5>
+          <small class="text-muted">Manage patient medical records and registration</small>
         </div>
-        <div class="card-body">
-          <!-- Search -->
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" class="form-control" placeholder="بحث بالاسم، رقم الملف، الهوية، أو الجوال..." 
-                       [(ngModel)]="searchText" (input)="search()">
-              </div>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-              <thead class="table-dark">
-                <tr>
-                  <th>رقم الملف (MRN)</th>
-                  <th>الاسم الكامل</th>
-                  <th>تاريخ الميلاد (العمر)</th>
-                  <th>الجنس</th>
-                  <th>الجوال</th>
-                  <th>الحالة</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of items; track item.id) {
-                  <tr>
-                    <td><span class="fw-bold text-primary">{{ item.mrn }}</span></td>
-                    <td>
-                      <div>{{ item.fullNameAr }}</div>
-                      <small class="text-muted">{{ item.fullNameEn }}</small>
-                    </td>
-                    <td>
-                      {{ item.dateOfBirth | date:'yyyy-MM-dd' }}
-                      <span class="badge bg-light text-dark ms-1">{{ calculateAge(item.dateOfBirth) }} سنة</span>
-                    </td>
-                    <td>{{ getGender(item.gender) }}</td>
-                    <td>{{ item.mobileNumber }}</td>
-                    <td>
-                      <span [class]="item.isActive ? 'badge bg-success' : 'badge bg-secondary'">
-                        {{ item.isActive ? 'نشط' : 'غير نشط' }}
-                      </span>
-                    </td>
-                    <td>
-                      <a class="btn btn-sm btn-outline-success me-1" [href]="'/patients/' + item.id + '/medical-record'" title="السجل الطبي">
-                        <i class="fas fa-file-medical"></i>
-                      </a>
-                      <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(item)" title="تعديل">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="delete(item)" title="حذف">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
-                      <i class="fas fa-folder-open fs-1 d-block mb-3"></i>
-                      لا توجد بيانات للمرضى
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalCount > 0">
-            <ngb-pagination
-              [(page)]="page"
-              [pageSize]="pageSize"
-              [collectionSize]="totalCount"
-              (pageChange)="onPageChange($event)"
-              [maxSize]="5"
-              [boundaryLinks]="true">
-            </ngb-pagination>
-            <span class="text-muted">Total: {{ totalCount }}</span>
-          </div>
-        </div>
+        <button class="btn btn-primary" (click)="create()">
+          <i class="fas fa-plus me-1"></i> {{ '::New' | abpLocalization }}
+        </button>
       </div>
-
-      <!-- Modal Form -->
-      @if (showForm) {
-        <div class="modal show d-block" style="background: rgba(0,0,0,0.5)">
-          <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-              <div class="modal-header bg-light">
-                <h5 class="modal-title">
-                  <i class="fas fa-user-circle me-2"></i>
-                  {{ editingItem ? 'تعديل بيانات مريض' : 'تسجيل مريض جديد' }}
-                </h5>
-                <button type="button" class="btn-close" (click)="showForm = false"></button>
-              </div>
-              <div class="modal-body p-4">
-                
-                <!-- Personal Info -->
-                <h6 class="border-bottom pb-2 mb-3 text-primary">البيانات الشخصية</h6>
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">الاسم الأول (عربي) *</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.firstNameAr" required>
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">اسم الأب (عربي)</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.middleNameAr">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">اللقب (عربي) *</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.lastNameAr" required>
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">First Name (En)</label>
-                    <input type="text" class="form-control text-start" dir="ltr" [(ngModel)]="formData.firstNameEn">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Middle Name (En)</label>
-                    <input type="text" class="form-control text-start" dir="ltr" [(ngModel)]="formData.middleNameEn">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Last Name (En)</label>
-                    <input type="text" class="form-control text-start" dir="ltr" [(ngModel)]="formData.lastNameEn">
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div class="col-md-3 mb-3">
-                    <label class="form-label">تاريخ الميلاد *</label>
-                    <input type="date" class="form-control" [(ngModel)]="formData.dateOfBirth" required>
-                  </div>
-                  <div class="col-md-3 mb-3">
-                    <label class="form-label">الجنس *</label>
-                    <select class="form-select" [(ngModel)]="formData.gender" required>
-                      <option [ngValue]="1">ذكر</option>
-                      <option [ngValue]="2">أنثى</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3 mb-3">
-                    <label class="form-label">رقم الهوية</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.identityNumber">
-                  </div>
-                  <div class="col-md-3 mb-3">
-                    <label class="form-label">فصيلة الدم</label>
-                    <select class="form-select" [(ngModel)]="formData.bloodType">
-                      <option [ngValue]="null">-- اختر --</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Contact Info -->
-                <h6 class="border-bottom pb-2 mb-3 mt-4 text-primary">بيانات الاتصال والعنوان</h6>
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">رقم الجوال *</label>
-                    <input type="tel" class="form-control text-start" dir="ltr" [(ngModel)]="formData.mobileNumber" required>
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">البريد الإلكتروني</label>
-                    <input type="email" class="form-control text-start" dir="ltr" [(ngModel)]="formData.email">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">المدينة</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.city">
-                  </div>
-                  <div class="col-md-12 mb-3">
-                    <label class="form-label">العنوان التفصيلي</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.address">
-                  </div>
-                </div>
-
-                <div class="form-check mt-3">
-                  <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" id="isActive">
-                  <label class="form-check-label" for="isActive">ملف نشط</label>
-                </div>
-              </div>
-              <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary px-4" (click)="showForm = false">إلغاء</button>
-                <button type="button" class="btn btn-primary px-4" (click)="save()">
-                  <i class="fas fa-save me-1"></i> حفظ البيانات
-                </button>
-              </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization" 
+                     [(ngModel)]="searchText" (input)="search()">
             </div>
           </div>
         </div>
-      }
+
+        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+          <ngx-datatable-column [name]="'::MRN' | abpLocalization" prop="mrn">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              <span class="fw-bold text-primary">{{ value }}</span>
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'::FullName' | abpLocalization" prop="fullNameAr">
+             <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                <div>{{ value }}</div>
+                <small class="text-muted">{{ row.fullNameEn }}</small>
+             </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Age' | abpLocalization">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              {{ row.dateOfBirth | date:'yyyy-MM-dd' }}
+              <span class="badge bg-light text-dark ms-1">{{ calculateAge(row.dateOfBirth) }} سنة</span>
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Gender' | abpLocalization" prop="gender">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              {{ getGender(value) }}
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'::MobileNumber' | abpLocalization" prop="mobileNumber"></ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              <span class="badge" [class.bg-success]="value" [class.bg-secondary]="!value">
+                {{ value ? ('::Active' | abpLocalization) : ('::Inactive' | abpLocalization) }}
+              </span>
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Actions' | abpLocalization" sortable="false">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <a class="btn btn-sm btn-outline-success me-1" [href]="'/patients/' + row.id + '/medical-record'" [title]="'::MedicalRecord' | abpLocalization">
+                <i class="fas fa-vials"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(row)">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="delete(row)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </ng-template>
+          </ngx-datatable-column>
+        </ngx-datatable>
+      </div>
     </div>
+
+    <abp-modal [(visible)]="showForm" [options]="{ size: 'xl' }">
+      <ng-template #abpHeader>
+        <h3>{{ (editingItem ? '::Edit' : '::New') | abpLocalization }} {{ '::Menu:Patients' | abpLocalization }}</h3>
+      </ng-template>
+
+      <ng-template #abpBody>
+        <form #patientForm="ngForm">
+          <h6 class="border-bottom pb-2 mb-3 text-primary">{{ '::PersonalInformation' | abpLocalization }}</h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::FirstName' | abpLocalization }} (Ar) *</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.firstNameAr" name="firstNameAr" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::MiddleName' | abpLocalization }} (Ar)</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.middleNameAr" name="middleNameAr">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::LastName' | abpLocalization }} (Ar) *</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.lastNameAr" name="lastNameAr" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">First Name (En)</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.firstNameEn" name="firstNameEn">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Middle Name (En)</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.middleNameEn" name="middleNameEn">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Last Name (En)</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.lastNameEn" name="lastNameEn">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{{ '::DateOfBirth' | abpLocalization }} *</label>
+              <input type="date" class="form-control" [(ngModel)]="formData.dateOfBirth" name="dateOfBirth" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{{ '::Gender' | abpLocalization }} *</label>
+              <select class="form-select" [(ngModel)]="formData.gender" name="gender" required>
+                <option [ngValue]="1">ذكر</option>
+                <option [ngValue]="2">أنثى</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{{ '::IdentityNumber' | abpLocalization }}</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.identityNumber" name="identityNumber">
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{{ '::BloodType' | abpLocalization }}</label>
+              <select class="form-select" [(ngModel)]="formData.bloodType" name="bloodType">
+                 <option [ngValue]="null">-- اختر --</option>
+                 <option value="A+">A+</option><option value="A-">A-</option>
+                 <option value="B+">B+</option><option value="B-">B-</option>
+                 <option value="O+">O+</option><option value="O-">O-</option>
+                 <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+
+          <h6 class="border-bottom pb-2 mb-3 mt-4 text-primary">{{ '::ContactInformation' | abpLocalization }}</h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::MobileNumber' | abpLocalization }} *</label>
+              <input type="tel" class="form-control" [(ngModel)]="formData.mobileNumber" name="mobileNumber" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::Email' | abpLocalization }}</label>
+              <input type="email" class="form-control" [(ngModel)]="formData.email" name="email">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::City' | abpLocalization }}</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.city" name="city">
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">{{ '::Address' | abpLocalization }}</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.address" name="address">
+            </div>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" name="isActive" id="isActive">
+            <label class="form-check-label" for="isActive">{{ '::Active' | abpLocalization }}</label>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" (click)="showForm = false">{{ '::Cancel' | abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
+          <i class="fas fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+        </button>
+      </ng-template>
+    </abp-modal>
   `,
   styles: [`
     .modal { z-index: 1050; }
@@ -251,8 +209,11 @@ interface Patient {
   `]
 })
 export class PatientsComponent implements OnInit {
+  @ViewChild('patientForm') form: NgForm;
+  private cdr = inject(ChangeDetectorRef);
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/patient';
+  public readonly list = inject(ListService);
 
   items: Patient[] = [];
   searchText = '';
@@ -266,7 +227,18 @@ export class PatientsComponent implements OnInit {
   totalCount = 0;
 
   ngOnInit() {
-    this.loadData();
+    const streamCreator = (query) => this.getData(query);
+    this.list.hookToQuery(streamCreator).subscribe((response) => {
+      this.items = response.items as Patient[];
+      this.totalCount = response.totalCount;
+    });
+  }
+
+  create() {
+    this.editingItem = null;
+    this.resetForm();
+    this.showForm = true;
+    setTimeout(() => this.cdr.detectChanges());
   }
 
   getEmptyForm(): Partial<Patient> {
@@ -281,15 +253,12 @@ export class PatientsComponent implements OnInit {
 
   resetForm() { this.formData = this.getEmptyForm(); }
 
+  getData(query: any) {
+    return this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${query.skipCount}&maxResultCount=${query.maxResultCount}`);
+  }
+
   loadData() {
-    const skipCount = (this.page - 1) * this.pageSize;
-    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
-      next: (res) => {
-        this.items = res.items || [];
-        this.totalCount = res.totalCount || 0;
-      },
-      error: (err) => console.error(err)
-    });
+    this.list.get();
   }
 
   onPageChange(page: number) {
@@ -310,6 +279,7 @@ export class PatientsComponent implements OnInit {
       this.formData.dateOfBirth = this.formData.dateOfBirth.split('T')[0];
     }
     this.showForm = true;
+    setTimeout(() => this.cdr.detectChanges());
   }
 
   save() {

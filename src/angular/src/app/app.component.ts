@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { DynamicLayoutComponent, ReplaceableComponentsService } from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
@@ -14,10 +14,11 @@ import { CustomLoginComponent } from './auth/login/custom-login.component';
   `,
   imports: [LoaderBarComponent, DynamicLayoutComponent, ThemeToggleComponent],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private replaceableComponents = inject(ReplaceableComponentsService);
 
-  constructor() {
+  ngOnInit(): void {
+    // Register custom components after app is initialized
     this.replaceableComponents.add({
       component: CustomLoginComponent,
       key: eAccountComponents.Login,

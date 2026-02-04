@@ -1,9 +1,9 @@
-import { ListService, PagedResultDto } from '@abp/ng.core';
+import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
 import { ServiceItemService, ServiceItemDto, ServiceCategory } from '../../proxy/services/service-item.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
-import { CommonModule } from '@angular/common'; // Important for structural directives like *ngIf
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
@@ -11,7 +11,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
   templateUrl: './services.html',
   styleUrls: ['./services.scss'],
   standalone: true,
-  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, CoreModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
   providers: [ListService],
 })
 export class ServicesComponent implements OnInit {
@@ -24,7 +24,7 @@ export class ServicesComponent implements OnInit {
 
   categories = Object.keys(ServiceCategory)
     .filter(k => !isNaN(Number(k)))
-    .map(k => ({ key: k, value: ServiceCategory[k] }));
+    .map(k => ({ key: Number(k), value: ServiceCategory[k as any] }));
 
   constructor(
     public readonly list: ListService,
@@ -55,9 +55,13 @@ export class ServicesComponent implements OnInit {
 
   buildForm() {
     this.form = this.fb.group({
-      code: [this.selectedItem.code || '', [Validators.required]],
+      code: [this.selectedItem.code || ''], // Not required, will be auto-generated
       name: [this.selectedItem.name || '', [Validators.required]],
-      category: [this.selectedItem.category || null, [Validators.required]],
+      category: [this.selectedItem.category !== undefined ? this.selectedItem.category : null, [Validators.required]],
+      price: [this.selectedItem.price || 0],
+      unit: [this.selectedItem.unit || ''],
+      referenceRange: [this.selectedItem.referenceRange || ''],
+      instructions: [this.selectedItem.instructions || ''],
       isActive: [this.selectedItem.isActive !== false], // Default true
     });
   }
@@ -65,9 +69,15 @@ export class ServicesComponent implements OnInit {
   save() {
     if (this.form.invalid) return;
 
+    const data = {
+      ...this.form.value,
+      category: parseInt(this.form.value.category, 10),
+      price: parseFloat(this.form.value.price || 0)
+    };
+
     const request = this.selectedItem.id
-      ? this.serviceItemService.update(this.selectedItem.id, this.form.value)
-      : this.serviceItemService.create(this.form.value);
+      ? this.serviceItemService.update(this.selectedItem.id, data)
+      : this.serviceItemService.create(data);
 
     request.subscribe(() => {
       this.isModalOpen = false;
@@ -81,5 +91,17 @@ export class ServicesComponent implements OnInit {
         this.serviceItemService.delete(id).subscribe(() => this.list.get());
       }
     });
+  }
+
+  getCategoryName(category: number): string {
+    const names: { [key: number]: string } = {
+      0: 'استشارة',
+      1: 'إجراء',
+      2: 'تحليل مخبري',
+      3: 'أشعة',
+      4: 'عملية',
+      5: 'أخرى'
+    };
+    return names[category] || 'غير محدد';
   }
 }

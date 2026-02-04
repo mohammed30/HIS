@@ -214,6 +214,44 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Appointments',
     },
+    // Laboratory
+    {
+      name: '::Menu:Laboratory',
+      iconClass: 'fas fa-vials',
+      order: 25,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/laboratory/catalog',
+      name: '::Menu:LabCatalog',
+      parentName: '::Menu:Laboratory',
+      iconClass: 'fas fa-book-medical',
+      order: 1,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/laboratory/requests',
+      name: '::Menu:LabRequests',
+      parentName: '::Menu:Laboratory',
+      iconClass: 'fas fa-microscope',
+      order: 2,
+      layout: eLayoutType.application,
+    },
+    // Emergency
+    {
+      name: '::Menu:Emergency',
+      iconClass: 'fas fa-ambulance',
+      order: 30,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/emergency/dashboard',
+      name: '::Menu:EmergencyDashboard',
+      parentName: '::Menu:Emergency',
+      iconClass: 'fas fa-heartbeat',
+      order: 1,
+      layout: eLayoutType.application,
+    },
     // Services & Pricing
     {
       path: '/services',

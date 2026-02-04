@@ -1,0 +1,185 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">{{ '::Menu:LabRequests' | abpLocalization }}</h5>
+            </div>
+            <div class="text-end col col-md-6">
+                <button id="create-request" class="btn btn-primary" type="button" (click)="openCreateModal()">
+                    <i class="fa fa-plus me-1"></i>
+                    <span>طلب تحليل جديد</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default>
+            <ngx-datatable-column [name]="'::Date' | abpLocalization" prop="requestDate">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    {{ row.requestDate | date:'short' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Patient' | abpLocalization" prop="patientName"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Test' | abpLocalization" prop="testName">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div>{{ row.testName }}</div>
+                    <small class="text-muted">{{ row.testCode }}</small>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Doctor' | abpLocalization" prop="doctorName"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="badge" [ngClass]="getStatusClass(row.status)">
+                        {{ getStatusLabel(row.status) }}
+                    </span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="250" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <button *ngIf="row.status === 0" class="btn btn-sm btn-info me-1" (click)="collectSample(row.id)">
+                        <i class="fa fa-vial me-1"></i>جمع العينة
+                    </button>
+                    <button *ngIf="row.status !== 0 && row.status !== 3" class="btn btn-sm btn-primary me-1"
+                        (click)="openResultModal(row)">
+                        <i class="fa fa-flask me-1"></i>النتيجة
+                    </button>
+                    <button *ngIf="row.status === 3" class="btn btn-sm btn-secondary me-1"
+                        (click)="openResultModal(row)">
+                        <i class="fa fa-eye me-1"></i>عرض
+                    </button>
+                    <button *ngIf="row.status === 3" class="btn btn-sm btn-success" (click)="printResult(row)">
+                        <i class="fa fa-print me-1"></i>طباعة
+                    </button>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<!-- Create Request Modal -->
+<abp-modal [(visible)]="isCreateModalOpen">
+    <ng-template #abpHeader>
+        <h3>طلب تحليل جديد</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <div class="form-group mb-3">
+            <label class="form-label">المريض <span class="text-danger">*</span></label>
+            <select class="form-control" [(ngModel)]="newRequest.patientId" required>
+                <option value="">-- اختر المريض --</option>
+                <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.fullName }}</option>
+            </select>
+        </div>
+        <div class="form-group mb-3">
+            <label class="form-label">الطبيب <span class="text-danger">*</span></label>
+            <select class="form-control" [(ngModel)]="newRequest.doctorId" required>
+                <option value="">-- اختر الطبيب --</option>
+                <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.fullName }}</option>
+            </select>
+        </div>
+        <div class="form-group mb-3">
+            <label class="form-label">التحليل <span class="text-danger">*</span></label>
+            <select class="form-control" [(ngModel)]="newRequest.serviceItemId" required>
+                <option value="">-- اختر التحليل --</option>
+                <option *ngFor="let test of labTests" [value]="test.id">{{ test.name }} ({{ test.code }})</option>
+            </select>
+        </div>
+        <div class="form-group mb-3">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" [(ngModel)]="newRequest.notes" rows="2"
+                placeholder="ملاحظات إضافية..."></textarea>
+        </div>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>
+            إغلاق
+        </button>
+        <button class="btn btn-primary" (click)="saveRequest()">
+            <i class="fa fa-save me-1"></i>
+            حفظ الطلب
+        </button>
+    </ng-template>
+</abp-modal>
+
+<!-- Result Modal -->
+<abp-modal [(visible)]="isResultModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ '::LabResult' | abpLocalization }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <div class="mb-3">
+            <label class="fw-bold">التحليل:</label> {{ selectedRequest?.testName }}
+        </div>
+        <div class="mb-3">
+            <label class="fw-bold">المريض:</label> {{ selectedRequest?.patientName }}
+        </div>
+
+        <div class="form-group mb-3">
+            <label>النتيجة</label>
+            <textarea class="form-control" rows="5" [(ngModel)]="resultData.result"></textarea>
+        </div>
+        <div class="form-group mb-3">
+            <label>ملاحظات الفني</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="resultData.notes"></textarea>
+        </div>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>
+            {{ '::Close' | abpLocalization }}
+        </button>
+        <button *ngIf="selectedRequest?.status !== 3" class="btn btn-primary" (click)="saveResult()">
+            <i class="fa fa-flask me-1"></i>
+            إكمال
+        </button>
+        <button *ngIf="selectedRequest?.status === 3" class="btn btn-success" (click)="printResult(selectedRequest)">
+            <i class="fa fa-print me-1"></i>
+            طباعة
+        </button>
+    </ng-template>
+</abp-modal>
+
+<!-- Print Template (Hidden) -->
+<div id="print-section" class="d-none">
+    <div *ngIf="printData" style="font-family: Arial, sans-serif; padding: 20px; direction: rtl;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="margin: 0;">مستشفى آسيا</h2>
+            <h3 style="margin: 5px 0;">تقرير نتيجة التحليل المخبري</h3>
+        </div>
+        <hr>
+        <table style="width: 100%; margin-bottom: 20px;">
+            <tr>
+                <td><strong>اسم المريض:</strong> {{ printData.patientName }}</td>
+                <td><strong>التاريخ:</strong> {{ printData.requestDate | date:'yyyy/MM/dd' }}</td>
+            </tr>
+            <tr>
+                <td><strong>التحليل:</strong> {{ printData.testName }}</td>
+                <td><strong>الكود:</strong> {{ printData.testCode }}</td>
+            </tr>
+        </table>
+        <hr>
+        <div style="margin: 20px 0;">
+            <h4>النتيجة:</h4>
+            <p style="white-space: pre-wrap; background: #f5f5f5; padding: 10px; border-radius: 5px;">{{
+                printData.result }}</p>
+        </div>
+        <div *ngIf="printData.notes" style="margin: 20px 0;">
+            <h4>ملاحظات:</h4>
+            <p>{{ printData.notes }}</p>
+        </div>
+        <hr>
+        <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+            <div style="text-align: center;">
+                <p>_________________</p>
+                <p>توقيع الفني</p>
+            </div>
+            <div style="text-align: center;">
+                <p>_________________</p>
+                <p>ختم المختبر</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -16,6 +16,10 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { DoctorScheduleService } from '../../proxy/appointments/doctor-schedule.service';
 import { DoctorScheduleDto } from '../../proxy/appointments/models';
 import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { PatientService } from '../../proxy/patients/patient.service';
+import { PatientLookupDto } from '../../proxy/patients/models';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-booking',
@@ -33,6 +37,10 @@ export class BookingComponent implements OnInit {
 
   selectedClinicId: string = '';
   selectedDoctorId: string = '';
+
+  patients: PatientLookupDto[] = [];
+  patientSearch$ = new Subject<string>();
+  isSearchingPatients = false;
 
   calendarOptions: CalendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
@@ -67,8 +75,28 @@ export class BookingComponent implements OnInit {
   constructor(
     private appointmentService: AppointmentService,
     private doctorScheduleService: DoctorScheduleService,
+    private patientService: PatientService,
     private toaster: ToasterService
-  ) { }
+  ) {
+    this.setupPatientSearch();
+  }
+
+  setupPatientSearch() {
+    this.patientSearch$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(text => {
+        if (!text || text.length < 2) return of([]);
+        this.isSearchingPatients = true;
+        return this.patientService.search(text).pipe(
+          catchError(() => of([]))
+        );
+      })
+    ).subscribe(res => {
+      this.patients = res;
+      this.isSearchingPatients = false;
+    });
+  }
 
   ngOnInit(): void {
     this.loadClinics();
@@ -180,6 +208,7 @@ export class BookingComponent implements OnInit {
       doctorId: this.selectedDoctorId,
       clinicId: this.selectedClinicId,
       appointmentDate: selectInfo.startStr, // ISO string with timezone
+      patientId: '',
       type: AppointmentType.FirstVisit,
       isWalkIn: false,
       notes: ''
@@ -204,10 +233,22 @@ export class BookingComponent implements OnInit {
         id: appt.id, // Keep ID for update check
         doctorId: appt.doctorId,
         clinicId: appt.clinicId,
+        patientId: appt.patientId,
         appointmentDate: appt.appointmentDate,
         type: appt.type,
+        isWalkIn: appt.isWalkIn,
         notes: appt.notes
       } as any;
+
+      // Ensure the patient is in the list for selection display
+      if (appt.patientId) {
+        this.patients = [{
+          id: appt.patientId,
+          fullNameAr: appt.patientName,
+          mrn: '' // We don't have MRN here but ID/Name is enough for the selection
+        }];
+      }
+
       this.selectedDoctorId = appt.doctorId; // Ensure ctx matches
       this.isModalOpen = true;
     });
@@ -215,6 +256,10 @@ export class BookingComponent implements OnInit {
 
   saveBooking() {
     if (!this.bookingData.doctorId) return;
+    if (!this.bookingData.patientId) {
+      this.toaster.warn('Please select a patient first.');
+      return;
+    }
 
     if ((this.bookingData as any).id) {
       // Update

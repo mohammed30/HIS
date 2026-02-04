@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, NgForm } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { CoreModule, ListService } from '@abp/ng.core';
+import { ThemeSharedModule } from '@abp/ng.theme.shared';
 
 interface Clinic {
   id: string;
@@ -27,169 +28,127 @@ interface Lookup {
 @Component({
   selector: 'app-clinics',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  imports: [CommonModule, CoreModule, ThemeSharedModule, FormsModule, ReactiveFormsModule],
+  providers: [ListService],
   template: `
-    <div class="container-fluid py-4">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-clinic-medical me-2"></i>
-            العيادات - Clinics
-          </h5>
-          <button class="btn btn-primary" (click)="showForm = true; editingItem = null; resetForm()">
-            <i class="fas fa-plus me-1"></i> إضافة
-          </button>
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="card-title mb-0">{{ '::Menu:Clinics' | abpLocalization }}</h5>
+          <small class="text-muted">Manage hospital clinics and rooms</small>
         </div>
-        <div class="card-body">
-          <!-- Search -->
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" class="form-control" placeholder="بحث..." 
-                       [(ngModel)]="searchText" (input)="search()">
-              </div>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="table-responsive">
-            <table class="table table-striped table-hover">
-              <thead class="table-dark">
-                <tr>
-                  <th>الكود</th>
-                  <th>الاسم (عربي)</th>
-                  <th>الاسم (إنجليزي)</th>
-                  <th>الموقع</th>
-                  <th>رقم الغرفة</th>
-                  <th>الحالة</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of items; track item.id) {
-                  <tr>
-                    <td>{{ item.code }}</td>
-                    <td>{{ item.nameAr }}</td>
-                    <td>{{ item.nameEn }}</td>
-                    <td>{{ item.location }}</td>
-                    <td>{{ item.roomNumber }}</td>
-                    <td>
-                      <span [class]="item.isActive ? 'badge bg-success' : 'badge bg-secondary'">
-                        {{ item.isActive ? 'نشط' : 'غير نشط' }}
-                      </span>
-                    </td>
-                    <td>
-                      <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(item)">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="delete(item)">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="7" class="text-center text-muted py-4">لا توجد بيانات</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalCount > 0">
-            <ngb-pagination
-              [(page)]="page"
-              [pageSize]="pageSize"
-              [collectionSize]="totalCount"
-              (pageChange)="onPageChange($event)"
-              [maxSize]="5"
-              [boundaryLinks]="true">
-            </ngb-pagination>
-            <span class="text-muted">Total: {{ totalCount }}</span>
-          </div>
-
-        </div>
+        <button class="btn btn-primary" (click)="create()">
+          <i class="fas fa-plus me-1"></i> {{ '::New' | abpLocalization }}
+        </button>
       </div>
-
-      <!-- Modal Form -->
-      @if (showForm) {
-        <div class="modal show d-block" style="background: rgba(0,0,0,0.5)">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">{{ editingItem ? 'تعديل' : 'إضافة' }} عيادة</h5>
-                <button type="button" class="btn-close" (click)="showForm = false"></button>
-              </div>
-              <div class="modal-body">
-                <div class="row">
-                  <div class="col-md-12 mb-3">
-                    <label class="form-label">القسم</label>
-                    <select class="form-select" [(ngModel)]="formData.departmentId">
-                      <option value="">اختر القسم</option>
-                      @for (dept of departments; track dept.id) {
-                        <option [value]="dept.id">{{ dept.name }}</option>
-                      }
-                    </select>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">الاسم (عربي) *</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.nameAr" required>
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">الاسم (إنجليزي)</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.nameEn">
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">الموقع</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.location">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">رقم الغرفة</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.roomNumber">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">التحويلة</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.extensionNumber">
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">رسوم الكشف</label>
-                    <input type="number" class="form-control" [(ngModel)]="formData.consultationFee">
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">الترتيب</label>
-                    <input type="number" class="form-control" [(ngModel)]="formData.sortOrder">
-                  </div>
-                </div>
-                <div class="form-check mb-3">
-                  <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" id="isActive">
-                  <label class="form-check-label" for="isActive">نشط</label>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="showForm = false">إلغاء</button>
-                <button type="button" class="btn btn-primary" (click)="save()">
-                  <i class="fas fa-save me-1"></i> حفظ
-                </button>
-              </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization" 
+                     [(ngModel)]="searchText" (input)="search()">
             </div>
           </div>
         </div>
-      }
+
+        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
+          <ngx-datatable-column [name]="'::Code' | abpLocalization" prop="code"></ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="nameAr"></ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Location' | abpLocalization" prop="location"></ngx-datatable-column>
+          <ngx-datatable-column [name]="'::RoomNumber' | abpLocalization" prop="roomNumber"></ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              <span class="badge" [class.bg-success]="value" [class.bg-secondary]="!value">
+                {{ value ? ('::Active' | abpLocalization) : ('::Inactive' | abpLocalization) }}
+              </span>
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'::Actions' | abpLocalization" sortable="false">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(row)">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="delete(row)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </ng-template>
+          </ngx-datatable-column>
+        </ngx-datatable>
+      </div>
     </div>
+
+    <abp-modal [(visible)]="showForm">
+      <ng-template #abpHeader>
+        <h3>{{ (editingItem ? '::Edit' : '::New') | abpLocalization }} {{ '::Menu:Clinics' | abpLocalization }}</h3>
+      </ng-template>
+
+      <ng-template #abpBody>
+        <form #clinicForm="ngForm">
+          <div class="mb-3">
+            <label class="form-label">{{ '::Department' | abpLocalization }}</label>
+            <select class="form-select" [(ngModel)]="formData.departmentId" name="departmentId">
+              <option value="">{{ '::SelectDepartment' | abpLocalization }}</option>
+              <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{{ '::Name' | abpLocalization }} (Ar) *</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.nameAr" name="nameAr" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{{ '::Name' | abpLocalization }} (En)</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.nameEn" name="nameEn">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::Location' | abpLocalization }}</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.location" name="location">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::RoomNumber' | abpLocalization }}</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.roomNumber" name="roomNumber">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{{ '::ExtensionNumber' | abpLocalization }}</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.extensionNumber" name="extensionNumber">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{{ '::ConsultationFee' | abpLocalization }}</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.consultationFee" name="consultationFee">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{{ '::SortOrder' | abpLocalization }}</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.sortOrder" name="sortOrder">
+            </div>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" name="isActive" id="isActive">
+            <label class="form-check-label" for="isActive">{{ '::Active' | abpLocalization }}</label>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" (click)="showForm = false">{{ '::Cancel' | abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
+          <i class="fas fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+        </button>
+      </ng-template>
+    </abp-modal>
   `,
   styles: [`.modal { z-index: 1050; }`]
 })
 export class ClinicsComponent implements OnInit {
+  @ViewChild('clinicForm') form: NgForm;
+  private cdr = inject(ChangeDetectorRef);
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/clinic';
+  public readonly list = inject(ListService);
 
   items: Clinic[] = [];
   departments: Lookup[] = [];
@@ -204,8 +163,19 @@ export class ClinicsComponent implements OnInit {
   totalCount = 0;
 
   ngOnInit() {
-    this.loadData();
+    const streamCreator = (query) => this.getData(query);
+    this.list.hookToQuery(streamCreator).subscribe((response) => {
+      this.items = response.items as Clinic[];
+      this.totalCount = response.totalCount;
+    });
     this.loadDepartments();
+  }
+
+  create() {
+    this.editingItem = null;
+    this.resetForm();
+    this.showForm = true;
+    setTimeout(() => this.cdr.detectChanges());
   }
 
   getEmptyForm(): Partial<Clinic> {
@@ -214,15 +184,12 @@ export class ClinicsComponent implements OnInit {
 
   resetForm() { this.formData = this.getEmptyForm(); }
 
+  getData(query: any) {
+    return this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${query.skipCount}&maxResultCount=${query.maxResultCount}`);
+  }
+
   loadData() {
-    const skipCount = (this.page - 1) * this.pageSize;
-    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
-      next: (res) => {
-        this.items = res.items || [];
-        this.totalCount = res.totalCount || 0;
-      },
-      error: (err) => console.error(err)
-    });
+    this.list.get();
   }
 
   onPageChange(page: number) {
@@ -246,6 +213,7 @@ export class ClinicsComponent implements OnInit {
     this.editingItem = item;
     this.formData = { ...item };
     this.showForm = true;
+    setTimeout(() => this.cdr.detectChanges());
   }
 
   save() {
