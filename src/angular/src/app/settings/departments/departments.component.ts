@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { environment } from '../../../environments/environment';
 
 interface Department {
@@ -21,7 +22,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-departments',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -166,6 +167,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 export class DepartmentsComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/department';
+  private confirmation = inject(ConfirmationService);
 
   items: Department[] = [];
   searchText = '';
@@ -231,12 +233,14 @@ export class DepartmentsComponent implements OnInit {
     }
   }
 
-  delete(item: Department) {
-    if (confirm('هل أنت متأكد من الحذف؟')) {
-      this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({
-        next: () => this.loadData(),
-        error: (err) => console.error(err)
-      });
-    }
+  delete(id: string) {
+    this.confirmation.warn('هل أنت متأكد من الحذف؟', 'تأكيد الحذف').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+          next: () => this.loadData(),
+          error: (err) => console.error(err)
+        });
+      }
+    });
   }
 }

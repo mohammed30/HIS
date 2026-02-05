@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { ThemeSharedModule, ConfirmationService, Confirmation, ToasterService } from '@abp/ng.theme.shared';
 
 interface Payment {
   id: string;
@@ -39,7 +40,7 @@ const statusColors: { [key: number]: string } = {
 @Component({
   selector: 'app-payments',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -253,6 +254,8 @@ const statusColors: { [key: number]: string } = {
 export class PaymentsComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/payment';
+  private confirmation = inject(ConfirmationService);
+  private toaster = inject(ToasterService);
 
   items: Payment[] = [];
   patients: Lookup[] = [];
@@ -327,18 +330,20 @@ export class PaymentsComponent implements OnInit {
   }
 
   promptRefund(item: Payment) {
-    if (confirm('هل أنت متأكد من استرداد هذه الدفعة؟ سيتم عكس المبلغ من الفاتورة.')) {
-      this.http.post(`${this.apiUrl}/${item.id}/refund`, {}, { params: { reason: 'Requested by user' } }).subscribe({
-        next: () => {
-          alert('تم الاسترداد بنجاح');
-          this.loadData();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('حدث خطأ أثناء الاسترداد');
-        }
-      });
-    }
+    this.confirmation.warn('هل أنت متأكد من استرداد هذه الدفعة؟ سيتم عكس المبلغ من الفاتورة.', 'تأكيد الاسترداد').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.post(`${this.apiUrl}/${item.id}/refund`, {}, { params: { reason: 'Requested by user' } }).subscribe({
+          next: () => {
+            this.toaster.success('تم الاسترداد بنجاح');
+            this.loadData();
+          },
+          error: (err) => {
+            console.error(err);
+            this.toaster.error('حدث خطأ أثناء الاسترداد');
+          }
+        });
+      }
+    });
   }
 
   printReceipt(item: Payment) {

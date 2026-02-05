@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 
 interface AccountDto {
     id: string;
@@ -20,7 +21,7 @@ interface AccountDto {
 @Component({
     selector: 'app-chart-of-accounts',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, ThemeSharedModule],
     templateUrl: './chart-of-accounts.component.html',
     styles: [`
     .tree-node { cursor: pointer; padding: 5px; border-radius: 4px; }
@@ -32,6 +33,7 @@ interface AccountDto {
 export class ChartOfAccountsComponent implements OnInit {
     private http = inject(HttpClient);
     private apiUrl = environment.apis.default.url + '/api/app/account';
+    private confirmation = inject(ConfirmationService);
 
     accounts: AccountDto[] = [];
     tree: AccountDto[] = [];
@@ -151,12 +153,16 @@ export class ChartOfAccountsComponent implements OnInit {
     }
 
     delete(item: AccountDto) {
-        if (confirm(`هل أنت متأكد من حذف الحساب ${item.nameAr}؟`)) {
-            this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({
-                next: () => this.loadData(),
-                error: (err) => alert('Cannot delete account. Note: Parent accounts cannot be deleted if they have children.')
-            });
-        }
+        this.confirmation.warn(`::AreYouSureToDeleteAccount`, '::AreYouSure', {
+            messageLocalizationParams: [item.nameAr]
+        }).subscribe((status) => {
+            if (status === Confirmation.Status.confirm) {
+                this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({
+                    next: () => this.loadData(),
+                    error: (err) => alert('Cannot delete account. Note: Parent accounts cannot be deleted if they have children.')
+                });
+            }
+        });
     }
 
     getTypeLabel(type: number) {

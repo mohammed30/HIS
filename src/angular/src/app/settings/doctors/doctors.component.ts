@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -26,7 +27,7 @@ interface Lookup {
 @Component({
   selector: 'app-doctors',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -193,6 +194,7 @@ interface Lookup {
 export class DoctorsComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/doctor';
+  private confirmation = inject(ConfirmationService);
 
   items: Doctor[] = [];
   departments: Lookup[] = [];
@@ -276,8 +278,10 @@ export class DoctorsComponent implements OnInit {
   }
 
   delete(item: Doctor) {
-    if (confirm('هل أنت متأكد من الحذف؟')) {
-      this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
-    }
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
+      }
+    });
   }
 }

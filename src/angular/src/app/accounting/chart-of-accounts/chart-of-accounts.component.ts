@@ -226,7 +226,7 @@ export class ChartOfAccountsComponent implements OnInit {
 
     buildForm() {
         this.form = this.fb.group({
-            code: [this.selectedAccount.code || '', [Validators.required, Validators.maxLength(32)]],
+            // Code is auto-generated
             name: [this.selectedAccount.name || '', [Validators.required, Validators.maxLength(128)]],
             nameAr: [this.selectedAccount.nameAr || '', [Validators.maxLength(128)]],
             type: [this.selectedAccount.type !== undefined ? this.selectedAccount.type : null, [Validators.required]],

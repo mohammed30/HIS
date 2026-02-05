@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AppointmentService } from '../../proxy/appointments/appointment.service';
 import { LookupDto, AppointmentDto } from '../../proxy/appointments/dtos/models';
 import { AppointmentStatus } from '../../proxy/appointments/appointment-status.enum';
-import { LocalizationModule } from '@abp/ng.core'; // Important for pipes if used
-import { ToasterService } from '@abp/ng.theme.shared';
+import { LocalizationModule } from '@abp/ng.core';
+import { ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 
 @Component({
     selector: 'app-clinic-flow',
@@ -16,6 +16,7 @@ import { ToasterService } from '@abp/ng.theme.shared';
 export class ClinicFlowComponent implements OnInit {
     appointmentService = inject(AppointmentService);
     toaster = inject(ToasterService);
+    confirmation = inject(ConfirmationService);
 
     clinics: LookupDto<string>[] = [];
     doctors: LookupDto<string>[] = [];
@@ -105,12 +106,14 @@ export class ClinicFlowComponent implements OnInit {
         });
     }
 
-    cancel(id: string) {
-        if (confirm('Are you sure?')) {
-            this.appointmentService.cancel(id).subscribe(() => {
-                this.toaster.info('Cancelled');
-                this.loadFlow();
-            });
-        }
+    cancelAppointment(id: string) {
+        this.confirmation.warn('::AreYouSure', '::CancelAppointment').subscribe((status) => {
+            if (status === Confirmation.Status.confirm) {
+                this.appointmentService.cancel(id).subscribe(() => {
+                    this.toaster.info('::AppointmentCancelled');
+                    this.loadFlow();
+                });
+            }
+        });
     }
 }

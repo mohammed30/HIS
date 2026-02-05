@@ -105,13 +105,8 @@
     <ng-template #abpBody>
         <form [formGroup]="form" (ngSubmit)="save()">
             <div class="form-group">
-                <label for="account-code">{{ '::Code' | abpLocalization }}</label><span> * </span>
-                <input type="text" id="account-code" class="form-control" formControlName="code" autofocus />
-            </div>
-
-            <div class="form-group mt-2">
                 <label for="account-name">{{ '::Name' | abpLocalization }} (English)</label><span> * </span>
-                <input type="text" id="account-name" class="form-control" formControlName="name" />
+                <input type="text" id="account-name" class="form-control" formControlName="name" autofocus />
             </div>
 
             <div class="form-group mt-2">

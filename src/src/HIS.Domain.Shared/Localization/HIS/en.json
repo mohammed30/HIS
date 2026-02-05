@@ -1,6 +1,6 @@
 {
-  "Culture": "en",
-  "Texts": {
+  "culture": "en",
+  "texts": {
     "AppName": "Asia Hospital",
     "Menu:Home": "Home",
     "Menu:Patients": "Patients",
@@ -230,6 +230,7 @@
     "Urgent": "Urgent",
     "High": "High",
     "Normal": "Normal",
-    "NewWaitingListRequest": "New Waiting List Request"
+    "NewWaitingListRequest": "New Waiting List Request",
+    "AreYouSureToDeletePatient": "Are you sure you want to delete patient file {0}?"
   }
 }

@@ -4,45 +4,46 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 
 interface InsurancePlan {
-    id: string;
-    insuranceCompanyId: string;
-    insuranceCompanyName?: string;
-    code: string;
-    nameAr: string;
-    nameEn?: string;
-    planType: number;
-    coveragePercentage: number;
-    maxCoverageAmount?: number;
-    coPaymentPercentage: number;
-    deductibleAmount: number;
-    includesMedications: boolean;
-    includesLab: boolean;
-    includesRadiology: boolean;
-    includesInpatient: boolean;
-    notes?: string;
-    isActive: boolean;
-    sortOrder: number;
+  id: string;
+  insuranceCompanyId: string;
+  insuranceCompanyName?: string;
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+  planType: number;
+  coveragePercentage: number;
+  maxCoverageAmount?: number;
+  coPaymentPercentage: number;
+  deductibleAmount: number;
+  includesMedications: boolean;
+  includesLab: boolean;
+  includesRadiology: boolean;
+  includesInpatient: boolean;
+  notes?: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 
 interface Lookup {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 const planTypeLabels: { [key: number]: string } = {
-    0: 'فردي',
-    1: 'عائلي',
-    2: 'شركات',
-    3: 'حكومي'
+  0: 'فردي',
+  1: 'عائلي',
+  2: 'شركات',
+  3: 'حكومي'
 };
 
 @Component({
-    selector: 'app-insurance-plans',
-    standalone: true,
-    imports: [CommonModule, FormsModule, NgbPaginationModule],
-    template: `
+  selector: 'app-insurance-plans',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
+  template: `
     <div class="container-fluid py-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -244,95 +245,98 @@ const planTypeLabels: { [key: number]: string } = {
       }
     </div>
   `,
-    styles: [`.modal { z-index: 1050; }`]
+  styles: [`.modal { z-index: 1050; }`]
 })
 export class InsurancePlansComponent implements OnInit {
-    private http = inject(HttpClient);
-    private apiUrl = environment.apis.default.url + '/api/app/insurance-plan';
+  private http = inject(HttpClient);
+  private apiUrl = environment.apis.default.url + '/api/app/insurance-plan';
+  private confirmation = inject(ConfirmationService);
 
-    items: InsurancePlan[] = [];
-    companies: Lookup[] = [];
+  items: InsurancePlan[] = [];
+  companies: Lookup[] = [];
 
-    searchText = '';
-    filterCompanyId = '';
-    showForm = false;
-    editingItem: InsurancePlan | null = null;
-    formData: Partial<InsurancePlan> = this.getEmptyForm();
+  searchText = '';
+  filterCompanyId = '';
+  showForm = false;
+  editingItem: InsurancePlan | null = null;
+  formData: Partial<InsurancePlan> = this.getEmptyForm();
 
-    page = 1;
-    pageSize = 10;
-    totalCount = 0;
+  page = 1;
+  pageSize = 10;
+  totalCount = 0;
 
-    ngOnInit() {
-        this.loadCompanies();
-        this.loadData();
-    }
+  ngOnInit() {
+    this.loadCompanies();
+    this.loadData();
+  }
 
-    getEmptyForm(): Partial<InsurancePlan> {
-        return {
-            insuranceCompanyId: '', nameAr: '', nameEn: '', planType: 0,
-            coveragePercentage: 80, coPaymentPercentage: 20, deductibleAmount: 0,
-            includesMedications: true, includesLab: true, includesRadiology: true, includesInpatient: false,
-            isActive: true, sortOrder: 0
-        };
-    }
+  getEmptyForm(): Partial<InsurancePlan> {
+    return {
+      insuranceCompanyId: '', nameAr: '', nameEn: '', planType: 0,
+      coveragePercentage: 80, coPaymentPercentage: 20, deductibleAmount: 0,
+      includesMedications: true, includesLab: true, includesRadiology: true, includesInpatient: false,
+      isActive: true, sortOrder: 0
+    };
+  }
 
-    resetForm() { this.formData = this.getEmptyForm(); }
+  resetForm() { this.formData = this.getEmptyForm(); }
 
-    loadCompanies() {
-        this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/insurance-company/lookup').subscribe({
-            next: (res) => this.companies = res,
-            error: (err) => console.error(err)
-        });
-    }
+  loadCompanies() {
+    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/insurance-company/lookup').subscribe({
+      next: (res) => this.companies = res,
+      error: (err) => console.error(err)
+    });
+  }
 
-    loadData() {
-        const skipCount = (this.page - 1) * this.pageSize;
-        let url = `${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`;
-        if (this.filterCompanyId) url += `&insuranceCompanyId=${this.filterCompanyId}`;
+  loadData() {
+    const skipCount = (this.page - 1) * this.pageSize;
+    let url = `${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`;
+    if (this.filterCompanyId) url += `&insuranceCompanyId=${this.filterCompanyId}`;
 
-        this.http.get<any>(url).subscribe({
-            next: (res) => {
-                this.items = res.items || [];
-                this.totalCount = res.totalCount || 0;
-            },
-            error: (err) => console.error(err)
-        });
-    }
+    this.http.get<any>(url).subscribe({
+      next: (res) => {
+        this.items = res.items || [];
+        this.totalCount = res.totalCount || 0;
+      },
+      error: (err) => console.error(err)
+    });
+  }
 
-    onPageChange(page: number) {
-        this.page = page;
-        this.loadData();
-    }
+  onPageChange(page: number) {
+    this.page = page;
+    this.loadData();
+  }
 
-    search() {
-        this.page = 1;
-        this.loadData();
-    }
+  search() {
+    this.page = 1;
+    this.loadData();
+  }
 
-    getPlanTypeLabel(type: number): string {
-        return planTypeLabels[type] || '-';
-    }
+  getPlanTypeLabel(type: number): string {
+    return planTypeLabels[type] || '-';
+  }
 
-    edit(item: InsurancePlan) {
-        this.editingItem = item;
-        this.formData = { ...item };
-        this.showForm = true;
-    }
+  edit(item: InsurancePlan) {
+    this.editingItem = item;
+    this.formData = { ...item };
+    this.showForm = true;
+  }
 
-    save() {
-        const req = this.editingItem
-            ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
-            : this.http.post(this.apiUrl, this.formData);
-        req.subscribe({
-            next: () => { this.showForm = false; this.loadData(); },
-            error: (err) => console.error(err)
-        });
-    }
+  save() {
+    const req = this.editingItem
+      ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
+      : this.http.post(this.apiUrl, this.formData);
+    req.subscribe({
+      next: () => { this.showForm = false; this.loadData(); },
+      error: (err) => console.error(err)
+    });
+  }
 
-    delete(item: InsurancePlan) {
-        if (confirm('هل أنت متأكد من الحذف؟')) {
-            this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
-        }
-    }
+  delete(item: InsurancePlan) {
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
+      }
+    });
+  }
 }

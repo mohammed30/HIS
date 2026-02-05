@@ -6,7 +6,7 @@ import { EmergencyVisitDto, CreateEmergencyVisitDto, TriageDto } from '../../pro
 import { EmergencySeverity, EmergencyVisitStatus } from '../../proxy/emergency';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
+import { ThemeSharedModule, ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { LocalizationModule } from '@abp/ng.core';
 import { AppointmentService } from '../../proxy/appointments/appointment.service'; // Reusing for Patient Lookup if needed, or build generic one
 
@@ -25,6 +25,7 @@ export class EmergencyDashboardComponent implements OnInit {
     emergencyService = inject(EmergencyService);
     list = inject(ListService);
     toaster = inject(ToasterService);
+    confirmation = inject(ConfirmationService);
 
     data: PagedResultDto<EmergencyVisitDto> = { items: [], totalCount: 0 };
 
@@ -97,12 +98,14 @@ export class EmergencyDashboardComponent implements OnInit {
     }
 
     discharge(id: string) {
-        if (confirm('Discharge patient?')) {
-            this.emergencyService.updateStatus(id, { status: EmergencyVisitStatus.Discharged, notes: '' }).subscribe(() => {
-                this.toaster.success('Discharged');
-                this.list.get();
-            });
-        }
+        this.confirmation.warn('::AreYouSureToDischarge', '::AreYouSure').subscribe((status) => {
+            if (status === Confirmation.Status.confirm) {
+                this.emergencyService.updateStatus(id, { status: EmergencyVisitStatus.Discharged, notes: '' }).subscribe(() => {
+                    this.toaster.success('Discharged');
+                    this.list.get();
+                });
+            }
+        });
     }
 
     // Helpers

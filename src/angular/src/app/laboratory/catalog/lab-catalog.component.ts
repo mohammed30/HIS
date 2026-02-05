@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { LabService } from '../../proxy/laboratory/lab.service';
 import { LabTestDto, CreateUpdateLabTestDto } from '../../proxy/laboratory/dtos/models';
 import { ListService, PagedResultDto } from '@abp/ng.core';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
+import { NgbPaginationModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { ThemeSharedModule, ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { LocalizationModule } from '@abp/ng.core';
 
 @Component({
     selector: 'app-lab-catalog',
     standalone: true,
-    imports: [CommonModule, FormsModule, LocalizationModule, NgbPaginationModule, ThemeSharedModule],
+    imports: [CommonModule, FormsModule, LocalizationModule, NgbPaginationModule, NgbDropdownModule, ThemeSharedModule],
     providers: [ListService],
     templateUrl: './lab-catalog.component.html'
 })
@@ -19,6 +19,7 @@ export class LabCatalogComponent implements OnInit {
     labService = inject(LabService);
     list = inject(ListService);
     toaster = inject(ToasterService);
+    confirmation = inject(ConfirmationService);
 
     data: PagedResultDto<LabTestDto> = { items: [], totalCount: 0 };
 
@@ -59,12 +60,14 @@ export class LabCatalogComponent implements OnInit {
     }
 
     deleteTest(id: string) {
-        if (confirm('Are you sure?')) {
-            this.labService.deleteTest(id).subscribe(() => {
-                this.toaster.info('::DeletedSuccessfully');
-                this.list.get();
-            });
-        }
+        this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
+            if (status === Confirmation.Status.confirm) {
+                this.labService.deleteTest(id).subscribe(() => {
+                    this.toaster.info('::DeletedSuccessfully');
+                    this.list.get();
+                });
+            }
+        });
     }
 
     save() {

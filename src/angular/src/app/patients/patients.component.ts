@@ -2,8 +2,8 @@ import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, NgForm } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { CoreModule, ListService } from '@abp/ng.core';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CoreModule, ListService, LocalizationService } from '@abp/ng.core';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { environment } from '../../environments/environment';
 
 interface Patient {
@@ -216,6 +216,8 @@ export class PatientsComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/patient';
   public readonly list = inject(ListService);
+  private confirmation = inject(ConfirmationService);
+  private localization = inject(LocalizationService);
 
   items: Patient[] = [];
   searchText = '';
@@ -299,9 +301,12 @@ export class PatientsComponent implements OnInit {
   }
 
   delete(item: Patient) {
-    if (confirm(`هل أنت متأكد من حذف ملف المريض ${item.fullNameAr}؟`)) {
-      this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
-    }
+    const message = this.localization.instant('::AreYouSureToDeletePatient', item.fullNameAr);
+    this.confirmation.warn(message, '::AreYouSure').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
+      }
+    });
   }
 
   getGender(gender: number): string {

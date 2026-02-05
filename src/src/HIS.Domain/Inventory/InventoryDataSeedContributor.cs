@@ -67,7 +67,8 @@ public class InventoryDataSeedContributor : IDataSeedContributor, ITransientDepe
 
     private async Task CreateWarehouseAsync(string name, string location)
     {
-        var warehouse = new Warehouse(_guidGenerator.Create(), name, location);
+        var code = "WH-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+        var warehouse = new Warehouse(_guidGenerator.Create(), name, location, code);
         await _warehouseRepository.InsertAsync(warehouse);
     }
 

@@ -4,28 +4,29 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 
 interface InsuranceCompany {
-    id: string;
-    code: string;
-    nameAr: string;
-    nameEn?: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-    contactPerson?: string;
-    contactPhone?: string;
-    website?: string;
-    notes?: string;
-    isActive: boolean;
-    sortOrder: number;
+  id: string;
+  code: string;
+  nameAr: string;
+  nameEn?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  website?: string;
+  notes?: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 
 @Component({
-    selector: 'app-insurance-companies',
-    standalone: true,
-    imports: [CommonModule, FormsModule, NgbPaginationModule],
-    template: `
+  selector: 'app-insurance-companies',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
+  template: `
     <div class="container-fluid py-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -190,72 +191,75 @@ interface InsuranceCompany {
       }
     </div>
   `,
-    styles: [`.modal { z-index: 1050; }`]
+  styles: [`.modal { z-index: 1050; }`]
 })
 export class InsuranceCompaniesComponent implements OnInit {
-    private http = inject(HttpClient);
-    private apiUrl = environment.apis.default.url + '/api/app/insurance-company';
+  private http = inject(HttpClient);
+  private apiUrl = environment.apis.default.url + '/api/app/insurance-company';
+  private confirmation = inject(ConfirmationService);
 
-    items: InsuranceCompany[] = [];
-    searchText = '';
-    showForm = false;
-    editingItem: InsuranceCompany | null = null;
-    formData: Partial<InsuranceCompany> = this.getEmptyForm();
+  items: InsuranceCompany[] = [];
+  searchText = '';
+  showForm = false;
+  editingItem: InsuranceCompany | null = null;
+  formData: Partial<InsuranceCompany> = this.getEmptyForm();
 
-    page = 1;
-    pageSize = 10;
-    totalCount = 0;
+  page = 1;
+  pageSize = 10;
+  totalCount = 0;
 
-    ngOnInit() {
-        this.loadData();
-    }
+  ngOnInit() {
+    this.loadData();
+  }
 
-    getEmptyForm(): Partial<InsuranceCompany> {
-        return { nameAr: '', nameEn: '', phone: '', email: '', address: '', contactPerson: '', contactPhone: '', website: '', notes: '', isActive: true, sortOrder: 0 };
-    }
+  getEmptyForm(): Partial<InsuranceCompany> {
+    return { nameAr: '', nameEn: '', phone: '', email: '', address: '', contactPerson: '', contactPhone: '', website: '', notes: '', isActive: true, sortOrder: 0 };
+  }
 
-    resetForm() { this.formData = this.getEmptyForm(); }
+  resetForm() { this.formData = this.getEmptyForm(); }
 
-    loadData() {
-        const skipCount = (this.page - 1) * this.pageSize;
-        this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
-            next: (res) => {
-                this.items = res.items || [];
-                this.totalCount = res.totalCount || 0;
-            },
-            error: (err) => console.error(err)
-        });
-    }
+  loadData() {
+    const skipCount = (this.page - 1) * this.pageSize;
+    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
+      next: (res) => {
+        this.items = res.items || [];
+        this.totalCount = res.totalCount || 0;
+      },
+      error: (err) => console.error(err)
+    });
+  }
 
-    onPageChange(page: number) {
-        this.page = page;
-        this.loadData();
-    }
+  onPageChange(page: number) {
+    this.page = page;
+    this.loadData();
+  }
 
-    search() {
-        this.page = 1;
-        this.loadData();
-    }
+  search() {
+    this.page = 1;
+    this.loadData();
+  }
 
-    edit(item: InsuranceCompany) {
-        this.editingItem = item;
-        this.formData = { ...item };
-        this.showForm = true;
-    }
+  edit(item: InsuranceCompany) {
+    this.editingItem = item;
+    this.formData = { ...item };
+    this.showForm = true;
+  }
 
-    save() {
-        const req = this.editingItem
-            ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
-            : this.http.post(this.apiUrl, this.formData);
-        req.subscribe({
-            next: () => { this.showForm = false; this.loadData(); },
-            error: (err) => console.error(err)
-        });
-    }
+  save() {
+    const req = this.editingItem
+      ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
+      : this.http.post(this.apiUrl, this.formData);
+    req.subscribe({
+      next: () => { this.showForm = false; this.loadData(); },
+      error: (err) => console.error(err)
+    });
+  }
 
-    delete(item: InsuranceCompany) {
-        if (confirm('هل أنت متأكد من الحذف؟')) {
-            this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
-        }
-    }
+  delete(item: InsuranceCompany) {
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
+      }
+    });
+  }
 }

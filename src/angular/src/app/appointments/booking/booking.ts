@@ -12,7 +12,7 @@ import arLocale from '@fullcalendar/core/locales/ar';
 import { AppointmentService } from '../../proxy/appointments/appointment.service';
 import { LookupDto, CreateAppointmentDto, AppointmentDto } from '../../proxy/appointments/dtos/models';
 import { AppointmentType } from '../../proxy/appointments/appointment-type.enum';
-import { ToasterService } from '@abp/ng.theme.shared';
+import { ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { LocalizationModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { DoctorScheduleService } from '../../proxy/appointments/doctor-schedule.service';
@@ -81,7 +81,8 @@ export class BookingComponent implements OnInit {
     private appointmentService: AppointmentService,
     private doctorScheduleService: DoctorScheduleService,
     private patientService: PatientService,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private confirmation: ConfirmationService
   ) {
     this.setupPatientSearch();
   }
@@ -298,12 +299,14 @@ export class BookingComponent implements OnInit {
   cancelBooking() {
     if (!(this.bookingData as any).id) return;
 
-    if (!confirm('Are you sure you want to cancel this appointment?')) return;
-
-    this.appointmentService.cancel((this.bookingData as any).id).subscribe(() => {
-      this.toaster.success('::AppointmentCancelled');
-      this.isModalOpen = false;
-      this.calendarComponent.getApi().refetchEvents();
+    this.confirmation.warn('::AreYouSure', '::CancelAppointment').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.appointmentService.cancel((this.bookingData as any).id).subscribe(() => {
+          this.toaster.success('::AppointmentCancelled');
+          this.isModalOpen = false;
+          this.calendarComponent.getApi().refetchEvents();
+        });
+      }
     });
   }
 }

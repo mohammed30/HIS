@@ -23,6 +23,7 @@ This document outlines the product requirements for a Hospital Information Syste
 | **Logging** | Serilog + Custom Activity Logging |
 | **API Documentation** | Swagger/OpenAPI |
 | **Real-time** | SignalR (for notifications) |
+| **Testing** | ABP TestBase | and  Playwright for E2E testing |
 
 ---
 

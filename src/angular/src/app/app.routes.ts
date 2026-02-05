@@ -92,32 +92,9 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'appointments',
+    loadChildren: () => import('./appointments/appointments-module').then(m => m.AppointmentsModule),
     canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Appointments' },
-    children: [
-      {
-        path: 'booking',
-        loadComponent: () => import('./appointments/booking/booking').then(c => c.BookingComponent),
-        canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Appointments.Create' }
-      },
-      {
-        path: 'my-appointments',
-        loadComponent: () => import('./appointments/my-appointments/my-appointments').then(c => c.MyAppointmentsComponent)
-      },
-      {
-        path: 'waiting-list',
-        loadComponent: () => import('./appointments/waiting-list/waiting-list').then(c => c.WaitingListComponent)
-      },
-      {
-        path: 'doctor-schedule',
-        loadComponent: () => import('./appointments/doctor-schedule/doctor-schedule').then(c => c.DoctorScheduleComponent)
-      },
-      {
-        path: 'flow',
-        loadComponent: () => import('./appointments/clinic-flow/clinic-flow.component').then(c => c.ClinicFlowComponent)
-      }
-    ]
+    data: { requiredPolicy: 'HIS.Appointments' }
   },
   {
     path: 'financials',

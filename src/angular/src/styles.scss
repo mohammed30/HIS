@@ -34,11 +34,20 @@ td,
 }
 
 /* Fix FontAwesome override by Cairo */
-.fa, .fas, .far, .fab {
+.fa,
+.fas,
+.far,
+.fab {
   font-family: "Font Awesome 5 Free" !important;
 }
-.fas { font-weight: 900 !important; }
-.far { font-weight: 400 !important; }
+
+.fas {
+  font-weight: 900 !important;
+}
+
+.far {
+  font-weight: 400 !important;
+}
 
 /* Global Font Size Bump for Readability */
 html,
@@ -799,13 +808,118 @@ lpx-brand-logo a {
   gap: 10px;
 }
 
-lpx-brand-logo a::after {
-  content: 'Asia Hospital';
-  /* Default (English) */
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
+/* ===== ABP CONFIRMATION SERVICE UI FIXES ===== */
+.abp-confirmation {
+  .modal-content {
+    background-color: var(--theme-bg-card) !important;
+    color: var(--theme-text-primary) !important;
+    border: 1px solid var(--theme-border-color) !important;
+  }
+
+  .modal-header,
+  .modal-footer {
+    border-color: var(--theme-border-color) !important;
+    background-color: transparent !important;
+  }
+
+  .modal-title,
+  .modal-body {
+    color: var(--theme-text-primary) !important;
+  }
+
+  .modal-footer {
+    .btn {
+      padding: 8px 20px;
+      font-weight: 600;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+      color: #fff !important;
+    }
+
+    .btn-warning,
+    .btn-primary,
+    .btn-danger {
+      color: #fff !important;
+      /* Ensure readable text on action buttons */
+    }
+  }
+}
+
+/* ensure SweetAlert/Modal overlaps are handled */
+.swal2-container {
+  z-index: 9999 !important;
+}
+
+/* Force ABP Confirmation Dark Mode Styles -> Root Cause Identified */
+/* The confirmation is NOT SweetAlert2, but a custom component 'abp-confirmation' */
+
+html[data-theme="dark"] abp-confirmation .confirmation .confirmation-dialog {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+  border: 1px solid #495057 !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 8px !important;
+}
+
+html[data-theme="dark"] abp-confirmation .confirmation .confirmation-dialog .content .title {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] abp-confirmation .confirmation .confirmation-dialog .content .message {
+  color: #e0e0e0 !important;
+}
+
+/* Fix Icon visibility if needed (though already colored) */
+html[data-theme="dark"] abp-confirmation .confirmation .confirmation-dialog .icon-container {
+  background: transparent !important;
+}
+
+/* Ensure footer buttons are visible - DOUBLE CLASS SPECIFICITY HACK */
+/* Specificity: 0,5,2 (wins against nuclear 0,5,1) */
+html[data-theme="dark"] abp-confirmation .confirmation .confirmation-dialog .footer.footer {
+  background-color: transparent !important;
+  border-top: 1px solid #3d424b !important;
+  display: flex !important;
+  /* Override the nuclear footer hide option */
+}
+
+/* Keep SweetAlert/General overrides just in case */
+html[data-theme="dark"] .swal2-popup,
+html[data-theme="dark"] .modal-content {
+  background-color: #2d3238 !important;
+  color: #ffffff !important;
+}
+
+/* Specific button text color fixes for SweetAlert */
+[data-theme="dark"] .swal2-confirm,
+[data-theme="dark"] .swal2-cancel,
+[data-theme="dark"] .swal2-deny {
+  color: #ffffff !important;
+  /* display: flex !important; align-items: center !important; justify-content: center !important; */
+}
+
+/* Ensure global overrides don't hide text in modals */
+[data-theme="dark"] .modal-body p,
+[data-theme="dark"] .modal-body span {
+  color: #ffffff !important;
+}
+
+/* FIX for invisible text in standard ABP Confirmation modals (if not using SweetAlert) */
+.modal-dialog .modal-content {
+  background-color: var(--theme-bg-card);
+  color: var(--theme-text-primary);
+}
+
+/* Fix for App Name visibility with Logo */
+/* The theme removes the text element when a logo is set, so we inject it via CSS */
+/* Note: Targeting lpx-brand-logo (tag) -> a (child) */
+lpx-brand-logo a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px;
 }
 
 /* Localized name for Arabic/RTL */
@@ -840,6 +954,7 @@ html:not([data-theme="dark"]) .vital-card {
 /* Premium UI Enhancements */
 .hover-lift {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+
   &:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
@@ -847,42 +962,43 @@ html:not([data-theme="dark"]) .vital-card {
 }
 
 .btn-premium {
-    font-weight: 600 !important;
-    letter-spacing: 0.5px !important;
-    text-transform: uppercase !important;
-    font-size: 0.85rem !important;
-    padding: 0.5rem 1.25rem !important;
-    border-radius: 8px !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-    
-    &:hover {
-        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15) !important;
-        filter: brightness(1.1) !important;
-    }
-    
-    &:active {
-        transform: scale(0.98) !important;
-    }
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
 
-    &.btn-sm {
-        padding: 0.25rem 0.75rem !important;
-        font-size: 0.75rem !important;
-    }
+  &:hover {
+    box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15) !important;
+    filter: brightness(1.1) !important;
+  }
+
+  &:active {
+    transform: scale(0.98) !important;
+  }
+
+  &.btn-sm {
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 /* Better icon visibility */
-.fas, .fa-solid {
-    filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+.fas,
+.fa-solid {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
 }
 
 [data-theme="dark"] .btn-primary {
-    background-color: #0b5ed7 !important;
-    border-color: #0a58ca !important;
-    color: #fff !important;
+  background-color: #0b5ed7 !important;
+  border-color: #0a58ca !important;
+  color: #fff !important;
 }
 
 [data-theme="dark"] .btn-success {
-    background-color: #157347 !important;
-    border-color: #146c43 !important;
+  background-color: #157347 !important;
+  border-color: #146c43 !important;
 }

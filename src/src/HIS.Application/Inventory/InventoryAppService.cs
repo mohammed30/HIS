@@ -51,7 +51,8 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     [Authorize(HISPermissions.Inventory.ManageWarehouses)]
     public async Task<WarehouseDto> CreateWarehouseAsync(CreateUpdateWarehouseDto input)
     {
-        var warehouse = new Warehouse(GuidGenerator.Create(), input.Name, input.Location);
+        var code = "WH-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+        var warehouse = new Warehouse(GuidGenerator.Create(), input.Name, input.Location, code);
         await _warehouseRepository.InsertAsync(warehouse);
         return ObjectMapper.Map<Warehouse, WarehouseDto>(warehouse);
     }

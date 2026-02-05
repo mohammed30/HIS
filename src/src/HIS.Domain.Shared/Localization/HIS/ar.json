@@ -281,6 +281,7 @@
     "Urgent": "عاجل",
     "High": "هامة",
     "Normal": "عادية",
-    "NewWaitingListRequest": "طلب قائمة انتظار جديد"
+    "NewWaitingListRequest": "طلب قائمة انتظار جديد",
+    "AreYouSureToDeletePatient": "هل أنت متأكد من حذف ملف المريض {0}؟"
   }
 }
