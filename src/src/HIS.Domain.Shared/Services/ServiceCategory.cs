@@ -7,5 +7,6 @@ public enum ServiceCategory
     LabTest = 2,
     Radiology = 3,
     Surgery = 4,
-    Other = 5
+    Other = 5,
+    Pharmacy = 6
 }

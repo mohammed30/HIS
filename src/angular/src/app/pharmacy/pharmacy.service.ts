@@ -38,4 +38,50 @@ export class PharmacyService {
             body: input
         });
     }
+
+    checkInteractions(patientId: string, newDrugName: string): Observable<string[]> {
+        return this.restService.request({
+            method: 'POST',
+            url: `/api/app/pharmacy/check-interactions?patientId=${patientId}&newDrugName=${newDrugName}`
+        });
+    }
+
+    // Drug Master Data
+    getDrugs(params: any): Observable<any> {
+        return this.restService.request({
+            method: 'GET',
+            url: '/api/app/drug',
+            params: params
+        });
+    }
+
+    getDrug(id: string): Observable<any> {
+        return this.restService.request({
+            method: 'GET',
+            url: `/api/app/drug/${id}`
+        });
+    }
+
+    createDrug(input: any): Observable<any> {
+        return this.restService.request({
+            method: 'POST',
+            url: '/api/app/drug',
+            body: input
+        });
+    }
+
+    updateDrug(id: string, input: any): Observable<any> {
+        return this.restService.request({
+            method: 'PUT',
+            url: `/api/app/drug/${id}`,
+            body: input
+        });
+    }
+
+    deleteDrug(id: string): Observable<void> {
+        return this.restService.request({
+            method: 'DELETE',
+            url: `/api/app/drug/${id}`
+        });
+    }
 }

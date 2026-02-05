@@ -278,6 +278,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Pharmacy.Stock',
     },
     {
+      path: '/pharmacy/drugs',
+      name: '::Menu:Drugs',
+      parentName: '::Menu:Pharmacy',
+      iconClass: 'fas fa-capsules',
+      order: 3,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Pharmacy.Drugs',
+    },
+    {
       path: '/emergency/dashboard',
       name: '::Menu:EmergencyDashboard',
       parentName: '::Menu:Emergency',

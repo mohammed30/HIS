@@ -97,6 +97,9 @@ public class HISDbContext :
     // Clinical
     public DbSet<HIS.Clinical.MedicalOrder> MedicalOrders { get; set; }
     public DbSet<HIS.Pharmacy.Dispensing> Dispensings { get; set; }
+    
+    // Pharmacy (Master Data)
+    public DbSet<HIS.Pharmacy.Drug> Drugs { get; set; }
 
     #region Entities from the modules
 
@@ -736,7 +739,25 @@ public class HISDbContext :
                 a.Property(x => x.Quantity).HasPrecision(18, 2);
                 a.Property(x => x.UnitCost).HasPrecision(18, 2);
                 a.Property(x => x.BatchNumber).HasMaxLength(64);
+                a.Property(x => x.BatchNumber).HasMaxLength(64);
             });
+        });
+
+        // Pharmacy Drug
+        builder.Entity<HIS.Pharmacy.Drug>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Drugs", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Barcode).HasMaxLength(64).IsRequired();
+            b.Property(x => x.BrandName).HasMaxLength(128).IsRequired();
+            b.Property(x => x.ScientificName).HasMaxLength(128);
+            b.Property(x => x.Strength).HasMaxLength(64);
+            b.Property(x => x.Form).HasMaxLength(64);
+            b.Property(x => x.Manufacturer).HasMaxLength(128);
+            b.Property(x => x.BatchNumberPrefix).HasMaxLength(32);
+            
+            b.HasIndex(x => x.Barcode).IsUnique();
         });
     }
 }

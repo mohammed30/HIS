@@ -15,27 +15,35 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
         <h5 class="mb-0"><i class="fas fa-pills me-2"></i>Medication Dispensing (صرف الدواء)</h5>
       </div>
       <div class="card-body">
-        <div class="row align-items-center mb-4">
-          <div class="col-md-7">
+        
+        <!-- Interaction Warnings -->
+        <div *ngIf="warnings.length > 0" class="alert alert-danger shadow-sm mb-4">
+            <h5 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Drug Interaction Warnings</h5>
+            <ul class="mb-0">
+                <li *ngFor="let w of warnings">{{ w }}</li>
+            </ul>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-6 border-end">
             <h6 class="text-primary fw-bold mb-3"><i class="fas fa-user-injured me-2"></i>Patient Information</h6>
             <p class="mb-1"><strong>Name:</strong> {{ order.patientName }}</p>
             <p class="mb-1"><strong>MRN:</strong> <code class="text-primary fw-bold">{{ order.patientMRN }}</code></p>
-            <hr>
-            <h6 class="text-success fw-bold mb-3"><i class="fas fa-prescription-bottle-alt me-2"></i>Order Details</h6>
-            <p class="mb-1"><strong>Medication:</strong> <span class="badge bg-light text-dark fs-6">{{ order.serviceName }}</span></p>
-            <p class="mb-1"><strong>Requested Qty:</strong> <span class="badge bg-info text-dark">{{ order.quantity }}</span></p>
-            <p class="mb-0 text-muted"><strong>Notes:</strong> {{ order.clinicalNotes || 'No specific clinical notes provided.' }}</p>
           </div>
-          <div class="col-md-5">
-             <div class="alert alert-info border-0 shadow-sm">
-               <div class="d-flex">
-                 <i class="fas fa-info-circle fa-2x me-3"></i>
-                 <div>
-                   <h6 class="alert-heading fw-bold">LIFO Strategy</h6>
-                   <p class="mb-0 small">Items will be automatically dispensed from the <strong>Pharmacy Warehouse</strong> using the Last-In-First-Out (LIFO) accounting method.</p>
-                 </div>
-               </div>
+          <div class="col-md-6 ps-4">
+             <h6 class="text-success fw-bold mb-3"><i class="fas fa-prescription-bottle-alt me-2"></i>Prescription Details</h6>
+             <p class="mb-1"><strong>Medication:</strong> <span class="badge bg-primary fs-6">{{ order.serviceName }}</span></p>
+             <div class="d-flex flex-wrap gap-2 mb-2">
+                 <span class="badge bg-light text-dark border">Qty: {{ order.quantity }}</span>
+                 <span class="badge bg-light text-dark border">Dosage: {{ order.dosage || 'N/A' }}</span>
+                 <span class="badge bg-light text-dark border">Route: {{ order.route || 'N/A' }}</span>
+                 <span class="badge bg-light text-dark border">Freq: {{ order.frequency || 'N/A' }}</span>
+                 <span class="badge bg-light text-dark border">Duration: {{ order.duration || 'N/A' }}</span>
              </div>
+             <div class="p-2 bg-light rounded mt-2" *ngIf="order.instructions">
+                <strong>Instructions:</strong> {{ order.instructions }}
+             </div>
+             <p class="mb-0 text-muted mt-2" *ngIf="order.clinicalNotes"><strong>MD Notes:</strong> {{ order.clinicalNotes }}</p>
           </div>
         </div>
 
@@ -55,6 +63,7 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 export class DispensingWorkflowComponent implements OnInit {
   orderId: string;
   order: any;
+  warnings: string[] = [];
   processing = false;
 
   constructor(
@@ -72,10 +81,18 @@ export class DispensingWorkflowComponent implements OnInit {
   loadOrder() {
     this.pharmacyService.getPrescription(this.orderId).subscribe(res => {
       this.order = res;
+      // Check interactions
+      this.pharmacyService.checkInteractions(this.order.patientId, this.order.serviceName).subscribe(w => {
+        this.warnings = w;
+      });
     });
   }
 
   confirmDispense() {
+    if (this.warnings.length > 0 && !confirm('There are drug interactions. Are you sure you want to proceed?')) {
+      return;
+    }
+
     this.processing = true;
     const input = { medicalOrderId: this.orderId };
 

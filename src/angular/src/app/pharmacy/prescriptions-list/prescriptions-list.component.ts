@@ -21,10 +21,11 @@ import { CommonModule } from '@angular/common';
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Patient Name</th>
-                <th>MRN</th>
+                <th>Patient</th>
                 <th>Medication</th>
-                <th>Qty</th>
+                <th>Dosage</th>
+                <th>Route</th>
+                <th>Frequency</th>
                 <th>Notes</th>
                 <th class="text-center">Action</th>
               </tr>
@@ -32,10 +33,16 @@ import { CommonModule } from '@angular/common';
             <tbody>
               <tr *ngFor="let item of list">
                 <td>{{ item.creationTime | date:'short' }}</td>
-                <td><strong>{{ item.patientName }}</strong></td>
-                <td><code class="text-primary">{{ item.patientMRN }}</code></td>
-                <td>{{ item.serviceName }}</td>
-                <td><span class="badge bg-info text-dark">{{ item.quantity }}</span></td>
+                <td>
+                    <strong>{{ item.patientName }}</strong><br>
+                    <small class="text-muted">{{ item.patientMRN }}</small>
+                </td>
+                <td>
+                    {{ item.serviceName }} <span class="badge bg-info text-dark rounded-pill">{{ item.quantity }}</span>
+                </td>
+                <td>{{ item.dosage || '-' }}</td>
+                <td>{{ item.route || '-' }}</td>
+                <td>{{ item.frequency || '-' }}</td>
                 <td><small class="text-muted">{{ item.clinicalNotes || '-' }}</small></td>
                 <td class="text-center">
                   <button class="btn btn-primary btn-premium btn-sm" (click)="dispense(item.id)">

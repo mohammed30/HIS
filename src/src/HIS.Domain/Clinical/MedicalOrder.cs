@@ -15,10 +15,17 @@ public class MedicalOrder : FullAuditedEntity<Guid>
     public decimal Price { get; set; }      // Snapshot price
     public decimal Quantity { get; set; } = 1; // Default 1
     
-    public string ClinicalNotes { get; set; }
+    public string? ClinicalNotes { get; set; }
     
     // For Radiology: Modality, BodyPart (can be copied from ServiceItem or specific to order)
-    public string Details { get; set; } 
+    public string? Details { get; set; } 
+
+    // Prescription Specifics
+    public string? Dosage { get; set; }
+    public string? Frequency { get; set; }
+    public string? Route { get; set; }
+    public string? Duration { get; set; }
+    public string? Instructions { get; set; } 
 
     public MedicalOrder()
     {

@@ -54,6 +54,10 @@ public static class HISPermissions
         public const string Dispensing = Default + ".Dispensing";
         public const string Prescriptions = Default + ".Prescriptions";
         public const string Stock = Default + ".Stock";
+        public const string Drugs = Default + ".Drugs";
+        public const string DrugsCreate = Drugs + ".Create";
+        public const string DrugsEdit = Drugs + ".Edit";
+        public const string DrugsDelete = Drugs + ".Delete";
     }
 }
 

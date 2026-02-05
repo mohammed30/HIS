@@ -4,6 +4,7 @@ using HIS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace HIS.Migrations
 {
     [DbContext(typeof(HISDbContext))]
-    partial class HISDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260205221723_Add_Drug_Entity")]
+    partial class Add_Drug_Entity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -980,6 +983,7 @@ namespace HIS.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ClinicalNotes")
+                        .IsRequired()
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
 
@@ -1000,6 +1004,7 @@ namespace HIS.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Details")
+                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
@@ -1007,15 +1012,19 @@ namespace HIS.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Dosage")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Duration")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Frequency")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Instructions")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -1044,6 +1053,7 @@ namespace HIS.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Route")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ServiceItemId")
@@ -2782,6 +2792,7 @@ namespace HIS.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("BatchNumberPrefix")
+                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 

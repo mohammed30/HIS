@@ -48,6 +48,11 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         pharmacy.AddChild(HISPermissions.Pharmacy.Prescriptions, L("Permission:Prescriptions"));
         pharmacy.AddChild(HISPermissions.Pharmacy.Dispensing, L("Permission:Dispensing"));
         pharmacy.AddChild(HISPermissions.Pharmacy.Stock, L("Permission:Stock"));
+
+        var drugs = pharmacy.AddChild(HISPermissions.Pharmacy.Drugs, L("Permission:Drugs"));
+        drugs.AddChild(HISPermissions.Pharmacy.DrugsCreate, L("Permission:Create"));
+        drugs.AddChild(HISPermissions.Pharmacy.DrugsEdit, L("Permission:Edit"));
+        drugs.AddChild(HISPermissions.Pharmacy.DrugsDelete, L("Permission:Delete"));
     }
 
     private static LocalizableString L(string name)

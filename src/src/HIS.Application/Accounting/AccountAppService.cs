@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -8,7 +10,7 @@ namespace HIS.Accounting;
 
 public class AccountAppService : CrudAppService<Account, AccountDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateAccountDto>, IAccountAppService
 {
-    public AccountAppService(IRepository<Account, Guid> repository) 
+    public AccountAppService(IRepository<Account, Guid> repository)
         : base(repository)
     {
     }
@@ -25,7 +27,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
 
         // 2. Find max code among siblings
         var siblings = await Repository.GetListAsync(x => x.ParentId == input.ParentId);
-        
+
         // Filter siblings to find proper sequence
         // Logic: 
         // If Parent is "1", Children are "11", "12"...
@@ -38,30 +40,30 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         // Better Approach: 
         // If ParentId is null (Root), max code length 1 (1, 2, 3...)
         // If ParentId exists, append next number.
-        
+
         string nextCode;
 
         if (siblings.Any())
         {
             var maxCode = siblings.Select(x => x.Code).OrderByDescending(x => x.Length).ThenByDescending(x => x).FirstOrDefault();
-             // Simple increment logic - assuming numeric codes
-             if (long.TryParse(maxCode, out long maxCodeVal))
-             {
-                 nextCode = (maxCodeVal + 1).ToString();
-             }
-             else
-             {
-                 // Fallback if non-numeric
-                 nextCode = parentCode + (siblings.Count + 1);
-             }
+            // Simple increment logic - assuming numeric codes
+            if (long.TryParse(maxCode, out long maxCodeVal))
+            {
+                nextCode = (maxCodeVal + 1).ToString();
+            }
+            else
+            {
+                // Fallback if non-numeric
+                nextCode = parentCode + (siblings.Count + 1);
+            }
         }
         else
         {
             // First child
             if (string.IsNullOrEmpty(parentCode))
             {
-                 // First Root ever? unlikely but...
-                 nextCode = "1"; 
+                // First Root ever? unlikely but...
+                nextCode = "1";
             }
             else
             {
@@ -71,7 +73,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
                 // Level 1: 1 digit (1 - Assets)
                 // Level 2: 2 digits (11 - Current Assets)
                 // Level 3: 4 digits (1101 - Cash) ??
-                
+
                 // Let's try simple concatenation of '1' for now, user can correct if schema differs.
                 // Request: "consistent with parent"
                 // If Parent "1", Child "11".
@@ -80,6 +82,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         }
 
         input.Code = nextCode;
-        
+
         return await base.CreateAsync(input);
     }
+}

@@ -133,5 +133,8 @@ public class HISApplicationAutoMapperProfile : Profile
         
         // Pharmacy
         CreateMap<Clinical.MedicalOrder, Pharmacy.PendingPrescriptionDto>();
+        CreateMap<Pharmacy.Drug, Pharmacy.Dtos.DrugDto>()
+            .ForMember(x => x.ServiceItemName, opt => opt.Ignore()); // Can populate later if needed
+        CreateMap<Pharmacy.Dtos.CreateUpdateDrugDto, Pharmacy.Drug>();
     }
 }

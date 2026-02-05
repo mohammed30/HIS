@@ -5,6 +5,8 @@ import { PharmacyRoutingModule } from './pharmacy-routing.module';
 import { PrescriptionsListComponent } from './prescriptions-list/prescriptions-list.component';
 import { DispensingWorkflowComponent } from './dispensing-workflow/dispensing-workflow.component';
 import { PharmacyStockComponent } from './pharmacy-stock/pharmacy-stock.component';
+import { DrugsComponent } from './drugs/drugs.component';
+import { DrugDialogComponent } from './drugs/drug-dialog/drug-dialog.component';
 
 @NgModule({
     declarations: [],
@@ -13,8 +15,12 @@ import { PharmacyStockComponent } from './pharmacy-stock/pharmacy-stock.componen
         ThemeSharedModule,
         PharmacyRoutingModule,
         PrescriptionsListComponent,
+        PharmacyRoutingModule,
+        PrescriptionsListComponent,
         DispensingWorkflowComponent,
-        PharmacyStockComponent
+        PharmacyStockComponent,
+        DrugsComponent,
+        DrugDialogComponent
     ]
 })
 export class PharmacyModule { }

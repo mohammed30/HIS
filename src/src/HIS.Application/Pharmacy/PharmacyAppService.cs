@@ -18,6 +18,7 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
     private readonly IRepository<Warehouse, Guid> _warehouseRepository;
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<InventoryItem, Guid> _inventoryItemRepository;
+    private readonly DrugInteractionService _interactionService;
 
     public PharmacyAppService(
         IRepository<MedicalOrder, Guid> medicalOrderRepository,
@@ -25,7 +26,8 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
         InventoryManager inventoryManager,
         IRepository<Warehouse, Guid> warehouseRepository,
         IRepository<Patient, Guid> patientRepository,
-        IRepository<InventoryItem, Guid> inventoryItemRepository)
+        IRepository<InventoryItem, Guid> inventoryItemRepository,
+        DrugInteractionService interactionService)
     {
         _medicalOrderRepository = medicalOrderRepository;
         _dispensingRepository = dispensingRepository;
@@ -33,6 +35,7 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
         _warehouseRepository = warehouseRepository;
         _patientRepository = patientRepository;
         _inventoryItemRepository = inventoryItemRepository;
+        _interactionService = interactionService;
     }
 
     public async Task<List<PendingPrescriptionDto>> GetPendingPrescriptionsAsync()
@@ -116,5 +119,15 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
         // 3. Complete Order
         order.Status = OrderStatus.Completed;
         await _medicalOrderRepository.UpdateAsync(order);
+    }
+
+    public async Task<List<string>> CheckInteractionsAsync(Guid patientId, string newDrugName)
+    {
+        // 1. Get active prescriptions for patient
+        var activeOrders = await _medicalOrderRepository.GetListAsync(x => x.PatientId == patientId && x.Status != OrderStatus.Completed && x.Status != OrderStatus.Cancelled);
+        var activeDrugNames = activeOrders.Select(x => x.ServiceName).ToList();
+        
+        // 2. Check interactions
+        return await _interactionService.CheckInteractionsAsync(newDrugName, activeDrugNames);
     }
 }
