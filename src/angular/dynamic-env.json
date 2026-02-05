@@ -1,8 +1,8 @@
 {
     "production": true,
     "oAuthConfig": {
-        "issuer": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
-        "redirectUri": "https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net",
+        "issuer": "https://asia.runasp.net/",
+        "redirectUri": "https://asia.tryasp.net",
         "clientId": "HIS_App",
         "responseType": "code",
         "scope": "offline_access HIS",
@@ -10,11 +10,11 @@
     },
     "apis": {
         "default": {
-            "url": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net",
+            "url": "https://asia.runasp.net",
             "rootNamespace": "HIS"
         },
         "AbpAccountPublic": {
-            "url": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
+            "url": "https://asia.runasp.net/",
             "rootNamespace": "AbpAccountPublic"
         }
     }
