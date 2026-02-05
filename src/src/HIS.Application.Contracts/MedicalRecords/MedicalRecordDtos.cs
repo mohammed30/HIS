@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
+using HIS.Patients;
 
 namespace HIS.MedicalRecords;
 
@@ -166,6 +167,7 @@ public class PatientMedicalSummaryDto
     public string PatientName { get; set; } = string.Empty;
     public string? BloodType { get; set; }
     public int Age { get; set; }
+    public Gender Gender { get; set; }
     
     public int ActiveAllergiesCount { get; set; }
     public int ChronicConditionsCount { get; set; }

@@ -86,21 +86,21 @@ export class ClinicFlowComponent implements OnInit {
     // Actions
     checkIn(id: string) {
         this.appointmentService.checkIn(id).subscribe(() => {
-            this.toaster.success('Patient Checked In');
+            this.toaster.success('::PatientCheckedIn');
             this.loadFlow();
         });
     }
 
     startConsultation(id: string) {
         this.appointmentService.startConsultation(id).subscribe(() => {
-            this.toaster.success('Consultation Started');
+            this.toaster.success('::ConsultationStarted');
             this.loadFlow();
         });
     }
 
     completeConsultation(id: string) {
         this.appointmentService.completeConsultation(id).subscribe(() => {
-            this.toaster.success('Consultation Completed');
+            this.toaster.success('::ConsultationCompleted');
             this.loadFlow();
         });
     }

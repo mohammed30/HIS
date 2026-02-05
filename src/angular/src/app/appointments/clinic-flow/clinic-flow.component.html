@@ -1,104 +1,139 @@
-<div class="container-fluid p-4">
+<div class="clinic-flow-container bg-light min-vh-100 p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3><i class="fas fa-stream me-2"></i> Clinic Flow & Queue</h3>
-        <div class="text-muted">{{ today | date:'fullDate' }}</div>
+        <h3 class="fw-bold text-primary">
+            <i class="fas fa-stream me-2"></i> {{ '::ClinicFlowQueue' | abpLocalization }}
+        </h3>
+        <div class="badge bg-white shadow-sm text-primary p-2 px-3 border rounded-3">
+            <i class="far fa-calendar-alt me-2"></i>{{ today | date:'fullDate' }}
+        </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3">
+    <!-- Filters Panel -->
+    <div class="card shadow-sm border-0 rounded-4 hover-lift mb-4 overflow-hidden">
+        <div class="card-body p-4 bg-white">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label">Clinic</label>
-                    <select class="form-select" [(ngModel)]="selectedClinicId" (change)="onClinicChange()">
-                        <option value="">Select Clinic...</option>
+                    <label class="form-label text-muted small fw-bold mb-2">
+                        <i class="fas fa-hospital me-1 text-primary"></i>{{ '::Clinic' | abpLocalization }}
+                    </label>
+                    <select class="form-select form-select-lg border shadow-xs bg-light rounded-3"
+                        [(ngModel)]="selectedClinicId" (change)="onClinicChange()">
+                        <option value="">-- {{ '::SelectClinic' | abpLocalization }} --</option>
                         <option *ngFor="let c of clinics" [value]="c.id">{{c.name}}</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Doctor</label>
-                    <select class="form-select" [(ngModel)]="selectedDoctorId" (change)="loadFlow()"
-                        [disabled]="!selectedClinicId">
-                        <option value="">Select Doctor...</option>
+                    <label class="form-label text-muted small fw-bold mb-2">
+                        <i class="fas fa-user-md me-1 text-primary"></i>{{ '::Doctor' | abpLocalization }}
+                    </label>
+                    <select class="form-select form-select-lg border shadow-xs bg-light rounded-3"
+                        [(ngModel)]="selectedDoctorId" (change)="loadFlow()" [disabled]="!selectedClinicId">
+                        <option value="">-- {{ '::SelectDoctor' | abpLocalization }} --</option>
                         <option *ngFor="let d of doctors" [value]="d.id">{{d.name}}</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" (click)="loadFlow()" [disabled]="!selectedDoctorId">
-                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                <div class="col-md-4">
+                    <button class="btn btn-primary btn-lg w-100 btn-premium shadow-sm py-2" (click)="loadFlow()"
+                        [disabled]="!selectedDoctorId">
+                        <i class="fas fa-sync-alt me-1"></i> {{ '::Refresh' | abpLocalization }}
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Queue List -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Today's Appointments</h5>
+    <!-- Queue List Table -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom p-3">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="fas fa-list-ol me-2 text-primary"></i>{{ '::TodaysAppointments' | abpLocalization }}
+            </h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th>Time</th>
-                        <th>Patient</th>
-                        <th>Status</th>
-                        <th>Type</th>
-                        <th>Notes</th>
-                        <th class="text-end">Actions</th>
+                        <th class="ps-4">{{ '::Time' | abpLocalization }}</th>
+                        <th>{{ '::Patient' | abpLocalization }}</th>
+                        <th>{{ '::Status' | abpLocalization }}</th>
+                        <th>{{ '::Type' | abpLocalization }}</th>
+                        <th>{{ '::Notes' | abpLocalization }}</th>
+                        <th class="text-end pe-4">{{ '::Actions' | abpLocalization }}</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of appointments" [class.table-warning]="item.isWalkIn">
-                        <td>
-                            <div class="fw-bold">{{ item.appointmentDate | date:'shortTime' }}</div>
-                            <small *ngIf="item.isWalkIn" class="text-danger fw-bold">WALK-IN</small>
-                        </td>
-                        <td>{{ item.patientName || 'Unknown' }}</td>
-                        <td>
-                            <span class="badge rounded-pill" [ngClass]="getStatusBadge(item.status)">
-                                {{ getStatusLabel(item.status) }}
+                    <tr *ngFor="let item of appointments" [class.table-light]="item.isWalkIn" class="border-bottom">
+                        <td class="ps-4 py-3">
+                            <div class="fw-bold text-primary">{{ item.appointmentDate | date:'shortTime' }}</div>
+                            <span *ngIf="item.isWalkIn"
+                                class="badge bg-soft-danger text-danger border border-danger border-opacity-25 small mt-1">
+                                <i class="fas fa-walking me-1"></i>{{ '::IsWalkIn' | abpLocalization }}
                             </span>
                         </td>
                         <td>
-                            <!-- Enum label resolving might need pipe or map, simpler for now -->
-                            {{ item.type === 2 ? 'Emergency' : (item.type === 0 ? 'First Visit' : 'Follow-up') }}
+                            <div class="fw-bold text-dark">{{ item.patientName || 'Unknown' }}</div>
+                            <small class="text-muted">{{ item.patientMrn }}</small>
                         </td>
-                        <td><small class="text-muted text-truncate d-inline-block" style="max-width: 150px;">{{
-                                item.notes }}</small></td>
-                        <td class="text-end">
-                            <!-- Action Buttons based on Status -->
+                        <td>
+                            <span class="badge shadow-xs" [ngClass]="getStatusBadge(item.status)"
+                                style="padding: 0.5em 0.8em;">
+                                {{ '::Enum:AppointmentStatus.' + item.status | abpLocalization }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="small fw-500 text-muted">
+                                {{ '::Enum:AppointmentType.' + item.type | abpLocalization }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-muted small text-truncate d-inline-block" style="max-width: 150px;"
+                                [title]="item.notes">
+                                {{ item.notes || '--' }}
+                            </div>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-1">
+                                <!-- Scheduled/Confirmed -> Check In -->
+                                <button *ngIf="item.status === 0 || item.status === 1"
+                                    class="btn btn-sm btn-info btn-premium shadow-sm text-dark px-3"
+                                    (click)="checkIn(item.id)">
+                                    <i class="fas fa-sign-in-alt me-1"></i> {{ '::CheckIn' | abpLocalization }}
+                                </button>
 
-                            <!-- Scheduled/Confirmed -> Check In -->
-                            <button *ngIf="item.status === 0 || item.status === 1"
-                                class="btn btn-sm btn-info text-white me-1" (click)="checkIn(item.id)" title="Check In">
-                                <i class="fas fa-sign-in-alt"></i> Check In
-                            </button>
+                                <!-- Checked In -> Start Consultation -->
+                                <button *ngIf="item.status === 5"
+                                    class="btn btn-sm btn-warning btn-premium shadow-sm text-dark px-3"
+                                    (click)="startConsultation(item.id)">
+                                    <i class="fas fa-stethoscope me-1"></i> {{ '::Start' | abpLocalization }}
+                                </button>
 
-                            <!-- Checked In -> Start Consultation -->
-                            <button *ngIf="item.status === 5" class="btn btn-sm btn-warning me-1"
-                                (click)="startConsultation(item.id)" title="Start Consultation">
-                                <i class="fas fa-user-md"></i> Start
-                            </button>
+                                <!-- In Consultation -> Complete -->
+                                <button *ngIf="item.status === 6"
+                                    class="btn btn-sm btn-success btn-premium shadow-sm px-3"
+                                    (click)="completeConsultation(item.id)">
+                                    <i class="fas fa-check-circle me-1"></i> {{ '::Complete' | abpLocalization }}
+                                </button>
 
-                            <!-- In Consultation -> Complete -->
-                            <button *ngIf="item.status === 6" class="btn btn-sm btn-success me-1"
-                                (click)="completeConsultation(item.id)" title="Complete">
-                                <i class="fas fa-check"></i> Complete
-                            </button>
-
-                            <!-- Cancel (if not completed) -->
-                            <button *ngIf="item.status !== 3 && item.status !== 2" class="btn btn-sm btn-outline-danger"
-                                (click)="cancel(item.id)" title="Cancel">
-                                <i class="fas fa-times"></i>
-                            </button>
+                                <!-- Cancel (if not completed) -->
+                                <button *ngIf="item.status !== 3 && item.status !== 2"
+                                    class="btn btn-sm btn-outline-danger shadow-xs" (click)="cancel(item.id)"
+                                    [title]="'::Cancel' | abpLocalization">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr *ngIf="appointments.length === 0 && !loading">
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="fas fa-calendar-times mb-3 display-4"></i>
-                            <p>No appointments found for today.</p>
+                        <td colspan="6" class="text-center py-5 text-muted bg-white">
+                            <i class="fas fa-calendar-times mb-3 fa-4x opacity-25"></i>
+                            <h5 class="fw-bold opacity-75">{{ '::NoAppointmentsFound' | abpLocalization }}</h5>
+                        </td>
+                    </tr>
+                    <tr *ngIf="loading">
+                        <td colspan="6" class="text-center py-5 bg-white">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

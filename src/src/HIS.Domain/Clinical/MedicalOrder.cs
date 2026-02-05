@@ -13,6 +13,7 @@ public class MedicalOrder : FullAuditedEntity<Guid>
     public Guid ServiceItemId { get; set; }
     public string ServiceName { get; set; } // Snapshot in case item name changes
     public decimal Price { get; set; }      // Snapshot price
+    public decimal Quantity { get; set; } = 1; // Default 1
     
     public string ClinicalNotes { get; set; }
     

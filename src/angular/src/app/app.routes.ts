@@ -227,6 +227,12 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'pharmacy',
+    loadChildren: () => import('./pharmacy/pharmacy.module').then(m => m.PharmacyModule),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Pharmacy' }
+  },
+  {
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
     canActivate: [authGuard, permissionGuard],

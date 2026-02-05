@@ -836,3 +836,53 @@ html:not([data-theme="dark"]) .vital-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
   color: #212529 !important;
 }
+
+/* Premium UI Enhancements */
+.hover-lift {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+  &:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+.btn-premium {
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 1.25rem !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    
+    &:hover {
+        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15) !important;
+        filter: brightness(1.1) !important;
+    }
+    
+    &:active {
+        transform: scale(0.98) !important;
+    }
+
+    &.btn-sm {
+        padding: 0.25rem 0.75rem !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Better icon visibility */
+.fas, .fa-solid {
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.2));
+}
+
+[data-theme="dark"] .btn-primary {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    color: #fff !important;
+}
+
+[data-theme="dark"] .btn-success {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+}

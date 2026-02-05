@@ -47,5 +47,13 @@ public static class HISPermissions
         public const string ChartOfAccounts = Default + ".ChartOfAccounts";
         public const string JournalEntries = Default + ".JournalEntries";
     }
+
+    public static class Pharmacy
+    {
+        public const string Default = GroupName + ".Pharmacy";
+        public const string Dispensing = Default + ".Dispensing";
+        public const string Prescriptions = Default + ".Prescriptions";
+        public const string Stock = Default + ".Stock";
+    }
 }
 

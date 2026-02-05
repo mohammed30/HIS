@@ -1,43 +1,67 @@
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-            <h5 class="card-title mb-0">Waiting List</h5>
-            <small class="text-muted">Manage patient requests for appointments</small>
+<div class="card shadow-sm hover-lift border-0 rounded-4 overflow-hidden">
+    <div class="card-header bg-primary text-white p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="fas fa-list-ol me-2"></i>{{ '::Menu:WaitingList' | abpLocalization }}
+                </h5>
+                <small class="opacity-75">{{ '::WaitingListSubtitle' | abpLocalization }}</small>
+            </div>
+            <button class="btn btn-light btn-premium shadow-sm px-4" (click)="create()">
+                <i class="fas fa-plus-circle me-1"></i> {{ '::AddRequest' | abpLocalization }}
+            </button>
         </div>
-        <button class="btn btn-primary" (click)="create()">
-            <i class="fa fa-plus me-1"></i> Add Request
-        </button>
     </div>
-    <div class="card-body">
-        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
-            <ngx-datatable-column name="Priority" prop="priority">
+    <div class="card-body p-0">
+        <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default class="material">
+            <ngx-datatable-column [name]="'::Priority' | abpLocalization" prop="priority" [maxWidth]="120">
                 <ng-template let-value="value" ngx-datatable-cell-template>
-                    <span class="badge" [class.bg-danger]="value === 2" [class.bg-warning]="value === 1"
-                        [class.bg-info]="value === 0">
-                        {{ value === 2 ? 'Urgent' : (value === 1 ? 'High' : 'Normal') }}
+                    <span class="badge shadow-xs" [ngClass]="{
+                        'bg-soft-danger text-danger border border-danger border-opacity-25': value === 2,
+                        'bg-soft-warning text-warning border border-warning border-opacity-25': value === 1,
+                        'bg-soft-info text-info border border-info border-opacity-25': value === 0
+                    }" style="padding: 0.5em 0.8em; min-width: 60px;">
+                        <i class="fas"
+                            [ngClass]="value === 2 ? 'fa-fire' : (value === 1 ? 'fa-exclamation-circle' : 'fa-info-circle')"></i>
+                        {{ value === 2 ? ('::Urgent' | abpLocalization) : (value === 1 ? ('::High' | abpLocalization) :
+                        ('::Normal' | abpLocalization)) }}
                     </span>
                 </ng-template>
             </ngx-datatable-column>
-            <ngx-datatable-column name="Request Date" prop="requestDate">
+            <ngx-datatable-column [name]="'::RequestDate' | abpLocalization" prop="requestDate" [maxWidth]="150">
                 <ng-template let-value="value" ngx-datatable-cell-template>
-                    {{ value | date:'shortDate' }}
+                    <span class="text-muted small fw-bold"><i class="far fa-calendar-alt me-1 text-primary"></i>{{ value
+                        | date:'shortDate' }}</span>
                 </ng-template>
             </ngx-datatable-column>
-            <ngx-datatable-column name="Patient" prop="patientName"></ngx-datatable-column>
-            <ngx-datatable-column name="Department" prop="departmentName"></ngx-datatable-column>
-            <ngx-datatable-column name="Doctor" prop="doctorName">
-                <ng-template let-value="value" ngx-datatable-cell-template>
-                    {{ value || 'Any Doctor' }}
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column name="Actions" sortable="false">
+            <ngx-datatable-column [name]="'::Patient' | abpLocalization" prop="patientName">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                    <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(row.id)">
-                        <i class="fa fa-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" (click)="delete(row.id)">
-                        <i class="fa fa-times"></i>
-                    </button>
+                    <div class="fw-bold text-dark">{{ row.patientName }}</div>
+                    <small class="text-muted">{{ row.patientMrn }}</small>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Department' | abpLocalization"
+                prop="departmentName"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Doctor' | abpLocalization" prop="doctorName">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span *ngIf="value" class="text-dark"><i class="fas fa-user-md me-1 text-primary opacity-50"></i>{{
+                        value }}</span>
+                    <span *ngIf="!value" class="badge bg-light text-muted fw-normal"><i
+                            class="fas fa-random me-1"></i>{{ '::AnyDoctor' | abpLocalization }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div class="d-flex gap-1 justify-content-end pe-2">
+                        <button class="btn btn-sm btn-outline-primary shadow-xs" (click)="edit(row.id)"
+                            [title]="'::Edit' | abpLocalization">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger shadow-xs" (click)="delete(row.id)"
+                            [title]="'::Delete' | abpLocalization">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </div>
                 </ng-template>
             </ngx-datatable-column>
         </ngx-datatable>
@@ -46,48 +70,71 @@
 
 <abp-modal [(visible)]="isModalOpen">
     <ng-template #abpHeader>
-        <h3>{{ selectedItem.id ? 'Edit Request' : 'New Waiting List Request' }}</h3>
+        <h3 class="modal-title m-0 text-primary fw-bold">
+            <i class="fas fa-file-alt me-2"></i>
+            {{ (selectedItem.id ? '::Edit' : '::NewWaitingListRequest') | abpLocalization }}
+        </h3>
     </ng-template>
 
     <ng-template #abpBody>
-        <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
+        <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form" class="p-2">
             <div class="mb-3">
-                <label>Patient (ID/Guid for MVP)</label>
-                <input type="text" class="form-control" formControlName="patientId">
+                <label class="form-label fw-bold">{{ '::Patient' | abpLocalization }} *</label>
+                <div class="input-group shadow-xs rounded-3 overflow-hidden">
+                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0"
+                        [placeholder]="'::SearchPatient' | abpLocalization" formControlName="patientId">
+                </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label>Department</label>
-                    <input type="text" class="form-control" formControlName="departmentId">
+                    <label class="form-label fw-bold">{{ '::Department' | abpLocalization }} *</label>
+                    <input type="text" class="form-control shadow-xs rounded-3" formControlName="departmentId">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label>Preferred Doctor (Optional)</label>
-                    <input type="text" class="form-control" formControlName="doctorId">
+                    <label class="form-label fw-bold">{{ '::Doctor' | abpLocalization }}</label>
+                    <input type="text" class="form-control shadow-xs rounded-3" formControlName="doctorId"
+                        [placeholder]="'::AnyDoctor' | abpLocalization">
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label>Request Date</label>
-                <input type="date" class="form-control" formControlName="requestDate">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">{{ '::RequestDate' | abpLocalization }} *</label>
+                    <div class="input-group shadow-xs rounded-3 overflow-hidden">
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="far fa-calendar-alt text-muted"></i></span>
+                        <input type="date" class="form-control border-start-0 ps-0" formControlName="requestDate">
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">{{ '::Priority' | abpLocalization }} *</label>
+                    <select class="form-select shadow-xs rounded-3" formControlName="priority">
+                        <option *ngFor="let p of priorities" [ngValue]="p.value">
+                            {{ '::' + p.text | abpLocalization }}
+                        </option>
+                    </select>
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label>Priority</label>
-                <select class="form-select" formControlName="priority">
-                    <option *ngFor="let p of priorities" [ngValue]="p.value">{{ p.text }}</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label>Notes</label>
-                <textarea class="form-control" formControlName="notes" rows="3"></textarea>
+            <div class="mb-0">
+                <label class="form-label fw-bold">{{ '::Notes' | abpLocalization }}</label>
+                <textarea class="form-control shadow-xs rounded-3" formControlName="notes" rows="3"
+                    placeholder="أدخل تفاصيل الطلب..."></textarea>
             </div>
         </form>
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">Save</button>
+        <div class="d-flex gap-2 w-100 justify-content-end p-2">
+            <button type="button" class="btn btn-light shadow-sm px-4 fw-bold" abpClose>
+                {{ '::Cancel' | abpLocalization }}
+            </button>
+            <button type="button" class="btn btn-primary btn-premium shadow-sm px-4 fw-bold" (click)="save()"
+                [disabled]="form?.invalid">
+                <i class="fas fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+            </button>
+        </div>
     </ng-template>
 </abp-modal>

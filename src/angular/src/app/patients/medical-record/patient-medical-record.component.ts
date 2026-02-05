@@ -17,15 +17,6 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
   template: `
     <abp-page [title]="'السجل الطبي للمريض' | abpLocalization">
       
-      <!-- Toolbar -->
-      <abp-page-toolbar-container>
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" (click)="refreshData()">
-            <i class="fas fa-sync-alt me-1"></i> تحديث البيانات
-          </button>
-        </div>
-      </abp-page-toolbar-container>
-
       <div class="container-fluid px-0">
         
         <!-- Modern Patient Header -->
@@ -37,11 +28,20 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
               </div>
             </div>
             <div class="col">
-              <h3 class="fw-bold text-primary mb-1">{{ summary.patientName }}</h3>
-              <div class="d-flex gap-3 text-muted align-items-center">
-                <span><i class="fas fa-venus-mars me-1"></i> {{ summary.gender }}</span>
-                <span><i class="fas fa-birthday-cake me-1"></i> {{ summary.age }} سنة</span>
-                <span class="badge bg-secondary rounded-pill px-3"><i class="fas fa-tint me-1"></i> {{ summary.bloodType || 'غير محدد' }}</span>
+              <h3 class="fw-bold text-primary mb-2">{{ summary.patientName }}</h3>
+              <div class="d-flex gap-4 align-items-center">
+                <span class="text-secondary fw-medium">
+                  <ng-container *ngIf="summary.gender === 0; else femaleIcon">
+                    <i class="fas fa-mars me-2 text-primary fs-5"></i> ذكر
+                  </ng-container>
+                  <ng-template #femaleIcon>
+                    <i class="fas fa-venus me-2 text-danger fs-5"></i> أنثى
+                  </ng-template>
+                </span>
+                <span class="text-secondary fw-medium"><i class="fas fa-birthday-cake me-2 text-warning fs-5"></i> {{ summary.age }} سنة</span>
+                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 border border-danger border-opacity-10">
+                    <i class="fas fa-tint me-2"></i> {{ summary.bloodType || 'غير محدد' }}
+                </span>
               </div>
             </div>
             <div class="col-auto">

@@ -96,6 +96,7 @@ public class HISDbContext :
     
     // Clinical
     public DbSet<HIS.Clinical.MedicalOrder> MedicalOrders { get; set; }
+    public DbSet<HIS.Pharmacy.Dispensing> Dispensings { get; set; }
 
     #region Entities from the modules
 
@@ -712,12 +713,31 @@ public class HISDbContext :
             b.Property(x => x.ClinicalNotes).HasMaxLength(2048);
             b.Property(x => x.ServiceName).HasMaxLength(256).IsRequired();
             b.Property(x => x.Price).HasPrecision(18, 2);
+            b.Property(x => x.Quantity).HasPrecision(18, 2);
             
             b.HasIndex(x => x.PatientId);
             b.HasIndex(x => x.ServiceItemId);
             b.HasIndex(x => x.Status);
         });
 
+        // Pharmacy Dispensing
+        builder.Entity<HIS.Pharmacy.Dispensing>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Dispensings", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.HasIndex(x => x.MedicalOrderId);
+            b.HasIndex(x => x.PatientId);
+
+            b.OwnsMany(x => x.Items, a =>
+            {
+                a.ToTable(HISConsts.DbTablePrefix + "DispensedItems", HISConsts.DbSchema);
+                a.WithOwner().HasForeignKey(x => x.DispensingId);
+                a.Property(x => x.Quantity).HasPrecision(18, 2);
+                a.Property(x => x.UnitCost).HasPrecision(18, 2);
+                a.Property(x => x.BatchNumber).HasMaxLength(64);
+            });
+        });
     }
 }
 

@@ -158,4 +158,73 @@ public class InventoryManager : DomainService
             await _accountingManager.PostEntryAsync(entry);
         }
     }
+
+    public async Task<System.Collections.Generic.List<(Guid BatchId, decimal Quantity, decimal UnitCost, string BatchNumber)>> DispenseStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference)
+    {
+        var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
+        if (item == null || item.Quantity < quantity)
+        {
+            throw new Volo.Abp.BusinessException("Inventory:InsufficientStock");
+        }
+
+        decimal remainingQtyToIssue = quantity;
+        decimal totalCostOfIssue = 0;
+        var dispensedDetails = new System.Collections.Generic.List<(Guid BatchId, decimal Quantity, decimal UnitCost, string BatchNumber)>();
+
+        // LIFO Logic: Get batches ordered by ReceivedDate DESC
+        var batches = await _batchRepository.GetListAsync(x => x.InventoryItemId == item.Id && x.Quantity > 0);
+        batches = batches.OrderByDescending(x => x.ReceivedDate).ToList();
+
+        foreach (var batch in batches)
+        {
+            if (remainingQtyToIssue <= 0) break;
+
+            decimal qtyTaken = Math.Min(batch.Quantity, remainingQtyToIssue);
+            
+            batch.Quantity -= qtyTaken;
+            remainingQtyToIssue -= qtyTaken;
+            totalCostOfIssue += (qtyTaken * batch.UnitCost);
+
+            dispensedDetails.Add((batch.Id, qtyTaken, batch.UnitCost, batch.BatchNumber));
+
+            await _batchRepository.UpdateAsync(batch);
+        }
+
+        if (remainingQtyToIssue > 0)
+        {
+             // If we're here, it means batched quantity < item quantity (inconsistency).
+             // We adjust item quantity effectively, or assume we found some un-batched stock?
+             // For strict tracking, we should probably fail, but to keep system running we flow through.
+             // We use AverageCost for the remainder cost estimation.
+             totalCostOfIssue += (remainingQtyToIssue * item.AverageCost);
+        }
+
+        item.Quantity -= quantity;
+        await _inventoryItemRepository.UpdateAsync(item);
+
+        var transaction = new InventoryTransaction(
+            GuidGenerator.Create(),
+            item.Id,
+            TransactionType.Dispensing, 
+            quantity,
+            quantity > 0 ? totalCostOfIssue / quantity : 0, 
+            DateTime.Now,
+            reference
+        );
+        await _transactionRepository.InsertAsync(transaction);
+        
+        // Accounting: Dr Expense, Cr Inventory
+        var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
+        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200"); 
+
+        if (inventoryAccount != null && expenseAccount != null)
+        {
+             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"Dispensing: {item.ProductName}");
+             entry.AddLine(GuidGenerator, expenseAccount.Id, totalCostOfIssue, 0);
+             entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalCostOfIssue);
+             await _accountingManager.PostEntryAsync(entry);
+        }
+
+        return dispensedDetails;
+    }
 }

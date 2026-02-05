@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -157,6 +158,23 @@ public class HISHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
+        
+        Configure<RequestLocalizationOptions>(options =>
+        {
+            options.SetDefaultCulture("ar");
+            options.AddSupportedCultures("ar", "en");
+            options.AddSupportedUICultures("ar", "en");
+            options.FallBackToParentCultures = true;
+            options.FallBackToParentUICultures = true;
+
+            // Remove AcceptLanguageHeaderRequestCultureProvider to force default (Arabic) 
+            // if no cookie/query string is present, ignoring browser language.
+            options.RequestCultureProviders = new List<IRequestCultureProvider>
+            {
+                new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider()
+            };
+        });
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)
@@ -279,15 +297,12 @@ public class HISHttpApiHostModule : AbpModule
         {
             app.UseDeveloperExceptionPage();
         }
-
+        else
+        {
+            app.UseErrorPage();
+        }
+        
         app.UseAbpRequestLocalization();
-
-        // TEMPORARY: Force Developer Exception Page in Production to see the error
-        app.UseDeveloperExceptionPage();
-        // if (!env.IsDevelopment())
-        // {
-        //     app.UseErrorPage();
-        // }
 
         app.UseRouting();
         app.MapAbpStaticAssets();

@@ -1029,6 +1029,10 @@ namespace HIS.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid>("ServiceItemId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2686,6 +2690,68 @@ namespace HIS.Migrations
                     b.HasIndex("MobileNumber");
 
                     b.ToTable("AppPatients", (string)null);
+                });
+
+            modelBuilder.Entity("HIS.Pharmacy.Dispensing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("MedicalOrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalOrderId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("AppDispensings", (string)null);
                 });
 
             modelBuilder.Entity("HIS.Pricing.PriceList", b =>
@@ -5362,6 +5428,49 @@ namespace HIS.Migrations
                         .IsRequired();
 
                     b.Navigation("InsurancePlan");
+                });
+
+            modelBuilder.Entity("HIS.Pharmacy.Dispensing", b =>
+                {
+                    b.OwnsMany("HIS.Pharmacy.DispensedItem", "Items", b1 =>
+                        {
+                            b1.Property<Guid>("DispensingId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("BatchNumber")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)");
+
+                            b1.Property<Guid>("InventoryBatchId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("InventoryItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Quantity")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)");
+
+                            b1.Property<decimal>("UnitCost")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)");
+
+                            b1.HasKey("DispensingId", "Id");
+
+                            b1.ToTable("AppDispensedItems", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("DispensingId");
+                        });
+
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>

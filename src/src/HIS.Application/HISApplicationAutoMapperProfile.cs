@@ -130,5 +130,8 @@ public class HISApplicationAutoMapperProfile : Profile
         // Clinical (Medical Order)
         CreateMap<Clinical.MedicalOrder, Clinical.MedicalOrderDto>();
         CreateMap<Clinical.CreateUpdateMedicalOrderDto, Clinical.MedicalOrder>();
+        
+        // Pharmacy
+        CreateMap<Clinical.MedicalOrder, Pharmacy.PendingPrescriptionDto>();
     }
 }

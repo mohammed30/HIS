@@ -40,7 +40,7 @@ interface Patient {
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
           <h5 class="card-title mb-0">{{ '::Menu:Patients' | abpLocalization }}</h5>
-          <small class="text-muted">Manage patient medical records and registration</small>
+          <small class="text-muted">{{ '::ManagePatientsSubtitle' | abpLocalization }}</small>
         </div>
         <button class="btn btn-primary" (click)="create()">
           <i class="fas fa-plus me-1"></i> {{ '::New' | abpLocalization }}
@@ -149,8 +149,8 @@ interface Patient {
             <div class="col-md-3 mb-3">
               <label class="form-label">{{ '::Gender' | abpLocalization }} *</label>
               <select class="form-select" [(ngModel)]="formData.gender" name="gender" required>
-                <option [ngValue]="1">ذكر</option>
-                <option [ngValue]="2">أنثى</option>
+                <option [ngValue]="0">ذكر</option>
+                <option [ngValue]="1">أنثى</option>
               </select>
             </div>
             <div class="col-md-3 mb-3">
@@ -163,6 +163,8 @@ interface Patient {
                  <option [ngValue]="null">-- اختر --</option>
                  <option value="A+">A+</option><option value="A-">A-</option>
                  <option value="B+">B+</option><option value="B-">B-</option>
+                 <option value="O+">O+</option><option value="O-">O-</option>
+                 <option value="AB+">AB+</option><option value="AB-">AB-</option>
                  <option value="O+">O+</option><option value="O-">O-</option>
                  <option value="AB+">AB+</option><option value="AB-">AB-</option>
               </select>
@@ -244,7 +246,7 @@ export class PatientsComponent implements OnInit {
   getEmptyForm(): Partial<Patient> {
     return {
       firstNameAr: '', lastNameAr: '',
-      dateOfBirth: '', gender: 1,
+      dateOfBirth: '', gender: 0,
       mobileNumber: '', identityNumber: '',
       isActive: true,
       bloodType: null
@@ -303,7 +305,7 @@ export class PatientsComponent implements OnInit {
   }
 
   getGender(gender: number): string {
-    return gender === 1 ? 'ذكر' : 'أنثى';
+    return gender === 0 ? 'ذكر' : 'أنثى';
   }
 
   calculateAge(dateOfBirth: string): number {

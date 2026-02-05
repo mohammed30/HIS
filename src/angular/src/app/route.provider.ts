@@ -245,12 +245,37 @@ function configureRoutes() {
       order: 3,
       layout: eLayoutType.application,
     },
-    // Emergency
     {
       name: '::Menu:Emergency',
       iconClass: 'fas fa-ambulance',
       order: 30,
       layout: eLayoutType.application,
+    },
+    // Pharmacy
+    {
+      name: '::Menu:Pharmacy',
+      iconClass: 'fas fa-pills',
+      order: 28,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Pharmacy',
+    },
+    {
+      path: '/pharmacy',
+      name: '::Menu:Prescriptions',
+      parentName: '::Menu:Pharmacy',
+      iconClass: 'fas fa-file-prescription',
+      order: 1,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Pharmacy.Prescriptions',
+    },
+    {
+      path: '/pharmacy/stock',
+      name: '::Menu:Stock',
+      parentName: '::Menu:Pharmacy',
+      iconClass: 'fas fa-cubes',
+      order: 2,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Pharmacy.Stock',
     },
     {
       path: '/emergency/dashboard',

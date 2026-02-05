@@ -6,13 +6,14 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { LocalizationModule } from '@abp/ng.core';
 
 @Component({
   selector: 'app-waiting-list',
   templateUrl: './waiting-list.html',
   styleUrls: ['./waiting-list.scss'],
   standalone: true,
-  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule, LocalizationModule],
   providers: [ListService],
 })
 export class WaitingListComponent implements OnInit {

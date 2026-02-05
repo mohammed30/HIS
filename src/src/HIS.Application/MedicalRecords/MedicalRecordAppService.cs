@@ -53,6 +53,7 @@ public class MedicalRecordAppService : ApplicationService, IMedicalRecordAppServ
             PatientName = patient.FullNameAr,
             BloodType = patient.BloodType,
             Age = patient.Age,
+            Gender = patient.Gender,
             ActiveAllergiesCount = allergies.Count,
             ChronicConditionsCount = chronicConditions.Count,
             ActiveDiagnosesCount = (int)activeDiagnoses,
