@@ -1,9 +1,9 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'https://asia.tryasp.net';
+const baseUrl = 'https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net/';
 
 const oAuthConfig = {
-  issuer: 'https://asia.runasp.net/',
+  issuer: 'https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/',
   redirectUri: baseUrl,
   clientId: 'HIS_App',
   responseType: 'code',
@@ -21,7 +21,7 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'https://asia.runasp.net',
+      url: 'https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net',
       rootNamespace: 'HIS',
     },
     AbpAccountPublic: {
