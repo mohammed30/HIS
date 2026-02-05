@@ -1,10 +1,11 @@
 import { mapEnumToOptions } from '@abp/ng.core';
 
 export enum AppointmentType {
-  FirstVisit = 0,
+  NewVisit = 0,
   FollowUp = 1,
   Emergency = 2,
-  Consultation = 3,
+  Telemedicine = 3,
+  Procedure = 4,
 }
 
 export const appointmentTypeOptions = mapEnumToOptions(AppointmentType);

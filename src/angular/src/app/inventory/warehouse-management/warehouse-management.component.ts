@@ -6,7 +6,7 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { InventoryService } from '../../proxy/inventory/inventory.service';
-import { WarehouseDto, CreateUpdateWarehouseDto } from '../../proxy/inventory/models';
+import { WarehouseDto, CreateUpdateWarehouseDto } from '../../proxy/inventory/dtos/models';
 
 @Component({
     selector: 'app-warehouse-management',

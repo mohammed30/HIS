@@ -1,91 +1,73 @@
-import { RestService } from '@abp/ng.core';
-import { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-
-export interface PriceListDto {
-    id: string;
-    name: string;
-    isDefault: boolean;
-    effectiveFrom: string;
-    effectiveTo?: string;
-}
-
-export interface CreateUpdatePriceListDto {
-    name: string;
-    isDefault: boolean;
-    effectiveFrom: string;
-    effectiveTo?: string;
-}
-
-export interface ServicePriceDto {
-    id: string;
-    priceListId: string;
-    serviceItemId: string;
-    serviceItemName: string;
-    amount: number;
-    coPayAmount: number;
-}
-
-export interface CreateUpdateServicePriceDto {
-    priceListId: string;
-    serviceItemId: string;
-    amount: number;
-    coPayAmount: number;
-}
+import type { CreateUpdatePriceListDto, CreateUpdateServicePriceDto, PriceListDto, ServicePriceDto } from './models';
+import { RestService, Rest } from '@abp/ng.core';
+import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class PriceListService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  create = (input: CreateUpdatePriceListDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PriceListDto>({
+      method: 'POST',
+      url: '/api/app/price-list',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getList = (input: PagedAndSortedResultRequestDto) =>
-        this.restService.request<any, PagedResultDto<PriceListDto>>({
-            method: 'GET',
-            url: '/api/app/price-list',
-            params: input,
-        },
-            { apiName: this.apiName });
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/price-list/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    create = (input: CreateUpdatePriceListDto) =>
-        this.restService.request<any, PriceListDto>({
-            method: 'POST',
-            url: '/api/app/price-list',
-            body: input,
-        },
-            { apiName: this.apiName });
+  get = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PriceListDto>({
+      method: 'GET',
+      url: `/api/app/price-list/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    update = (id: string, input: CreateUpdatePriceListDto) =>
-        this.restService.request<any, PriceListDto>({
-            method: 'PUT',
-            url: `/api/app/price-list/${id}`,
-            body: input,
-        },
-            { apiName: this.apiName });
+  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<PriceListDto>>({
+      method: 'GET',
+      url: '/api/app/price-list',
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    delete = (id: string) =>
-        this.restService.request<any, void>({
-            method: 'DELETE',
-            url: `/api/app/price-list/${id}`,
-        },
-            { apiName: this.apiName });
+  getPrices = (priceListId: string, input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<ServicePriceDto>>({
+      method: 'GET',
+      url: `/api/app/price-list/${priceListId}/prices`,
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    // Prices
-    getPrices = (priceListId: string, input: PagedAndSortedResultRequestDto) =>
-        this.restService.request<any, PagedResultDto<ServicePriceDto>>({
-            method: 'GET',
-            url: `/api/app/price-list/${priceListId}/prices`,
-            params: input,
-        },
-            { apiName: this.apiName });
+  setPrice = (input: CreateUpdateServicePriceDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ServicePriceDto>({
+      method: 'POST',
+      url: '/api/app/price-list/price',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    setPrice = (input: CreateUpdateServicePriceDto) =>
-        this.restService.request<any, ServicePriceDto>({
-            method: 'POST',
-            url: '/api/app/price-list/price',
-            body: input,
-        },
-            { apiName: this.apiName });
+  update = (id: string, input: CreateUpdatePriceListDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PriceListDto>({
+      method: 'PUT',
+      url: `/api/app/price-list/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

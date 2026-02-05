@@ -1,5 +1,15 @@
+import * as Accounting from './accounting';
 import * as ActivityLogs from './activity-logs';
 import * as Appointments from './appointments';
+import * as Billing from './billing';
+import * as Clinical from './clinical';
+import * as Emergency from './emergency';
+import * as Insurance from './insurance';
+import * as Inventory from './inventory';
+import * as Laboratory from './laboratory';
+import * as MedicalRecords from './medical-records';
 import * as Patients from './patients';
+import * as Pricing from './pricing';
+import * as Services from './services';
 import * as Settings from './settings';
-export { ActivityLogs, Appointments, Patients, Settings };
+export { Accounting, ActivityLogs, Appointments, Billing, Clinical, Emergency, Insurance, Inventory, Laboratory, MedicalRecords, Patients, Pricing, Services, Settings };

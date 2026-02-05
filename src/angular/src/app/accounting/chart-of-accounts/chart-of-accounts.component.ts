@@ -5,7 +5,8 @@ import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.th
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AccountService } from '../../proxy/accounting/account.service';
-import { AccountDto, AccountType } from '../../proxy/accounting/models';
+import { AccountDto } from '../../proxy/accounting/dtos';
+import { AccountType } from '../../proxy/accounting';
 
 declare var abp: any;
 
@@ -35,11 +36,11 @@ export class ChartOfAccountsComponent implements OnInit {
     selectedAccount: AccountDto = {} as AccountDto;
 
     accountTypes = [
-        { value: 0, key: 'Asset', color: 'success' },
-        { value: 1, key: 'Liability', color: 'danger' },
-        { value: 2, key: 'Equity', color: 'info' }, // mapped to purple in css
-        { value: 3, key: 'Revenue', color: 'primary' },
-        { value: 4, key: 'Expense', color: 'warning' },
+        { value: 0, key: '::Enum:AccountType.Asset', color: 'success' },
+        { value: 1, key: '::Enum:AccountType.Liability', color: 'danger' },
+        { value: 2, key: '::Enum:AccountType.Equity', color: 'info' }, // mapped to purple in css
+        { value: 3, key: '::Enum:AccountType.Revenue', color: 'primary' },
+        { value: 4, key: '::Enum:AccountType.Expense', color: 'warning' },
     ];
 
     isAllExpanded = true;

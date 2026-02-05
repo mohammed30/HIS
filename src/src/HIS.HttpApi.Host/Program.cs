@@ -37,6 +37,7 @@ public class Program
                 .UseSerilog((context, services, loggerConfiguration) =>
                 {
                     loggerConfiguration
+                        .ReadFrom.Configuration(context.Configuration)
 #if DEBUG
                         .MinimumLevel.Debug()
 #else
@@ -53,6 +54,8 @@ public class Program
             await builder.AddApplicationAsync<HISHttpApiHostModule>();
 
             var app = builder.Build();
+
+            app.UseSerilogRequestLogging();
 
             await app.InitializeApplicationAsync();
             await app.RunAsync();

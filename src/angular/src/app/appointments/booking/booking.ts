@@ -7,6 +7,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
+import arLocale from '@fullcalendar/core/locales/ar';
+
 import { AppointmentService } from '../../proxy/appointments/appointment.service';
 import { LookupDto, CreateAppointmentDto, AppointmentDto } from '../../proxy/appointments/dtos/models';
 import { AppointmentType } from '../../proxy/appointments/appointment-type.enum';
@@ -58,6 +60,9 @@ export class BookingComponent implements OnInit {
     slotMinTime: '08:00:00',
     slotMaxTime: '22:00:00',
     allDaySlot: false,
+    direction: 'rtl',
+    locale: 'ar',
+    locales: [arLocale],
     select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
     events: this.fetchEvents.bind(this),
@@ -209,7 +214,7 @@ export class BookingComponent implements OnInit {
       clinicId: this.selectedClinicId,
       appointmentDate: selectInfo.startStr, // ISO string with timezone
       patientId: '',
-      type: AppointmentType.FirstVisit,
+      type: AppointmentType.NewVisit,
       isWalkIn: false,
       notes: ''
     };

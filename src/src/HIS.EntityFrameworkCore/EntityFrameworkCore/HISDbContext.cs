@@ -93,6 +93,9 @@ public class HISDbContext :
     public DbSet<HIS.Inventory.InventoryItem> InventoryItems { get; set; }
     public DbSet<HIS.Inventory.InventoryTransaction> InventoryTransactions { get; set; }
     public DbSet<HIS.Inventory.InventoryBatch> InventoryBatches { get; set; }
+    
+    // Clinical
+    public DbSet<HIS.Clinical.MedicalOrder> MedicalOrders { get; set; }
 
     #region Entities from the modules
 
@@ -699,6 +702,22 @@ public class HISDbContext :
             b.HasIndex(x => x.InventoryItemId);
             b.HasIndex(x => x.ReceivedDate);
         });
+
+        // Medical Order
+        builder.Entity<HIS.Clinical.MedicalOrder>(b => 
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "MedicalOrders", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Details).HasMaxLength(1024);
+            b.Property(x => x.ClinicalNotes).HasMaxLength(2048);
+            b.Property(x => x.ServiceName).HasMaxLength(256).IsRequired();
+            b.Property(x => x.Price).HasPrecision(18, 2);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.ServiceItemId);
+            b.HasIndex(x => x.Status);
+        });
+
     }
 }
 

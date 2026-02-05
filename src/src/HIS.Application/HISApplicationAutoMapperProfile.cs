@@ -126,5 +126,9 @@ public class HISApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.PatientName, opt => opt.Ignore())
             .ForMember(dest => dest.TestName, opt => opt.Ignore())
             .ForMember(dest => dest.TestCode, opt => opt.Ignore());
+
+        // Clinical (Medical Order)
+        CreateMap<Clinical.MedicalOrder, Clinical.MedicalOrderDto>();
+        CreateMap<Clinical.CreateUpdateMedicalOrderDto, Clinical.MedicalOrder>();
     }
 }

@@ -41,6 +41,7 @@ export interface CreateUpdateDepartmentDto {
   managerId?: string;
   isActive?: boolean;
   sortOrder?: number;
+  isMedical?: boolean;
 }
 
 export interface CreateUpdateDoctorDto {
@@ -96,6 +97,7 @@ export interface DepartmentDto extends FullAuditedEntityDto<string> {
   managerId?: string;
   isActive?: boolean;
   sortOrder?: number;
+  isMedical?: boolean;
 }
 
 export interface DoctorDto extends FullAuditedEntityDto<string> {
@@ -130,6 +132,7 @@ export interface GetClinicsInput extends PagedAndSortedResultRequestDto {
 export interface GetDepartmentsInput extends PagedAndSortedResultRequestDto {
   searchText?: string;
   isActive?: boolean;
+  isMedical?: boolean;
 }
 
 export interface GetDoctorsInput extends PagedAndSortedResultRequestDto {

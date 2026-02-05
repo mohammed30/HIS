@@ -17,7 +17,6 @@ export interface ActivityLogDto extends FullAuditedEntityDto<string> {
   timestamp?: string;
   level?: ActivityLogLevel;
   additionalData?: string;
-  // Device & Location Info
   deviceType?: string;
   browserName?: string;
   browserVersion?: string;

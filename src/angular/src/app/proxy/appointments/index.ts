@@ -4,4 +4,5 @@ export * from './appointment-type.enum';
 export * from './appointment.service';
 export * from './doctor-schedule.service';
 export * from './models';
+export * from './waiting-list-priority.enum';
 export { Dtos };

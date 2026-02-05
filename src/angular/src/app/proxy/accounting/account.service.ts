@@ -1,55 +1,55 @@
-import { Injectable } from '@angular/core';
-import { RestService, PagedResultDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
-import { AccountDto, CreateUpdateAccountDto } from './models';
+import type { AccountDto, CreateUpdateAccountDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class AccountService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  create = (input: CreateUpdateAccountDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AccountDto>({
+      method: 'POST',
+      url: '/api/app/account',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getList(input: PagedAndSortedResultRequestDto) {
-        return this.restService.request<any, PagedResultDto<AccountDto>>({
-            method: 'GET',
-            url: '/api/app/account',
-            params: input,
-        },
-            { apiName: this.apiName });
-    }
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/account/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    create(input: CreateUpdateAccountDto) {
-        return this.restService.request<any, AccountDto>({
-            method: 'POST',
-            url: '/api/app/account',
-            body: input,
-        },
-            { apiName: this.apiName });
-    }
+  get = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AccountDto>({
+      method: 'GET',
+      url: `/api/app/account/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    update(id: string, input: CreateUpdateAccountDto) {
-        return this.restService.request<any, AccountDto>({
-            method: 'PUT',
-            url: `/api/app/account/${id}`,
-            body: input,
-        },
-            { apiName: this.apiName });
-    }
+  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<AccountDto>>({
+      method: 'GET',
+      url: '/api/app/account',
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    delete(id: string) {
-        return this.restService.request<any, void>({
-            method: 'DELETE',
-            url: `/api/app/account/${id}`,
-        },
-            { apiName: this.apiName });
-    }
-
-    get(id: string) {
-        return this.restService.request<any, AccountDto>({
-            method: 'GET',
-            url: `/api/app/account/${id}`,
-        },
-            { apiName: this.apiName });
-    }
+  update = (id: string, input: CreateUpdateAccountDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AccountDto>({
+      method: 'PUT',
+      url: `/api/app/account/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

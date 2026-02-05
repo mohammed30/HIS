@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { JournalEntryService } from '../../proxy/accounting/journal-entry.service';
-import { JournalEntryDto } from '../../proxy/accounting/models';
+import { JournalEntryDto } from '../../proxy/accounting/dtos';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { CoreModule } from '@abp/ng.core';

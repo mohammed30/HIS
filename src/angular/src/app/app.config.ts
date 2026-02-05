@@ -16,6 +16,8 @@ import { environment } from '../environments/environment';
 import { APP_ROUTES } from './app.routes';
 import { APP_ROUTE_PROVIDER } from './route.provider';
 import { AppErrorHandler } from './shared/error-handler/app-error-handler';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpErrorInterceptor } from './shared/error-handler/http-error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,5 +42,6 @@ export const appConfig: ApplicationConfig = {
     provideLogo(withEnvironmentOptions(environment)),
     provideAccountConfig(),
     provideAbpThemeShared(),
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true }
   ]
 };

@@ -71,20 +71,21 @@
     </ng-template>
     <ng-template #abpBody>
         <div class="mb-3">
-            <label class="form-label">Patient ID / MRN (Optional)</label>
+            <label class="form-label required">Patient ID / MRN</label>
             <input type="text" class="form-control" [(ngModel)]="registerData.patientId"
-                placeholder="Leave empty for Anonymous">
-            <small class="text-muted">For MVP, enter existing Patient GUID if known.</small>
+                placeholder="Enter Patient GUID" required>
+            <small class="text-muted">Patient ID is required. Anonymous visits are not supported yet.</small>
         </div>
         <div class="mb-3">
             <label class="form-label required">Chief Complaint</label>
             <textarea class="form-control" rows="3" [(ngModel)]="registerData.chiefComplaint"
-                placeholder="e.g. Chest Pain, Severe Trauma..."></textarea>
+                placeholder="e.g. Chest Pain, Severe Trauma..." required></textarea>
         </div>
     </ng-template>
     <ng-template #abpFooter>
         <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
-        <button type="button" class="btn btn-danger" (click)="saveRegister()" [disabled]="!registerData.chiefComplaint">
+        <button type="button" class="btn btn-danger" (click)="saveRegister()"
+            [disabled]="!registerData.chiefComplaint || !registerData.patientId">
             Register
         </button>
     </ng-template>

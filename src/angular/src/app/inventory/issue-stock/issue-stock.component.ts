@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RestService } from '@abp/ng.core';
 import { LocalizationModule } from '@abp/ng.core';
 import { Router } from '@angular/router';
-import { WarehouseDto, InventoryItemDto } from '../../proxy/inventory/models';
+import { WarehouseDto, InventoryItemDto } from '../../proxy/inventory/dtos/models';
 import { DepartmentDto } from '../../proxy/settings/models';
 import { ToasterService } from '@abp/ng.theme.shared';
 

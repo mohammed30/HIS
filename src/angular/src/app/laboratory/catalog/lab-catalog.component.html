@@ -95,7 +95,7 @@
         </button>
         <button class="btn btn-primary" (click)="save()">
             <i class="fa fa-check me-1"></i>
-            {{ '::Save' | abpLocalization }}
+            {{ (selectedId ? '::Edit' : '::Save') | abpLocalization }}
         </button>
     </ng-template>
 </abp-modal>

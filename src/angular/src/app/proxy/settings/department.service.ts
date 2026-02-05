@@ -40,7 +40,7 @@ export class DepartmentService {
     this.restService.request<any, PagedResultDto<DepartmentDto>>({
       method: 'GET',
       url: '/api/app/department',
-      params: { searchText: input.searchText, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { searchText: input.searchText, isActive: input.isActive, isMedical: input.isMedical, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -49,6 +49,14 @@ export class DepartmentService {
     this.restService.request<any, LookupDto[]>({
       method: 'GET',
       url: '/api/app/department/lookup',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getMedicalDepartmentsLookup = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, LookupDto[]>({
+      method: 'GET',
+      url: '/api/app/department/medical-departments-lookup',
     },
     { apiName: this.apiName,...config });
   

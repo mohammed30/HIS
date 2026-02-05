@@ -1,7 +1,9 @@
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
-import { PriceListService, PriceListDto, ServicePriceDto } from '../../proxy/pricing/price-list.service';
-import { ServiceItemService, ServiceItemDto } from '../../proxy/services/service-item.service';
+import { PriceListService } from '../../proxy/pricing/price-list.service';
+import { PriceListDto, ServicePriceDto } from '../../proxy/pricing';
+import { ServiceItemService } from '../../proxy/services/service-item.service';
+import { ServiceItemDto } from '../../proxy/services';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';

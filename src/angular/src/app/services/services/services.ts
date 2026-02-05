@@ -1,6 +1,7 @@
 import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
-import { ServiceItemService, ServiceItemDto, ServiceCategory } from '../../proxy/services/service-item.service';
+import { ServiceItemService } from '../../proxy/services/service-item.service';
+import { ServiceItemDto, ServiceCategory } from '../../proxy/services';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';

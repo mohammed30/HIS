@@ -27,12 +27,17 @@
                             <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.name }}</option>
                         </select>
                         <div *ngIf="doctors.length === 0 && selectedClinicId" class="form-text text-warning mt-2">
-                            <i class="fa fa-info-circle me-1"></i> No doctors available in this clinic.
+                            <i class="fa fa-info-circle me-1"></i> {{ '::NoDoctorsAvailable' | abpLocalization }}
                         </div>
                     </div>
 
                     <div class="alert alert-info border-0 bg-info bg-opacity-10" *ngIf="!selectedDoctorId">
-                        <i class="fa fa-arrow-up me-2"></i> {{ '::SelectDoctorFirst' | abpLocalization }}
+                        <ng-container *ngIf="!selectedClinicId">
+                            <i class="fa fa-arrow-up me-2"></i> {{ '::SelectClinicFirst' | abpLocalization }}
+                        </ng-container>
+                        <ng-container *ngIf="selectedClinicId">
+                            <i class="fa fa-arrow-up me-2"></i> {{ '::SelectDoctorFirst' | abpLocalization }}
+                        </ng-container>
                     </div>
                 </div>
             </div>
@@ -43,7 +48,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="badge me-2 border" style="width: 15px; height: 15px; background-color: #eff1f2;">
                             &nbsp;</div>
-                        <span class="small text-muted">Closed Hours</span>
+                        <span class="small text-muted">{{ '::ClosedHours' | abpLocalization }}</span>
                     </div>
                     <div class="d-flex align-items-center mb-2" *ngFor="let type of appointmentTypes">
                         <div class="badge me-2" [style.background-color]="getTypeColor(type.value)"
@@ -53,7 +58,7 @@
                     </div>
                     <div class="d-flex align-items-center">
                         <div class="badge bg-white border me-2" style="width: 15px; height: 15px;">&nbsp;</div>
-                        <span class="small text-muted">Available</span>
+                        <span class="small text-muted">{{ '::Available' | abpLocalization }}</span>
                     </div>
                 </div>
             </div>

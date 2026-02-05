@@ -68,7 +68,7 @@
                             <span class="badge" [class.bg-success]="row.type === 0" [class.bg-danger]="row.type === 1"
                                 [class.bg-info]="row.type === 2" [class.bg-primary]="row.type === 3"
                                 [class.bg-warning]="row.type === 4">
-                                {{ getAccountType(row.type)?.key }}
+                                {{ getAccountType(row.type)?.key | abpLocalization }}
                             </span>
                         </td>
 
@@ -120,11 +120,11 @@
             </div>
 
             <div class="form-group mt-2">
-                <label for="account-type">{{ '::Type' | abpLocalization }}</label><span> * </span>
+                <label for="account-type">{{ '::AccountType' | abpLocalization }}</label><span> * </span>
                 <select class="form-control" id="account-type" formControlName="type">
-                    <option [ngValue]="null">Select Type</option>
+                    <option [ngValue]="null">{{ '::SelectType' | abpLocalization }}</option>
                     <option *ngFor="let type of accountTypes" [ngValue]="type.value">
-                        {{ type.key }}
+                        {{ type.key | abpLocalization }}
                     </option>
                 </select>
             </div>

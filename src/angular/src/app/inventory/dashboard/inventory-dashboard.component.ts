@@ -5,7 +5,7 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../proxy/inventory/inventory.service';
-import { InventoryItemDto, WarehouseDto } from '../../proxy/inventory/models';
+import { InventoryItemDto, WarehouseDto } from '../../proxy/inventory/dtos/models';
 import { of } from 'rxjs';
 
 @Component({

@@ -5,6 +5,10 @@ import { ActivatedRoute } from '@angular/router';
 import { PageModule } from '@abp/ng.components/page';
 import { RestService, CoreModule } from '@abp/ng.core';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { MedicalOrderService } from '../../proxy/clinical/medical-order.service';
+import { ServiceItemService } from '../../proxy/services/service-item.service';
+import { OrderType } from '../../proxy/clinical/order-type.enum';
+import { OrderStatus } from '../../proxy/clinical/order-status.enum';
 
 @Component({
   selector: 'app-patient-medical-record',
@@ -152,6 +156,11 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
               <li class="nav-item">
                 <button class="nav-link" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
                   <i class="fas fa-notes-medical me-2"></i> التاريخ المرضي
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">
+                  <i class="fas fa-clipboard-list me-2"></i> الطلبات
                 </button>
               </li>
               <li class="nav-item">
@@ -335,10 +344,110 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
                 </div>
              </div>
 
+             <!-- Orders -->
+             <div *ngIf="activeTab === 'orders'">
+                <div class="text-end mb-3">
+                  <button class="btn btn-primary btn-sm rounded-pill" (click)="openOrderModal()">
+                    <i class="fas fa-plus me-1"></i> طلب جديد (Referral)
+                  </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>النوع</th>
+                                <th>الخدمة</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let o of orders">
+                                <td>{{ o.creationTime | date:'yyyy-MM-dd HH:mm' }}</td>
+                                <td>
+                                    <span class="badge" [ngClass]="o.type === 1 ? 'bg-info' : 'bg-primary'">
+                                      {{ o.type === 1 ? 'Radiology' : 'Other' }}
+                                    </span>
+                                </td>
+                                <td class="fw-bold">{{ o.serviceName }}</td>
+                                <td>{{ o.price | currency }}</td>
+                                <td>
+                                    <span class="badge" [ngClass]="{
+                                        'bg-warning text-dark': o.status === 0,
+                                        'bg-success': o.status === 2,
+                                        'bg-danger': o.status === 3
+                                    }">
+                                      {{ o.status === 0 ? 'Pending' : (o.status === 2 ? 'Completed' : 'Status ' + o.status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div *ngIf="orders.length === 0" class="text-center py-4 text-muted">
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <p>لا توجد طلبات</p>
+                    </div>
+                </div>
+             </div>
+
           </div>
         </div>
 
       </div>
+
+      <!-- Add Order Modal -->
+      <div class="modal fade show" id="orderModal" tabindex="-1" *ngIf="showOrderModal" style="display: block;">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">طلب جديد (Referral)</h5>
+              <button type="button" class="btn-close" (click)="showOrderModal = false"></button>
+            </div>
+            <div class="modal-body">
+               <div class="row g-3">
+                  <div class="col-12">
+                      <label class="form-label">النوع</label>
+                      <select class="form-select" [(ngModel)]="newOrder.type">
+                          <option [ngValue]="orderTypes.Radiology">Radiology (أشعة)</option>
+                          <option [ngValue]="orderTypes.Lab">Lab (معمل)</option>
+                      </select>
+                  </div>
+                  
+                  <div class="col-12" *ngIf="newOrder.type === orderTypes.Radiology">
+                      <label class="form-label">الفحص المطلوب</label>
+                      <select class="form-select" [(ngModel)]="newOrder.serviceItemId">
+                          <option [ngValue]="null">اختر الفحص...</option>
+                          <option *ngFor="let item of radiologyItems" [ngValue]="item.id">
+                              {{ item.name }} - {{ item.price }} S.R
+                          </option>
+                      </select>
+                  </div>
+
+                  <div class="col-12" *ngIf="newOrder.type === orderTypes.Lab">
+                      <label class="form-label">الفحص المطلوب</label>
+                      <select class="form-select" [(ngModel)]="newOrder.serviceItemId">
+                          <option [ngValue]="null">اختر الفحص...</option>
+                          <option *ngFor="let item of labItems" [ngValue]="item.id">
+                              {{ item.name }} - {{ item.price }} S.R
+                          </option>
+                      </select>
+                  </div>
+                  
+                  <div class="col-12">
+                      <label class="form-label">ملاحظات سريرية</label>
+                      <textarea class="form-control" rows="3" [(ngModel)]="newOrder.clinicalNotes"></textarea>
+                  </div>
+               </div>
+            </div>
+             <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="showOrderModal = false">إلغاء</button>
+              <button type="button" class="btn btn-primary" (click)="saveOrder()" [disabled]="!newOrder.serviceItemId">حفظ الطلب</button>
+            </div>
+           </div>
+        </div>
+      </div>
+      <div class="modal-backdrop fade show" *ngIf="showOrderModal" (click)="showOrderModal = false"></div>
 
       <!-- Keep existing Modals as they are functional -->
       <!-- Add Vital Sign Modal -->
@@ -766,6 +875,19 @@ export class PatientMedicalRecordComponent implements OnInit {
   showNoteModal = false;
   newNote: any = {};
 
+  // Orders
+  private medicalOrderService = inject(MedicalOrderService);
+  private serviceItemService = inject(ServiceItemService);
+
+  orders: any[] = [];
+  radiologyItems: any[] = [];
+  labItems: any[] = [];
+  showOrderModal = false;
+  newOrder: any = { type: OrderType.Radiology };
+
+  orderTypes = OrderType;
+  orderStatuses = OrderStatus;
+
   ngOnInit() {
     this.patientId = this.route.snapshot.paramMap.get('id') || '';
     if (this.patientId) {
@@ -774,7 +896,11 @@ export class PatientMedicalRecordComponent implements OnInit {
       this.loadDiagnoses();
       this.loadAllergies();
       this.loadMedicalHistories();
+      this.loadMedicalHistories();
       this.loadPatientNotes();
+      this.loadOrders();
+      this.loadRadiologyItems();
+      this.loadLabItems();
     }
   }
 
@@ -801,6 +927,45 @@ export class PatientMedicalRecordComponent implements OnInit {
         next: (res: any) => this.vitalSigns = res.items || [],
         error: (err) => console.error('Vitals error:', err)
       });
+  }
+
+  loadOrders() {
+    this.medicalOrderService.getList({} as any).subscribe(res => {
+      // Filter by patient locally or via API if supported
+      this.orders = res.items.filter((o: any) => o.patientId === this.patientId);
+    });
+  }
+
+  loadRadiologyItems() {
+    // 3 is Radiology
+    this.serviceItemService.getList({} as any).subscribe(res => {
+      this.radiologyItems = res.items.filter(x => x.category === 3);
+    });
+  }
+
+  loadLabItems() {
+    // 2 is Lab
+    this.serviceItemService.getList({} as any).subscribe(res => {
+      this.labItems = res.items.filter(x => x.category === 2);
+    });
+  }
+
+  openOrderModal() {
+    this.newOrder = {
+      patientId: this.patientId,
+      type: OrderType.Radiology, // Default to Radiology
+      serviceItemId: null
+    };
+    this.showOrderModal = true;
+  }
+
+  saveOrder() {
+    if (!this.newOrder.serviceItemId) return;
+
+    this.medicalOrderService.create(this.newOrder).subscribe(() => {
+      this.showOrderModal = false;
+      this.loadOrders();
+    });
   }
 
   loadDiagnoses() {

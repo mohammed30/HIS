@@ -31,7 +31,7 @@ export class MyAppointmentsComponent implements OnInit {
     // In AppointmentAppService, GetListAsync currently filters by DoctorId/Date. If null, it returns ALL.
     // This is a security risk if not scoped.
     // I will assume for now we see all (prototype) but I should note to fix Backend.
-    this.appointmentService.getList().subscribe({
+    this.appointmentService.getList('', '', '').subscribe({
       next: (res) => {
         this.appointments = res;
         this.loading = false;

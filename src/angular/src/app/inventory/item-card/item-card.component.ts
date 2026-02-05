@@ -3,7 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { RestService } from '@abp/ng.core';
-import { InventoryItemDto, InventoryTransactionDto, TransactionType } from '../../proxy/inventory/models';
+import { InventoryItemDto, InventoryTransactionDto } from '../../proxy/inventory/dtos/models';
+import { TransactionType } from '../../proxy/inventory';
 import { LocalizationModule } from '@abp/ng.core';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 

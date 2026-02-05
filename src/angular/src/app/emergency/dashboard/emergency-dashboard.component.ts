@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmergencyService } from '../../proxy/emergency/emergency.service';
 import { EmergencyVisitDto, CreateEmergencyVisitDto, TriageDto } from '../../proxy/emergency/dtos/models';
-import { EmergencySeverity, EmergencyVisitStatus } from '../../proxy/emergency/enums';
+import { EmergencySeverity, EmergencyVisitStatus } from '../../proxy/emergency';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';

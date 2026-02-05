@@ -9,8 +9,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "symlinks:setup": "cd scripts && pwsh ./setup-symlinks.ps1",
-    "symlinks:remove": "cd scripts && pwsh ./remove-symlinks.ps1"
+    "symlinks:remove": "cd scripts && pwsh ./remove-symlinks.ps1",
+    "e2e": "playwright test",
+    "e2e:api": "playwright test e2e/radiology-api.spec.ts"
   },
   "private": true,
   "dependencies": {
@@ -56,6 +57,7 @@
     "@angular/cli": "~20.0.0",
     "@angular/compiler-cli": "~20.0.0",
     "@angular/language-service": "~20.0.0",
+    "@playwright/test": "^1.58.1",
     "@types/jasmine": "~3.6.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

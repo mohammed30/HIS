@@ -1,6 +1,7 @@
-import { ListService, PagedResultDto } from '@abp/ng.core';
+import { ListService, PagedResultDto, LocalizationModule } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
-import { ServiceItemService, RadiologyItemDto } from '../../proxy/services/service-item.service';
+import { ServiceItemService } from '../../proxy/services/service-item.service';
+import { RadiologyItemDto } from '../../proxy/services';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
@@ -11,7 +12,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
   templateUrl: './radiology.html',
   styleUrls: ['./radiology.scss'],
   standalone: true,
-  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ThemeSharedModule, ReactiveFormsModule, FormsModule, LocalizationModule],
   providers: [ListService],
 })
 export class RadiologyComponent implements OnInit {
@@ -56,6 +57,7 @@ export class RadiologyComponent implements OnInit {
       code: [this.selectedItem.code || '', [Validators.required]],
       name: [this.selectedItem.name || '', [Validators.required]],
       modality: [this.selectedItem.modality || null, [Validators.required]],
+      price: [this.selectedItem.price || 0, [Validators.required, Validators.min(0)]],
       bodyPart: [this.selectedItem.bodyPart || '', [Validators.required]],
       instructions: [this.selectedItem.instructions || ''],
       departmentId: [null], // Explicitly send null

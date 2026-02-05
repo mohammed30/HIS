@@ -89,6 +89,8 @@ public class LabAppService : ApplicationService, ILabAppService
         return $"LAB-{(count + 1).ToString("D4")}"; // LAB-0001, LAB-0002, etc.
     }
 
+    [HttpPut]
+    [Route("api/app/lab/test/{id}")]
     public async Task<LabTestDto> UpdateTestAsync(Guid id, CreateUpdateLabTestDto input)
     {
         var test = await _testRepository.GetAsync(id);
@@ -206,15 +208,28 @@ public class LabAppService : ApplicationService, ILabAppService
 
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
+        // Try to load logo from wwwroot
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        if (System.IO.File.Exists(logoPath))
+        {
+            logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+        }
+        
         var document = new HIS.Laboratory.Printing.LabResultDocument
         {
             PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
+            PatientId = patient.Id.ToString().Substring(0, 8).ToUpper(),
             DoctorName = doctor.NameAr,
             TestName = test.Name,
             TestCode = test.Code,
             RequestDate = request.RequestDate,
             Result = request.Result,
-            Notes = request.Notes
+            ReferenceRange = test.ReferenceRange,
+            TestUnit = test.Unit,
+            Notes = request.Notes,
+            TechnicianName = "", // Can be populated from staff context if available
+            LogoBytes = logoBytes
         };
 
         var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
@@ -222,6 +237,7 @@ public class LabAppService : ApplicationService, ILabAppService
         
         return new Volo.Abp.Content.RemoteStreamContent(stream, "LabResult.pdf", "application/pdf");
     }
+
 
     // --- APPOINTMENTS (حجوزات المعمل) ---
 

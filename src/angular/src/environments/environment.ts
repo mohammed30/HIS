@@ -19,7 +19,7 @@ export const environment = {
   application: {
     baseUrl,
     name: 'AppName',
-    logoUrl: 'assets/images/logo/icon-lite.svg',
+    logoUrl: 'assets/images/logo/Dark.png',
   },
   oAuthConfig,
   apis: {
