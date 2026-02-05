@@ -239,6 +239,39 @@ public class LabAppService : ApplicationService, ILabAppService
     }
 
 
+
+    [Microsoft.AspNetCore.Mvc.HttpGet]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/lab/request-order-pdf/{id}")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetRequestOrderPdfAsync(Guid id)
+    {
+        var request = await _requestRepository.GetAsync(id);
+        var patient = await _patientRepository.GetAsync(request.PatientId);
+        var doctor = await _doctorRepository.GetAsync(request.DoctorId);
+        var test = await _testRepository.GetAsync(request.ServiceItemId);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        var document = new HIS.Laboratory.Printing.LabRequestDocument
+        {
+            PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
+            PatientId = patient.Id.ToString().Substring(0, 8).ToUpper(),
+            DoctorName = doctor.NameAr,
+            TestName = test.Name,
+            TestCode = test.Code,
+            RequestDate = request.RequestDate,
+            Status = request.Status.ToString(),
+            LogoBytes = logoBytes
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        return new Volo.Abp.Content.RemoteStreamContent(stream, "LabOrder.pdf", "application/pdf");
+    }
+
     // --- APPOINTMENTS (حجوزات المعمل) ---
 
     public async Task<PagedResultDto<LabAppointmentDto>> GetAppointmentsAsync(PagedAndSortedResultRequestDto input)
@@ -380,5 +413,46 @@ public class LabAppService : ApplicationService, ILabAppService
         await _appointmentRepository.UpdateAsync(appointment);
         return await GetAppointmentAsync(id);
     }
+
+    [Microsoft.AspNetCore.Mvc.HttpGet]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/lab/appointment-pdf/{id}")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetAppointmentPdfAsync(Guid id)
+    {
+        var appointment = await _appointmentRepository.GetAsync(id);
+        var patient = await _patientRepository.GetAsync(appointment.PatientId);
+        
+        string testName = "-", testCode = "-", instructions = "-";
+        if (appointment.ServiceItemId.HasValue)
+        {
+            var service = await _serviceItemRepository.FindAsync(appointment.ServiceItemId.Value);
+            testName = service?.Name;
+            testCode = service?.Code;
+            instructions = service?.Instructions;
+        }
+        
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        var document = new HIS.Laboratory.Printing.LabAppointmentDocument
+        {
+            PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
+            PatientId = patient.Id.ToString().Substring(0, 8).ToUpper(),
+            AppointmentDate = appointment.AppointmentDate,
+            PreferredTime = appointment.PreferredTime?.ToString(@"hh\:mm"),
+            TestName = testName,
+            TestCode = testCode,
+            PreparationInstructions = instructions,
+            IsFasting = appointment.IsFasting,
+            LogoBytes = logoBytes
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        return new Volo.Abp.Content.RemoteStreamContent(stream, "LabAppointment.pdf", "application/pdf");
+    }
 }
+
 

@@ -17,12 +17,15 @@ namespace HIS.Billing;
 public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetInvoicesInput, CreateUpdateInvoiceDto>, IInvoiceAppService
 {
     private readonly IRepository<InvoiceItem, Guid> _itemRepository;
+    private readonly IRepository<HIS.Patients.Patient, Guid> _patientRepository;
 
     public InvoiceAppService(
         IRepository<Invoice, Guid> repository,
-        IRepository<InvoiceItem, Guid> itemRepository) : base(repository)
+        IRepository<InvoiceItem, Guid> itemRepository,
+        IRepository<HIS.Patients.Patient, Guid> patientRepository) : base(repository)
     {
         _itemRepository = itemRepository;
+        _patientRepository = patientRepository;
         
         GetPolicyName = HISPermissions.Billing.Default;
         GetListPolicyName = HISPermissions.Billing.Default;
@@ -108,6 +111,49 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         invoice.Status = status;
         await Repository.UpdateAsync(invoice);
         return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
+    }
+
+    [Microsoft.AspNetCore.Mvc.HttpGet]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/billing/invoice-pdf/{id}")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetInvoicePdfAsync(Guid id)
+    {
+        var invoice = await Repository.GetAsync(id);
+        var patient = await _patientRepository.GetAsync(invoice.PatientId);
+        
+        var itemsQueryable = await _itemRepository.GetQueryableAsync();
+        var items = await AsyncExecuter.ToListAsync(itemsQueryable.Where(x => x.InvoiceId == id));
+        
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        var document = new HIS.Billing.Printing.InvoiceDocument
+        {
+             InvoiceNumber = invoice.InvoiceNumber,
+             Date = invoice.InvoiceDate,
+             DueDate = invoice.DueDate,
+             Status = invoice.Status.ToString(),
+             PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
+             PatientNumber = patient.Id.ToString().Substring(0, 8).ToUpper(),
+             SubTotal = invoice.TotalAmount, // Assuming TotalAmount is subtotal in logic above (sum of items)
+             Discount = invoice.DiscountAmount,
+             Tax = invoice.TaxAmount,
+             Total = invoice.NetAmount,
+             LogoBytes = logoBytes,
+             Items = items.Select(x => new HIS.Billing.Printing.InvoiceDocument.InvoiceItemModel 
+             {
+                 Service = x.Description, // Or ServiceCode map to Name
+                 Quantity = x.Quantity,
+                 UnitPrice = x.UnitPrice,
+                 Total = x.TotalPrice
+             }).ToList()
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        return new Volo.Abp.Content.RemoteStreamContent(stream, "Invoice.pdf", "application/pdf");
     }
 
     protected override async Task<IQueryable<Invoice>> CreateFilteredQueryAsync(GetInvoicesInput input)
