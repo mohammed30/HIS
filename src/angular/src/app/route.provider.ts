@@ -237,6 +237,14 @@ function configureRoutes() {
       order: 2,
       layout: eLayoutType.application,
     },
+    {
+      path: '/laboratory/appointments',
+      name: '::Menu:LabAppointments',
+      parentName: '::Menu:Laboratory',
+      iconClass: 'fas fa-calendar-alt',
+      order: 3,
+      layout: eLayoutType.application,
+    },
     // Emergency
     {
       name: '::Menu:Emergency',

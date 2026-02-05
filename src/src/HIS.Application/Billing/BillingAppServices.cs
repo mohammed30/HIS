@@ -7,6 +7,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using HIS.Permissions;
 
 namespace HIS.Billing;
@@ -18,14 +19,17 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 {
     private readonly IRepository<InvoiceItem, Guid> _itemRepository;
     private readonly IRepository<HIS.Patients.Patient, Guid> _patientRepository;
+    private readonly IWebHostEnvironment _env;
 
     public InvoiceAppService(
         IRepository<Invoice, Guid> repository,
         IRepository<InvoiceItem, Guid> itemRepository,
-        IRepository<HIS.Patients.Patient, Guid> patientRepository) : base(repository)
+        IRepository<HIS.Patients.Patient, Guid> patientRepository,
+        IWebHostEnvironment env) : base(repository)
     {
         _itemRepository = itemRepository;
         _patientRepository = patientRepository;
+        _env = env;
         
         GetPolicyName = HISPermissions.Billing.Default;
         GetListPolicyName = HISPermissions.Billing.Default;
@@ -126,7 +130,16 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        
+        // Fallback for development if WebRootPath is not set or file not found in WebRootPath
+        if (!System.IO.File.Exists(logoPath))
+        {
+            // Try to find it relative to current directory (for development)
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+
         if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
 
         var document = new HIS.Billing.Printing.InvoiceDocument
@@ -315,7 +328,7 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
             Notes = payment.Notes,
             InvoiceNumber = invoice?.InvoiceNumber,
             PatientName = "Patient", // Placeholder until we inject PatientRepo
-            AmountInWords = $"{payment.Amount} SAR" // Placeholder
+            AmountInWords = $"{payment.Amount} ج.م" // Placeholder
         };
 
         if (invoice != null)

@@ -79,7 +79,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                   <h6>إجمالي المؤجلات</h6>
-                  <h4>{{ totalDeferred | number:'1.2-2' }} جنيه</h4>
+                  <h4>{{ totalDeferred | number:'1.2-2' }} ج.م</h4>
                 </div>
               </div>
             </div>
@@ -87,7 +87,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-success text-white">
                 <div class="card-body text-center">
                   <h6>المبالغ المدفوعة</h6>
-                  <h4>{{ totalPaid | number:'1.2-2' }} جنيه</h4>
+                  <h4>{{ totalPaid | number:'1.2-2' }} ج.م</h4>
                 </div>
               </div>
             </div>
@@ -95,7 +95,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                   <h6>المتبقي</h6>
-                  <h4>{{ totalRemaining | number:'1.2-2' }} جنيه</h4>
+                  <h4>{{ totalRemaining | number:'1.2-2' }} ج.م</h4>
                 </div>
               </div>
             </div>

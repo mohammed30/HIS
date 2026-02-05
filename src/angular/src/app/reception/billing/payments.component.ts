@@ -86,7 +86,7 @@ const statusColors: { [key: number]: string } = {
 
           <!-- Summary -->
           <div class="alert alert-info mb-3">
-            <strong>إجمالي المعروض:</strong> {{ totalAmount | number:'1.2-2' }} جنيه
+            <strong>إجمالي المعروض:</strong> {{ totalAmount | number:'1.2-2' }} ج.م
           </div>
 
           <!-- Table -->
@@ -369,7 +369,7 @@ export class PaymentsComponent implements OnInit {
                         <div class="row"><div class="label">التاريخ:</div><div class="value">${new Date(data.paymentDate).toLocaleString()}</div></div>
                         <div class="row"><div class="label">استلمنا من:</div><div class="value">${data.patientName}</div></div>
                         <div class="amount-box">
-                            ${data.amount} ${data.amountInWords || 'جنيه'}
+                            ${data.amount} ${data.amountInWords || 'ج.م'}
                         </div>
                         <div class="row"><div class="label">وذلك عن:</div><div class="value">${data.items?.[0]?.serviceName || 'خدمات طبية'}</div></div>
                         <div class="row"><div class="label">طريقة الدفع:</div><div class="value">${data.paymentMethod}</div></div>

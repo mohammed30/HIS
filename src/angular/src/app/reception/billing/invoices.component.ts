@@ -81,7 +81,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-primary text-white">
                 <div class="card-body py-2 text-center">
                   <small>إجمالي الفواتير</small>
-                  <h5 class="mb-0">{{ summaryTotal | number:'1.2-2' }} جنيه</h5>
+                  <h5 class="mb-0">{{ summaryTotal | number:'1.2-2' }} ج.م</h5>
                 </div>
               </div>
             </div>
@@ -89,7 +89,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-success text-white">
                 <div class="card-body py-2 text-center">
                   <small>المدفوع</small>
-                  <h5 class="mb-0">{{ summaryPaid | number:'1.2-2' }} جنيه</h5>
+                  <h5 class="mb-0">{{ summaryPaid | number:'1.2-2' }} ج.م</h5>
                 </div>
               </div>
             </div>
@@ -97,7 +97,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-warning text-dark">
                 <div class="card-body py-2 text-center">
                   <small>المتبقي</small>
-                  <h5 class="mb-0">{{ summaryDue | number:'1.2-2' }} جنيه</h5>
+                  <h5 class="mb-0">{{ summaryDue | number:'1.2-2' }} ج.م</h5>
                 </div>
               </div>
             </div>
@@ -105,7 +105,7 @@ const statusColors: { [key: number]: string } = {
               <div class="card bg-info text-white">
                 <div class="card-body py-2 text-center">
                   <small>التأمين</small>
-                  <h5 class="mb-0">{{ summaryInsurance | number:'1.2-2' }} جنيه</h5>
+                  <h5 class="mb-0">{{ summaryInsurance | number:'1.2-2' }} ج.م</h5>
                 </div>
               </div>
             </div>
@@ -152,9 +152,7 @@ const statusColors: { [key: number]: string } = {
                       <button class="btn btn-sm btn-outline-info me-1" (click)="printInvoice(item)" title="طباعة">
                         <i class="fas fa-print"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary" (click)="viewDetails(item)" title="عرض">
-                        <i class="fas fa-eye"></i>
-                      </button>
+
                     </td>
                   </tr>
                 } @empty {
@@ -342,8 +340,20 @@ export class InvoicesComponent implements OnInit {
   getStatusLabel(status: number): string { return statusLabels[status] || '-'; }
   getStatusColor(status: number): string { return statusColors[status] || 'secondary'; }
 
-  viewDetails(item: Invoice) { alert(`فاتورة: ${item.invoiceNumber}\nالصافي: ${item.netAmount}\nالمتبقي: ${item.dueAmount}`); }
-  printInvoice(item: Invoice) { window.print(); }
+
+  printInvoice(item: Invoice) {
+    const url = `${environment.apis.default.url}/api/app/billing/invoice-pdf/${item.id}`;
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const fileURL = URL.createObjectURL(blob);
+        window.open(fileURL, '_blank');
+      },
+      error: (err) => {
+        console.error('Error downloading PDF', err);
+        alert('حدث خطأ أثناء تحميل ملف الطباعة');
+      }
+    });
+  }
 
   payInvoice(item: Invoice) {
     const amount = prompt(`دفع فاتورة ${item.invoiceNumber}\nالمتبقي: ${item.dueAmount}\nأدخل المبلغ:`);

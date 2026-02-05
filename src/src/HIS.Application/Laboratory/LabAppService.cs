@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Microsoft.AspNetCore.Hosting;
 
 namespace HIS.Laboratory;
 
@@ -31,7 +32,8 @@ public class LabAppService : ApplicationService, ILabAppService
         IRepository<LabAppointment, Guid> appointmentRepository,
         IRepository<Patient, Guid> patientRepository,
         IRepository<Doctor, Guid> doctorRepository,
-        IRepository<ServiceItem, Guid> serviceItemRepository)
+        IRepository<ServiceItem, Guid> serviceItemRepository,
+        IWebHostEnvironment env)
     {
         _testRepository = testRepository;
         _requestRepository = requestRepository;
@@ -39,7 +41,10 @@ public class LabAppService : ApplicationService, ILabAppService
         _patientRepository = patientRepository;
         _doctorRepository = doctorRepository;
         _serviceItemRepository = serviceItemRepository;
+        _env = env;
     }
+
+    private readonly IWebHostEnvironment _env;
 
     // --- TESTS ---
 
@@ -210,7 +215,15 @@ public class LabAppService : ApplicationService, ILabAppService
         
         // Try to load logo from wwwroot
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        
+        // Fallback for development
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+
         if (System.IO.File.Exists(logoPath))
         {
             logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
@@ -252,7 +265,14 @@ public class LabAppService : ApplicationService, ILabAppService
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+
         if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
 
         var document = new HIS.Laboratory.Printing.LabRequestDocument
@@ -433,7 +453,14 @@ public class LabAppService : ApplicationService, ILabAppService
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "logo", "Dark.png");
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+
         if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
 
         var document = new HIS.Laboratory.Printing.LabAppointmentDocument

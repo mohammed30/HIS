@@ -100,7 +100,7 @@ public class InvoiceDocument : IDocument
 
             // Invoice Title Bar
             column.Item().Background(AccentRed).Padding(8).AlignCenter()
-                .Text("فاتورة خدمات طبية")
+                .Text("فاتورة / INVOICE")
                 .FontSize(16)
                 .Bold()
                 .FontColor(TextLight);
@@ -175,7 +175,7 @@ public class InvoiceDocument : IDocument
                 table.Cell().Element(DataCell).Text($"{Tax:N2}");
 
                 table.Cell().ColumnSpan(3).Element(TotalLabelCell).Text("الاجمالي النهائي:");
-                table.Cell().Element(DataCellHighlight).Text(t => t.Span($"{Total:N2} SAR").Bold());
+                table.Cell().Element(DataCellHighlight).Text(t => t.Span($"{Total:N2} ج.م").Bold());
             });
         });
     }
