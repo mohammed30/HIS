@@ -12,7 +12,7 @@
     <div class="card shadow-sm border-0 rounded-4 hover-lift mb-4 overflow-hidden">
         <div class="card-body p-4 bg-white">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold mb-2">
                         <i class="fas fa-hospital me-1 text-primary"></i>{{ '::Clinic' | abpLocalization }}
                     </label>
@@ -22,7 +22,7 @@
                         <option *ngFor="let c of clinics" [value]="c.id">{{c.name}}</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold mb-2">
                         <i class="fas fa-user-md me-1 text-primary"></i>{{ '::Doctor' | abpLocalization }}
                     </label>
@@ -31,12 +31,6 @@
                         <option value="">-- {{ '::SelectDoctor' | abpLocalization }} --</option>
                         <option *ngFor="let d of doctors" [value]="d.id">{{d.name}}</option>
                     </select>
-                </div>
-                <div class="col-md-4">
-                    <button class="btn btn-primary btn-lg w-100 btn-premium shadow-sm py-2" (click)="loadFlow()"
-                        [disabled]="!selectedDoctorId">
-                        <i class="fas fa-sync-alt me-1"></i> {{ '::Refresh' | abpLocalization }}
-                    </button>
                 </div>
             </div>
         </div>
