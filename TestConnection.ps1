@@ -1,4 +1,4 @@
-$connectionString = "Server=tcp:sql-asiahospital-we.database.windows.net,1433;Initial Catalog=HIS3;Persist Security Info=False;User ID=asiahospitaladmin;Password=Server@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+$connectionString = "Server=tcp:sql-asiahospital-we.database.windows.net,1433;Initial Catalog=HISDB;Persist Security Info=False;User ID=asiahospitaladmin;Password=Server@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
 Write-Host "Testing connection to Azure SQL..." -ForegroundColor Cyan
 
