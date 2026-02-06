@@ -60,7 +60,8 @@ export class CustomLoginComponent implements OnInit {
         }).subscribe({
             next: () => {
                 // Successful login usually redirects automatically or we can force it
-                // this.router.navigate(['/']); 
+                // using window.location.href to force a full refresh and ensure permissions/config are reloaded
+                window.location.href = '/';
             },
             error: (err) => {
                 this.inProgress = false;

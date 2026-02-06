@@ -5,6 +5,10 @@ import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.compone
 import { eAccountComponents } from '@abp/ng.account';
 import { CustomLoginComponent } from './auth/login/custom-login.component';
 import { AppLogoComponent } from './shared/logo/app-logo.component';
+import { UserManagementComponent } from './identity-extended/users/user-management.component';
+import { RoleManagementComponent } from './identity-extended/roles/role-management.component';
+import { eIdentityComponents } from '@abp/ng.identity';
+import { AppFooterComponent } from './layout/footer/app-footer.component';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +31,22 @@ export class AppComponent implements OnInit {
     this.replaceableComponents.add({
       component: AppLogoComponent,
       key: 'Logo',
+    });
+
+    // Replace Identity Components
+    this.replaceableComponents.add({
+      component: UserManagementComponent,
+      key: eIdentityComponents.Users,
+    });
+    this.replaceableComponents.add({
+      component: RoleManagementComponent,
+      key: eIdentityComponents.Roles,
+    });
+
+    // Replace Footer Component
+    this.replaceableComponents.add({
+      component: AppFooterComponent,
+      key: 'Theme.FooterComponent', // LeptonX uses this key based on FooterPanelDirective
     });
   }
 }

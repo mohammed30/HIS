@@ -26,6 +26,7 @@ export class LabRequestsComponent implements OnInit {
     toaster = inject(ToasterService);
 
     data: PagedResultDto<LabRequestDto> = { items: [], totalCount: 0 };
+    searchText = '';
 
     // Create modal
     isCreateModalOpen = false;
@@ -45,7 +46,7 @@ export class LabRequestsComponent implements OnInit {
     statuses = LabRequestStatus;
 
     ngOnInit() {
-        this.list.hookToQuery(query => this.labService.getRequests(query)).subscribe(res => {
+        this.list.hookToQuery(query => this.labService.getRequests({ ...query, searchText: this.searchText })).subscribe(res => {
             this.data = res;
         });
         this.loadDropdownData();

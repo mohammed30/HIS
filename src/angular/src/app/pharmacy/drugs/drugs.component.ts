@@ -16,9 +16,9 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
   template: `
     <div class="card">
       <div class="card-header">
-        <div class="row">
+        <div class="row align-items-center">
           <div class="col col-md-6">
-            <h5 class="card-title">
+            <h5 class="card-title mb-0">
               <i class="fas fa-pills me-2"></i> {{ '::DrugMasterData' | abpLocalization }}
             </h5>
           </div>
@@ -30,7 +30,18 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
         </div>
       </div>
       <div class="card-body">
-        <ngx-datatable [rows]="book.items" [count]="book.totalCount" [list]="list" default>
+        <!-- Search Input -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization"
+                     [(ngModel)]="searchText" (keyup.enter)="list.get()" (ngModelChange)="list.get()">
+            </div>
+          </div>
+        </div>
+
+        <ngx-datatable [rows]="book.items" [count]="book.totalCount" [list]="list" default class="material" [footerHeight]="50">
           
           <ngx-datatable-column [name]="'::Barcode' | abpLocalization" prop="barcode">
              <ng-template let-row="row" ngx-datatable-cell-template>
@@ -67,12 +78,20 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
             </ng-template>
           </ngx-datatable-column>
         </ngx-datatable>
+        
+        <!-- Total Count Badge -->
+        <div class="mt-2">
+            <span class="badge bg-secondary p-2">
+                {{ '::TotalRecords' | abpLocalization }}: {{ book.totalCount }}
+            </span>
+        </div>
       </div>
     </div>
   `
 })
 export class DrugsComponent implements OnInit {
   book = { items: [], totalCount: 0 } as PagedResultDto<any>;
+  searchText = '';
 
   constructor(
     public readonly list: ListService,
@@ -82,7 +101,7 @@ export class DrugsComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.list.hookToQuery(query => this.pharmacyService.getDrugs(query)).subscribe(res => {
+    this.list.hookToQuery(query => this.pharmacyService.getDrugs({ ...query, searchText: this.searchText })).subscribe(res => {
       this.book = res;
     });
   }

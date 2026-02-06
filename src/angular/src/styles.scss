@@ -674,16 +674,81 @@ body {
   opacity: 1 !important;
 }
 
+/* Robust Dark Mode Pager Fix */
 [data-theme="dark"] .ngx-datatable .datatable-footer {
+  display: flex !important;
   background-color: #343a40 !important;
-  color: #ffffff !important;
+  color: #fff !important;
+  border-top: 1px solid #495057 !important;
+  min-height: 50px !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager {
+  display: flex !important;
+  flex: 1 !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager {
+  display: flex !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 [data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a {
-  background-color: #2d3238 !important;
+  background-color: transparent !important;
   color: #ffffff !important;
-  border-color: #495057 !important;
+  border: 1px solid transparent !important;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 2px !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
 }
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li:hover a {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li.active a {
+  background-color: #0d6efd !important;
+  color: #fff !important;
+  font-weight: bold !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li.disabled a {
+  color: #6c757d !important;
+  cursor: not-allowed;
+  opacity: 0.5 !important;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a::before,
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a [class^="datatable-icon-"]::before,
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a[class^="datatable-icon-"]::before {
+  color: #ffffff !important;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a i,
+[data-theme="dark"] .ngx-datatable .datatable-footer .datatable-pager .pager li a [class^="datatable-icon-"] {
+  color: #ffffff !important;
+  font-size: 1.2rem;
+  line-height: 1;
+  text-shadow: none !important;
+}
+
+/* Fallback: Force ALL content in footer to be white, including pseudo elements if possible via inheritance */
+[data-theme="dark"] .ngx-datatable .datatable-footer,
+[data-theme="dark"] .ngx-datatable .datatable-footer * {
+  color: #ffffff !important;
+}
+
 
 /* 
    --------------------------------------------------------
@@ -697,7 +762,7 @@ body {
 [data-theme="dark"] app-footer,
 [data-theme="dark"] .abp-footer,
 [data-theme="dark"] .lpx-footer-container,
-[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) {
+[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer):not([class*="datatable"]) {
   background-color: var(--theme-bg-secondary) !important;
   border-top: 1px solid var(--theme-border-color) !important;
   color: var(--theme-text-muted) !important;
@@ -928,20 +993,95 @@ lpx-brand-logo a {
 }
 
 /* 
+/*
    --------------------------------------------------------
-   NUCLEAR OPTION FOR FOOTER OVERRIDES - HIDE IT
+   DARK MODE FOOTER FIX
+   DARK MODE FOOTER FIX (ULTIMATE WITH NG-DEEP)
    --------------------------------------------------------
-   Since styling is persistent/stubborn, we hide it to prevent visual jarring.
+   Recursive overrides with ::ng-deep to penetrate encapsulation.
 */
-[data-theme="dark"] .lpx-footer,
-[data-theme="dark"] footer,
-[data-theme="dark"] .lp-footer,
-[data-theme="dark"] .footer,
-[data-theme="dark"] app-footer,
-[data-theme="dark"] .abp-footer,
-[data-theme="dark"] .lpx-footer-container,
-[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer) {
-  display: none !important;
+
+/*
+   --------------------------------------------------------
+   DARK MODE FOOTER FIX (ULTIMATE WITH NG-DEEP & CORRECT CLASS NAMES)
+   --------------------------------------------------------
+   Recursive overrides with ::ng-deep to penetrate encapsulation.
+   Targeting .lpx-footbar-container (found in layout-bundle.css).
+*/
+
+:host ::ng-deep html[data-theme="dark"] .lpx-footer,
+html[data-theme="dark"] ::ng-deep .lpx-footer,
+html[data-theme="dark"] ::ng-deep .lpx-footer-content,
+html[data-theme="dark"] ::ng-deep footer,
+html[data-theme="dark"] ::ng-deep .lp-footer,
+html[data-theme="dark"] ::ng-deep .footer,
+html[data-theme="dark"] ::ng-deep app-footer,
+html[data-theme="dark"] ::ng-deep .abp-footer,
+html[data-theme="dark"] ::ng-deep .lpx-footer-container,
+html[data-theme="dark"] ::ng-deep .lpx-footbar-container,
+/* CORRECT CLASS FROM VENDOR CSS */
+html[data-theme="dark"] ::ng-deep .lpx-footbar,
+html[data-theme="dark"] ::ng-deep div[class*="footer"],
+html[data-theme="dark"] ::ng-deep .card-footer {
+  display: block !important;
+  background-color: #212529 !important;
+  background: #212529 !important;
+  color: #adb5bd !important;
+  border-top: 1px solid #343a40 !important;
+  margin-top: 0 !important;
+  box-shadow: none !important;
+
+  /* Override ABP/Lepton variables */
+  --lpx-footer-bg: #212529 !important;
+  --lpx-card-bg: #212529 !important;
+  --lpx-footer-border-color: #343a40 !important;
+  --lpx-footer-text-color: #adb5bd !important;
+}
+
+/* Force ALL children to be transparent */
+html[data-theme="dark"] ::ng-deep .lpx-footer *,
+html[data-theme="dark"] ::ng-deep .lpx-footer-container *,
+html[data-theme="dark"] ::ng-deep .lpx-footbar-container *,
+html[data-theme="dark"] ::ng-deep .lpx-footbar *,
+html[data-theme="dark"] ::ng-deep footer *,
+html[data-theme="dark"] ::ng-deep .lp-footer *,
+html[data-theme="dark"] ::ng-deep .footer *,
+html[data-theme="dark"] ::ng-deep app-footer *,
+html[data-theme="dark"] ::ng-deep .abp-footer *,
+html[data-theme="dark"] ::ng-deep div[class*="footer"] *,
+html[data-theme="dark"] ::ng-deep .card-footer * {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
+/* Fix links */
+html[data-theme="dark"] ::ng-deep .lpx-footer a,
+html[data-theme="dark"] ::ng-deep footer a,
+html[data-theme="dark"] ::ng-deep .lp-footer a,
+html[data-theme="dark"] ::ng-deep .footer a,
+html[data-theme="dark"] ::ng-deep app-footer a,
+html[data-theme="dark"] ::ng-deep .abp-footer a,
+html[data-theme="dark"] ::ng-deep .lpx-footer-container a,
+html[data-theme="dark"] ::ng-deep .lpx-footbar-container a,
+html[data-theme="dark"] ::ng-deep .lpx-footbar a,
+html[data-theme="dark"] ::ng-deep div[class*="footer"] a,
+html[data-theme="dark"] ::ng-deep .card-footer a {
+  color: #6ea8fe !important;
+  text-decoration: none !important;
+}
+
+html[data-theme="dark"] .lpx-footer a:hover,
+html[data-theme="dark"] footer a:hover,
+html[data-theme="dark"] .lp-footer a:hover,
+html[data-theme="dark"] .footer a:hover,
+html[data-theme="dark"] app-footer a:hover,
+html[data-theme="dark"] .abp-footer a:hover,
+html[data-theme="dark"] .lpx-footer-container a:hover,
+html[data-theme="dark"] div[class*="footer"]:not(.modal-footer):not(.card-footer):not(.datatable-footer):not([class*="datatable"]) a:hover {
+  color: #9ec5fe !important;
+  text-decoration: underline !important;
 }
 
 /* Ensure light mode cards are distinct (Redundant check) */

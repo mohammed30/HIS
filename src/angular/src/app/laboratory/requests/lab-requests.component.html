@@ -3,12 +3,13 @@
         <div class="row align-items-center">
             <div class="col col-md-6">
                 <h5 class="card-title mb-0">
-                  <i class="fas fa-list-check me-2"></i>
-                  {{ '::Menu:LabRequests' | abpLocalization }}
+                    <i class="fas fa-list-check me-2"></i>
+                    {{ '::Menu:LabRequests' | abpLocalization }}
                 </h5>
             </div>
             <div class="text-end col col-md-6">
-                <button id="create-request" class="btn btn-light btn-premium shadow-sm" type="button" (click)="openCreateModal()">
+                <button id="create-request" class="btn btn-light btn-premium shadow-sm" type="button"
+                    (click)="openCreateModal()">
                     <i class="fas fa-calendar-plus me-1"></i>
                     <span>طلب تحليل جديد</span>
                 </button>
@@ -16,15 +17,28 @@
         </div>
     </div>
     <div class="card-body">
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default class="material">
+        <!-- Search Input -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization"
+                        [(ngModel)]="searchText" (keyup.enter)="list.get()" (ngModelChange)="list.get()">
+                </div>
+            </div>
+        </div>
+
+        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default class="material"
+            [footerHeight]="50">
             <ngx-datatable-column [name]="'::Date' | abpLocalization" prop="requestDate">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                    <span class="text-muted"><i class="far fa-clock me-1"></i>{{ row.requestDate | date:'short' }}</span>
+                    <span class="text-muted"><i class="far fa-clock me-1"></i>{{ row.requestDate | date:'short'
+                        }}</span>
                 </ng-template>
             </ngx-datatable-column>
             <ngx-datatable-column [name]="'::Patient' | abpLocalization" prop="patientName">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                   <strong>{{ row.patientName }}</strong>
+                    <strong>{{ row.patientName }}</strong>
                 </ng-template>
             </ngx-datatable-column>
             <ngx-datatable-column [name]="'::Test' | abpLocalization" prop="testName">
@@ -44,25 +58,33 @@
 
             <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="300" [sortable]="false">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                  <div class="d-flex gap-1">
-                    <button *ngIf="row.status === 0" class="btn btn-sm btn-info btn-premium shadow-sm text-dark" (click)="collectSample(row.id)">
-                        <i class="fas fa-vial me-1"></i>جمع العينة
-                    </button>
-                    <button *ngIf="row.status !== 0 && row.status !== 3" class="btn btn-sm btn-primary btn-premium shadow-sm"
-                        (click)="openResultModal(row)">
-                        <i class="fas fa-flask me-1"></i>النتيجة
-                    </button>
-                    <button *ngIf="row.status === 3" class="btn btn-sm btn-secondary btn-premium shadow-sm"
-                        (click)="openResultModal(row)">
-                        <i class="fas fa-eye me-1"></i>عرض
-                    </button>
-                    <button *ngIf="row.status === 3" class="btn btn-sm btn-success btn-premium shadow-sm" (click)="printResult(row)">
-                        <i class="fas fa-print me-1"></i>طباعة
-                    </button>
-                  </div>
+                    <div class="btn-group">
+                        <button *ngIf="row.status === 0" class="btn btn-sm btn-info text-dark"
+                            (click)="collectSample(row.id)">
+                            <i class="fas fa-vial me-1"></i>جمع العينة
+                        </button>
+                        <button *ngIf="row.status !== 0 && row.status !== 3" class="btn btn-sm btn-primary"
+                            (click)="openResultModal(row)">
+                            <i class="fas fa-flask me-1"></i>النتيجة
+                        </button>
+                        <button *ngIf="row.status === 3" class="btn btn-sm btn-secondary"
+                            (click)="openResultModal(row)">
+                            <i class="fas fa-eye me-1"></i>عرض
+                        </button>
+                        <button *ngIf="row.status === 3" class="btn btn-sm btn-success ms-1" (click)="printResult(row)">
+                            <i class="fas fa-print me-1"></i>طباعة
+                        </button>
+                    </div>
                 </ng-template>
             </ngx-datatable-column>
         </ngx-datatable>
+
+        <!-- Total Count Badge -->
+        <div class="mt-2">
+            <span class="badge bg-secondary p-2">
+                {{ '::TotalRecords' | abpLocalization }}: {{ data.totalCount }}
+            </span>
+        </div>
     </div>
 </div>
 
@@ -120,17 +142,21 @@
 
     <ng-template #abpBody>
         <div class="mb-3 d-flex justify-content-between p-3 bg-light rounded border">
-            <div><label class="fw-bold text-muted small d-block">التحليل</label> <strong>{{ selectedRequest?.testName }}</strong></div>
-            <div><label class="fw-bold text-muted small d-block">المريض</label> <strong>{{ selectedRequest?.patientName }}</strong></div>
+            <div><label class="fw-bold text-muted small d-block">التحليل</label> <strong>{{ selectedRequest?.testName
+                    }}</strong></div>
+            <div><label class="fw-bold text-muted small d-block">المريض</label> <strong>{{ selectedRequest?.patientName
+                    }}</strong></div>
         </div>
 
         <div class="form-group mb-3 mt-3">
             <label class="form-label fw-bold">النتيجة</label>
-            <textarea class="form-control shadow-sm" rows="5" [(ngModel)]="resultData.result" placeholder="أدخل نتائج التحليل هنا..."></textarea>
+            <textarea class="form-control shadow-sm" rows="5" [(ngModel)]="resultData.result"
+                placeholder="أدخل نتائج التحليل هنا..."></textarea>
         </div>
         <div class="form-group mb-3">
             <label class="form-label fw-bold">ملاحظات الفني</label>
-            <textarea class="form-control shadow-sm" rows="2" [(ngModel)]="resultData.notes" placeholder="ملاحظات إضافية للفني..."></textarea>
+            <textarea class="form-control shadow-sm" rows="2" [(ngModel)]="resultData.notes"
+                placeholder="ملاحظات إضافية للفني..."></textarea>
         </div>
     </ng-template>
 
@@ -138,11 +164,13 @@
         <button type="button" class="btn btn-secondary shadow-sm" abpClose>
             {{ '::Close' | abpLocalization }}
         </button>
-        <button *ngIf="selectedRequest?.status !== 3" class="btn btn-primary btn-premium shadow-sm" (click)="saveResult()">
+        <button *ngIf="selectedRequest?.status !== 3" class="btn btn-primary btn-premium shadow-sm"
+            (click)="saveResult()">
             <i class="fas fa-flask me-1"></i>
             حفظ النتيجة وإكمال
         </button>
-        <button *ngIf="selectedRequest?.status === 3" class="btn btn-success btn-premium shadow-sm" (click)="printResult(selectedRequest)">
+        <button *ngIf="selectedRequest?.status === 3" class="btn btn-success btn-premium shadow-sm"
+            (click)="printResult(selectedRequest)">
             <i class="fas fa-print me-1"></i>
             تحميل PDF للطباعة
         </button>
