@@ -1,8 +1,8 @@
 -- FORCE UPDATE for HIS_App (Frontend)
 UPDATE [OpenIddictApplications]
 SET 
-    [RedirectUris] = '["https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net","https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net/"]',
-    [PostLogoutRedirectUris] = '["https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net","https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net/"]',
+    [RedirectUris] = '["https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net","https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net"]',
+    [PostLogoutRedirectUris] = '["https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net","https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net"]',
     [ClientUri] = 'https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net'
 WHERE [ClientId] = 'HIS_App';
 
