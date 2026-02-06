@@ -1,9 +1,9 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net/';
+const baseUrl = 'https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net';
 
 const oAuthConfig = {
-  issuer: 'https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/',
+  issuer: 'https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net',
   redirectUri: baseUrl,
   clientId: 'HIS_App',
   responseType: 'code',

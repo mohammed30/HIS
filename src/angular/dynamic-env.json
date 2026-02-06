@@ -1,8 +1,8 @@
 {
     "production": true,
     "oAuthConfig": {
-        "issuer": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
-        "redirectUri": "https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net/",
+        "issuer": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net",
+        "redirectUri": "https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net",
         "clientId": "HIS_App",
         "responseType": "code",
         "scope": "offline_access HIS",
@@ -14,7 +14,7 @@
             "rootNamespace": "HIS"
         },
         "AbpAccountPublic": {
-            "url": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
+            "url": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net",
             "rootNamespace": "AbpAccountPublic"
         }
     }
