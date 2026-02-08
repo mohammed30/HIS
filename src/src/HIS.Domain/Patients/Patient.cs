@@ -11,7 +11,7 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
 {
     public Guid? TenantId { get; set; }
 
-    #region البيانات الشخصية - Personal Information
+    # region البيانات الشخصية - Personal Information
 
     /// <summary>
     /// رقم الملف الطبي - Medical Record Number
@@ -64,9 +64,14 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public MaritalStatus? MaritalStatus { get; set; }
 
     /// <summary>
-    /// الجنسية
+    /// معرف الجنسية
     /// </summary>
-    public string? Nationality { get; set; }
+    public Guid? NationalityId { get; set; }
+
+    /// <summary>
+    /// معرف المهنة
+    /// </summary>
+    public Guid? ProfessionId { get; set; }
 
     #endregion
 
@@ -86,6 +91,64 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// تاريخ انتهاء الهوية
     /// </summary>
     public DateTime? IdentityExpiryDate { get; set; }
+
+    /// <summary>
+    /// تاريخ إصدار الهوية
+    /// </summary>
+    public DateTime? IdentityIssueDate { get; set; }
+
+    /// <summary>
+    /// مكان إصدار الهوية
+    /// </summary>
+    public string? IdentityIssuePlace { get; set; }
+
+    #endregion
+
+    #region بيانات الجواز - Passport Information
+
+    /// <summary>
+    /// رقم الجواز
+    /// </summary>
+    public string? PassportNumber { get; set; }
+
+    /// <summary>
+    /// تاريخ إصدار الجواز
+    /// </summary>
+    public DateTime? PassportIssueDate { get; set; }
+
+    /// <summary>
+    /// مكان إصدار الجواز
+    /// </summary>
+    public string? PassportIssuePlace { get; set; }
+
+    /// <summary>
+    /// تاريخ انتهاء الجواز
+    /// </summary>
+    public DateTime? PassportExpiryDate { get; set; }
+
+    #endregion
+
+    #region بيانات التأشيرة - Visa Information
+
+    /// <summary>
+    /// رقم التأشيرة
+    /// </summary>
+    public string? VisaNumber { get; set; }
+
+    /// <summary>
+    /// تاريخ إصدار التأشيرة
+    /// </summary>
+    public DateTime? VisaIssueDate { get; set; }
+
+    /// <summary>
+    /// مكان إصدار التأشيرة
+    /// </summary>
+    public string? VisaIssuePlace { get; set; }
+
+    /// <summary>
+    /// تاريخ انتهاء التأشيرة
+    /// </summary>
+    public DateTime? VisaExpiryDate { get; set; }
 
     #endregion
 
@@ -118,6 +181,20 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     #endregion
 
+    #region بيانات الكفيل / العائل - Sponsor / Guardian
+
+    /// <summary>
+    /// اسم العائل / الكفيل
+    /// </summary>
+    public string? SponsorName { get; set; }
+
+    /// <summary>
+    /// رقم الهوية للكفيل / العائل
+    /// </summary>
+    public string? SponsorId { get; set; }
+
+    #endregion
+
     #region بيانات الطوارئ - Emergency Contact
 
     /// <summary>
@@ -137,12 +214,32 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     #endregion
 
-    #region بيانات إضافية - Additional Information
+    #region بيانات إضافية وتعاقدات - Additional & Contracts
 
     /// <summary>
     /// فئة المريض
     /// </summary>
-    public PatientCategory Category { get; set; } = PatientCategory.Regular;
+    public Guid? PatientCategoryId { get; set; }
+
+    /// <summary>
+    /// التعاقد
+    /// </summary>
+    public Guid? ContractId { get; set; }
+
+    /// <summary>
+    /// الجهة المحولة
+    /// </summary>
+    public Guid? ReferralSourceId { get; set; }
+
+    /// <summary>
+    /// رقم بطاقة التأمين / العميل
+    /// </summary>
+    public string? CardNumber { get; set; }
+
+    /// <summary>
+    /// الملف الضريبي
+    /// </summary>
+    public string? TaxFile { get; set; }
 
     /// <summary>
     /// فصيلة الدم
@@ -153,6 +250,11 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// الحساسية
     /// </summary>
     public string? Allergies { get; set; }
+
+    /// <summary>
+    /// هل لديه تأمين اجتماعي؟
+    /// </summary>
+    public bool IsSocialSecurity { get; set; }
 
     /// <summary>
     /// ملاحظات

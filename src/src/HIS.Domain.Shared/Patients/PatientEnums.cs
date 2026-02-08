@@ -68,28 +68,3 @@ public enum IdentityType
     DrivingLicense = 3
 }
 
-/// <summary>
-/// فئة المريض
-/// </summary>
-public enum PatientCategory
-{
-    /// <summary>
-    /// عادي
-    /// </summary>
-    Regular = 0,
-
-    /// <summary>
-    /// VIP
-    /// </summary>
-    VIP = 1,
-
-    /// <summary>
-    /// موظف
-    /// </summary>
-    Employee = 2,
-
-    /// <summary>
-    /// متقاعد
-    /// </summary>
-    Retired = 3
-}

@@ -10,6 +10,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 using Microsoft.AspNetCore.Authorization;
+using HIS.General;
 using HIS.Permissions;
 
 namespace HIS.Patients;
@@ -21,6 +22,11 @@ namespace HIS.Patients;
 public class PatientAppService : ApplicationService, IPatientAppService
 {
     private readonly IRepository<Patient, Guid> _patientRepository;
+    private readonly IRepository<Nationality, Guid> _nationalityRepository;
+    private readonly IRepository<Profession, Guid> _professionRepository;
+    private readonly IRepository<Contract, Guid> _contractRepository;
+    private readonly IRepository<PatientCategory, Guid> _categoryRepository;
+    private readonly IRepository<ReferralSource, Guid> _referralSourceRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     private readonly ActivityLogManager _activityLogManager;
@@ -29,12 +35,22 @@ public class PatientAppService : ApplicationService, IPatientAppService
 
     public PatientAppService(
         IRepository<Patient, Guid> patientRepository,
+        IRepository<Nationality, Guid> nationalityRepository,
+        IRepository<Profession, Guid> professionRepository,
+        IRepository<Contract, Guid> contractRepository,
+        IRepository<PatientCategory, Guid> categoryRepository,
+        IRepository<ReferralSource, Guid> referralSourceRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         ActivityLogManager activityLogManager,
         IHttpContextAccessor httpContextAccessor)
     {
         _patientRepository = patientRepository;
+        _nationalityRepository = nationalityRepository;
+        _professionRepository = professionRepository;
+        _contractRepository = contractRepository;
+        _categoryRepository = categoryRepository;
+        _referralSourceRepository = referralSourceRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         _activityLogManager = activityLogManager;
@@ -43,24 +59,50 @@ public class PatientAppService : ApplicationService, IPatientAppService
 
     public async Task<PagedResultDto<PatientDto>> GetListAsync(GetPatientsInput input)
     {
-        var queryable = await _patientRepository.GetQueryableAsync();
+        var patientQuery = await _patientRepository.GetQueryableAsync();
+        var nationalityQuery = await _nationalityRepository.GetQueryableAsync();
+        var professionQuery = await _professionRepository.GetQueryableAsync();
+        var contractQuery = await _contractRepository.GetQueryableAsync();
+        var categoryQuery = await _categoryRepository.GetQueryableAsync();
+        var referralQuery = await _referralSourceRepository.GetQueryableAsync();
 
-        // Apply filters
-        queryable = ApplyFilters(queryable, input);
+        // Apply filters to patients
+        patientQuery = ApplyFilters(patientQuery, input);
 
-        var totalCount = await AsyncExecuter.CountAsync(queryable);
+        var totalCount = await AsyncExecuter.CountAsync(patientQuery);
 
-        // Apply sorting
-        queryable = !string.IsNullOrEmpty(input.Sorting)
-            ? ApplySorting(queryable, input.Sorting)
-            : queryable.OrderByDescending(x => x.CreationTime);
+        // Sorting, Paging...
+        patientQuery = !string.IsNullOrEmpty(input.Sorting)
+            ? ApplySorting(patientQuery, input.Sorting)
+            : patientQuery.OrderByDescending(x => x.CreationTime);
 
-        // Apply paging
-        queryable = queryable.Skip(input.SkipCount).Take(input.MaxResultCount);
+        patientQuery = patientQuery.Skip(input.SkipCount).Take(input.MaxResultCount);
 
-        var patients = await AsyncExecuter.ToListAsync(queryable);
+        // Join to get names
+        var query = from patient in patientQuery
+                    join nat in nationalityQuery on patient.NationalityId equals nat.Id into nats
+                    from nat in nats.DefaultIfEmpty()
+                    join prof in professionQuery on patient.ProfessionId equals prof.Id into profs
+                    from prof in profs.DefaultIfEmpty()
+                    join cont in contractQuery on patient.ContractId equals cont.Id into conts
+                    from cont in conts.DefaultIfEmpty()
+                    join cat in categoryQuery on patient.PatientCategoryId equals cat.Id into cats
+                    from cat in cats.DefaultIfEmpty()
+                    join refSrc in referralQuery on patient.ReferralSourceId equals refSrc.Id into refs
+                    from refSrc in refs.DefaultIfEmpty()
+                    select new { patient, NationalityName = nat.NameAr, ProfessionName = prof.NameAr, ContractName = cont.NameAr, CategoryName = cat.NameAr, ReferralName = refSrc.NameAr };
 
-        var dtos = patients.Select(MapToDto).ToList();
+        var results = await AsyncExecuter.ToListAsync(query);
+
+        var dtos = results.Select(x => {
+            var dto = MapToDto(x.patient);
+            dto.NationalityName = x.NationalityName;
+            dto.ProfessionName = x.ProfessionName;
+            dto.ContractName = x.ContractName;
+            dto.PatientCategoryName = x.CategoryName;
+            dto.ReferralSourceName = x.ReferralName;
+            return dto;
+        }).ToList();
 
         return new PagedResultDto<PatientDto>(totalCount, dtos);
     }
@@ -80,34 +122,50 @@ public class PatientAppService : ApplicationService, IPatientAppService
             id: _guidGenerator.Create(),
             tenantId: _currentTenant.Id,
             mrn: mrn,
-            firstNameAr: input.FirstNameAr,
-            lastNameAr: input.LastNameAr,
+            firstNameAr: string.Empty, // Set via MapNames
+            lastNameAr: string.Empty, // Set via MapNames
             dateOfBirth: input.DateOfBirth,
             gender: input.Gender,
             identityType: input.IdentityType,
             identityNumber: input.IdentityNumber,
             mobileNumber: input.MobileNumber
-        )
-        {
-            MiddleNameAr = input.MiddleNameAr,
-            FirstNameEn = input.FirstNameEn,
-            MiddleNameEn = input.MiddleNameEn,
-            LastNameEn = input.LastNameEn,
-            MaritalStatus = input.MaritalStatus,
-            Nationality = input.Nationality,
-            IdentityExpiryDate = input.IdentityExpiryDate,
-            PhoneNumber = input.PhoneNumber,
-            Email = input.Email,
-            Address = input.Address,
-            City = input.City,
-            EmergencyContactName = input.EmergencyContactName,
-            EmergencyContactRelation = input.EmergencyContactRelation,
-            EmergencyContactPhone = input.EmergencyContactPhone,
-            Category = input.Category,
-            BloodType = input.BloodType,
-            Allergies = input.Allergies,
-            Notes = input.Notes
-        };
+        );
+
+        MapNames(patient, input);
+
+        patient.MaritalStatus = input.MaritalStatus;
+        patient.NationalityId = input.NationalityId;
+        patient.ProfessionId = input.ProfessionId;
+        patient.IdentityExpiryDate = input.IdentityExpiryDate;
+        patient.IdentityIssueDate = input.IdentityIssueDate;
+        patient.IdentityIssuePlace = input.IdentityIssuePlace;
+        patient.PassportNumber = input.PassportNumber;
+        patient.PassportIssueDate = input.PassportIssueDate;
+        patient.PassportIssuePlace = input.PassportIssuePlace;
+        patient.PassportExpiryDate = input.PassportExpiryDate;
+        patient.VisaNumber = input.VisaNumber;
+        patient.VisaIssueDate = input.VisaIssueDate;
+        patient.VisaIssuePlace = input.VisaIssuePlace;
+        patient.VisaExpiryDate = input.VisaExpiryDate;
+        patient.PhoneNumber = input.PhoneNumber;
+        patient.Email = input.Email;
+        patient.Address = input.Address;
+        patient.City = input.City;
+        patient.SponsorName = input.SponsorName;
+        patient.SponsorId = input.SponsorId;
+        patient.EmergencyContactName = input.EmergencyContactName;
+        patient.EmergencyContactRelation = input.EmergencyContactRelation;
+        patient.EmergencyContactPhone = input.EmergencyContactPhone;
+        patient.PatientCategoryId = input.PatientCategoryId;
+        patient.ContractId = input.ContractId;
+        patient.ReferralSourceId = input.ReferralSourceId;
+        patient.CardNumber = input.CardNumber;
+        patient.TaxFile = input.TaxFile;
+        patient.BloodType = input.BloodType;
+        patient.Allergies = input.Allergies;
+        patient.Notes = input.Notes;
+        patient.IsSocialSecurity = input.IsSocialSecurity;
+        patient.IsActive = input.IsActive;
 
         await _patientRepository.InsertAsync(patient);
 
@@ -119,8 +177,8 @@ public class PatientAppService : ApplicationService, IPatientAppService
             entityType: "Patient",
             entityId: patient.Id.ToString(),
             newValues: new { patient.MRN, patient.FullNameAr, patient.MobileNumber },
-            ipAddress: GetClientIp(),
-            userAgent: GetUserAgent()
+            ipAddress: GetClientIp() ?? "",
+            userAgent: GetUserAgent() ?? ""
         );
 
         return MapToDto(patient);
@@ -134,31 +192,46 @@ public class PatientAppService : ApplicationService, IPatientAppService
         // Store old values for logging
         var oldValues = new { patient.FirstNameAr, patient.LastNameAr, patient.MobileNumber, patient.Email };
 
-        patient.FirstNameAr = input.FirstNameAr;
-        patient.MiddleNameAr = input.MiddleNameAr;
-        patient.LastNameAr = input.LastNameAr;
-        patient.FirstNameEn = input.FirstNameEn;
-        patient.MiddleNameEn = input.MiddleNameEn;
-        patient.LastNameEn = input.LastNameEn;
+        MapNames(patient, input);
+
         patient.DateOfBirth = input.DateOfBirth;
         patient.Gender = input.Gender;
         patient.MaritalStatus = input.MaritalStatus;
-        patient.Nationality = input.Nationality;
+        patient.NationalityId = input.NationalityId;
+        patient.ProfessionId = input.ProfessionId;
         patient.IdentityType = input.IdentityType;
         patient.IdentityNumber = input.IdentityNumber;
         patient.IdentityExpiryDate = input.IdentityExpiryDate;
+        patient.IdentityIssueDate = input.IdentityIssueDate;
+        patient.IdentityIssuePlace = input.IdentityIssuePlace;
+        patient.PassportNumber = input.PassportNumber;
+        patient.PassportIssueDate = input.PassportIssueDate;
+        patient.PassportIssuePlace = input.PassportIssuePlace;
+        patient.PassportExpiryDate = input.PassportExpiryDate;
+        patient.VisaNumber = input.VisaNumber;
+        patient.VisaIssueDate = input.VisaIssueDate;
+        patient.VisaIssuePlace = input.VisaIssuePlace;
+        patient.VisaExpiryDate = input.VisaExpiryDate;
         patient.MobileNumber = input.MobileNumber;
         patient.PhoneNumber = input.PhoneNumber;
         patient.Email = input.Email;
         patient.Address = input.Address;
         patient.City = input.City;
+        patient.SponsorName = input.SponsorName;
+        patient.SponsorId = input.SponsorId;
         patient.EmergencyContactName = input.EmergencyContactName;
         patient.EmergencyContactRelation = input.EmergencyContactRelation;
         patient.EmergencyContactPhone = input.EmergencyContactPhone;
-        patient.Category = input.Category;
+        patient.PatientCategoryId = input.PatientCategoryId;
+        patient.ContractId = input.ContractId;
+        patient.ReferralSourceId = input.ReferralSourceId;
+        patient.CardNumber = input.CardNumber;
+        patient.TaxFile = input.TaxFile;
         patient.BloodType = input.BloodType;
         patient.Allergies = input.Allergies;
         patient.Notes = input.Notes;
+        patient.IsSocialSecurity = input.IsSocialSecurity;
+        patient.IsActive = input.IsActive;
 
         await _patientRepository.UpdateAsync(patient);
 
@@ -264,22 +337,40 @@ public class PatientAppService : ApplicationService, IPatientAppService
             Age = patient.Age,
             Gender = patient.Gender,
             MaritalStatus = patient.MaritalStatus,
-            Nationality = patient.Nationality,
+            NationalityId = patient.NationalityId,
+            ProfessionId = patient.ProfessionId,
             IdentityType = patient.IdentityType,
             IdentityNumber = patient.IdentityNumber,
             IdentityExpiryDate = patient.IdentityExpiryDate,
+            IdentityIssueDate = patient.IdentityIssueDate,
+            IdentityIssuePlace = patient.IdentityIssuePlace,
+            PassportNumber = patient.PassportNumber,
+            PassportIssueDate = patient.PassportIssueDate,
+            PassportIssuePlace = patient.PassportIssuePlace,
+            PassportExpiryDate = patient.PassportExpiryDate,
+            VisaNumber = patient.VisaNumber,
+            VisaIssueDate = patient.VisaIssueDate,
+            VisaIssuePlace = patient.VisaIssuePlace,
+            VisaExpiryDate = patient.VisaExpiryDate,
             MobileNumber = patient.MobileNumber,
             PhoneNumber = patient.PhoneNumber,
             Email = patient.Email,
             Address = patient.Address,
             City = patient.City,
+            SponsorName = patient.SponsorName,
+            SponsorId = patient.SponsorId,
             EmergencyContactName = patient.EmergencyContactName,
             EmergencyContactRelation = patient.EmergencyContactRelation,
             EmergencyContactPhone = patient.EmergencyContactPhone,
-            Category = patient.Category,
+            PatientCategoryId = patient.PatientCategoryId,
+            ContractId = patient.ContractId,
+            ReferralSourceId = patient.ReferralSourceId,
+            CardNumber = patient.CardNumber,
+            TaxFile = patient.TaxFile,
             BloodType = patient.BloodType,
             Allergies = patient.Allergies,
             Notes = patient.Notes,
+            IsSocialSecurity = patient.IsSocialSecurity,
             PhotoUrl = patient.PhotoUrl,
             IsActive = patient.IsActive,
             CreationTime = patient.CreationTime,
@@ -311,8 +402,8 @@ public class PatientAppService : ApplicationService, IPatientAppService
         if (input.Gender.HasValue)
             queryable = queryable.Where(x => x.Gender == input.Gender);
 
-        if (input.Category.HasValue)
-            queryable = queryable.Where(x => x.Category == input.Category);
+        if (input.PatientCategoryId.HasValue)
+            queryable = queryable.Where(x => x.PatientCategoryId == input.PatientCategoryId);
 
         if (input.IsActive.HasValue)
             queryable = queryable.Where(x => x.IsActive == input.IsActive);
@@ -336,4 +427,51 @@ public class PatientAppService : ApplicationService, IPatientAppService
 
     private string? GetClientIp() => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
     private string? GetUserAgent() => _httpContextAccessor.HttpContext?.Request?.Headers["User-Agent"].ToString();
+
+    private void MapNames(Patient patient, CreateUpdatePatientDto input)
+    {
+        // Arabic Name
+        if (!string.IsNullOrEmpty(input.FullNameAr))
+        {
+            var parts = input.FullNameAr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0) patient.FirstNameAr = parts[0];
+            if (parts.Length > 2)
+            {
+                patient.MiddleNameAr = string.Join(" ", parts.Skip(1).Take(parts.Length - 2));
+                patient.LastNameAr = parts.Last();
+            }
+            else if (parts.Length == 2)
+            {
+                patient.LastNameAr = parts[1];
+            }
+        }
+        else
+        {
+            patient.FirstNameAr = input.FirstNameAr;
+            patient.MiddleNameAr = input.MiddleNameAr;
+            patient.LastNameAr = input.LastNameAr;
+        }
+
+        // English Name
+        if (!string.IsNullOrEmpty(input.FullNameEn))
+        {
+            var parts = input.FullNameEn.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0) patient.FirstNameEn = parts[0];
+            if (parts.Length > 2)
+            {
+                patient.MiddleNameEn = string.Join(" ", parts.Skip(1).Take(parts.Length - 2));
+                patient.LastNameEn = parts.Last();
+            }
+            else if (parts.Length == 2)
+            {
+                patient.LastNameEn = parts[1];
+            }
+        }
+        else
+        {
+            patient.FirstNameEn = input.FirstNameEn;
+            patient.MiddleNameEn = input.MiddleNameEn;
+            patient.LastNameEn = input.LastNameEn;
+        }
+    }
 }

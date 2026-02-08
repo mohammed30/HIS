@@ -1,0 +1,31 @@
+[02:54:27 INF] Started database migrations...
+[02:54:27 INF] Migrating schema for host database...
+Unhandled exception. System.InvalidOperationException: The ConnectionString property has not been initialized.
+   at Microsoft.Data.SqlClient.SqlConnection.PermissionDemand()
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.PermissionDemand(DbConnection outerConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.InternalOpenAsync(SqlConnectionOverrides overrides, CancellationToken cancellationToken)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+   at HIS.EntityFrameworkCore.EntityFrameworkCoreHISDbSchemaMigrator.MigrateAsync() in C:\Code30\HIS\src\src\HIS.EntityFrameworkCore\EntityFrameworkCore\EntityFrameworkCoreHISDbSchemaMigrator.cs:line 28
+   at HIS.Data.HISDbMigrationService.MigrateDatabaseSchemaAsync(Tenant tenant) in C:\Code30\HIS\src\src\HIS.Domain\Data\HISDbMigrationService.cs:line 100
+   at HIS.Data.HISDbMigrationService.MigrateAsync() in C:\Code30\HIS\src\src\HIS.Domain\Data\HISDbMigrationService.cs:line 53
+   at HIS.DbMigrator.DbMigratorHostedService.StartAsync(CancellationToken cancellationToken) in C:\Code30\HIS\src\src\HIS.DbMigrator\DbMigratorHostedService.cs:line 36
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__14_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>g__LogAndRethrow|14_3(<>c__DisplayClass14_0&)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at HIS.DbMigrator.Program.Main(String[] args) in C:\Code30\HIS\src\src\HIS.DbMigrator\Program.cs:line 28
+   at HIS.DbMigrator.Program.<Main>(String[] args)

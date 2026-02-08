@@ -5,6 +5,7 @@ import type { AllergyStatus } from './allergy-status.enum';
 import type { DiagnosisType } from './diagnosis-type.enum';
 import type { DiagnosisStatus } from './diagnosis-status.enum';
 import type { NoteType } from './note-type.enum';
+import type { Gender } from '../patients/gender.enum';
 
 export interface AllergyDto extends EntityDto<string> {
   patientId?: string;
@@ -107,6 +108,7 @@ export interface PatientMedicalSummaryDto {
   patientName?: string;
   bloodType?: string;
   age?: number;
+  gender?: Gender;
   activeAllergiesCount?: number;
   chronicConditionsCount?: number;
   activeDiagnosesCount?: number;

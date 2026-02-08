@@ -1,0 +1,265 @@
+.lab-reception-container {
+    background-color: #d1e2f3 !important;
+    font-family: 'Cairo', sans-serif;
+
+    .card {
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(to bottom, #4a90e2, #2171c7) !important;
+        border-bottom: 2px solid #1a5ea8;
+    }
+
+    .form-label {
+        color: #1a5ea8;
+        font-size: 0.85rem;
+    }
+
+    .form-control-sm,
+    .form-select-sm {
+        border-radius: 3px;
+        border: 1px solid #adc5e0;
+
+        &:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+    }
+
+    /* Sidebar buttons style */
+    .sidebar-btns .btn {
+        min-height: 45px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        font-size: 0.8rem;
+
+        i {
+            font-size: 1rem;
+        }
+    }
+
+    .btn-success {
+        background-color: #28a745 !important;
+        border-color: #1e7e34 !important;
+    }
+
+    .btn-info {
+        background-color: #00bcd4 !important;
+        border-color: #00acc1 !important;
+        color: white !important;
+    }
+
+    .btn-warning {
+        background-color: #f39c12 !important;
+        border-color: #e67e22 !important;
+        color: white !important;
+    }
+
+    .btn-danger {
+        background-color: #e74c3c !important;
+        border-color: #c0392b !important;
+    }
+
+    .nav-tabs {
+        background-color: #e4eff9;
+        padding-top: 5px;
+        border-bottom: 2px solid #abc7e6;
+
+        .nav-link {
+            color: #1a5ea8;
+            border: 1px solid transparent;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            margin-right: 2px;
+            font-weight: bold;
+            background-color: transparent;
+            transition: all 0.2s;
+
+            &.active {
+                background-color: white !important;
+                border-color: #abc7e6 #abc7e6 transparent !important;
+                color: #2171c7 !important;
+                position: relative;
+                top: 1px;
+                z-index: 10;
+            }
+
+            &:hover:not(.active) {
+                background-color: rgba(255, 255, 255, 0.5);
+                border-color: #abc7e6;
+            }
+        }
+    }
+
+    .list-group-item {
+        border-color: #e9ecef;
+
+        &:hover {
+            background-color: #f1f8ff;
+            color: #0056b3;
+            font-weight: bold;
+        }
+
+        &.pointer {
+            cursor: pointer;
+        }
+    }
+
+    .table {
+        thead th {
+            background-color: #f8f9fa;
+            color: #4a90e2;
+            font-weight: bold;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tbody td {
+            vertical-align: middle;
+        }
+    }
+
+    .badge {
+        font-size: 1rem;
+        padding: 0.5rem;
+        border: 1px solid #4a90e2;
+        background-color: white !important;
+        color: #2171c7 !important;
+    }
+
+    .pointer,
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    /* Custom scrollbar for better look */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #abc7e6;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #4a90e2;
+    }
+}
+
+/* =========================================
+   DARK MODE REFINEMENTS (ANGULAR ROBUST)
+   ========================================= */
+:host-context([data-theme="dark"]) {
+    .lab-reception-container {
+        background-color: #1a1e24 !important;
+        /* System dark background */
+    }
+
+    .card {
+        background-color: #2d3238 !important;
+        border-color: #495057 !important;
+    }
+
+    .card-header,
+    .card-header.bg-primary {
+        background: linear-gradient(to bottom, #343a40, #212529) !important;
+        border-bottom-color: #495057 !important;
+        color: #ffffff !important;
+    }
+
+    .form-label {
+        color: #ffffff !important;
+    }
+
+    .form-control,
+    .form-select,
+    .form-control-sm,
+    .form-select-sm,
+    .input-group-text {
+        background-color: #343a40 !important;
+        color: #ffffff !important;
+        border-color: #495057 !important;
+
+        &::placeholder {
+            color: #adb5bd !important;
+        }
+    }
+
+    .bg-white,
+    .bg-light {
+        background-color: #2d3238 !important;
+        color: #ffffff !important;
+    }
+
+    .nav-tabs {
+        background-color: #212529 !important;
+        border-bottom-color: #495057 !important;
+
+        .nav-link {
+            color: #ffffff !important;
+            /* Pure white for tabs text clarity */
+            background-color: transparent !important;
+            border-color: transparent !important;
+
+            &:hover:not(.active) {
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                color: #ffffff !important;
+            }
+
+            &.active {
+                background-color: #0d6efd !important;
+                border-color: #0d6efd #0d6efd transparent !important;
+                color: #ffffff !important;
+            }
+        }
+    }
+
+    .list-group-item {
+        background-color: #2d3238 !important;
+        color: #ffffff !important;
+        border-color: #495057 !important;
+
+        &:hover {
+            background-color: #343a40 !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .table {
+        color: #ffffff !important;
+        background-color: #2d3238 !important;
+
+        thead th {
+            background-color: #343a40 !important;
+            color: #ffffff !important;
+            border-bottom-color: #495057 !important;
+        }
+
+        tbody td {
+            border-color: #495057 !important;
+        }
+    }
+
+    .badge {
+        background-color: #343a40 !important;
+        color: #ffffff !important;
+        border-color: #495057 !important;
+    }
+}
+
+[dir="rtl"] {
+    .text-end {
+        text-align: left !important;
+    }
+
+    .text-start {
+        text-align: right !important;
+    }
+}

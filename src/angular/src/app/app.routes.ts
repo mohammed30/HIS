@@ -91,6 +91,33 @@ export const APP_ROUTES: Routes = [
     ]
   },
   {
+    path: 'definitions',
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Settings' },
+    children: [
+      {
+        path: 'nationalities',
+        loadComponent: () => import('./definitions/nationalities/nationalities.component').then(c => c.NationalitiesComponent)
+      },
+      {
+        path: 'professions',
+        loadComponent: () => import('./definitions/professions/professions.component').then(c => c.ProfessionsComponent)
+      },
+      {
+        path: 'contracts',
+        loadComponent: () => import('./definitions/contracts/contracts.component').then(c => c.ContractsComponent)
+      },
+      {
+        path: 'patient-categories',
+        loadComponent: () => import('./definitions/patient-categories/patient-categories.component').then(c => c.PatientCategoriesComponent)
+      },
+      {
+        path: 'referral-sources',
+        loadComponent: () => import('./definitions/referral-sources/referral-sources.component').then(c => c.ReferralSourcesComponent)
+      }
+    ]
+  },
+  {
     path: 'appointments',
     loadChildren: () => import('./appointments/appointments-module').then(m => m.AppointmentsModule),
     canActivate: [authGuard, permissionGuard],
@@ -131,6 +158,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'deferred-payments',
         loadComponent: () => import('./reception/billing/deferred-payments.component').then(c => c.DeferredPaymentsComponent)
+      },
+      {
+        path: 'laboratory-reception',
+        loadComponent: () => import('./reception/lab-reception/laboratory-reception.component').then(c => c.LaboratoryReceptionComponent)
       }
     ]
   },

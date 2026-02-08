@@ -4,7 +4,6 @@ import type { TransactionType } from '../transaction-type.enum';
 
 export interface CreateUpdateWarehouseDto {
   name?: string;
-  code?: string;
   location?: string;
 }
 

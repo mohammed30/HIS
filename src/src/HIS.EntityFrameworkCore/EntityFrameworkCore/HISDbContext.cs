@@ -1,3 +1,4 @@
+using HIS.General;
 using HIS.ActivityLogs;
 using HIS.Patients;
 using HIS.Settings;
@@ -43,6 +44,13 @@ public class HISDbContext :
     public DbSet<Clinic> Clinics { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<HIS.Settings.Laboratory> Laboratories { get; set; }
+
+    // General Master Data (Definitions)
+    public DbSet<Nationality> Nationalities { get; set; }
+    public DbSet<Profession> Professions { get; set; }
+    public DbSet<Contract> Contracts { get; set; }
+    public DbSet<PatientCategory> PatientCategories { get; set; }
+    public DbSet<ReferralSource> ReferralSources { get; set; }
 
     // Appointments
     public DbSet<Appointment> Appointments { get; set; }
@@ -178,12 +186,22 @@ public class HISDbContext :
             b.Property(x => x.MiddleNameEn).HasMaxLength(128);
             b.Property(x => x.LastNameEn).HasMaxLength(128);
             b.Property(x => x.IdentityNumber).HasMaxLength(32).IsRequired();
-            b.Property(x => x.Nationality).HasMaxLength(64);
+            b.Property(x => x.IdentityIssuePlace).HasMaxLength(128);
+            
+            b.Property(x => x.PassportNumber).HasMaxLength(32);
+            b.Property(x => x.PassportIssuePlace).HasMaxLength(128);
+            b.Property(x => x.VisaNumber).HasMaxLength(32);
+            b.Property(x => x.VisaIssuePlace).HasMaxLength(128);
+            
             b.Property(x => x.MobileNumber).HasMaxLength(20).IsRequired();
             b.Property(x => x.PhoneNumber).HasMaxLength(20);
             b.Property(x => x.Email).HasMaxLength(256);
             b.Property(x => x.Address).HasMaxLength(512);
             b.Property(x => x.City).HasMaxLength(128);
+            
+            b.Property(x => x.SponsorName).HasMaxLength(256);
+            b.Property(x => x.SponsorId).HasMaxLength(32);
+            
             b.Property(x => x.EmergencyContactName).HasMaxLength(128);
             b.Property(x => x.EmergencyContactRelation).HasMaxLength(64);
             b.Property(x => x.EmergencyContactPhone).HasMaxLength(20);
@@ -191,12 +209,72 @@ public class HISDbContext :
             b.Property(x => x.Allergies).HasMaxLength(1024);
             b.Property(x => x.Notes).HasMaxLength(2048);
             b.Property(x => x.PhotoUrl).HasMaxLength(512);
+            b.Property(x => x.CardNumber).HasMaxLength(64);
+            b.Property(x => x.TaxFile).HasMaxLength(64);
+            b.Property(x => x.IsSocialSecurity).IsRequired();
             
             b.HasIndex(x => x.MRN).IsUnique();
             b.HasIndex(x => x.IdentityNumber);
             b.HasIndex(x => x.MobileNumber);
             b.HasIndex(x => x.FirstNameAr);
             b.HasIndex(x => x.LastNameAr);
+
+            // Relationships
+            b.HasOne<Nationality>().WithMany().HasForeignKey(x => x.NationalityId);
+            b.HasOne<Profession>().WithMany().HasForeignKey(x => x.ProfessionId);
+            b.HasOne<Contract>().WithMany().HasForeignKey(x => x.ContractId);
+            b.HasOne<PatientCategory>().WithMany().HasForeignKey(x => x.PatientCategoryId);
+            b.HasOne<ReferralSource>().WithMany().HasForeignKey(x => x.ReferralSourceId);
+        });
+
+        // Nationality
+        builder.Entity<Nationality>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Nationalities", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(32);
+        });
+
+        // Profession
+        builder.Entity<Profession>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Professions", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(32);
+        });
+
+        // Contract
+        builder.Entity<Contract>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Contracts", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(32);
+        });
+
+        // PatientCategory
+        builder.Entity<PatientCategory>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PatientCategories", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(32);
+        });
+
+        // ReferralSource
+        builder.Entity<ReferralSource>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "ReferralSources", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(32);
         });
 
         // Department

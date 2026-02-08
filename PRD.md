@@ -61,6 +61,15 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Refund processing
 - [ ] Daily cash reconciliation
 
+#### 3.1.4 Laboratory Reception (استقبال المعمل)
+- [ ] Comprehensive patient registration integration
+- [ ] Quick patient search and selection
+- [ ] Lab test selection with search by code/name
+- [ ] Real-time price calculation based on contracts
+- [ ] Support for multiple payment methods (Cash, POS, Transfer, Credit)
+- [ ] Printing options (Work Order, Barcode, Ticket)
+- [ ] Integrated accounting and discount management
+
 ---
 
 ### 3.2 Booking & Appointment Module (خدمة الحجز)

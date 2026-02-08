@@ -37,6 +37,15 @@ export class InvoiceService {
     { apiName: this.apiName,...config });
   
 
+  getInvoicePdf = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: `/api/app/billing/invoice-pdf/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getList = (input: GetInvoicesInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<InvoiceDto>>({
       method: 'GET',

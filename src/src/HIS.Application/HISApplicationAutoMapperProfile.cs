@@ -136,5 +136,21 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Pharmacy.Drug, Pharmacy.Dtos.DrugDto>()
             .ForMember(x => x.ServiceItemName, opt => opt.Ignore()); // Can populate later if needed
         CreateMap<Pharmacy.Dtos.CreateUpdateDrugDto, Pharmacy.Drug>();
+
+        // General Master Data (Definitions)
+        CreateMap<General.Nationality, General.NationalityDto>();
+        CreateMap<General.CreateUpdateNationalityDto, General.Nationality>();
+
+        CreateMap<General.Profession, General.ProfessionDto>();
+        CreateMap<General.CreateUpdateProfessionDto, General.Profession>();
+
+        CreateMap<General.Contract, General.ContractDto>();
+        CreateMap<General.CreateUpdateContractDto, General.Contract>();
+
+        CreateMap<General.PatientCategory, General.PatientCategoryDto>();
+        CreateMap<General.CreateUpdatePatientCategoryDto, General.PatientCategory>();
+
+        CreateMap<General.ReferralSource, General.ReferralSourceDto>();
+        CreateMap<General.CreateUpdateReferralSourceDto, General.ReferralSource>();
     }
 }

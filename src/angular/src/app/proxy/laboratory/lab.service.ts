@@ -103,11 +103,29 @@ export class LabService {
     { apiName: this.apiName,...config });
   
 
+  getAppointmentPdf = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: `/api/app/lab/appointment-pdf/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getAppointments = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<LabAppointmentDto>>({
       method: 'GET',
       url: '/api/app/lab/appointments',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getRequestOrderPdf = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: `/api/app/lab/request-order-pdf/${id}`,
     },
     { apiName: this.apiName,...config });
   

@@ -1,10 +1,11 @@
 import type { Gender } from './gender.enum';
 import type { MaritalStatus } from './marital-status.enum';
 import type { IdentityType } from './identity-type.enum';
-import type { PatientCategory } from './patient-category.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface CreateUpdatePatientDto {
+  fullNameAr?: string;
+  fullNameEn?: string;
   firstNameAr?: string;
   middleNameAr?: string;
   lastNameAr?: string;
@@ -14,22 +15,41 @@ export interface CreateUpdatePatientDto {
   dateOfBirth?: string;
   gender?: Gender;
   maritalStatus?: MaritalStatus;
-  nationality?: string;
+  nationalityId?: string;
+  professionId?: string;
+  contractId?: string;
+  patientCategoryId?: string;
+  referralSourceId?: string;
   identityType?: IdentityType;
   identityNumber?: string;
   identityExpiryDate?: string;
+  identityIssueDate?: string;
+  identityIssuePlace?: string;
+  passportNumber?: string;
+  passportIssueDate?: string;
+  passportIssuePlace?: string;
+  passportExpiryDate?: string;
+  visaNumber?: string;
+  visaIssueDate?: string;
+  visaIssuePlace?: string;
+  visaExpiryDate?: string;
   mobileNumber?: string;
   phoneNumber?: string;
   email?: string;
   address?: string;
   city?: string;
+  sponsorName?: string;
+  sponsorId?: string;
   emergencyContactName?: string;
   emergencyContactRelation?: string;
   emergencyContactPhone?: string;
-  category?: PatientCategory;
+  cardNumber?: string;
+  taxFile?: string;
   bloodType?: string;
   allergies?: string;
   notes?: string;
+  isSocialSecurity?: boolean;
+  isActive?: boolean;
 }
 
 export interface GetPatientsInput extends PagedAndSortedResultRequestDto {
@@ -38,7 +58,7 @@ export interface GetPatientsInput extends PagedAndSortedResultRequestDto {
   identityNumber?: string;
   mobileNumber?: string;
   gender?: Gender;
-  category?: PatientCategory;
+  patientCategoryId?: string;
   isActive?: boolean;
 }
 
@@ -56,23 +76,46 @@ export interface PatientDto extends FullAuditedEntityDto<string> {
   age?: number;
   gender?: Gender;
   maritalStatus?: MaritalStatus;
-  nationality?: string;
+  nationalityId?: string;
+  nationalityName?: string;
+  professionId?: string;
+  professionName?: string;
+  contractId?: string;
+  contractName?: string;
+  patientCategoryId?: string;
+  patientCategoryName?: string;
+  referralSourceId?: string;
+  referralSourceName?: string;
   identityType?: IdentityType;
   identityNumber?: string;
   identityExpiryDate?: string;
+  identityIssueDate?: string;
+  identityIssuePlace?: string;
+  passportNumber?: string;
+  passportIssueDate?: string;
+  passportIssuePlace?: string;
+  passportExpiryDate?: string;
+  visaNumber?: string;
+  visaIssueDate?: string;
+  visaIssuePlace?: string;
+  visaExpiryDate?: string;
   mobileNumber?: string;
   phoneNumber?: string;
   email?: string;
   address?: string;
   city?: string;
+  sponsorName?: string;
+  sponsorId?: string;
   emergencyContactName?: string;
   emergencyContactRelation?: string;
   emergencyContactPhone?: string;
-  category?: PatientCategory;
+  cardNumber?: string;
+  taxFile?: string;
   bloodType?: string;
   allergies?: string;
   notes?: string;
   photoUrl?: string;
+  isSocialSecurity?: boolean;
   isActive?: boolean;
 }
 

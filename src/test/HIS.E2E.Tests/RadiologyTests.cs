@@ -32,7 +32,7 @@ public class RadiologyTests : IAsyncLifetime
         await _page.GotoAsync("/account/login");
         
         // Wait for login or redirect
-        if (await _page.UrlAsync().ContinueWith(t => t.Result.EndsWith("/account/login")))
+        if (_page.Url.EndsWith("/account/login"))
         {
             await _page.FillAsync("input[name=\"userNameOrEmailAddress\"]", "admin");
             await _page.FillAsync("input[name=\"password\"]", "1q2w3E*");

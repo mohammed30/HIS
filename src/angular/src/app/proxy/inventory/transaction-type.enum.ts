@@ -5,6 +5,7 @@ export enum TransactionType {
   Issue = 1,
   Transfer = 2,
   Adjustment = 3,
+  Dispensing = 4,
 }
 
 export const transactionTypeOptions = mapEnumToOptions(TransactionType);
