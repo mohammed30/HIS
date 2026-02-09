@@ -22,12 +22,13 @@ export class AppErrorHandler implements ErrorHandler {
                 return;
             }
 
-            console.warn('OAuth token error detected, clearing stale tokens...');
+            console.warn('OAuth token error detected, clearing stale tokens and reloading...');
 
             // Clear all OAuth-related storage
             this.clearOAuthStorage();
 
             // Reload to get fresh state
+            console.log('Reloading application due to OAuth error...');
             window.location.reload();
             return;
         }
