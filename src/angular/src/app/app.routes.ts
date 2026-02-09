@@ -93,27 +93,37 @@ export const APP_ROUTES: Routes = [
   {
     path: 'definitions',
     canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Settings' },
+    data: { requiredPolicy: 'HIS.Definitions' },
     children: [
       {
         path: 'nationalities',
-        loadComponent: () => import('./definitions/nationalities/nationalities.component').then(c => c.NationalitiesComponent)
+        loadComponent: () => import('./definitions/nationalities/nationalities.component').then(c => c.NationalitiesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Definitions.Nationalities' }
       },
       {
         path: 'professions',
-        loadComponent: () => import('./definitions/professions/professions.component').then(c => c.ProfessionsComponent)
+        loadComponent: () => import('./definitions/professions/professions.component').then(c => c.ProfessionsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Definitions.Professions' }
       },
       {
         path: 'contracts',
-        loadComponent: () => import('./definitions/contracts/contracts.component').then(c => c.ContractsComponent)
+        loadComponent: () => import('./definitions/contracts/contracts.component').then(c => c.ContractsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Definitions.Contracts' }
       },
       {
         path: 'patient-categories',
-        loadComponent: () => import('./definitions/patient-categories/patient-categories.component').then(c => c.PatientCategoriesComponent)
+        loadComponent: () => import('./definitions/patient-categories/patient-categories.component').then(c => c.PatientCategoriesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Definitions.PatientCategories' }
       },
       {
         path: 'referral-sources',
-        loadComponent: () => import('./definitions/referral-sources/referral-sources.component').then(c => c.ReferralSourcesComponent)
+        loadComponent: () => import('./definitions/referral-sources/referral-sources.component').then(c => c.ReferralSourcesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Definitions.ReferralSources' }
       }
     ]
   },
@@ -130,38 +140,52 @@ export const APP_ROUTES: Routes = [
     children: [
       {
         path: 'chart-of-accounts',
-        loadComponent: () => import('./financials/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent)
+        loadComponent: () => import('./financials/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.ChartOfAccounts' }
       }
     ]
   },
   {
     path: 'reception',
     canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Billing' },
+    data: { requiredPolicy: 'HIS.Reception' },
     children: [
       {
         path: 'insurance-companies',
-        loadComponent: () => import('./reception/insurance/insurance-companies.component').then(c => c.InsuranceCompaniesComponent)
+        loadComponent: () => import('./reception/insurance/insurance-companies.component').then(c => c.InsuranceCompaniesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Reception.InsuranceCompanies' }
       },
       {
         path: 'insurance-plans',
-        loadComponent: () => import('./reception/insurance/insurance-plans.component').then(c => c.InsurancePlansComponent)
+        loadComponent: () => import('./reception/insurance/insurance-plans.component').then(c => c.InsurancePlansComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Reception.InsurancePlans' }
       },
       {
         path: 'invoices',
-        loadComponent: () => import('./reception/billing/invoices.component').then(c => c.InvoicesComponent)
+        loadComponent: () => import('./reception/billing/invoices.component').then(c => c.InvoicesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Reception.Invoices' }
       },
       {
         path: 'payments',
-        loadComponent: () => import('./reception/billing/payments.component').then(c => c.PaymentsComponent)
+        loadComponent: () => import('./reception/billing/payments.component').then(c => c.PaymentsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Reception.Payments' }
       },
       {
         path: 'deferred-payments',
-        loadComponent: () => import('./reception/billing/deferred-payments.component').then(c => c.DeferredPaymentsComponent)
+        loadComponent: () => import('./reception/billing/deferred-payments.component').then(c => c.DeferredPaymentsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.DeferredPayments' }
       },
       {
         path: 'laboratory-reception',
-        loadComponent: () => import('./reception/lab-reception/laboratory-reception.component').then(c => c.LaboratoryReceptionComponent)
+        loadComponent: () => import('./reception/lab-reception/laboratory-reception.component').then(c => c.LaboratoryReceptionComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Reception.LaboratoryReception' }
       }
     ]
   },
@@ -172,7 +196,9 @@ export const APP_ROUTES: Routes = [
     children: [
       {
         path: 'activity-logs',
-        loadComponent: () => import('./admin/activity-logs/activity-logs.component').then(c => c.ActivityLogsComponent)
+        loadComponent: () => import('./admin/activity-logs/activity-logs.component').then(c => c.ActivityLogsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       }
     ]
   },
@@ -183,11 +209,15 @@ export const APP_ROUTES: Routes = [
     children: [
       {
         path: 'chart-of-accounts',
-        loadComponent: () => import('./accounting/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent)
+        loadComponent: () => import('./accounting/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.ChartOfAccounts' }
       },
       {
         path: 'journal-entries',
-        loadComponent: () => import('./accounting/journal-entries/journal-entries').then(c => c.JournalEntriesComponent)
+        loadComponent: () => import('./accounting/journal-entries/journal-entries').then(c => c.JournalEntriesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.JournalEntries' }
       }
     ]
   },
@@ -198,7 +228,9 @@ export const APP_ROUTES: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./inventory/dashboard/inventory-dashboard.component').then(c => c.InventoryDashboardComponent)
+        loadComponent: () => import('./inventory/dashboard/inventory-dashboard.component').then(c => c.InventoryDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.Dashboard' }
       },
       {
         path: 'warehouse-management',
@@ -208,7 +240,9 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'item-card/:id',
-        loadComponent: () => import('./inventory/item-card/item-card.component').then(c => c.ItemCardComponent)
+        loadComponent: () => import('./inventory/item-card/item-card.component').then(c => c.ItemCardComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory' }
       },
       {
         path: 'receive-stock',
@@ -227,12 +261,14 @@ export const APP_ROUTES: Routes = [
   {
     path: 'laboratory',
     loadChildren: () => import('./laboratory/lab-module').then(m => m.LabModule),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Laboratory' }
   },
   {
     path: 'emergency',
     loadChildren: () => import('./emergency/emergency-module').then(m => m.EmergencyModule),
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Emergency' }
   },
   {
     path: 'pharmacy',

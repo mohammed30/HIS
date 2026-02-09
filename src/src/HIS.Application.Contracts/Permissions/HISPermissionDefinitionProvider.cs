@@ -26,22 +26,51 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         appointments.AddChild(HISPermissions.Appointments.Edit, L("Permission:Edit"));
         appointments.AddChild(HISPermissions.Appointments.Delete, L("Permission:Delete"));
 
+        // Reception
+        var reception = hisGroup.AddPermission(HISPermissions.Reception.Default, L("Permission:Reception"));
+        reception.AddChild(HISPermissions.Reception.LaboratoryReception, L("Permission:LaboratoryReception"));
+        reception.AddChild(HISPermissions.Reception.InsuranceCompanies, L("Permission:InsuranceCompanies"));
+        reception.AddChild(HISPermissions.Reception.InsurancePlans, L("Permission:InsurancePlans"));
+        reception.AddChild(HISPermissions.Reception.Invoices, L("Permission:Invoices"));
+        reception.AddChild(HISPermissions.Reception.Payments, L("Permission:Payments"));
+
         // Laboratory
         var laboratory = hisGroup.AddPermission(HISPermissions.Laboratory.Default, L("Permission:Laboratory"));
         laboratory.AddChild(HISPermissions.Laboratory.CreateSample, L("Permission:CreateSample"));
         laboratory.AddChild(HISPermissions.Laboratory.UpdateResults, L("Permission:UpdateResults"));
         laboratory.AddChild(HISPermissions.Laboratory.ApproveResults, L("Permission:ApproveResults"));
+        laboratory.AddChild(HISPermissions.Laboratory.Catalog, L("Permission:Catalog"));
+        laboratory.AddChild(HISPermissions.Laboratory.Requests, L("Permission:Requests"));
+        laboratory.AddChild(HISPermissions.Laboratory.Appointments, L("Permission:LabAppointments"));
+
+        // Emergency
+        var emergency = hisGroup.AddPermission(HISPermissions.Emergency.Default, L("Permission:Emergency"));
+        emergency.AddChild(HISPermissions.Emergency.Dashboard, L("Permission:EmergencyDashboard"));
 
         // Inventory
         var inventory = hisGroup.AddPermission(HISPermissions.Inventory.Default, L("Permission:Inventory"));
         inventory.AddChild(HISPermissions.Inventory.ManageWarehouses, L("Permission:ManageWarehouses"));
         inventory.AddChild(HISPermissions.Inventory.StockOperations, L("Permission:StockOperations"));
+        inventory.AddChild(HISPermissions.Inventory.Dashboard, L("Permission:Dashboard"));
 
         // Billing
         var billing = hisGroup.AddPermission(HISPermissions.Billing.Default, L("Permission:Billing"));
         billing.AddChild(HISPermissions.Billing.ManageInvoices, L("Permission:ManageInvoices"));
         billing.AddChild(HISPermissions.Billing.ChartOfAccounts, L("Permission:ChartOfAccounts"));
         billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
+        billing.AddChild(HISPermissions.Billing.Payments, L("Permission:Payments"));
+        billing.AddChild(HISPermissions.Billing.DeferredPayments, L("Permission:DeferredPayments"));
+
+        // Definitions
+        var definitions = hisGroup.AddPermission(HISPermissions.Definitions.Default, L("Permission:Definitions"));
+        definitions.AddChild(HISPermissions.Definitions.Nationalities, L("Permission:Nationalities"));
+        definitions.AddChild(HISPermissions.Definitions.Professions, L("Permission:Professions"));
+        definitions.AddChild(HISPermissions.Definitions.Contracts, L("Permission:Contracts"));
+        definitions.AddChild(HISPermissions.Definitions.PatientCategories, L("Permission:PatientCategories"));
+        definitions.AddChild(HISPermissions.Definitions.ReferralSources, L("Permission:ReferralSources"));
+        definitions.AddChild(HISPermissions.Definitions.Services, L("Permission:Services"));
+        definitions.AddChild(HISPermissions.Definitions.Radiology, L("Permission:Radiology"));
+        definitions.AddChild(HISPermissions.Definitions.PriceLists, L("Permission:PriceLists"));
 
         // Pharmacy
         var pharmacy = hisGroup.AddPermission(HISPermissions.Pharmacy.Default, L("Permission:Pharmacy"));

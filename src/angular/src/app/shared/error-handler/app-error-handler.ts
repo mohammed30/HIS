@@ -16,6 +16,12 @@ export class AppErrorHandler implements ErrorHandler {
         if (errorMessage.includes("Cannot read properties of undefined (reading 'injector')") ||
             errorMessage.includes('checkAccessToken')) {
 
+            // Don't clear tokens if we are on the login page, as it might be a transient state
+            if (this.router.url.includes('/account/login')) {
+                console.warn('OAuth error on login page, skipping automatic token clear');
+                return;
+            }
+
             console.warn('OAuth token error detected, clearing stale tokens...');
 
             // Clear all OAuth-related storage

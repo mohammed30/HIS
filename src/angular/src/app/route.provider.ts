@@ -32,6 +32,7 @@ function configureRoutes() {
       iconClass: 'fas fa-ticket-alt',
       order: 1,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.LaboratoryReception',
     },
     {
       path: '/patients',
@@ -108,6 +109,7 @@ function configureRoutes() {
       iconClass: 'fas fa-building',
       order: 41,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.InsuranceCompanies',
     },
     {
       path: '/reception/insurance-plans',
@@ -116,6 +118,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-contract',
       order: 42,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.InsurancePlans',
     },
     // Billing
     {
@@ -132,6 +135,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice',
       order: 51,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.Invoices',
     },
     {
       path: '/reception/payments',
@@ -140,6 +144,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cash-register',
       order: 52,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.Payments',
     },
     {
       path: '/reception/deferred-payments',
@@ -148,6 +153,7 @@ function configureRoutes() {
       iconClass: 'fas fa-clock',
       order: 53,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.DeferredPayments',
     },
     // Definitions
     {
@@ -218,7 +224,7 @@ function configureRoutes() {
       iconClass: 'fas fa-globe',
       order: 110,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.Nationalities',
     },
     {
       path: '/definitions/professions',
@@ -227,7 +233,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-tie',
       order: 111,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.Professions',
     },
     {
       path: '/definitions/contracts',
@@ -236,7 +242,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-contract',
       order: 112,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.Contracts',
     },
     {
       path: '/definitions/patient-categories',
@@ -245,7 +251,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tags',
       order: 113,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.PatientCategories',
     },
     {
       path: '/definitions/referral-sources',
@@ -254,7 +260,7 @@ function configureRoutes() {
       iconClass: 'fas fa-handshake',
       order: 114,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.ReferralSources',
     },
     {
       path: '/appointments/waiting-list',
@@ -288,6 +294,7 @@ function configureRoutes() {
       iconClass: 'fas fa-book-medical',
       order: 1,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Laboratory.Catalog',
     },
     {
       path: '/laboratory/requests',
@@ -296,6 +303,7 @@ function configureRoutes() {
       iconClass: 'fas fa-microscope',
       order: 2,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Laboratory.Requests',
     },
     {
       path: '/laboratory/appointments',
@@ -304,6 +312,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-alt',
       order: 3,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Laboratory.Appointments',
     },
     {
       name: '::Menu:Emergency',
@@ -353,6 +362,7 @@ function configureRoutes() {
       iconClass: 'fas fa-heartbeat',
       order: 1,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Emergency.Dashboard',
     },
     // Services & Pricing
     {
@@ -362,7 +372,7 @@ function configureRoutes() {
       iconClass: 'fas fa-briefcase-medical',
       order: 107,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.Services',
     },
     {
       path: '/services/radiology',
@@ -371,7 +381,7 @@ function configureRoutes() {
       iconClass: 'fas fa-x-ray',
       order: 108,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.Radiology',
     },
     {
       path: '/services/price-lists',
@@ -380,7 +390,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tags',
       order: 109,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      requiredPolicy: 'HIS.Definitions.PriceLists',
     },
     // Administration
     {
@@ -414,6 +424,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tachometer-alt',
       order: 36,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.Dashboard',
     },
     {
       path: '/inventory/warehouse-management',

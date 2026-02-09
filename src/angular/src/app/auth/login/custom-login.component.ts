@@ -1,10 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { AuthService } from '@abp/ng.core';
-import { Router } from '@angular/router';
+import { AuthService, SessionStateService, ConfigStateService } from '@abp/ng.core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ToasterService } from '@abp/ng.theme.shared';
-import { SessionStateService } from '@abp/ng.core';
-import { ConfigStateService } from '@abp/ng.core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -18,6 +16,7 @@ export class CustomLoginComponent implements OnInit {
     private fb = inject(FormBuilder);
     private authService = inject(AuthService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     private toaster = inject(ToasterService);
     private config = inject(ConfigStateService);
     private session = inject(SessionStateService);
@@ -59,9 +58,20 @@ export class CustomLoginComponent implements OnInit {
             rememberMe: this.form.value.rememberMe
         }).subscribe({
             next: () => {
-                // Successful login usually redirects automatically or we can force it
-                // using window.location.href to force a full refresh and ensure permissions/config are reloaded
-                window.location.href = '/';
+                // Get returnUrl from query parameters or default to home
+                const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+
+                // Allow a small delay for token to be fully persisted and state synced
+                setTimeout(() => {
+                    // Using navigateByUrl vs window.location.href
+                    // navigateByUrl is smoother, but sometimes a full refresh is needed to reload ABP config/permissions
+                    // If we use navigateByUrl and it still requires refresh, we can switch back to window.location.href
+                    this.router.navigateByUrl(returnUrl).then(success => {
+                        if (!success) {
+                            window.location.href = returnUrl;
+                        }
+                    });
+                }, 100);
             },
             error: (err) => {
                 this.inProgress = false;
