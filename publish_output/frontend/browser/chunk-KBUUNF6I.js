@@ -1,0 +1,1 @@
+import{T as c}from"./chunk-5T4H6XAP.js";var o=(function(r){return r[r.NewVisit=0]="NewVisit",r[r.FollowUp=1]="FollowUp",r[r.Emergency=2]="Emergency",r[r.Telemedicine=3]="Telemedicine",r[r.Procedure=4]="Procedure",r})(o||{}),e=c(o);export{o as a};

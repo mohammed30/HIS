@@ -1,0 +1,1 @@
+import{T as l}from"./chunk-5T4H6XAP.js";var C=(function(d){return d[d.Scheduled=0]="Scheduled",d[d.Confirmed=1]="Confirmed",d[d.Cancelled=2]="Cancelled",d[d.Completed=3]="Completed",d[d.NoShow=4]="NoShow",d[d.CheckedIn=5]="CheckedIn",d[d.InConsultation=6]="InConsultation",d})(C||{}),o=l(C);export{C as a};
