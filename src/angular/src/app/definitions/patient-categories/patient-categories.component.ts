@@ -43,7 +43,6 @@ import { PatientCategoryDto } from '../../proxy/general/models';
                 <tr class="text-secondary small text-uppercase">
                   <th class="ps-3">الكود - Code</th>
                   <th>الاسم (عربي) - Name (Ar)</th>
-                  <th>الاسم (إنجليزي) - Name (En)</th>
                   <th class="text-center">الحالة - Status</th>
                   <th class="text-end pe-3">الإجراءات - Actions</th>
                 </tr>
@@ -53,7 +52,6 @@ import { PatientCategoryDto } from '../../proxy/general/models';
                   <tr>
                     <td class="ps-3"><code class="text-warning fw-bold">{{ item.code || '---' }}</code></td>
                     <td class="fw-semibold">{{ item.nameAr }}</td>
-                    <td class="text-muted">{{ item.nameEn }}</td>
                     <td class="text-center">
                       <span [class]="item.isActive ? 'badge rounded-pill bg-success-subtle text-success border border-success' : 'badge rounded-pill bg-secondary-subtle text-secondary border border-secondary'" style="padding: 0.5em 1em;">
                         {{ item.isActive ? 'نشط - Active' : 'غير نشط - Inactive' }}
@@ -103,21 +101,17 @@ import { PatientCategoryDto } from '../../proxy/general/models';
         <div class="modal fade show d-block" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 1060;">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
-              <div class="modal-header bg-warning border-0">
+              <div class="modal-header border-0">
                 <h5 class="modal-title fw-bold">
                   <i class="fas fa-tags me-2"></i>
                   {{ editingItem ? 'تعديل - Edit' : 'إضافة - Add' }} فئة - Category
                 </h5>
                 <button type="button" class="btn-close" (click)="showForm = false"></button>
               </div>
-              <div class="modal-body p-4 text-dark">
+              <div class="modal-body p-4">
                 <div class="mb-3">
                   <label class="form-label fw-bold small">الاسم (عربي) - Name (Ar) *</label>
                   <input type="text" class="form-control" [(ngModel)]="formData.nameAr" required placeholder="مثلاً: كبار الشخصيات">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label fw-bold small">الاسم (إنجليزي) - Name (En) *</label>
-                  <input type="text" class="form-control" [(ngModel)]="formData.nameEn" required placeholder="e.g., VIP">
                 </div>
                 <div class="mb-3">
                   <label class="form-label fw-bold small">{{ '::Code' | abpLocalization }}</label>
@@ -130,9 +124,9 @@ import { PatientCategoryDto } from '../../proxy/general/models';
                   <label class="form-check-label fw-bold ms-2" for="isCatActive">نشط - Active</label>
                 </div>
               </div>
-              <div class="modal-footer border-0 p-3 bg-light rounded-bottom">
+              <div class="modal-footer border-0 p-3 rounded-bottom">
                 <button type="button" class="btn btn-outline-secondary px-4 me-auto" (click)="showForm = false" [disabled]="loading">إلغاء</button>
-                <button type="button" class="btn btn-dark px-5" (click)="save()" [disabled]="loading || !formData.nameAr || !formData.nameEn">
+                <button type="button" class="btn btn-dark px-5" (click)="save()" [disabled]="loading || !formData.nameAr">
                   {{ loading ? 'جاري الحفظ...' : 'حفظ - Save' }}
                 </button>
               </div>

@@ -12,15 +12,10 @@
                             <input type="text" class="form-control form-control-sm border-primary text-dark fw-bold"
                                 [(ngModel)]="patientInfo.mrn" placeholder="NEW">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <label class="form-label small mb-0 fw-bold text-dark">الاسم (عربي) *</label>
                             <input type="text" class="form-control form-control-sm border-primary text-dark fw-semibold"
                                 [(ngModel)]="patientInfo.fullNameAr">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">الاسم (En) *</label>
-                            <input type="text" class="form-control form-control-sm text-dark"
-                                [(ngModel)]="patientInfo.fullNameEn">
                         </div>
                         <div class="col-md-1">
                             <label class="form-label small mb-0 fw-bold text-dark">النوع</label>
@@ -43,7 +38,7 @@
                         <div class="col-md-3">
                             <label class="form-label small mb-0 fw-bold text-dark">تاريخ الميلاد</label>
                             <input type="date" class="form-control form-control-sm text-dark"
-                                [(ngModel)]="patientInfo.dateOfBirth">
+                                [(ngModel)]="patientInfo.dateOfBirth" (ngModelChange)="calculateAge()">
                         </div>
                         <div class="col-md-4">
                             <div class="row g-1 align-items-end">
@@ -266,7 +261,7 @@
                 <div class="card-header bg-primary text-white py-1">
                     <span class="small fw-bold">information</span>
                 </div>
-                <div class="card-body p-2 d-flex flex-column">
+                <div class="card-body p-2 accounts-panel rounded">
                     <div class="d-flex gap-2 mb-2">
                         <div class="form-check small">
                             <input class="form-check-input" type="radio" name="searchType" id="searchByCode" checked>
@@ -447,8 +442,787 @@
         </div>
     </div>
 
+    <!-- Accounts Tab Content -->
+    <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'accounts'">
+        <!-- Sub-tabs Sidebar (Right side for RTL) -->
+        <div class="col-md-2 border-end d-flex flex-column sub-sidebar order-md-1">
+            <div class="sub-sidebar-header p-2 bg-primary text-white text-center fw-bold small">
+                الحسابات
+            </div>
+            <div class="sub-tab-item p-2 border-bottom cursor-pointer" [class.active]="activeSubTab === 'billing'"
+                (click)="activeSubTab = 'billing'">
+                <i class="fas fa-file-invoice me-2"></i> الحسابات
+            </div>
+            <div class="sub-tab-item p-2 border-bottom cursor-pointer" [class.active]="activeSubTab === 'statement'"
+                (click)="activeSubTab = 'statement'">
+                <i class="fas fa-user-clock me-2"></i> كشف حساب المريض
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-2 col-lg-10 p-2 overflow-auto order-md-2 main-content-area">
+            <!-- Billing Screen -->
+            <div *ngIf="activeSubTab === 'billing'" class="billing-sub-screen">
+                <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2 filter-panel">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small fw-bold mb-0">من</label>
+                        <input type="date" class="form-control form-control-sm" [(ngModel)]="fromDate"
+                            style="width: 150px;">
+                        <label class="small fw-bold mb-0">حتى</label>
+                        <input type="date" class="form-control form-control-sm" [(ngModel)]="toDate"
+                            style="width: 150px;">
+                        <button class="btn btn-warning btn-sm fw-bold">تحديث</button>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3 align-items-center">
+                    <div class="col-auto">
+                        <div class="form-check form-check-inline small">
+                            <input class="form-check-input" type="checkbox" id="printOps">
+                            <label class="form-check-label" for="printOps">طباعة أمر التشغيل</label>
+                        </div>
+                        <div class="form-check form-check-inline small">
+                            <input class="form-check-input" type="checkbox" id="printBar">
+                            <label class="form-check-label" for="printBar">طباعة باركود</label>
+                        </div>
+                        <div class="form-check form-check-inline small">
+                            <input class="form-check-input" type="checkbox" id="printTic" checked>
+                            <label class="form-check-label" for="printTic">طباعة تذكرة</label>
+                        </div>
+                    </div>
+                    <div class="col-auto d-flex align-items-center gap-1">
+                        <span class="small fw-bold">عدد نسخة التذكرة</span>
+                        <input type="number" class="form-control form-control-sm" style="width: 60px;"
+                            [(ngModel)]="ticketCount">
+                    </div>
+                </div>
+
+                <div class="billing-form mx-auto border rounded p-4 shadow-sm" style="max-width: 600px;">
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">طريقة الدفع</label>
+                        <div class="col-8">
+                            <select class="form-select border-primary">
+                                <option value="cash">نقداً</option>
+                                <option value="network">شبكة</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">رقم الاشعار</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control border-primary">
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">المبلغ المراد دفعه</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control border-primary" value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">تخفيض</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control border-primary" value="0">
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">تصديق</label>
+                        <div class="col-8">
+                            <select class="form-select border-primary">
+                                <option value="">-- اختر --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">المبلغ المدفوع</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control" value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3 align-items-center">
+                        <label class="col-4 text-end fw-bold">المبلغ المتبقي</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control" value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4 align-items-center">
+                        <label class="col-4 text-end fw-bold text-primary fs-5">اجمالي الفاتورة</label>
+                        <div class="col-8">
+                            <input type="text" class="form-control border-primary fw-bold text-primary fs-5" value="0"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-success px-5 py-2 fw-bold">
+                            <i class="fas fa-print me-2"></i> طبع الفاتورة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Statement Screen -->
+            <div *ngIf="activeSubTab === 'statement'" class="statement-sub-screen">
+                <div class="p-4 mx-auto text-center" style="max-width: 600px;">
+                    <h3 class="mb-5 fw-bold text-primary border-bottom pb-2">كشف حساب المريض</h3>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="row g-3 justify-content-center align-items-center">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">التاريخ من</label>
+                                    <input type="date" class="form-control" [(ngModel)]="fromDate">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold">وحتى</label>
+                                    <input type="date" class="form-control" [(ngModel)]="toDate">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-success px-5 py-2 fw-bold mb-4">
+                        <i class="fas fa-save me-2"></i> عرض
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clinics Tab Content -->
+    <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'clinics'">
+        <!-- Clinics Sidebar (Right - Booking Form) -->
+        <div class="col-md-3 border-start overflow-auto p-0 sub-sidebar order-md-1">
+            <div class="card shadow-sm mb-2">
+                <div class="card-header bg-primary text-white py-1 px-2 small fw-bold">حجز العيادات</div>
+                <div class="card-body p-2">
+                    <div class="row g-2 mb-2 align-items-center">
+                        <div class="col-4 small text-end fw-bold">تحمل البطاقة</div>
+                        <div class="col-4">
+                            <div class="form-check form-check-inline m-0 small">
+                                <input class="form-check-input" type="radio" name="cardType" id="cardPercent" checked>
+                                <label class="form-check-label" for="cardPercent">نسبة</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check form-check-inline m-0 small">
+                                <input class="form-check-input" type="radio" name="cardType" id="cardAmount">
+                                <label class="form-check-label" for="cardAmount">مبلغ</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1">تاريخ الحجز</label>
+                        <input type="datetime-local" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1">الخدمة</label>
+                        <select class="form-select form-select-sm">
+                            <option value="">-- اختر --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1">العيادة</label>
+                        <select class="form-select form-select-sm">
+                            <option value="">-- اختر --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1">الطبيب</label>
+                        <select class="form-select form-select-sm">
+                            <option value="">-- اختر --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold mb-1 text-primary">رقم الملف</label>
+                        <input type="text" class="form-control form-control-sm" readonly>
+                    </div>
+
+                    <div class="accounts-panel border rounded p-2 small mb-2">
+                        <div class="fw-bold text-primary border-bottom mb-2 pb-1">الحسابات</div>
+                        <div class="row g-2 mb-2 align-items-center">
+                            <label class="col-5 text-end">طريقة الدفع</label>
+                            <div class="col-7"><select class="form-select form-select-sm">
+                                    <option>نقداً</option>
+                                </select></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center">
+                            <label class="col-5 text-end">رقم الاشعار</label>
+                            <div class="col-7"><input type="text" class="form-control form-control-sm"></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center">
+                            <div class="col-5 text-end"><input type="checkbox" id="payCheck"> <label for="payCheck">دفع
+                                    مبلغ</label></div>
+                            <div class="col-7"><input type="text" class="form-control form-control-sm bg-light"
+                                    value="0"></div>
+                        </div>
+                        <div class="row g-2 mb-1">
+                            <div class="col-6"><label class="d-block text-end">المبلغ المدفوع</label><input type="text"
+                                    class="form-control form-control-sm" value="0" readonly></div>
+                            <div class="col-6"><label class="d-block text-end text-danger">المبلغ المتبقي</label><input
+                                    type="text" class="form-control form-control-sm" value="0" readonly></div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="small fw-bold mb-1">تخفيض</label>
+                            <input type="text" class="form-control form-control-sm" value="0">
+                        </div>
+                        <div class="mb-2">
+                            <label class="small fw-bold mb-1">نصيب الطبيب</label>
+                            <input type="text" class="form-control form-control-sm" value="0" readonly>
+                        </div>
+                        <div class="mb-2">
+                            <label class="small fw-bold mb-1">شركة التأمين</label>
+                            <input type="text" class="form-control form-control-sm" value="0" readonly>
+                        </div>
+                        <div class="mb-0">
+                            <label class="small fw-bold mb-1 text-success">اجمالي الفاتورة</label>
+                            <input type="text" class="form-control form-control-sm fw-bold border-success text-success"
+                                value="0" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <div class="form-check small"><input class="form-check-input" type="checkbox"
+                                    id="printTicCl" checked><label for="printTicCl">طباعة تذكرة</label></div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check small"><input class="form-check-input" type="checkbox"
+                                    id="printEst"><label for="printEst">طباعة استمارة</label></div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="small fw-bold">عدد نسخة التذكرة</span>
+                        <input type="number" class="form-control form-control-sm" style="width: 50px;" value="1">
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6"><button class="btn btn-primary btn-sm w-100 fw-bold">حجز/بيان</button></div>
+                        <div class="col-6"><button class="btn btn-success btn-sm w-100 fw-bold">حجز/سند</button></div>
+                        <div class="col-6"><button class="btn btn-warning btn-sm w-100 fw-bold">حجز/متابعة</button>
+                        </div>
+                        <div class="col-6"><button class="btn btn-info btn-sm w-100 fw-bold">طبع استمارة</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clinics Search Area (Left) -->
+        <div class="col-md-9 p-2 d-flex flex-column h-100 order-md-2">
+            <div class="p-2 border rounded shadow-sm mb-2 filter-panel">
+                <div class="row g-2 align-items-center justify-content-end">
+                    <div class="col-auto d-flex align-items-center gap-2">
+                        <label class="small fw-bold mb-0">قائمة العيادات من تاريخ</label>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;"
+                            [(ngModel)]="fromDate">
+                        <label class="small fw-bold mb-0">وحتى</label>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;"
+                            [(ngModel)]="toDate">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-warning btn-sm px-3 fw-bold">تحديث</button>
+                    </div>
+                </div>
+                <hr class="my-2">
+                <div class="row g-2 align-items-center justify-content-end">
+                    <div class="col-auto d-flex align-items-center gap-3">
+                        <div class="form-check small"><input class="form-check-input" type="radio" name="searchType"
+                                id="byName" checked><label for="byName">بحث باسم المريض</label></div>
+                        <div class="form-check small"><input class="form-check-input" type="radio" name="searchType"
+                                id="byNo"><label for="byNo">بحث برقم المريض</label></div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small fw-bold">الطلب</span>
+                            <input type="text" class="form-control form-control-sm" style="width: 250px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow-1 border rounded shadow-sm p-4 text-center list-container">
+                <!-- Large area for the list -->
+                <div class="display-1 text-muted opacity-10 mt-5"><i class="fas fa-stethoscope"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Services Tab Content -->
+    <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'medicalServices'">
+        <!-- Medical Services Sidebar (Right - Accounts) -->
+        <div class="col-md-3 border-start overflow-auto p-2 medical-sidebar order-md-1">
+            <div class="accounts-summary mb-3">
+                <table class="table table-sm table-bordered small mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="bg-primary text-white text-end fw-bold" style="width: 40%;">نقداً</td>
+                            <td><input type="text"
+                                    class="form-control form-control-sm border-0 bg-transparent text-center" value="0">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="bg-primary text-white text-end fw-bold">شبكة</td>
+                            <td><input type="text"
+                                    class="form-control form-control-sm border-0 bg-transparent text-center" value="0">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="bg-primary text-white text-end fw-bold">تحويل</td>
+                            <td><input type="text"
+                                    class="form-control form-control-sm border-0 bg-transparent text-center" value="0">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="bg-primary text-white text-end fw-bold">رصيد العميل</td>
+                            <td><input type="text"
+                                    class="form-control form-control-sm border-0 bg-transparent text-center" value="0">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="payment-fields small">
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">المبلغ المدفوع</label>
+                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0"></div>
+                </div>
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">المبلغ المتبقي</label>
+                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0"></div>
+                </div>
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">تخفيض</label>
+                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0"></div>
+                </div>
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">تصديق من</label>
+                    <div class="col-7"><select class="form-select form-select-sm">
+                            <option value="">-- اختر --</option>
+                        </select></div>
+                </div>
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">الاجمالي</label>
+                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0" readonly></div>
+                </div>
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">التعاقد</label>
+                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0" readonly></div>
+                </div>
+                <div class="row g-2 mb-2 align-items-center">
+                    <label class="col-5 text-end fw-bold">الضريبة</label>
+                    <div class="col-7 d-flex align-items-center gap-2">
+                        <input type="checkbox" checked>
+                        <input type="text" class="form-control form-control-sm" value="0" readonly>
+                    </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                    <label class="col-5 text-end fw-bold">الاجمالي</label>
+                    <div class="col-7"><input type="text" class="form-control form-control-sm fw-bold border-primary"
+                            value="0" readonly></div>
+                </div>
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-4">
+                <div class="form-check small"><input class="form-check-input" type="checkbox" id="printTicMs"
+                        checked><label for="printTicMs">طباعة تذكرة</label></div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-bold">عدد نسخة التذكرة</span>
+                    <input type="number" class="form-control form-control-sm" style="width: 50px;" value="1">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-danger flex-grow-1 fw-bold"><i class="fas fa-trash-alt me-1"></i> فاتورة
+                    جديدة</button>
+                <button class="btn btn-success flex-grow-1 fw-bold"><i class="fas fa-save me-1"></i> حفظ</button>
+            </div>
+        </div>
+
+        <!-- Medical Services Selection Area (Left) -->
+        <div class="col-md-9 p-2 d-flex flex-column h-100 order-md-2">
+            <div class="p-3 border rounded shadow-sm mb-3 top-controls-panel">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">طلب بواسطة</label>
+                            <div class="col-md-6">
+                                <select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select>
+                            </div>
+                            <div class="col-auto"><input type="checkbox"></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">كود الخدمة</label>
+                            <div class="col-md-6">
+                                <select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">المجموعة</label>
+                            <div class="col-md-6">
+                                <select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">الخدمة</label>
+                            <div class="col-md-6">
+                                <select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center justify-content-center">
+                        <button class="btn btn-info text-white p-3 shadow-sm d-flex flex-column align-items-center"
+                            style="width: 120px; border-radius: 12px;">
+                            <i class="fas fa-file-medical fa-2x mb-1"></i>
+                            <span class="fw-bold">اضافة الخدمة</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow-1 border rounded shadow-sm overflow-auto bottom-list-panel">
+                <table class="table table-sm table-hover table-bordered mb-0 small text-center">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>إلغاء الخدمة</th>
+                            <th>الخدمة</th>
+                            <th>تحمل المريض</th>
+                            <th>تحمل التأمين</th>
+                            <th>status</th>
+                            <th>نصيب الجهة</th>
+                            <th>الجهة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-muted">
+                            <td colspan="7" class="py-4">لا توجد خدمات مضافة</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inpatient Management Tab Content -->
+    <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'inpatient'">
+        <!-- Inpatient Sidebar (Right) -->
+        <div class="col-md-4 border-start overflow-auto p-2 inpatient-sidebar order-md-1">
+            <div class="card shadow-sm mb-2">
+                <div class="card-header bg-primary text-white py-1 px-2 small fw-bold">بيانات المرافق للمريض</div>
+                <div class="card-body p-2">
+                    <div class="row g-2 mb-2 align-items-center">
+                        <label class="col-3 text-end small">اسم المرافق</label>
+                        <div class="col-9"><input type="text" class="form-control form-control-sm"></div>
+                    </div>
+                    <div class="row g-2 mb-2 align-items-center">
+                        <label class="col-3 text-end small">رقم الهاتف</label>
+                        <div class="col-4"><input type="text" class="form-control form-control-sm"></div>
+                        <label class="col-2 text-end small">العنوان</label>
+                        <div class="col-3"><input type="text" class="form-control form-control-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-2">
+                <div class="card-header bg-primary text-white py-1 px-2 small fw-bold">بيانات التنويم</div>
+                <div class="card-body p-2">
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="small fw-bold mb-1">الغرض</label>
+                            <select class="form-select form-select-sm">
+                                <option value="">-- اختر --</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold mb-1">نسبة الصيدلية</label>
+                            <select class="form-select form-select-sm">
+                                <option value="">-- اختر --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2 align-items-center">
+                        <div class="col-5">
+                            <div class="form-check small p-0 m-0"><input class="form-check-input ms-0 me-1"
+                                    type="checkbox" id="stopSv"><label class="form-check-label" for="stopSv">إيقاف
+                                    الخدمات</label></div>
+                        </div>
+                        <div class="col-7">
+                            <div class="form-check small p-0 m-0 text-end"><label class="me-2">طلب</label><input
+                                    type="checkbox"></div>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-7">
+                            <label class="small fw-bold mb-1">سقف التأمين</label>
+                            <input type="text" class="form-control form-control-sm" value="0">
+                        </div>
+                        <div class="col-5">
+                            <label class="small fw-bold mb-1">تاريخ الدخول</label>
+                            <input type="text" class="form-control form-control-sm" value="08/02/2026 03:53 PM"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="small fw-bold mb-1">نوع الغرفة</label>
+                            <select class="form-select form-select-sm">
+                                <option value="">-- اختر --</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold mb-1">رقم الغرفة</label>
+                            <select class="form-select form-select-sm">
+                                <option value="">-- اختر --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1">عدد الايام</label>
+                        <input type="text" class="form-control form-control-sm" value="0">
+                    </div>
+                    <div class="mb-0">
+                        <label class="small fw-bold mb-1">ملاحظات</label>
+                        <textarea class="form-control form-control-sm" rows="1"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-2">
+                <div class="card-header bg-primary text-white py-1 px-2 small fw-bold">الحسابات</div>
+                <div class="card-body p-2">
+                    <div class="row g-2 mb-2">
+                        <div class="col-4">
+                            <label class="d-block text-end small">دفع مبلغ</label>
+                            <div class="d-flex align-items-center gap-1">
+                                <input type="checkbox"><input type="text"
+                                    class="form-control form-control-sm text-center" value="0">
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <label class="small">المبلغ المدفوع</label>
+                            <input type="text" class="form-control form-control-sm text-center" value="0" readonly>
+                        </div>
+                        <div class="col-4 text-start">
+                            <label class="small">المبلغ المتبقي</label>
+                            <input type="text" class="form-control form-control-sm text-center" value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="small">اجمالي الفاتورة</label>
+                            <input type="text" class="form-control form-control-sm text-center fw-bold" value="0"
+                                readonly>
+                        </div>
+                        <div class="col-6">
+                            <label class="small">شركة التأمين</label>
+                            <input type="text" class="form-control form-control-sm text-center" value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-12"><button
+                                class="btn btn-warning btn-sm w-100 fw-bold border-dark shadow-sm mb-2">إضافة الرصيد
+                                للتنويم</button></div>
+                        <div class="col-3"><button
+                                class="btn btn-warning btn-sm w-100 fw-bold border-dark shadow-sm">توجيه</button></div>
+                        <div class="col-3"><button class="btn btn-danger btn-sm w-100 fw-bold border-dark shadow-sm">إذن
+                                خروج</button></div>
+                        <div class="col-6"><button
+                                class="btn btn-info text-white btn-sm w-100 fw-bold border-dark shadow-sm">عيادة إذن
+                                دخول</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-warning w-100 py-2 border-dark shadow-sm"><i class="fas fa-save me-1"></i>
+                حفظ</button>
+        </div>
+
+        <!-- Inpatient List Area (Left) -->
+        <div class="col-md-8 p-2 d-flex flex-column h-100 order-md-2">
+            <div class="p-2 border rounded shadow-sm mb-2 filter-panel">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success fw-bold px-4 shadow-sm border-dark">ارشيف التنويم</button>
+                        <button class="btn btn-warning fw-bold px-4 shadow-sm border-dark">عرض التنويم</button>
+                    </div>
+                    <div class="text-end" style="min-width: 250px;">
+                        <span class="small fw-bold d-block text-primary border-bottom mb-2 pb-1">قائمة التنويم</span>
+                        <div class="row g-2 align-items-center">
+                            <label class="col-auto small fw-bold">نوع الغرفة</label>
+                            <div class="col"><select class="form-select form-select-sm shadow-sm">
+                                    <option value="">-- اختر --</option>
+                                </select></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto d-flex align-items-center gap-3">
+                        <div class="form-check small m-0"><input class="form-check-input ms-0 me-1" type="radio"
+                                name="inpSearch" id="inpName" checked><label class="form-check-label" for="inpName">بحث
+                                باسم المريض</label></div>
+                        <div class="form-check small m-0"><input class="form-check-input ms-0 me-1" type="radio"
+                                name="inpSearch" id="inpFile"><label class="form-check-label" for="inpFile">بحث برقم
+                                المريض</label></div>
+                    </div>
+                    <div class="col"><input type="text" class="form-control form-control-sm shadow-sm"></div>
+                    <div class="col-auto"><span class="fw-bold small">عدد المنومين: 0</span></div>
+                </div>
+            </div>
+
+            <div class="flex-grow-1 border rounded shadow-sm overflow-auto mb-2 bottom-list-panel">
+                <table class="table table-sm table-hover table-bordered mb-0 small text-center">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>الاسم</th>
+                            <th>رقم الملف</th>
+                            <th>نوع الغرفة</th>
+                            <th>رقم الغرفة</th>
+                            <th>تاريخ الدخول</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-muted">
+                            <td colspan="7" class="py-5">لا توجد بيانات</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-info text-white fw-bold shadow-sm border-dark py-2 px-3"><i
+                        class="fas fa-print me-1"></i> طباعة فاتورة</button>
+                <button class="btn btn-primary fw-bold shadow-sm border-dark py-2 px-3"><i
+                        class="fas fa-camera me-1"></i> تصوير فاتورة التنويم</button>
+                <button class="btn btn-success fw-bold shadow-sm border-dark py-2 px-3"><i
+                        class="fas fa-calendar-alt me-1"></i> تعديل عدد ايام الإقامة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Operations Tab Content -->
+    <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'operations'">
+        <div class="col-12 p-3 overflow-auto">
+            <!-- Top Controls Grid -->
+            <div class="p-3 border rounded shadow-sm mb-3 top-controls-panel">
+                <div class="row g-4">
+                    <!-- Right Side Fields (Arabic Flow) -->
+                    <div class="col-md-7">
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">نوع العملية</label>
+                            <div class="col-md-8"><select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">تاريخ وزمن العملية</label>
+                            <div class="col-md-6"><input type="datetime-local" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-auto"><input type="checkbox"></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">الطبيب</label>
+                            <div class="col-md-8"><select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">مبلغ العملية</label>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm" value="0">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <div class="col-md-4">
+                                <label class="small fw-bold mb-1 d-block text-end">تحمل الشركة</label>
+                                <input type="text" class="form-control form-control-sm" value="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold mb-1 d-block text-end">تحمل المريض</label>
+                                <input type="text" class="form-control form-control-sm" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Left Side Fields -->
+                    <div class="col-md-5">
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">تفصيل العملية</label>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm"></div>
+                        </div>
+                        <div class="row g-2 mb-2 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">اجمالي العملية</label>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm" value="0"
+                                    readonly></div>
+                        </div>
+                        <div class="row g-2 mb-0 align-items-center justify-content-end">
+                            <label class="col-auto small fw-bold">اجمالي التأمين</label>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm" value="0"
+                                    readonly></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Central Action Buttons -->
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow-sm"
+                    style="min-width: 150px;">
+                    <i class="fas fa-file-invoice"></i> عرض الفاتورة
+                </button>
+                <button class="btn btn-success d-flex align-items-center gap-2 px-4 shadow-sm"
+                    style="min-width: 150px; background-color: #26a69a; border-color: #26a69a;">
+                    <i class="fas fa-plus-circle"></i> انشاء فاتورة مبدئية
+                </button>
+                <button class="btn btn-warning d-flex align-items-center gap-2 px-4 shadow-sm fw-bold"
+                    style="min-width: 150px; background-color: #fbc02d; border-color: #fbc02d;">
+                    <i class="fas fa-exchange-alt"></i> ترحيل طبية
+                </button>
+                <button class="btn btn-warning d-flex align-items-center gap-2 px-4 shadow-sm fw-bold border-dark"
+                    style="min-width: 150px; background-color: #fb8c00; border-color: #fb8c00;">
+                    <i class="fas fa-save"></i> حسابات
+                </button>
+            </div>
+
+            <!-- Bottom Area -->
+            <div class="border rounded shadow-sm overflow-auto bottom-list-panel" style="min-height: 250px;">
+                <div class="p-2 border-bottom small fw-bold d-flex justify-content-between">
+                    <span>بيانات العمليات</span>
+                    <span class="text-primary">Length: 0</span>
+                </div>
+                <table class="table table-sm table-hover table-bordered mb-0 small text-center">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>العملية</th>
+                            <th>الطبيب</th>
+                            <th>التاريخ</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-muted">
+                            <td colspan="6" class="py-5">لا توجد عمليات مضافة</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Empty Placeholder for Other Tabs -->
-    <div class="row g-2 flex-grow-1 overflow-hidden" *ngIf="activeTab !== 'lab'">
+    <div class="row g-2 flex-grow-1 overflow-hidden"
+        *ngIf="activeTab !== 'lab' && activeTab !== 'accounts' && activeTab !== 'clinics' && activeTab !== 'medicalServices' && activeTab !== 'inpatient' && activeTab !== 'operations'">
         <div class="col-12 text-center py-5">
             <div class="display-6 text-muted-50 opacity-25">
                 <i class="fas fa-layer-group mb-3"></i>

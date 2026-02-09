@@ -41,6 +41,11 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     // Tab State
     activeTab: string = 'lab';
+    activeSubTab: string = 'billing';
+
+    // Date Filters
+    fromDate: string = new Date().toISOString().split('T')[0];
+    toDate: string = new Date().toISOString().split('T')[0];
 
     // Patient Info
     patientInfo: any = this.getEmptyPatient();
@@ -130,6 +135,42 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     newPatient() {
         this.patientInfo = this.getEmptyPatient();
+        this.resetAge();
+    }
+
+    resetAge() {
+        this.ageYears = 0;
+        this.ageMonths = 0;
+        this.ageDays = 0;
+    }
+
+    calculateAge() {
+        if (!this.patientInfo.dateOfBirth) {
+            this.resetAge();
+            return;
+        }
+
+        const birthDate = new Date(this.patientInfo.dateOfBirth);
+        const today = new Date();
+
+        let years = today.getFullYear() - birthDate.getFullYear();
+        let months = today.getMonth() - birthDate.getMonth();
+        let days = today.getDate() - birthDate.getDate();
+
+        if (days < 0) {
+            months--;
+            const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+            days += prevMonth.getDate();
+        }
+
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        this.ageYears = years < 0 ? 0 : years;
+        this.ageMonths = months < 0 ? 0 : months;
+        this.ageDays = days < 0 ? 0 : days;
     }
 
     savePatient() {
@@ -145,6 +186,7 @@ export class LaboratoryReceptionComponent implements OnInit {
         request.subscribe({
             next: (res) => {
                 this.patientInfo = { ...this.patientInfo, ...res };
+                this.calculateAge();
                 this.toaster.success('تم حفظ بيانات المريض بنجاح', 'نجاح');
             },
             error: (err) => {

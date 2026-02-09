@@ -42,7 +42,6 @@ import { ProfessionDto } from '../../proxy/general/models';
                 <tr>
                   <th>الكود - Code</th>
                   <th>الاسم (عربي) - Name (Ar)</th>
-                  <th>الاسم (إنجليزي) - Name (En)</th>
                   <th>الحالة - Status</th>
                   <th>الإجراءات - Actions</th>
                 </tr>
@@ -52,7 +51,6 @@ import { ProfessionDto } from '../../proxy/general/models';
                   <tr>
                     <td>{{ item.code }}</td>
                     <td>{{ item.nameAr }}</td>
-                    <td>{{ item.nameEn }}</td>
                     <td>
                       <span [class]="item.isActive ? 'badge bg-success' : 'badge bg-secondary'">
                         {{ item.isActive ? 'نشط - Active' : 'غير نشط - Inactive' }}
@@ -99,21 +97,17 @@ import { ProfessionDto } from '../../proxy/general/models';
         <div class="modal show d-block" style="background: rgba(0,0,0,0.5); z-index: 1050;">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0">
-              <div class="modal-header bg-success text-white">
+              <div class="modal-header">
                 <h5 class="modal-title">
                   <i class="fas fa-user-tie me-2"></i>
                   {{ editingItem ? 'تعديل - Edit' : 'إضافة - Add' }} مهنة - Profession
                 </h5>
-                <button type="button" class="btn-close btn-close-white" (click)="showForm = false"></button>
+                <button type="button" class="btn-close" (click)="showForm = false"></button>
               </div>
-              <div class="modal-body p-4 text-dark">
+              <div class="modal-body p-4">
                 <div class="mb-3">
                   <label class="form-label fw-bold">الاسم (عربي) - Name (Ar) *</label>
                   <input type="text" class="form-control" [(ngModel)]="formData.nameAr" required placeholder="مثلاً: مهندس">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label fw-bold">الاسم (إنجليزي) - Name (En) *</label>
-                  <input type="text" class="form-control" [(ngModel)]="formData.nameEn" required placeholder="e.g., Engineer">
                 </div>
                 <div class="mb-3">
                   <label class="form-label fw-bold">{{ '::Code' | abpLocalization }}</label>
@@ -126,9 +120,9 @@ import { ProfessionDto } from '../../proxy/general/models';
                   <label class="form-check-label fw-bold" for="isActive">نشط - Is Active</label>
                 </div>
               </div>
-              <div class="modal-footer bg-light">
+              <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary px-4" (click)="showForm = false" [disabled]="loading">إلغاء - Cancel</button>
-                <button type="button" class="btn btn-success px-4" (click)="save()" [disabled]="loading || !formData.nameAr || !formData.nameEn">
+                <button type="button" class="btn btn-success px-4" (click)="save()" [disabled]="loading || !formData.nameAr">
                   <i class="fas" [class]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
                   <span class="ms-1">{{ loading ? 'جاري الحفظ...' : 'حفظ - Save' }}</span>
                 </button>
