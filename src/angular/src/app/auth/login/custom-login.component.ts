@@ -61,17 +61,10 @@ export class CustomLoginComponent implements OnInit {
                 // Get returnUrl from query parameters or default to home
                 const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 
-                // Allow a small delay for token to be fully persisted and state synced
-                setTimeout(() => {
-                    // Using navigateByUrl vs window.location.href
-                    // navigateByUrl is smoother, but sometimes a full refresh is needed to reload ABP config/permissions
-                    // If we use navigateByUrl and it still requires refresh, we can switch back to window.location.href
-                    this.router.navigateByUrl(returnUrl).then(success => {
-                        if (!success) {
-                            window.location.href = returnUrl;
-                        }
-                    });
-                }, 100);
+                // Use full page reload to force ABP to re-fetch application configuration
+                // (permissions, menus, localization). router.navigateByUrl() does NOT trigger
+                // ABP's APP_INITIALIZER, so menus and permissions won't load without a full reload.
+                window.location.href = returnUrl;
             },
             error: (err) => {
                 this.inProgress = false;
