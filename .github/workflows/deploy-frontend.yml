@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - EditDesign
+      - OldStyle
   workflow_dispatch:
 
 jobs:
