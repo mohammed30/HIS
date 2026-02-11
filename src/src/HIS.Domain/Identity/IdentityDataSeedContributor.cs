@@ -52,6 +52,7 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         // Grant Permissions
         await GrantPermissionsAsync("Security", new[] { "HIS.Settings" });
         await GrantPermissionsAsync("Receptionist", new[] { 
+            "HIS.Reception",
             "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", 
             "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit",
             "HIS.Reception.Tickets"
