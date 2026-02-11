@@ -75,7 +75,8 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         });
 
         await GrantPermissionsAsync("AdminStaff", new[] { 
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock" 
+            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock",
+            "HIS.Reception", "HIS.Reception.Tickets"
         });
         
         await SetAdminPasswordAsync();
