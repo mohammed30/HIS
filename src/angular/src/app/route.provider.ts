@@ -29,7 +29,7 @@ function configureRoutes() {
       path: '/reception/laboratory-reception',
       name: '::Menu:Tickets',
       parentName: '::Menu:Reception',
-      iconClass: 'fas fa-ticket-alt',
+      iconClass: 'fas fa-list-alt',
       order: 1,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Reception.Tickets',
