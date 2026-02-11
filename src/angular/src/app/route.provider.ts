@@ -32,7 +32,7 @@ function configureRoutes() {
       iconClass: 'fas fa-ticket-alt',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Reception.LaboratoryReception',
+      requiredPolicy: 'HIS.Reception.Tickets',
     },
     {
       path: '/patients',

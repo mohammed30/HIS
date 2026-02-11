@@ -59,3 +59,19 @@ public class CreateUpdateWaitingListDto
     public string Notes { get; set; }
     public bool IsResolved { get; set; }
 }
+
+public class BookClinicAppointmentDto
+{
+    public Guid PatientId { get; set; }
+    public Guid ClinicId { get; set; }
+    public Guid DoctorId { get; set; }
+    public Guid ServiceItemId { get; set; }
+    public DateTime AppointmentDate { get; set; }
+    public AppointmentType Type { get; set; } = AppointmentType.NewVisit;
+    public bool IsWalkIn { get; set; } = true; // Default to true for lab reception as it's often more flexible
+    
+    public bool CreateInvoice { get; set; } = true;
+    public string PaymentMethod { get; set; } = "Cash"; // Cash, Card, etc.
+    public decimal? PaidAmount { get; set; }
+    public decimal? Discount { get; set; }
+}

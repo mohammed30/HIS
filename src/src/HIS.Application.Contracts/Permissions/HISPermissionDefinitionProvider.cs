@@ -29,6 +29,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         // Reception
         var reception = hisGroup.AddPermission(HISPermissions.Reception.Default, L("Permission:Reception"));
         reception.AddChild(HISPermissions.Reception.LaboratoryReception, L("Permission:LaboratoryReception"));
+        reception.AddChild(HISPermissions.Reception.Tickets, L("Permission:Tickets"));
         reception.AddChild(HISPermissions.Reception.InsuranceCompanies, L("Permission:InsuranceCompanies"));
         reception.AddChild(HISPermissions.Reception.InsurancePlans, L("Permission:InsurancePlans"));
         reception.AddChild(HISPermissions.Reception.Invoices, L("Permission:Invoices"));

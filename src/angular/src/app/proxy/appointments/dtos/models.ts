@@ -27,6 +27,19 @@ export interface CreateAppointmentDto {
   notes?: string;
 }
 
+export interface BookClinicAppointmentDto {
+  patientId?: string;
+  clinicId?: string;
+  doctorId?: string;
+  serviceItemId?: string;
+  appointmentDate?: string;
+  type?: AppointmentType;
+  createInvoice?: boolean;
+  paymentMethod?: string;
+  paidAmount?: number;
+  discount?: number;
+}
+
 export interface CreateUpdateWaitingListDto {
   patientId?: string;
   doctorId?: string;

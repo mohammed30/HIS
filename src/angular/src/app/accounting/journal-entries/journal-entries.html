@@ -1,46 +1,246 @@
-<div class="card">
-    <div class="card-header">
-        <div class="row">
-            <div class="col col-md-6">
-                <h5 class="card-title">{{ 'Menu:JournalEntries' | abpLocalization }}</h5>
-            </div>
-            <div class="text-end col col-md-6"></div>
-        </div>
+<!-- ═══════════════ LIST VIEW ═══════════════ -->
+<div class="card journal-card" *ngIf="!isEditorOpen">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h4 class="m-0">{{ '::Menu:JournalEntries' | abpLocalization }}</h4>
+        <button class="btn btn-primary btn-new-entry" (click)="createEntry()">
+            <i class="fa fa-plus me-1"></i>
+            {{ '::JournalEntry:New' | abpLocalization }}
+        </button>
     </div>
+
     <div class="card-body">
-        <ngx-datatable [rows]="journalEntries.items" [count]="journalEntries.totalCount" default>
+        <ngx-datatable [rows]="journalEntries.items" [count]="journalEntries.totalCount" [list]="list" default
+            class="material" [headerHeight]="50" [rowHeight]="'auto'" [footerHeight]="50" [scrollbarH]="true">
 
-            <ngx-datatable-column [name]="'Date' | abpLocalization" prop="date">
-                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
-                    {{ value | date }}
-                </ng-template>
-            </ngx-datatable-column>
-
-            <ngx-datatable-column [name]="'Reference' | abpLocalization" prop="referenceNumber"></ngx-datatable-column>
-
-            <ngx-datatable-column [name]="'Description' | abpLocalization" prop="description"></ngx-datatable-column>
-
-            <ngx-datatable-column [name]="'Status' | abpLocalization" prop="isPosted">
-                <ng-template let-value="value" ngx-datatable-cell-template>
-                    <span class="badge" [ngClass]="value ? 'bg-success' : 'bg-warning'">{{ value ? 'Posted' : 'Draft'
-                        }}</span>
-                </ng-template>
-            </ngx-datatable-column>
-
-            <!-- Detail Row for Lines (simplified as a column for now, better as master-detail) -->
-            <ngx-datatable-column name="Lines" [sortable]="false" [width]="400">
+            <ngx-datatable-column [name]="'::JournalEntry:Date' | abpLocalization" prop="date" [width]="120">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                    <div *ngFor="let line of row.lines" style="font-size: 0.85em;">
-                        <div class="d-flex justify-content-between">
-                            <span>{{line.accountName}}</span>
-                            <span *ngIf="line.debit > 0" class="text-success">Dr: {{line.debit | number:'1.2-2'}}</span>
-                            <span *ngIf="line.credit > 0" class="text-danger">Cr: {{line.credit |
-                                number:'1.2-2'}}</span>
-                        </div>
+                    {{ row.date | date:'yyyy-MM-dd' }}
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::JournalEntry:Reference' | abpLocalization" prop="referenceNumber"
+                [width]="160">
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::JournalEntry:Description' | abpLocalization" prop="description"
+                [width]="300">
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::JournalEntry:Debit' | abpLocalization" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="text-debit fw-semibold">{{ getEntryTotal(row, 'debit') | number:'1.2-2' }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::JournalEntry:Credit' | abpLocalization" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="text-credit fw-semibold">{{ getEntryTotal(row, 'credit') | number:'1.2-2' }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Status' | abpLocalization" [width]="110">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="badge" [class.badge-posted]="row.isPosted" [class.badge-draft]="!row.isPosted">
+                        {{ (row.isPosted ? '::JournalEntry:Posted' : '::JournalEntry:Draft') | abpLocalization }}
+                    </span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [width]="220" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div class="d-flex gap-1 flex-wrap">
+                        <button class="btn btn-sm btn-outline-primary" (click)="viewEntry(row)" title="View">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" *ngIf="!row.isPosted" (click)="editEntry(row)"
+                            title="Edit">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" *ngIf="!row.isPosted" (click)="postEntry(row)"
+                            title="Post">
+                            <i class="fa fa-check-circle"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" *ngIf="!row.isPosted" (click)="deleteEntry(row)"
+                            title="Delete">
+                            <i class="fa fa-trash"></i>
+                        </button>
                     </div>
                 </ng-template>
             </ngx-datatable-column>
-
         </ngx-datatable>
     </div>
 </div>
+
+<!-- ═══════════════ EDITOR VIEW ═══════════════ -->
+<div class="card editor-card" *ngIf="isEditorOpen">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h4 class="m-0">
+            <i class="fa fa-arrow-left me-2 cursor-pointer" (click)="closeEditor()" title="Back"></i>
+            <ng-container *ngIf="isViewOnly">{{ '::JournalEntry:View' | abpLocalization }}</ng-container>
+            <ng-container *ngIf="!isViewOnly && isEditing">{{ '::JournalEntry:Edit' | abpLocalization }}</ng-container>
+            <ng-container *ngIf="!isViewOnly && !isEditing">{{ '::JournalEntry:New' | abpLocalization }}</ng-container>
+        </h4>
+        <div class="balance-indicator" *ngIf="!isViewOnly">
+            <span class="badge balance-badge" [class.balanced]="isBalanced" [class.unbalanced]="!isBalanced">
+                {{ (isBalanced ? '::JournalEntry:Balanced' : '::JournalEntry:Unbalanced') | abpLocalization }}
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body" [formGroup]="form">
+        <!-- Header Fields -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">{{ '::JournalEntry:Date' | abpLocalization }}</label>
+                <input type="date" class="form-control" formControlName="date" [readonly]="isViewOnly">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">{{ '::JournalEntry:Reference' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="referenceNumber" [readonly]="isViewOnly"
+                    placeholder="Auto-generated">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">{{ '::JournalEntry:Description' | abpLocalization }} *</label>
+                <input type="text" class="form-control" formControlName="description" [readonly]="isViewOnly">
+            </div>
+        </div>
+
+        <!-- Lines Table -->
+        <div class="lines-section">
+            <div class="table-responsive">
+                <table class="table table-hover lines-table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="col-line-num">#</th>
+                            <th class="col-account">{{ '::JournalEntry:Account' | abpLocalization }}</th>
+                            <th class="col-amount">{{ '::JournalEntry:Debit' | abpLocalization }}</th>
+                            <th class="col-amount">{{ '::JournalEntry:Credit' | abpLocalization }}</th>
+                            <th class="col-actions" *ngIf="!isViewOnly"></th>
+                        </tr>
+                    </thead>
+                    <tbody formArrayName="lines">
+                        <tr *ngFor="let line of lines.controls; let i = index" [formGroupName]="i" class="line-row">
+                            <td class="text-center text-muted">{{ i + 1 }}</td>
+                            <td>
+                                <div class="account-cell" *ngIf="!isViewOnly">
+                                    <button class="btn btn-outline-secondary btn-sm account-picker-btn w-100 text-start"
+                                        (click)="openAccountPicker(i)" type="button">
+                                        <ng-container *ngIf="line.get('accountId')?.value">
+                                            <span class="account-code">{{ line.get('accountCode')?.value }}</span>
+                                            <span class="mx-1">-</span>
+                                            <span>{{ getLocalizedAccountName(line) }}</span>
+                                        </ng-container>
+                                        <ng-container *ngIf="!line.get('accountId')?.value">
+                                            <span class="text-muted">{{ '::JournalEntry:SelectAccount' | abpLocalization
+                                                }}</span>
+                                        </ng-container>
+                                    </button>
+                                </div>
+                                <div *ngIf="isViewOnly">
+                                    <span class="account-code">{{ line.get('accountCode')?.value }}</span>
+                                    <span class="mx-1">-</span>
+                                    <span>{{ getLocalizedAccountName(line) }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control text-end amount-input debit-input"
+                                    formControlName="debit" min="0" step="0.01" [readonly]="isViewOnly"
+                                    (focus)="$event.target.select()">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control text-end amount-input credit-input"
+                                    formControlName="credit" min="0" step="0.01" [readonly]="isViewOnly"
+                                    (focus)="$event.target.select()">
+                            </td>
+                            <td *ngIf="!isViewOnly">
+                                <button class="btn btn-sm btn-link text-danger p-0" (click)="removeLine(i)"
+                                    [disabled]="lines.length <= 2" type="button">
+                                    <i class="fa fa-times-circle"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="totals-row">
+                            <td></td>
+                            <td class="fw-bold text-end pe-3">{{ '::JournalEntry:Difference' | abpLocalization }}:
+                                <span [class.text-success]="difference === 0" [class.text-danger]="difference !== 0">
+                                    {{ difference | number:'1.2-2' }}
+                                </span>
+                            </td>
+                            <td class="fw-bold text-end text-debit">{{ totalDebit | number:'1.2-2' }}</td>
+                            <td class="fw-bold text-end text-credit">{{ totalCredit | number:'1.2-2' }}</td>
+                            <td *ngIf="!isViewOnly"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <button class="btn btn-outline-primary btn-sm mt-2" (click)="addLine()" *ngIf="!isViewOnly" type="button">
+                <i class="fa fa-plus me-1"></i> {{ '::JournalEntry:AddLine' | abpLocalization }}
+            </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2 mt-4 justify-content-end" *ngIf="!isViewOnly">
+            <button class="btn btn-secondary" (click)="closeEditor()" type="button">
+                {{ '::Cancel' | abpLocalization }}
+            </button>
+            <button class="btn btn-primary" (click)="save()" [disabled]="form.invalid || !isBalanced" type="button">
+                <i class="fa fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+            </button>
+            <button class="btn btn-success" (click)="saveAndPost()" [disabled]="form.invalid || !isBalanced"
+                type="button">
+                <i class="fa fa-check-circle me-1"></i> {{ '::JournalEntry:Post' | abpLocalization }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ ACCOUNT PICKER MODAL ═══════════════ -->
+<div class="modal fade" [class.show]="isAccountPickerOpen" [class.d-block]="isAccountPickerOpen"
+    *ngIf="isAccountPickerOpen" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content account-picker-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-sitemap me-2"></i>
+                    {{ '::JournalEntry:SelectAccount' | abpLocalization }}
+                </h5>
+                <button type="button" class="btn-close" (click)="isAccountPickerOpen = false"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Search -->
+                <div class="mb-3">
+                    <input type="text" class="form-control search-input" [(ngModel)]="accountSearchText"
+                        (ngModelChange)="filterAccountTree()"
+                        [placeholder]="'::JournalEntry:SearchAccounts' | abpLocalization">
+                </div>
+
+                <!-- Tree -->
+                <div class="account-tree">
+                    <ng-container *ngFor="let node of flatAccountTree">
+                        <div class="tree-node" *ngIf="node.isVisible"
+                            [style.paddingInlineStart.px]="16 + node.level * 24" [class.has-children]="node.hasChildren"
+                            [class.leaf-node]="!node.hasChildren"
+                            (click)="node.hasChildren ? toggleAccountExpand(node) : selectAccount(node)">
+                            <span class="tree-toggle" *ngIf="node.hasChildren">
+                                <i class="fa" [class.fa-caret-down]="node.expanded"
+                                    [class.fa-caret-right]="!node.expanded"></i>
+                            </span>
+                            <span class="tree-icon" *ngIf="!node.hasChildren">
+                                <i class="fa fa-file-text-o"></i>
+                            </span>
+                            <span class="tree-code">{{ node.code }}</span>
+                            <span class="tree-name">{{ getLocalizedTreeName(node) }}</span>
+                            <span class="tree-leaf-badge" *ngIf="!node.hasChildren">
+                                <i class="fa fa-check-circle text-success"></i>
+                            </span>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="isAccountPickerOpen" (click)="isAccountPickerOpen = false"></div>

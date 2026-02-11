@@ -12,10 +12,37 @@
                             <input type="text" class="form-control form-control-sm border-primary text-dark fw-bold"
                                 [(ngModel)]="patientInfo.mrn" placeholder="NEW">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 position-relative">
                             <label class="form-label small mb-0 fw-bold text-dark">الاسم (عربي) *</label>
-                            <input type="text" class="form-control form-control-sm border-primary text-dark fw-semibold"
-                                [(ngModel)]="patientInfo.fullNameAr">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control border-primary text-dark fw-semibold"
+                                    [(ngModel)]="patientInfo.fullNameAr" (keyup.enter)="searchPatient()"
+                                    (blur)="closeSearch()">
+                                <button class="btn btn-primary text-white" type="button" (click)="searchPatient()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+
+                            <!-- Search Results Dropdown -->
+                            <div *ngIf="searchResults.length > 0"
+                                class="card list-group position-absolute w-100 shadow-lg mt-1 overflow-hidden"
+                                style="z-index: 9999; max-height: 300px;">
+                                <div
+                                    class="card-header py-1 px-2 fw-bold small d-flex justify-content-between align-items-center bg-primary text-white">
+                                    <span>نتائج البحث ({{searchResults.length}})</span>
+                                    <i class="fas fa-times cursor-pointer" (click)="searchResults = []"></i>
+                                </div>
+                                <div class="list-group list-group-flush overflow-auto" style="max-height: 260px;">
+                                    <button type="button" class="list-group-item list-group-item-action py-2"
+                                        *ngFor="let res of searchResults" (click)="selectPatient(res.id)">
+                                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0 fw-bold text-primary">{{ res.fullNameAr }}</h6>
+                                            <span class="badge bg-secondary">{{ res.mobileNumber }}</span>
+                                        </div>
+                                        <small class="text-muted d-block text-end">ملف: {{ res.mrn }}</small>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-1">
                             <label class="form-label small mb-0 fw-bold text-dark">النوع</label>
@@ -272,11 +299,12 @@
                             <label class="form-check-label" for="searchByName">بحث باسم التحليل</label>
                         </div>
                     </div>
-                    <input type="text" class="form-control form-control-sm mb-2" placeholder="اكتب للبحث...">
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="اكتب للبحث..."
+                        [(ngModel)]="testSearchText" (ngModelChange)="filterTests()" #testSearchInput>
                     <div class="flex-grow-1 overflow-auto border rounded bg-white">
                         <ul class="list-group list-group-flush small">
                             <li class="list-group-item list-group-item-action py-1 px-2 pointer"
-                                *ngFor="let test of availableTests" (click)="addTestToOrder(test)">
+                                *ngFor="let test of displayTests" (click)="addTestToOrder(test)">
                                 {{ test.name }}
                             </li>
                         </ul>
@@ -313,10 +341,12 @@
                     </table>
                 </div>
                 <div class="card-footer p-2 bg-light d-flex gap-2 justify-content-center mt-auto">
-                    <button class="btn btn-success btn-sm px-3 fw-bold d-flex flex-column align-items-center">
+                    <button class="btn btn-success btn-sm px-3 fw-bold d-flex flex-column align-items-center"
+                        (click)="saveInvoice()">
                         <i class="fas fa-file-invoice mb-1"></i> حفظ الفاتورة
                     </button>
-                    <button class="btn btn-info btn-sm px-3 fw-bold text-white d-flex flex-column align-items-center">
+                    <button class="btn btn-info btn-sm px-3 fw-bold text-white d-flex flex-column align-items-center"
+                        (click)="focusSearch()">
                         <i class="fas fa-plus-circle mb-1"></i> إضافة فحص
                     </button>
                 </div>
@@ -611,27 +641,32 @@
 
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">تاريخ الحجز</label>
-                        <input type="datetime-local" class="form-control form-control-sm">
+                        <input type="datetime-local" class="form-control form-control-sm"
+                            [(ngModel)]="booking.appointmentDate">
                     </div>
 
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">الخدمة</label>
-                        <select class="form-select form-select-sm">
+                        <select class="form-select form-select-sm" [(ngModel)]="booking.serviceItemId">
                             <option value="">-- اختر --</option>
+                            <option *ngFor="let item of services" [value]="item.id">{{ item.name }}</option>
                         </select>
                     </div>
 
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">العيادة</label>
-                        <select class="form-select form-select-sm">
+                        <select class="form-select form-select-sm" [(ngModel)]="booking.clinicId"
+                            (change)="onClinicChange()">
                             <option value="">-- اختر --</option>
+                            <option *ngFor="let item of clinics" [value]="item.id">{{ item.name }}</option>
                         </select>
                     </div>
 
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">الطبيب</label>
-                        <select class="form-select form-select-sm">
+                        <select class="form-select form-select-sm" [(ngModel)]="booking.doctorId">
                             <option value="">-- اختر --</option>
+                            <option *ngFor="let item of doctors" [value]="item.id">{{ item.name }}</option>
                         </select>
                     </div>
 
@@ -644,8 +679,10 @@
                         <div class="fw-bold text-primary border-bottom mb-2 pb-1">الحسابات</div>
                         <div class="row g-2 mb-2 align-items-center">
                             <label class="col-5 text-end">طريقة الدفع</label>
-                            <div class="col-7"><select class="form-select form-select-sm">
-                                    <option>نقداً</option>
+                            <div class="col-7"><select class="form-select form-select-sm"
+                                    [(ngModel)]="booking.paymentMethod">
+                                    <option value="Cash">نقداً</option>
+                                    <option value="Card">شبكة</option>
                                 </select></div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center">
@@ -653,20 +690,23 @@
                             <div class="col-7"><input type="text" class="form-control form-control-sm"></div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center">
-                            <div class="col-5 text-end"><input type="checkbox" id="payCheck"> <label for="payCheck">دفع
-                                    مبلغ</label></div>
-                            <div class="col-7"><input type="text" class="form-control form-control-sm bg-light"
-                                    value="0"></div>
+                            <div class="col-5 text-end"><input type="checkbox" id="payCheck" [checked]="true" disabled>
+                                <label for="payCheck">دفع
+                                    مبلغ</label>
+                            </div>
+                            <div class="col-7"><input type="number" class="form-control form-control-sm bg-light"
+                                    [(ngModel)]="booking.payAmount"></div>
                         </div>
                         <div class="row g-2 mb-1">
-                            <div class="col-6"><label class="d-block text-end">المبلغ المدفوع</label><input type="text"
-                                    class="form-control form-control-sm" value="0" readonly></div>
+                            <div class="col-6"><label class="d-block text-end">المبلغ المدفوع</label><input
+                                    type="number" class="form-control form-control-sm" [value]="booking.payAmount"
+                                    readonly></div>
                             <div class="col-6"><label class="d-block text-end text-danger">المبلغ المتبقي</label><input
-                                    type="text" class="form-control form-control-sm" value="0" readonly></div>
+                                    type="number" class="form-control form-control-sm" value="0" readonly></div>
                         </div>
                         <div class="mb-2">
                             <label class="small fw-bold mb-1">تخفيض</label>
-                            <input type="text" class="form-control form-control-sm" value="0">
+                            <input type="number" class="form-control form-control-sm" [(ngModel)]="booking.discount">
                         </div>
                         <div class="mb-2">
                             <label class="small fw-bold mb-1">نصيب الطبيب</label>
@@ -679,14 +719,15 @@
                         <div class="mb-0">
                             <label class="small fw-bold mb-1 text-success">اجمالي الفاتورة</label>
                             <input type="text" class="form-control form-control-sm fw-bold border-success text-success"
-                                value="0" readonly>
+                                [value]="(booking.payAmount || 0) - (booking.discount || 0)" readonly>
                         </div>
                     </div>
 
                     <div class="row g-2 mb-2">
                         <div class="col-6">
                             <div class="form-check small"><input class="form-check-input" type="checkbox"
-                                    id="printTicCl" checked><label for="printTicCl">طباعة تذكرة</label></div>
+                                    id="printTicCl" [(ngModel)]="printTicketChecked"><label for="printTicCl">طباعة
+                                    تذكرة</label></div>
                         </div>
                         <div class="col-6">
                             <div class="form-check small"><input class="form-check-input" type="checkbox"
@@ -699,8 +740,10 @@
                     </div>
 
                     <div class="row g-2">
-                        <div class="col-6"><button class="btn btn-primary btn-sm w-100 fw-bold">حجز/بيان</button></div>
-                        <div class="col-6"><button class="btn btn-success btn-sm w-100 fw-bold">حجز/سند</button></div>
+                        <div class="col-6"><button class="btn btn-primary btn-sm w-100 fw-bold"
+                                (click)="bookAppointment()">حجز/بيان</button></div>
+                        <div class="col-6"><button class="btn btn-success btn-sm w-100 fw-bold"
+                                (click)="bookAppointment()">حجز/سند</button></div>
                         <div class="col-6"><button class="btn btn-warning btn-sm w-100 fw-bold">حجز/متابعة</button>
                         </div>
                         <div class="col-6"><button class="btn btn-info btn-sm w-100 fw-bold">طبع استمارة</button></div>

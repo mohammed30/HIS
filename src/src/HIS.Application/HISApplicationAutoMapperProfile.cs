@@ -152,5 +152,24 @@ public class HISApplicationAutoMapperProfile : Profile
 
         CreateMap<General.ReferralSource, General.ReferralSourceDto>();
         CreateMap<General.CreateUpdateReferralSourceDto, General.ReferralSource>();
+
+        // Rooms
+        CreateMap<Rooms.Room, Rooms.RoomDto>();
+        CreateMap<Rooms.CreateUpdateRoomDto, Rooms.Room>();
+        CreateMap<Rooms.Room, Rooms.RoomLookupDto>();
+
+        // Inpatient (Admissions)
+        CreateMap<Inpatient.Admission, Inpatient.AdmissionDto>()
+            .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+            .ForMember(dest => dest.PatientFileNumber, opt => opt.Ignore())
+            .ForMember(dest => dest.RoomNumber, opt => opt.Ignore())
+            .ForMember(dest => dest.RoomTypeName, opt => opt.Ignore());
+        CreateMap<Inpatient.CreateUpdateAdmissionDto, Inpatient.Admission>();
+
+        // Operations (Surgery)
+        CreateMap<Operations.SurgicalOperation, Operations.SurgicalOperationDto>()
+            .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+            .ForMember(dest => dest.DoctorName, opt => opt.Ignore());
+        CreateMap<Operations.CreateUpdateSurgicalOperationDto, Operations.SurgicalOperation>();
     }
 }

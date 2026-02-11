@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CoreModule, LocalizationService } from '@abp/ng.core';
@@ -12,6 +12,11 @@ import { ReferralSourceService } from '../../proxy/general/referral-source.servi
 import { NationalityDto, ProfessionDto, ContractDto, PatientCategoryDto, ReferralSourceDto } from '../../proxy/general/models';
 
 import { PatientService } from '../../proxy/patients/patient.service';
+import { ServiceItemService } from '../../proxy/services/service-item.service';
+import { InvoiceService } from '../../proxy/billing/invoice.service';
+import { AppointmentService } from '../../proxy/appointments/appointment.service';
+import { ServiceCategory } from '../../proxy/services/service-category.enum';
+import { ServiceType } from '../../proxy/billing/service-type.enum';
 import { ToasterService } from '@abp/ng.theme.shared';
 
 @Component({
@@ -31,6 +36,11 @@ export class LaboratoryReceptionComponent implements OnInit {
     private patientCategoryService = inject(PatientCategoryService);
     private referralSourceService = inject(ReferralSourceService);
     private patientService = inject(PatientService);
+    private serviceItemService = inject(ServiceItemService);
+    private invoiceService = inject(InvoiceService);
+    private appointmentService = inject(AppointmentService);
+
+    @ViewChild('testSearchInput') testSearchInput!: ElementRef;
 
     // Master Data Lists
     nationalities: NationalityDto[] = [];
@@ -42,6 +52,25 @@ export class LaboratoryReceptionComponent implements OnInit {
     // Tab State
     activeTab: string = 'lab';
     activeSubTab: string = 'billing';
+
+    // Clinic Booking
+    clinics: any[] = [];
+    doctors: any[] = [];
+    services: any[] = []; // Clinic Services
+
+    booking: any = {
+        clinicId: '',
+        doctorId: '',
+        serviceItemId: '',
+        appointmentDate: new Date().toISOString().slice(0, 16), // datetime-local format
+        cardType: 'percent', // percent or amount
+        paymentMethod: 'Cash',
+        payAmount: 0,
+        discount: 0,
+        createInvoice: true
+    };
+
+    printTicketChecked: boolean = true;
 
     // Date Filters
     fromDate: string = new Date().toISOString().split('T')[0];
@@ -96,26 +125,21 @@ export class LaboratoryReceptionComponent implements OnInit {
     ageDays: number = 0;
 
     // Laboratory Tests
-    availableTests: any[] = [
-        { id: '1', name: 'CBC', price: 100 },
-        { id: '2', name: 'STOOL', price: 50 },
-        { id: '3', name: 'TWBCs+Diff', price: 80 },
-        { id: '4', name: 'Urine General', price: 40 },
-        { id: '5', name: 'Virology', price: 200 },
-        { id: '6', name: 'LFT', price: 150 },
-        { id: '7', name: 'RFT', price: 150 },
-        { id: '8', name: 'Lipid Profile', price: 180 },
-        { id: '9', name: 'Blood Glucose', price: 30 }
-    ];
-
+    availableTests: any[] = [];
+    displayTests: any[] = [];
     selectedTests: any[] = [];
+    testSearchText: string = '';
     ticketCount: number = 1;
+
+    // Patient Search
+    searchResults: any[] = [];
 
     constructor() { }
 
     ngOnInit() {
         this.loadLabTests();
         this.loadMasterData();
+        this.loadClinicData();
     }
 
     loadMasterData() {
@@ -127,15 +151,29 @@ export class LaboratoryReceptionComponent implements OnInit {
     }
 
     loadLabTests() {
-        // In a real scenario, we would fetch from the backend
-        // this.http.get<any>(`${this.apiUrl}/api/app/lab/tests`).subscribe(res => {
-        //   this.availableTests = res.items;
-        // });
+        this.serviceItemService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
+            // Filter only Lab Tests
+            this.availableTests = (res.items || []).filter(x => x.category === ServiceCategory.LabTest);
+            this.displayTests = [...this.availableTests];
+        });
+    }
+
+    filterTests() {
+        if (!this.testSearchText) {
+            this.displayTests = [...this.availableTests];
+            return;
+        }
+        const lower = this.testSearchText.toLowerCase();
+        this.displayTests = this.availableTests.filter(t =>
+            (t.name && t.name.toLowerCase().includes(lower)) ||
+            (t.code && t.code.toLowerCase().includes(lower))
+        );
     }
 
     newPatient() {
         this.patientInfo = this.getEmptyPatient();
         this.resetAge();
+        this.searchResults = [];
     }
 
     resetAge() {
@@ -196,6 +234,47 @@ export class LaboratoryReceptionComponent implements OnInit {
         });
     }
 
+    searchPatient() {
+        const searchText = this.patientInfo.fullNameAr;
+        if (!searchText) {
+            this.toaster.warn('الرجاء إدخال اسم للبحث', 'تنبيه');
+            return;
+        }
+
+        this.patientService.search(searchText).subscribe({
+            next: (res) => {
+                if (res.length === 0) {
+                    this.toaster.info('لا توجد نتائج مطابقة', 'بحث');
+                    this.searchResults = [];
+                } else if (res.length === 1) {
+                    this.selectPatient(res[0].id);
+                } else {
+                    this.searchResults = res;
+                    this.toaster.info(`تم العثور على ${res.length} نتائج`, 'بحث');
+                }
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء البحث', 'خطأ');
+            }
+        });
+    }
+
+    selectPatient(id: string) {
+        this.patientService.get(id).subscribe({
+            next: (res) => {
+                this.patientInfo = res;
+                this.calculateAge();
+                this.searchResults = [];
+                this.toaster.success('تم تحميل بيانات المريض', 'نجاح');
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء تحميل بيانات المريض', 'خطأ');
+            }
+        });
+    }
+
     addTestToOrder(test: any) {
         if (!this.selectedTests.find(t => t.id === test.id)) {
             this.selectedTests.push({
@@ -209,5 +288,136 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.selectedTests.splice(index, 1);
     }
 
-    // Helper to calculate age would go here
+    focusSearch() {
+        this.testSearchInput?.nativeElement?.focus();
+    }
+
+    closeSearch() {
+        setTimeout(() => {
+            this.searchResults = [];
+        }, 200);
+    }
+
+    saveInvoice() {
+        if (!this.patientInfo.id) {
+            this.toaster.error('يجب حفظ بيانات المريض أولاً', 'خطأ');
+            return;
+        }
+
+        if (this.selectedTests.length === 0) {
+            this.toaster.warn('يجب اختيار فحص واحد على الأقل', 'تنبيه');
+            return;
+        }
+
+        const invoice = {
+            patientId: this.patientInfo.id,
+            dueDate: new Date().toISOString(),
+            notes: 'Lab Request',
+            items: this.selectedTests.map(test => ({
+                serviceType: ServiceType.Laboratory,
+                serviceCode: test.code,
+                description: test.name,
+                quantity: 1,
+                unitPrice: test.price,
+                discountPercentage: 0,
+                isCoveredByInsurance: false, // Default
+                notes: ''
+            }))
+        };
+
+        this.invoiceService.create(invoice).subscribe({
+            next: (res) => {
+                this.toaster.success('تم حفظ الفاتورة بنجاح', 'نجاح');
+                this.selectedTests = [];
+                // Could navigate to billing or show print dialog
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء حفظ الفاتورة', 'خطأ');
+            }
+        });
+    }
+
+    // --- Clinic Booking Methods ---
+
+    loadClinicData() {
+        this.appointmentService.getClinicLookup().subscribe(res => {
+            this.clinics = (res as any[]) || [];
+        });
+
+        // Load Services (Clinic Services)
+        this.serviceItemService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
+            this.services = (res.items || []).filter(x => x.category === ServiceCategory.Consultation || x.category === ServiceCategory.Procedure);
+        });
+    }
+
+    onClinicChange() {
+        this.booking.doctorId = '';
+        if (this.booking.clinicId) {
+            this.appointmentService.getDoctorLookup(this.booking.clinicId).subscribe(res => {
+                this.doctors = (res as any[]) || [];
+            });
+        } else {
+            this.doctors = [];
+        }
+    }
+
+    bookAppointment() {
+        if (!this.patientInfo.id) {
+            this.toaster.error('يجب اختيار مريض أولاً', 'خطأ');
+            return;
+        }
+        if (!this.booking.clinicId || !this.booking.doctorId || !this.booking.appointmentDate) {
+            this.toaster.warn('يرجى تعبئة جميع الحقول المطلوبة (العيادة، الطبيب، التاريخ)', 'تنبيه');
+            return;
+        }
+
+        const input = {
+            patientId: this.patientInfo.id,
+            clinicId: this.booking.clinicId,
+            doctorId: this.booking.doctorId,
+            serviceItemId: this.booking.serviceItemId || null,
+            appointmentDate: this.booking.appointmentDate,
+            createInvoice: true, // Always create invoice for now as per UI "Book/Bond" (Hajz/Sanad)
+            paymentMethod: this.booking.paymentMethod,
+            paidAmount: this.booking.payAmount,
+            discount: this.booking.discount
+        };
+
+        this.appointmentService.bookClinicAppointment(input as any).subscribe({
+            next: (res) => {
+                this.toaster.success('تم حجز الموعد بنجاح', 'نجاح');
+                if (this.printTicketChecked) {
+                    this.printTicket(res.id);
+                }
+                // Reset booking form or navigate
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء حجز الموعد', 'خطأ');
+            }
+        });
+    }
+    printTicket(appointmentId: string) {
+        this.appointmentService.getTicketPdf(appointmentId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                iframe.contentWindow?.print();
+
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    window.URL.revokeObjectURL(url);
+                }, 10000);
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('فشل طباعة التذكرة', 'خطأ');
+            }
+        });
+    }
 }

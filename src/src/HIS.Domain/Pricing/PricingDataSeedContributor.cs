@@ -50,6 +50,11 @@ public class PricingDataSeedContributor : IDataSeedContributor, ITransientDepend
         await SeedRadiologyServiceAsync("RAD-MRI-01", "MRI Brain (Non-Contrast)", "MRI", "Brain", 1200, priceListId);
         await SeedRadiologyServiceAsync("RAD-CT-01", "CT Abdomen", "CT", "Abdomen", 900, priceListId);
         await SeedRadiologyServiceAsync("RAD-US-01", "Ultrasound Abdomen", "Ultrasound", "Abdomen", 400, priceListId);
+
+        // Seed Clinic Services (Consultations & Procedures)
+        await SeedClinicServiceAsync("CONS-001", "General Consultation", 50, ServiceCategory.Consultation, priceListId);
+        await SeedClinicServiceAsync("CONS-002", "Specialist Consultation", 100, ServiceCategory.Consultation, priceListId);
+        await SeedClinicServiceAsync("PROC-001", "Wound Dressing", 30, ServiceCategory.Procedure, priceListId);
     }
 
     private async Task<Guid> SeedPriceListAsync()
@@ -117,6 +122,30 @@ public class PricingDataSeedContributor : IDataSeedContributor, ITransientDepend
             // Since it's likely Table-Per-Type or similar where RadiologyItem IS A ServiceItem, sticking to _radiologyItemRepository is safest for specific fields.
             await _radiologyItemRepository.InsertAsync(radiologyItem);
             serviceId = radiologyItem.Id;
+        }
+        else
+        {
+            serviceId = existing.Id;
+        }
+
+        await SeedPriceAsync(serviceId, priceListId, price);
+    }
+
+    private async Task SeedClinicServiceAsync(string code, string name, decimal price, ServiceCategory category, Guid priceListId)
+    {
+        var existing = await _serviceItemRepository.FirstOrDefaultAsync(x => x.Code == code);
+        Guid serviceId;
+
+        if (existing == null)
+        {
+            var service = new ServiceItem(
+                _guidGenerator.Create(),
+                code,
+                name,
+                category
+            );
+            await _serviceItemRepository.InsertAsync(service);
+            serviceId = service.Id;
         }
         else
         {

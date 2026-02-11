@@ -185,7 +185,7 @@ export const APP_ROUTES: Routes = [
         path: 'laboratory-reception',
         loadComponent: () => import('./reception/lab-reception/laboratory-reception.component').then(c => c.LaboratoryReceptionComponent),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Reception.LaboratoryReception' }
+        data: { requiredPolicy: 'HIS.Reception.Tickets' }
       }
     ]
   },

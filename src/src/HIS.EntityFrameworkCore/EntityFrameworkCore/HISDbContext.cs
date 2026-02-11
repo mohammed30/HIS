@@ -109,6 +109,13 @@ public class HISDbContext :
     // Pharmacy (Master Data)
     public DbSet<HIS.Pharmacy.Drug> Drugs { get; set; }
 
+    // Rooms & Inpatient
+    public DbSet<HIS.Rooms.Room> Rooms { get; set; }
+    public DbSet<HIS.Inpatient.Admission> Admissions { get; set; }
+
+    // Operations (Surgery)
+    public DbSet<HIS.Operations.SurgicalOperation> SurgicalOperations { get; set; }
+
     #region Entities from the modules
 
     // Identity
@@ -836,6 +843,64 @@ public class HISDbContext :
             b.Property(x => x.BatchNumberPrefix).HasMaxLength(32);
             
             b.HasIndex(x => x.Barcode).IsUnique();
+        });
+
+        // Rooms
+        builder.Entity<HIS.Rooms.Room>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Rooms", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.RoomNumber).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Name).HasMaxLength(128);
+            b.Property(x => x.Floor).HasMaxLength(32);
+            b.Property(x => x.DailyRate).HasColumnType("decimal(18,2)");
+            b.Property(x => x.Notes).HasMaxLength(500);
+            
+            b.HasIndex(x => x.RoomNumber).IsUnique();
+        });
+
+        // Admissions (Inpatient)
+        builder.Entity<HIS.Inpatient.Admission>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Admissions", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.CompanionName).HasMaxLength(128);
+            b.Property(x => x.CompanionPhone).HasMaxLength(32);
+            b.Property(x => x.CompanionAddress).HasMaxLength(256);
+            b.Property(x => x.Purpose).HasMaxLength(256);
+            b.Property(x => x.Notes).HasMaxLength(500);
+            b.Property(x => x.InsuranceCeiling).HasColumnType("decimal(18,2)");
+            b.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.InsuranceAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.PharmacyPercentage).HasColumnType("decimal(5,2)");
+            
+            b.Ignore(x => x.DueAmount);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.RoomId);
+            b.HasIndex(x => x.Status);
+        });
+
+        // Surgical Operations
+        builder.Entity<HIS.Operations.SurgicalOperation>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "SurgicalOperations", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.OperationName).HasMaxLength(256).IsRequired();
+            b.Property(x => x.Details).HasMaxLength(1000);
+            b.Property(x => x.Notes).HasMaxLength(500);
+            b.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.CompanyShare).HasColumnType("decimal(18,2)");
+            b.Property(x => x.PatientShare).HasColumnType("decimal(18,2)");
+            b.Property(x => x.InsuranceTotal).HasColumnType("decimal(18,2)");
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.DoctorId);
+            b.HasIndex(x => x.Status);
         });
     }
 }

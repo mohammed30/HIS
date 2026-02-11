@@ -17,6 +17,7 @@ public class Appointment : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public AppointmentType Type { get; set; }
     
     public bool IsWalkIn { get; set; } = false;
+    public Guid? ServiceItemId { get; set; }
 
     public string? Notes { get; set; }
 

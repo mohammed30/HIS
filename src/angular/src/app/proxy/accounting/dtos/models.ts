@@ -30,6 +30,30 @@ export interface JournalEntryDto extends FullAuditedEntityDto<string> {
 export interface JournalEntryLineDto extends EntityDto<string> {
   accountId?: string;
   accountName?: string;
+  accountNameAr?: string;
+  accountCode?: string;
   debit?: number;
   credit?: number;
+}
+
+export interface CreateUpdateJournalEntryDto {
+  date: string;
+  referenceNumber?: string;
+  description: string;
+  lines: CreateUpdateJournalEntryLineDto[];
+}
+
+export interface CreateUpdateJournalEntryLineDto {
+  accountId: string;
+  debit: number;
+  credit: number;
+}
+
+export interface AccountLookupDto extends EntityDto<string> {
+  code?: string;
+  name?: string;
+  nameAr?: string;
+  type?: AccountType;
+  parentId?: string;
+  hasChildren?: boolean;
 }

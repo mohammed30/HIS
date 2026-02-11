@@ -20,6 +20,8 @@ public interface IAppointmentAppService : IApplicationService
 
     Task<List<DateTime>> GetAvailableSlotsAsync(Guid doctorId, DateTime date);
     Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId);
+    Task<AppointmentDto> BookClinicAppointmentAsync(BookClinicAppointmentDto input);
+    Task<Volo.Abp.Content.IRemoteStreamContent> GetTicketPdfAsync(Guid appointmentId);
     Task<List<LookupDto<Guid>>> GetClinicLookupAsync();
     // Waiting List
     Task<PagedResultDto<WaitingListDto>> GetWaitingListAsync(PagedAndSortedResultRequestDto input);

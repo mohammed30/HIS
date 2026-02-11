@@ -16,7 +16,9 @@ public class JournalEntryDto : FullAuditedEntityDto<Guid>
 public class JournalEntryLineDto : EntityDto<Guid>
 {
     public Guid AccountId { get; set; }
-    public string AccountName { get; set; } // Flattened property
+    public string AccountName { get; set; }
+    public string AccountNameAr { get; set; }
+    public string AccountCode { get; set; }
     public decimal Debit { get; set; }
     public decimal Credit { get; set; }
 }

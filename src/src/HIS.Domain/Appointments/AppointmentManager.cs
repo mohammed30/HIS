@@ -26,7 +26,8 @@ public class AppointmentManager : DomainService
         DateTime appointmentDate,
         AppointmentType type,
         bool isWalkIn = false,
-        string notes = null)
+        string notes = null,
+        Guid? serviceItemId = null)
     {
         // 1. Validation: Doctor Schedule
         // Logic: Check if doctor works on this day (DayOfWeek) and within hours
@@ -43,23 +44,26 @@ public class AppointmentManager : DomainService
         }
         else
         {
-             // Check time range
+             // Check time range - Allow bypass for Emergency or Walk-In
              var time = appointmentDate.TimeOfDay;
-             if (time < schedule.StartTime || time >= schedule.EndTime)
+             if (!isWalkIn && type != AppointmentType.Emergency)
              {
-                 throw new Volo.Abp.UserFriendlyException("Selected time is outside doctor's working hours.");
+                 if (time < schedule.StartTime || time >= schedule.EndTime)
+                 {
+                     throw new Volo.Abp.UserFriendlyException("Selected time is outside doctor's working hours.");
+                 }
              }
         }
 
         // 2. Validation: Overlap / Double Booking
-        // Allow Emergency to override
-        if (type != AppointmentType.Emergency)
+        // Allow Emergency or Walk-In to override
+        if (!isWalkIn && type != AppointmentType.Emergency)
         {
             // Simple check: is there an appointment at this exact time?
             // Better: Check range (StartTime < ExistingEnd && EndTime > ExistingStart)
             // Assuming 15 min slots for now
             var endTime = appointmentDate.AddMinutes(15); 
-
+            
             var overlap = await _appointmentRepository.AnyAsync(x => 
                 x.DoctorId == doctorId && 
                 x.Status != AppointmentStatus.Cancelled &&
@@ -85,7 +89,8 @@ public class AppointmentManager : DomainService
         )
         {
             Notes = notes,
-            IsWalkIn = isWalkIn
+            IsWalkIn = isWalkIn,
+            ServiceItemId = serviceItemId
         };
     }
 

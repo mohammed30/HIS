@@ -29,6 +29,7 @@ public static class HISPermissions
     {
         public const string Default = GroupName + ".Reception";
         public const string LaboratoryReception = Default + ".LaboratoryReception";
+        public const string Tickets = Default + ".Tickets";
         public const string InsuranceCompanies = Default + ".InsuranceCompanies";
         public const string InsurancePlans = Default + ".InsurancePlans";
         public const string Invoices = Default + ".Invoices";
