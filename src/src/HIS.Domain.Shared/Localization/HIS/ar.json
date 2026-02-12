@@ -13,6 +13,7 @@
     "Menu:Doctors": "الأطباء",
     "Menu:Laboratories": "المعامل",
     "Menu:Nationalities": "الجنسيات",
+    "Menu:PaymentMethods": "طرق الدفع",
     "Menu:Professions": "المهن",
     "Menu:Contracts": "التعاقدات",
     "Menu:PatientCategories": "فئات المرضى",
@@ -195,6 +196,7 @@
     "Permission:Services": "الخدمات",
     "Permission:Radiology": "الأشعة",
     "Permission:PriceLists": "قوائم الأسعار",
+    "Permission:PaymentMethods": "إدارة طرق الدفع",
     "Permission:Pharmacy": "إدارة الصيدلية",
     "Permission:Prescriptions": "الوصفات الطبية",
     "Permission:Dispensing": "صرف الأدوية",
@@ -357,6 +359,10 @@
     "JournalEntry:CannotEditPosted": "لا يمكن تعديل قيد تم ترحيله.",
     "JournalEntry:CannotDeletePosted": "لا يمكن حذف قيد تم ترحيله.",
     "JournalEntry:SearchAccounts": "البحث عن حساب...",
-    "JournalEntry:NoLines": "أضف سطرين على الأقل للقيد المحاسبي."
+    "JournalEntry:NoLines": "أضف سطرين على الأقل للقيد المحاسبي.",
+    "PaymentMethods": "طرق الدفع",
+    "NewPaymentMethod": "طريقة دفع جديدة",
+    "EditPaymentMethod": "تعديل طريقة الدفع",
+    "IsDefault": "افتراضي"
   }
 }

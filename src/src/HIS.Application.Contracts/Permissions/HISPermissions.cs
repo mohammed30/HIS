@@ -82,6 +82,7 @@ public static class HISPermissions
         public const string Services = Default + ".Services";
         public const string Radiology = Default + ".Radiology";
         public const string PriceLists = Default + ".PriceLists";
+        public const string PaymentMethods = Default + ".PaymentMethods";
     }
 
     public static class Pharmacy

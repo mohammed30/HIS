@@ -72,6 +72,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         definitions.AddChild(HISPermissions.Definitions.Services, L("Permission:Services"));
         definitions.AddChild(HISPermissions.Definitions.Radiology, L("Permission:Radiology"));
         definitions.AddChild(HISPermissions.Definitions.PriceLists, L("Permission:PriceLists"));
+        definitions.AddChild(HISPermissions.Definitions.PaymentMethods, L("Permission:PaymentMethods"));
 
         // Pharmacy
         var pharmacy = hisGroup.AddPermission(HISPermissions.Pharmacy.Default, L("Permission:Pharmacy"));

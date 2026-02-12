@@ -102,6 +102,12 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Definitions.Nationalities' }
       },
       {
+        path: 'payment-methods',
+        loadComponent: () => import('./definitions/payment-methods/payment-methods.component').then(c => c.PaymentMethodsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Definitions.PaymentMethods' }
+      },
+      {
         path: 'professions',
         loadComponent: () => import('./definitions/professions/professions.component').then(c => c.ProfessionsComponent),
         canActivate: [permissionGuard],

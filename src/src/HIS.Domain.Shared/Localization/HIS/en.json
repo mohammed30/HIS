@@ -13,6 +13,7 @@
     "Menu:Doctors": "Doctors",
     "Menu:Laboratories": "Laboratories",
     "Menu:Nationalities": "Nationalities",
+    "Menu:PaymentMethods": "Payment Methods",
     "Menu:Professions": "Professions",
     "Menu:Contracts": "Contracts",
     "Menu:PatientCategories": "Patient Categories",
@@ -162,6 +163,7 @@
     "Permission:Services": "Services",
     "Permission:Radiology": "Radiology",
     "Permission:PriceLists": "Price Lists",
+    "Permission:PaymentMethods": "Payment Methods Management",
     "Permission:Pharmacy": "Pharmacy Management",
     "Permission:Prescriptions": "Prescriptions",
     "Permission:Dispensing": "Dispensing",
@@ -307,6 +309,10 @@
     "JournalEntry:CannotDeletePosted": "Cannot delete a posted journal entry.",
     "JournalEntry:SearchAccounts": "Search accounts...",
     "JournalEntry:NoLines": "Add at least 2 lines to the journal entry.",
+    "PaymentMethods": "Payment Methods",
+    "NewPaymentMethod": "New Payment Method",
+    "EditPaymentMethod": "Edit Payment Method",
+    "IsDefault": "Is Default",
     "Search": "Search"
   }
 }

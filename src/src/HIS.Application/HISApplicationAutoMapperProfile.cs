@@ -153,6 +153,9 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<General.ReferralSource, General.ReferralSourceDto>();
         CreateMap<General.CreateUpdateReferralSourceDto, General.ReferralSource>();
 
+        CreateMap<General.PaymentMethod, General.Dtos.PaymentMethodDto>();
+        CreateMap<General.Dtos.CreateUpdatePaymentMethodDto, General.PaymentMethod>();
+
         // Rooms
         CreateMap<Rooms.Room, Rooms.RoomDto>();
         CreateMap<Rooms.CreateUpdateRoomDto, Rooms.Room>();

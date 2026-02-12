@@ -51,6 +51,7 @@ public class HISDbContext :
     public DbSet<Contract> Contracts { get; set; }
     public DbSet<PatientCategory> PatientCategories { get; set; }
     public DbSet<ReferralSource> ReferralSources { get; set; }
+    public DbSet<PaymentMethod> PaymentMethods { get; set; }
 
     // Appointments
     public DbSet<Appointment> Appointments { get; set; }
@@ -282,6 +283,17 @@ public class HISDbContext :
             b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
             b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
             b.Property(x => x.Code).HasMaxLength(32);
+        });
+
+        // PaymentMethod
+        builder.Entity<PaymentMethod>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PaymentMethods", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128).IsRequired();
+            b.Property(x => x.Code).HasMaxLength(32);
+            b.Property(x => x.IsDefault).HasDefaultValue(false);
         });
 
         // Department

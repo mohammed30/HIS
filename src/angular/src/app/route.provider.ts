@@ -392,6 +392,15 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Definitions.PriceLists',
     },
+    {
+      path: '/definitions/payment-methods',
+      name: '::Menu:PaymentMethods',
+      parentName: '::Menu:Definitions',
+      iconClass: 'fas fa-credit-card',
+      order: 110,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Definitions.PaymentMethods',
+    },
     // Administration
     {
       path: '/identity',

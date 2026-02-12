@@ -69,3 +69,19 @@ export interface ReferralSourceDto extends EntityDto<string> {
   code?: string;
   isActive?: boolean;
 }
+
+export interface PaymentMethodDto extends EntityDto<string> {
+  nameAr?: string;
+  nameEn?: string;
+  code?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+}
+
+export interface CreateUpdatePaymentMethodDto {
+  nameAr?: string;
+  nameEn?: string;
+  code?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+}
