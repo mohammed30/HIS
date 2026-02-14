@@ -14,4 +14,8 @@ public class DrugDto : AuditedEntityDto<Guid>
     public string BatchNumberPrefix { get; set; }
     public Guid? ServiceItemId { get; set; }
     public string ServiceItemName { get; set; }
+    
+    public int MinimumStockLevel { get; set; }
+    public int ReorderLevel { get; set; }
+    public string BinLocation { get; set; }
 }

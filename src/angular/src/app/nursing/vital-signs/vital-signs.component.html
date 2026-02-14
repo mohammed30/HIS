@@ -1,0 +1,66 @@
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between">
+            <h5>{{ '::VitalSigns' | abpLocalization }}</h5>
+            <button class="btn btn-primary btn-sm" (click)="toggleAdd()" *ngIf="!isAdding">
+                <i class="fa fa-plus me-1"></i>{{ '::AddVitalSign' | abpLocalization }}
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+
+        <!-- Add Form -->
+        <div *ngIf="isAdding" class="mb-4 border p-3 rounded">
+            <h6>{{ '::NewVitalSign' | abpLocalization }}</h6>
+            <div class="row">
+                <div class="col-md-2">
+                    <label>{{ '::Temperature' | abpLocalization }} (C)</label>
+                    <input type="number" class="form-control" [(ngModel)]="newVital.temperature">
+                </div>
+                <div class="col-md-2">
+                    <label>{{ '::Pulse' | abpLocalization }} (bpm)</label>
+                    <input type="number" class="form-control" [(ngModel)]="newVital.heartRate">
+                </div>
+                <div class="col-md-2">
+                    <label>{{ '::RespRate' | abpLocalization }} (rpm)</label>
+                    <input type="number" class="form-control" [(ngModel)]="newVital.respiratoryRate">
+                </div>
+                <div class="col-md-2">
+                    <label>{{ '::BPSys' | abpLocalization }}</label>
+                    <input type="number" class="form-control" [(ngModel)]="newVital.bloodPressureSystolic">
+                </div>
+                <div class="col-md-2">
+                    <label>{{ '::BPDia' | abpLocalization }}</label>
+                    <input type="number" class="form-control" [(ngModel)]="newVital.bloodPressureDiastolic">
+                </div>
+                <div class="col-md-2">
+                    <label>{{ '::SpO2' | abpLocalization }} (%)</label>
+                    <input type="number" class="form-control" [(ngModel)]="newVital.oxygenSaturation">
+                </div>
+            </div>
+            <div class="mt-2 text-end">
+                <button class="btn btn-secondary btn-sm me-2" (click)="cancel()">{{ '::Cancel' | abpLocalization
+                    }}</button>
+                <button class="btn btn-success btn-sm" (click)="save()">{{ '::Save' | abpLocalization }}</button>
+            </div>
+        </div>
+
+        <!-- List -->
+        <ngx-datatable [rows]="vitalSigns" [list]="{ maxResultCount: 10, skipCount: 0 }" default>
+            <ngx-datatable-column [name]="'::RecordedAt' | abpLocalization" prop="recordedAt">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | date:'short' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Temp' | abpLocalization" prop="temperature"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::HeartRate' | abpLocalization" prop="heartRate"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Resp' | abpLocalization" prop="respiratoryRate"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::BP' | abpLocalization">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    {{ row.bloodPressureSystolic }}/{{ row.bloodPressureDiastolic }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::SpO2' | abpLocalization" prop="oxygenSaturation"></ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>

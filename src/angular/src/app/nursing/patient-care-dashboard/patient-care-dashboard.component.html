@@ -1,0 +1,58 @@
+<div class="card border-0 shadow-none">
+    <div class="card-body p-0">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+
+            <!-- Care Plans -->
+            <li [ngbNavItem]="1">
+                <a ngbNavLink>{{ 'Nursing::CarePlans' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-care-plan [patientId]="patientId"></app-care-plan>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- Assessments (Pain & Fall) -->
+            <li [ngbNavItem]="2">
+                <a ngbNavLink>{{ 'Nursing::Assessments' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-assessments [patientId]="patientId"></app-assessments>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- Fluid Balance -->
+            <li [ngbNavItem]="3">
+                <a ngbNavLink>{{ 'Nursing::FluidBalance' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-fluid-balance [patientId]="patientId"></app-fluid-balance>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- Rounds -->
+            <li [ngbNavItem]="4">
+                <a ngbNavLink>{{ 'Nursing::Rounds' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-patient-round [patientId]="patientId"></app-patient-round>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- Handover -->
+            <li [ngbNavItem]="5">
+                <a ngbNavLink>{{ 'Nursing::ShiftHandover' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-shift-handover></app-shift-handover>
+                    </div>
+                </ng-template>
+            </li>
+
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2 bg-white border border-top-0"></div>
+    </div>
+</div>

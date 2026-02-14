@@ -19,6 +19,14 @@ import { ServiceCategory } from '../../proxy/services/service-category.enum';
 import { ServiceType } from '../../proxy/billing/service-type.enum';
 import { ToasterService } from '@abp/ng.theme.shared';
 
+// New Imports
+import { AdmissionService } from '../../proxy/inpatient/admission.service';
+import { RoomService } from '../../proxy/rooms/room.service';
+import { SurgicalOperationService } from '../../proxy/operations/surgical-operation.service';
+import { RoomType } from '../../proxy/rooms/room-type.enum';
+import { AdmissionStatus } from '../../proxy/inpatient/admission-status.enum';
+import { OperationStatus } from '../../proxy/operations/operation-status.enum';
+
 @Component({
     selector: 'app-laboratory-reception',
     standalone: true,
@@ -39,6 +47,9 @@ export class LaboratoryReceptionComponent implements OnInit {
     private serviceItemService = inject(ServiceItemService);
     private invoiceService = inject(InvoiceService);
     private appointmentService = inject(AppointmentService);
+    private admissionService = inject(AdmissionService);
+    private roomService = inject(RoomService);
+    private operationService = inject(SurgicalOperationService);
 
     @ViewChild('testSearchInput') testSearchInput!: ElementRef;
 
@@ -78,6 +89,64 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     // Patient Info
     patientInfo: any = this.getEmptyPatient();
+
+    // Admission Model
+    admission: any = {
+        companionName: '',
+        companionPhone: '',
+        companionAddress: '',
+        purpose: '',
+        pharmacyPercentage: 0,
+        insuranceCeiling: 0,
+        admissionDate: new Date().toISOString().slice(0, 16),
+        roomType: null,
+        roomId: null,
+        numberOfDays: 0,
+        notes: '',
+        paidAmount: 0,
+        isServicesStopped: false
+    };
+
+    // Operation Model
+    operation: any = {
+        operationTypeId: '',
+        operationDate: new Date().toISOString().slice(0, 16),
+        doctorId: '',
+        totalAmount: 0,
+        companyShare: 0,
+        patientShare: 0,
+        details: '',
+        notes: ''
+    };
+
+    roomTypes = [
+        { id: RoomType.Standard, name: 'Standard / عادي' },
+        { id: RoomType.Private, name: 'Private / خاص' },
+        { id: RoomType.ICU, name: 'ICU / عناية مركزة' },
+        { id: RoomType.Suite, name: 'Suite / جناح' },
+        { id: RoomType.Isolation, name: 'Isolation / عزل' }
+    ];
+
+    availableRooms: any[] = [];
+    operationTypes: any[] = [];
+    inpatientList: any[] = [];
+    operationsList: any[] = [];
+
+    // Medical Services
+    medicalServiceCategories = [
+        { id: ServiceCategory.Consultation, name: 'Consultation / كشف عيادة' },
+        { id: ServiceCategory.Procedure, name: 'Procedure / إجراء طبي' },
+        { id: ServiceCategory.Radiology, name: 'Radiology / أشعة' },
+        { id: ServiceCategory.Other, name: 'Other / خدمات أخرى' }
+    ];
+    selectedCategory: ServiceCategory | null = null;
+    filteredServiceItems: any[] = [];
+    selectedServiceId: string = '';
+    requestedByDoctorId: string = '';
+    selectedMedicalServices: any[] = [];
+    medicalServicesTotal = 0;
+    medicalServicesPatientShare = 0;
+    medicalServicesInsuranceShare = 0;
 
     getEmptyPatient() {
         return {
@@ -140,6 +209,7 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.loadLabTests();
         this.loadMasterData();
         this.loadClinicData();
+        this.loadOperationTypes();
     }
 
     loadMasterData() {
@@ -266,6 +336,8 @@ export class LaboratoryReceptionComponent implements OnInit {
                 this.patientInfo = res;
                 this.calculateAge();
                 this.searchResults = [];
+                this.loadInpatientList();
+                this.loadOperationsList();
                 this.toaster.success('تم تحميل بيانات المريض', 'نجاح');
             },
             error: (err) => {
@@ -417,6 +489,209 @@ export class LaboratoryReceptionComponent implements OnInit {
             error: (err) => {
                 console.error(err);
                 this.toaster.error('فشل طباعة التذكرة', 'خطأ');
+            }
+        });
+    }
+
+    // --- Inpatient Methods ---
+
+    loadAvailableRooms() {
+        if (this.admission.roomType === null) {
+            this.availableRooms = [];
+            return;
+        }
+        this.roomService.getAvailableRooms(this.admission.roomType).subscribe(res => {
+            this.availableRooms = res || [];
+        });
+    }
+
+    saveAdmission() {
+        if (!this.patientInfo.id) {
+            this.toaster.error('يجب اختيار مريض أولاً', 'خطأ');
+            return;
+        }
+        if (!this.admission.roomId) {
+            this.toaster.warn('يرجى اختيار غرفة', 'تنبيه');
+            return;
+        }
+
+        const input = {
+            patientId: this.patientInfo.id,
+            roomId: this.admission.roomId,
+            insuranceCeiling: this.admission.insuranceCeiling,
+            companionName: this.admission.companionName,
+            companionPhone: this.admission.companionPhone,
+            companionAddress: this.admission.companionAddress,
+            purpose: this.admission.purpose,
+            pharmacyPercentage: this.admission.pharmacyPercentage,
+            isServicesStopped: this.admission.isServicesStopped,
+            notes: this.admission.notes
+        };
+
+        this.admissionService.create(input).subscribe({
+            next: () => {
+                this.toaster.success('تم تسجيل التنويم بنجاح', 'نجاح');
+                this.loadInpatientList();
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء حفظ بيانات التنويم', 'خطأ');
+            }
+        });
+    }
+
+    loadInpatientList() {
+        if (!this.patientInfo.id) return;
+        this.admissionService.getList({ patientId: this.patientInfo.id } as any).subscribe(res => {
+            this.inpatientList = res.items || [];
+        });
+    }
+
+    // --- Operations Methods ---
+
+    loadOperationTypes() {
+        this.serviceItemService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
+            this.operationTypes = (res.items || []).filter(x => x.category === ServiceCategory.Surgery);
+        });
+    }
+
+    saveOperation() {
+        if (!this.patientInfo.id) {
+            this.toaster.error('يجب اختيار مريض أولاً', 'خطأ');
+            return;
+        }
+        if (!this.operation.operationTypeId || !this.operation.doctorId) {
+            this.toaster.warn('يرجى اختيار العملية والطبيب', 'تنبيه');
+            return;
+        }
+
+        const input = {
+            patientId: this.patientInfo.id,
+            doctorId: this.operation.doctorId,
+            operationTypeId: this.operation.operationTypeId,
+            operationDate: this.operation.operationDate,
+            totalAmount: this.operation.totalAmount,
+            companyShare: this.operation.companyShare,
+            patientShare: this.operation.patientShare,
+            details: this.operation.details,
+            notes: this.operation.notes,
+            status: OperationStatus.Scheduled
+        };
+
+        this.operationService.create(input).subscribe({
+            next: () => {
+                this.toaster.success('تم حفظ بيانات العملية بنجاح', 'نجاح');
+                this.loadOperationsList();
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء حفظ بيانات العملية', 'خطأ');
+            }
+        });
+    }
+
+    loadOperationsList() {
+        if (!this.patientInfo.id) return;
+        this.operationService.getList({ patientId: this.patientInfo.id } as any).subscribe(res => {
+            this.operationsList = res.items || [];
+        });
+    }
+
+    // --- Medical Services Methods ---
+
+    onCategoryChange() {
+        if (this.selectedCategory === null) {
+            this.filteredServiceItems = [];
+            return;
+        }
+        this.serviceItemService.getList({
+            maxResultCount: 1000,
+            category: this.selectedCategory
+        } as any).subscribe(res => {
+            this.filteredServiceItems = res.items || [];
+        });
+    }
+
+    addMedicalServiceToList() {
+        const item = this.filteredServiceItems.find(x => x.id === this.selectedServiceId);
+        if (!item) return;
+
+        const isDuplicate = this.selectedMedicalServices.some(x => x.id === item.id);
+        if (isDuplicate) {
+            this.toaster.warn('هذه الخدمة مضافة بالفعل', 'تنبيه');
+            return;
+        }
+
+        const price = item.price || 0;
+        this.selectedMedicalServices.push({
+            id: item.id,
+            name: item.name,
+            code: item.code,
+            price: price,
+            patientShare: price,
+            insuranceShare: 0,
+            serviceType: this.mapCategoryToType(this.selectedCategory),
+            status: 'Pending'
+        });
+
+        this.updateMedicalServicesTotals();
+    }
+
+    mapCategoryToType(category: ServiceCategory | null): ServiceType {
+        if (category === null) return ServiceType.Other;
+        switch (category) {
+            case ServiceCategory.Consultation: return ServiceType.Consultation;
+            case ServiceCategory.Procedure: return ServiceType.Procedure;
+            case ServiceCategory.Radiology: return ServiceType.Radiology;
+            case ServiceCategory.LabTest: return ServiceType.Laboratory;
+            default: return ServiceType.Other;
+        }
+    }
+
+    removeMedicalService(index: number) {
+        this.selectedMedicalServices.splice(index, 1);
+        this.updateMedicalServicesTotals();
+    }
+
+    updateMedicalServicesTotals() {
+        this.medicalServicesTotal = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.price, 0);
+        this.medicalServicesPatientShare = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.patientShare, 0);
+        this.medicalServicesInsuranceShare = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.insuranceShare, 0);
+    }
+
+    saveMedicalServicesInvoice() {
+        if (!this.patientInfo.id) {
+            this.toaster.error('يجب اختيار مريض أولاً', 'خطأ');
+            return;
+        }
+        if (this.selectedMedicalServices.length === 0) {
+            this.toaster.warn('يرجى إضافة خدمات أولاً', 'تنبيه');
+            return;
+        }
+
+        const invoiceInput: any = {
+            patientId: this.patientInfo.id,
+            dueDate: new Date().toISOString(),
+            items: this.selectedMedicalServices.map(x => ({
+                serviceItemId: x.id,
+                serviceType: x.serviceType,
+                description: x.name,
+                quantity: 1,
+                unitPrice: x.price,
+                discountPercentage: 0
+            }))
+        };
+
+        this.invoiceService.create(invoiceInput).subscribe({
+            next: (invoice) => {
+                this.toaster.success('تم حفظ فاتورة الخدمات الطبية بنجاح', 'نجاح');
+                this.selectedMedicalServices = [];
+                this.updateMedicalServicesTotals();
+                // Optionally print ticket or redirect to payment
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء حفظ الفاتورة', 'خطأ');
             }
         });
     }

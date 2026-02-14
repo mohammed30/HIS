@@ -199,6 +199,24 @@ export const APP_ROUTES: Routes = [
     ]
   },
   {
+    path: 'inpatient',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./inpatient/room-dashboard/room-dashboard.component').then(c => c.RoomDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inpatient.Dashboard' }
+      },
+      {
+        path: 'admissions',
+        loadComponent: () => import('./inpatient/admission-list/admission-list.component').then(c => c.AdmissionListComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inpatient.Admissions' }
+      }
+    ]
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, permissionGuard],
     data: { requiredPolicy: 'HIS.Settings' },
@@ -312,6 +330,12 @@ export const APP_ROUTES: Routes = [
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
     canActivate: [authGuard, permissionGuard],
     data: { requiredPolicy: 'HIS.Settings' }
+  },
+  {
+    path: 'nursing',
+    loadChildren: () => import('./nursing/nursing-module').then(m => m.NursingModule),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Nursing' }
   },
 ];
 // Force rebuild

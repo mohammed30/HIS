@@ -15,8 +15,6 @@ import { DrugDialogComponent } from './drugs/drug-dialog/drug-dialog.component';
         ThemeSharedModule,
         PharmacyRoutingModule,
         PrescriptionsListComponent,
-        PharmacyRoutingModule,
-        PrescriptionsListComponent,
         DispensingWorkflowComponent,
         PharmacyStockComponent,
         DrugsComponent,

@@ -862,7 +862,7 @@
                 <div class="row g-2 mb-3 align-items-center">
                     <label class="col-5 text-end fw-bold">الاجمالي</label>
                     <div class="col-7"><input type="text" class="form-control form-control-sm fw-bold border-primary"
-                            value="0" readonly></div>
+                            [value]="medicalServicesTotal" readonly></div>
                 </div>
             </div>
 
@@ -876,9 +876,11 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button class="btn btn-danger flex-grow-1 fw-bold"><i class="fas fa-trash-alt me-1"></i> فاتورة
-                    جديدة</button>
-                <button class="btn btn-success flex-grow-1 fw-bold"><i class="fas fa-save me-1"></i> حفظ</button>
+                <button class="btn btn-danger flex-grow-1 fw-bold"
+                    (click)="selectedMedicalServices = []; updateMedicalServicesTotals()">
+                    <i class="fas fa-trash-alt me-1"></i> فاتورة جديدة</button>
+                <button class="btn btn-success flex-grow-1 fw-bold" (click)="saveMedicalServicesInvoice()">
+                    <i class="fas fa-save me-1"></i> حفظ</button>
             </div>
         </div>
 
@@ -890,40 +892,37 @@
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">طلب بواسطة</label>
                             <div class="col-md-6">
-                                <select class="form-select form-select-sm">
+                                <select class="form-select form-select-sm" [(ngModel)]="requestedByDoctorId">
                                     <option value="">-- اختر --</option>
-                                </select>
-                            </div>
-                            <div class="col-auto"><input type="checkbox"></div>
-                        </div>
-                        <div class="row g-2 mb-2 align-items-center justify-content-end">
-                            <label class="col-auto small fw-bold">كود الخدمة</label>
-                            <div class="col-md-6">
-                                <select class="form-select form-select-sm">
-                                    <option value="">-- اختر --</option>
+                                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.name }}</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">المجموعة</label>
                             <div class="col-md-6">
-                                <select class="form-select form-select-sm">
-                                    <option value="">-- اختر --</option>
+                                <select class="form-select form-select-sm" [(ngModel)]="selectedCategory"
+                                    (change)="onCategoryChange()">
+                                    <option [ngValue]="null">-- اختر --</option>
+                                    <option *ngFor="let cat of medicalServiceCategories" [ngValue]="cat.id">{{ cat.name
+                                        }}</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">الخدمة</label>
                             <div class="col-md-6">
-                                <select class="form-select form-select-sm">
+                                <select class="form-select form-select-sm" [(ngModel)]="selectedServiceId">
                                     <option value="">-- اختر --</option>
+                                    <option *ngFor="let item of filteredServiceItems" [value]="item.id">{{ item.name }}
+                                        ({{ item.price | number:'1.2-2' }})</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4 d-flex align-items-center justify-content-center">
                         <button class="btn btn-info text-white p-3 shadow-sm d-flex flex-column align-items-center"
-                            style="width: 120px; border-radius: 12px;">
+                            style="width: 120px; border-radius: 12px;" (click)="addMedicalServiceToList()">
                             <i class="fas fa-file-medical fa-2x mb-1"></i>
                             <span class="fw-bold">اضافة الخدمة</span>
                         </button>
@@ -940,13 +939,26 @@
                             <th>تحمل المريض</th>
                             <th>تحمل التأمين</th>
                             <th>status</th>
-                            <th>نصيب الجهة</th>
-                            <th>الجهة</th>
+                            <th>تعديل السعر</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="text-muted">
-                            <td colspan="7" class="py-4">لا توجد خدمات مضافة</td>
+                        <tr *ngFor="let s of selectedMedicalServices; let i = index">
+                            <td class="text-danger pointer" (click)="removeMedicalService(i)">
+                                <i class="fas fa-times"></i>
+                            </td>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.patientShare }}</td>
+                            <td>{{ s.insuranceShare }}</td>
+                            <td>{{ s.status }}</td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center"
+                                    [(ngModel)]="s.price"
+                                    (ngModelChange)="s.patientShare = s.price; updateMedicalServicesTotals()">
+                            </td>
+                        </tr>
+                        <tr *ngIf="selectedMedicalServices.length === 0" class="text-muted">
+                            <td colspan="6" class="py-4">لا توجد خدمات مضافة</td>
                         </tr>
                     </tbody>
                 </table>
@@ -963,13 +975,16 @@
                 <div class="card-body p-2">
                     <div class="row g-2 mb-2 align-items-center">
                         <label class="col-3 text-end small">اسم المرافق</label>
-                        <div class="col-9"><input type="text" class="form-control form-control-sm"></div>
+                        <div class="col-9"><input type="text" class="form-control form-control-sm"
+                                [(ngModel)]="admission.companionName"></div>
                     </div>
                     <div class="row g-2 mb-2 align-items-center">
                         <label class="col-3 text-end small">رقم الهاتف</label>
-                        <div class="col-4"><input type="text" class="form-control form-control-sm"></div>
+                        <div class="col-4"><input type="text" class="form-control form-control-sm"
+                                [(ngModel)]="admission.companionPhone"></div>
                         <label class="col-2 text-end small">العنوان</label>
-                        <div class="col-3"><input type="text" class="form-control form-control-sm"></div>
+                        <div class="col-3"><input type="text" class="form-control form-control-sm"
+                                [(ngModel)]="admission.companionAddress"></div>
                     </div>
                 </div>
             </div>
@@ -980,60 +995,60 @@
                     <div class="row g-2 mb-2">
                         <div class="col-6">
                             <label class="small fw-bold mb-1">الغرض</label>
-                            <select class="form-select form-select-sm">
-                                <option value="">-- اختر --</option>
-                            </select>
+                            <input type="text" class="form-control form-control-sm" [(ngModel)]="admission.purpose">
                         </div>
                         <div class="col-6">
                             <label class="small fw-bold mb-1">نسبة الصيدلية</label>
-                            <select class="form-select form-select-sm">
-                                <option value="">-- اختر --</option>
-                            </select>
+                            <input type="number" class="form-control form-control-sm"
+                                [(ngModel)]="admission.pharmacyPercentage">
                         </div>
                     </div>
                     <div class="row g-2 mb-2 align-items-center">
                         <div class="col-5">
                             <div class="form-check small p-0 m-0"><input class="form-check-input ms-0 me-1"
-                                    type="checkbox" id="stopSv"><label class="form-check-label" for="stopSv">إيقاف
+                                    type="checkbox" id="stopSv" [(ngModel)]="admission.isServicesStopped"><label
+                                    class="form-check-label" for="stopSv">إيقاف
                                     الخدمات</label></div>
-                        </div>
-                        <div class="col-7">
-                            <div class="form-check small p-0 m-0 text-end"><label class="me-2">طلب</label><input
-                                    type="checkbox"></div>
                         </div>
                     </div>
                     <div class="row g-2 mb-2">
                         <div class="col-7">
                             <label class="small fw-bold mb-1">سقف التأمين</label>
-                            <input type="text" class="form-control form-control-sm" value="0">
+                            <input type="number" class="form-control form-control-sm"
+                                [(ngModel)]="admission.insuranceCeiling">
                         </div>
                         <div class="col-5">
                             <label class="small fw-bold mb-1">تاريخ الدخول</label>
-                            <input type="text" class="form-control form-control-sm" value="08/02/2026 03:53 PM"
-                                readonly>
+                            <input type="datetime-local" class="form-control form-control-sm"
+                                [(ngModel)]="admission.admissionDate">
                         </div>
                     </div>
                     <div class="row g-2 mb-2">
                         <div class="col-6">
                             <label class="small fw-bold mb-1">نوع الغرفة</label>
-                            <select class="form-select form-select-sm">
-                                <option value="">-- اختر --</option>
+                            <select class="form-select form-select-sm" [(ngModel)]="admission.roomType"
+                                (change)="loadAvailableRooms()">
+                                <option [ngValue]="null">-- اختر --</option>
+                                <option *ngFor="let rt of roomTypes" [ngValue]="rt.id">{{ rt.name }}</option>
                             </select>
                         </div>
                         <div class="col-6">
                             <label class="small fw-bold mb-1">رقم الغرفة</label>
-                            <select class="form-select form-select-sm">
-                                <option value="">-- اختر --</option>
+                            <select class="form-select form-select-sm" [(ngModel)]="admission.roomId">
+                                <option [ngValue]="null">-- اختر --</option>
+                                <option *ngFor="let r of availableRooms" [ngValue]="r.id">{{ r.roomNumber }} - {{ r.name
+                                    }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="mb-2">
-                        <label class="small fw-bold mb-1">عدد الايام</label>
-                        <input type="text" class="form-control form-control-sm" value="0">
+                        <label class="small fw-bold mb-1">عدد الايام المتوقع</label>
+                        <input type="number" class="form-control form-control-sm" [(ngModel)]="admission.numberOfDays">
                     </div>
                     <div class="mb-0">
                         <label class="small fw-bold mb-1">ملاحظات</label>
-                        <textarea class="form-control form-control-sm" rows="1"></textarea>
+                        <textarea class="form-control form-control-sm" rows="1"
+                            [(ngModel)]="admission.notes"></textarea>
                     </div>
                 </div>
             </div>
@@ -1084,7 +1099,8 @@
                 </div>
             </div>
 
-            <button class="btn btn-warning w-100 py-2 border-dark shadow-sm"><i class="fas fa-save me-1"></i>
+            <button class="btn btn-warning w-100 py-2 border-dark shadow-sm" (click)="saveAdmission()"><i
+                    class="fas fa-save me-1"></i>
                 حفظ</button>
         </div>
 
@@ -1135,7 +1151,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="text-muted">
+                        <tr *ngFor="let item of inpatientList; let i = index">
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ item.patientName }}</td>
+                            <td>{{ item.patientFileNumber }}</td>
+                            <td>{{ item.roomTypeName }}</td>
+                            <td>{{ item.roomNumber }}</td>
+                            <td>{{ item.admissionDate | date:'short' }}</td>
+                            <td>{{ item.status }}</td>
+                        </tr>
+                        <tr *ngIf="inpatientList.length === 0" class="text-muted">
                             <td colspan="7" class="py-5">لا توجد بيانات</td>
                         </tr>
                     </tbody>
@@ -1163,35 +1188,44 @@
                     <div class="col-md-7">
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">نوع العملية</label>
-                            <div class="col-md-8"><select class="form-select form-select-sm">
+                            <div class="col-md-8">
+                                <select class="form-select form-select-sm" [(ngModel)]="operation.operationTypeId">
                                     <option value="">-- اختر --</option>
-                                </select></div>
+                                    <option *ngFor="let ot of operationTypes" [value]="ot.id">{{ ot.name }}</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">تاريخ وزمن العملية</label>
-                            <div class="col-md-6"><input type="datetime-local" class="form-control form-control-sm">
+                            <div class="col-md-6"><input type="datetime-local" class="form-control form-control-sm"
+                                    [(ngModel)]="operation.operationDate">
                             </div>
-                            <div class="col-auto"><input type="checkbox"></div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">الطبيب</label>
-                            <div class="col-md-8"><select class="form-select form-select-sm">
+                            <div class="col-md-8">
+                                <select class="form-select form-select-sm" [(ngModel)]="operation.doctorId">
                                     <option value="">-- اختر --</option>
-                                </select></div>
+                                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.name }}</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">مبلغ العملية</label>
-                            <div class="col-md-8"><input type="text" class="form-control form-control-sm" value="0">
+                            <div class="col-md-8"><input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="operation.totalAmount">
                             </div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <div class="col-md-4">
                                 <label class="small fw-bold mb-1 d-block text-end">تحمل الشركة</label>
-                                <input type="text" class="form-control form-control-sm" value="0">
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="operation.companyShare">
                             </div>
                             <div class="col-md-4">
                                 <label class="small fw-bold mb-1 d-block text-end">تحمل المريض</label>
-                                <input type="text" class="form-control form-control-sm" value="0">
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="operation.patientShare">
                             </div>
                         </div>
                     </div>
@@ -1200,17 +1234,18 @@
                     <div class="col-md-5">
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">تفصيل العملية</label>
-                            <div class="col-md-8"><input type="text" class="form-control form-control-sm"></div>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm"
+                                    [(ngModel)]="operation.details"></div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">اجمالي العملية</label>
-                            <div class="col-md-8"><input type="text" class="form-control form-control-sm" value="0"
-                                    readonly></div>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm"
+                                    [value]="operation.totalAmount" readonly></div>
                         </div>
                         <div class="row g-2 mb-0 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">اجمالي التأمين</label>
-                            <div class="col-md-8"><input type="text" class="form-control form-control-sm" value="0"
-                                    readonly></div>
+                            <div class="col-md-8"><input type="text" class="form-control form-control-sm"
+                                    [value]="operation.companyShare" readonly></div>
                         </div>
                     </div>
                 </div>
@@ -1223,7 +1258,8 @@
                     <i class="fas fa-file-invoice"></i> عرض الفاتورة
                 </button>
                 <button class="btn btn-success d-flex align-items-center gap-2 px-4 shadow-sm"
-                    style="min-width: 150px; background-color: #26a69a; border-color: #26a69a;">
+                    style="min-width: 150px; background-color: #26a69a; border-color: #26a69a;"
+                    (click)="saveOperation()">
                     <i class="fas fa-plus-circle"></i> انشاء فاتورة مبدئية
                 </button>
                 <button class="btn btn-warning d-flex align-items-center gap-2 px-4 shadow-sm fw-bold"
@@ -1254,7 +1290,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="text-muted">
+                        <tr *ngFor="let item of operationsList; let i = index">
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ item.operationName }}</td>
+                            <td>{{ item.doctorName }}</td>
+                            <td>{{ item.operationDate | date:'short' }}</td>
+                            <td>{{ item.totalAmount }}</td>
+                            <td>{{ item.status }}</td>
+                        </tr>
+                        <tr *ngIf="operationsList.length === 0" class="text-muted">
                             <td colspan="6" class="py-5">لا توجد عمليات مضافة</td>
                         </tr>
                     </tbody>

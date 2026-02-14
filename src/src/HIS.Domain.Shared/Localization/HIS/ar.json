@@ -449,6 +449,26 @@
     "OpeningBalance": "رصيد أول المدة",
     "CapitalChanges": "تغيرات رأس المال",
     "ClosingBalance": "رصيد آخر المدة",
-    "Details": "التفاصيل"
+    "Details": "التفاصيل",
+    "Permission:Nursing": "التمريض",
+    "Permission:PatientList": "قائمة المرضى",
+    "Permission:VitalSigns": "العلامات الحيوية",
+    "Permission:MedicationAdministration": "إعطاء الدواء",
+    "Permission:CarePlans": "خطط الرعاية",
+    "Permission:Assessments": "التقييمات التمريضية",
+    "Permission:FluidBalance": "توازن السوائل",
+    "Permission:ShiftHandover": "تسليم الشفت",
+    "Permission:Inpatient": "تنويم المرضى",
+    "Permission:RoomManagement": "إدارة الغرف",
+    "Permission:Admissions": "حالات الدخول",
+    "Permission:InpatientDashboard": "لوحة التنويم",
+    "Permission:PharmacyPOS": "نقطة بيع الصيدلية",
+    "Menu:Nursing": "التمريض",
+    "Menu:PatientList": "قائمة المرضى",
+    "Menu:ShiftHandover": "تسليم الشفت",
+    "Menu:DispensingVerification": "تدقيق الصرف",
+    "Menu:POS": "نقطة البيع",
+    "Menu:InpatientDashboard": "لوحة المعلومات",
+    "Menu:Inpatient": "إشغال الغرف"
   }
 }

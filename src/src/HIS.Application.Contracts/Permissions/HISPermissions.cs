@@ -99,6 +99,27 @@ public static class HISPermissions
         public const string DrugsCreate = Drugs + ".Create";
         public const string DrugsEdit = Drugs + ".Edit";
         public const string DrugsDelete = Drugs + ".Delete";
+        public const string POS = Default + ".POS";
+    }
+
+    public static class Nursing
+    {
+        public const string Default = GroupName + ".Nursing";
+        public const string PatientList = Default + ".PatientList";
+        public const string VitalSigns = Default + ".VitalSigns";
+        public const string MedicationAdministration = Default + ".MedicationAdministration";
+        public const string CarePlans = Default + ".CarePlans";
+        public const string Assessments = Default + ".Assessments";
+        public const string FluidBalance = Default + ".FluidBalance";
+        public const string ShiftHandover = Default + ".ShiftHandover";
+    }
+
+    public static class Inpatient
+    {
+        public const string Default = GroupName + ".Inpatient";
+        public const string Rooms = Default + ".Rooms";
+        public const string Admissions = Default + ".Admissions";
+        public const string Dashboard = Default + ".Dashboard";
     }
 }
 

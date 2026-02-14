@@ -60,6 +60,22 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
             <label class="form-label">{{ '::Manufacturer' | abpLocalization }}</label>
             <input type="text" class="form-control" formControlName="manufacturer">
         </div>
+
+        <h5 class="mt-4 mb-3 border-bottom pb-2">{{ '::StockSettings' | abpLocalization }}</h5>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ '::MinimumStockLevel' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="minimumStockLevel">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ '::ReorderLevel' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="reorderLevel">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ '::BinLocation' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="binLocation">
+            </div>
+        </div>
       </form>
     </div>
     <div class="modal-footer">
@@ -99,7 +115,10 @@ export class DrugDialogComponent implements OnInit {
             strength: [''],
             form: [''],
             manufacturer: [''],
-            price: [0, Validators.required]
+            price: [0, Validators.required],
+            minimumStockLevel: [0],
+            reorderLevel: [0],
+            binLocation: ['']
         });
     }
 

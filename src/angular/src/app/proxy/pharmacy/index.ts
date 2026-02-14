@@ -1,5 +1,8 @@
 import * as Dtos from './dtos';
+export * from './dispensing.service';
 export * from './drug.service';
+export * from './inventory.service';
 export * from './models';
 export * from './pharmacy.service';
+export * from './pos.service';
 export { Dtos };

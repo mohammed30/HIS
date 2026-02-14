@@ -28,5 +28,11 @@ public class CreateUpdateDrugDto
     [StringLength(32)]
     public string? BatchNumberPrefix { get; set; }
 
+    public int MinimumStockLevel { get; set; }
+    public int ReorderLevel { get; set; }
+    
+    [StringLength(64)]
+    public string? BinLocation { get; set; }
+
     public decimal Price { get; set; } // To set on ServiceItem
 }

@@ -88,6 +88,23 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         drugs.AddChild(HISPermissions.Pharmacy.DrugsCreate, L("Permission:Create"));
         drugs.AddChild(HISPermissions.Pharmacy.DrugsEdit, L("Permission:Edit"));
         drugs.AddChild(HISPermissions.Pharmacy.DrugsDelete, L("Permission:Delete"));
+        pharmacy.AddChild(HISPermissions.Pharmacy.POS, L("Permission:PharmacyPOS"));
+
+        // Nursing
+        var nursing = hisGroup.AddPermission(HISPermissions.Nursing.Default, L("Permission:Nursing"));
+        nursing.AddChild(HISPermissions.Nursing.PatientList, L("Permission:PatientList"));
+        nursing.AddChild(HISPermissions.Nursing.VitalSigns, L("Permission:VitalSigns"));
+        nursing.AddChild(HISPermissions.Nursing.MedicationAdministration, L("Permission:MedicationAdministration"));
+        nursing.AddChild(HISPermissions.Nursing.CarePlans, L("Permission:CarePlans"));
+        nursing.AddChild(HISPermissions.Nursing.Assessments, L("Permission:Assessments"));
+        nursing.AddChild(HISPermissions.Nursing.FluidBalance, L("Permission:FluidBalance"));
+        nursing.AddChild(HISPermissions.Nursing.ShiftHandover, L("Permission:ShiftHandover"));
+
+        // Inpatient
+        var inpatient = hisGroup.AddPermission(HISPermissions.Inpatient.Default, L("Permission:Inpatient"));
+        inpatient.AddChild(HISPermissions.Inpatient.Rooms, L("Permission:RoomManagement"));
+        inpatient.AddChild(HISPermissions.Inpatient.Admissions, L("Permission:Admissions"));
+        inpatient.AddChild(HISPermissions.Inpatient.Dashboard, L("Permission:InpatientDashboard"));
     }
 
     private static LocalizableString L(string name)

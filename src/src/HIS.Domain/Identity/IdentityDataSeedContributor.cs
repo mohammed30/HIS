@@ -94,14 +94,17 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
             "HIS.Emergency", "HIS.Emergency.Dashboard",
             "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
-            "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete",
+            "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete", "HIS.Pharmacy.POS",
             "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations", "HIS.Inventory.Dashboard", 
             "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
             "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries", 
             "HIS.Billing.Payments", "HIS.Billing.DeferredPayments", "HIS.Billing.FinancialReports",
             "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
             "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
-            "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods"
+            "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods",
+            "HIS.Nursing", "HIS.Nursing.PatientList", "HIS.Nursing.VitalSigns", "HIS.Nursing.MedicationAdministration", 
+            "HIS.Nursing.CarePlans", "HIS.Nursing.Assessments", "HIS.Nursing.FluidBalance", "HIS.Nursing.ShiftHandover",
+            "HIS.Inpatient", "HIS.Inpatient.Rooms", "HIS.Inpatient.Admissions", "HIS.Inpatient.Dashboard"
         });
         
         await SetAdminPasswordAsync();

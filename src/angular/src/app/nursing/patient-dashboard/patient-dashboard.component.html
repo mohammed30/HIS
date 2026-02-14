@@ -1,0 +1,43 @@
+<div class="card" *ngIf="patient">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="card-title mb-0">{{ patient.fullNameAr || patient.fullNameEn }}</h3>
+                <p class="text-muted mb-0">MRN: {{ patient.mrn }} | {{ '::Age' | abpLocalization }}: {{ patient.age }}
+                </p>
+            </div>
+            <div>
+                <!-- Room/Bed info could be fetched from admission if needed -->
+            </div>
+        </div>
+
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+            <li [ngbNavItem]="1">
+                <a ngbNavLink>{{ '::VitalSigns' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-vital-signs [patientId]="patientId"></app-vital-signs>
+                    </div>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="2">
+                <a ngbNavLink>{{ '::MedicationAdministrationRecord' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-medication-administration [patientId]="patientId"></app-medication-administration>
+                    </div>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="3">
+                <a ngbNavLink>{{ 'Nursing::PatientCare' | abpLocalization }}</a>
+                <ng-template ngbNavContent>
+                    <div class="p-3">
+                        <app-patient-care-dashboard [patientId]="patientId"></app-patient-care-dashboard>
+                    </div>
+                </ng-template>
+            </li>
+        </ul>
+
+        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+</div>

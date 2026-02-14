@@ -1,0 +1,43 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">{{ '::Menu:Nursing:PatientList' | abpLocalization }}</h5>
+            </div>
+            <div class="col text-end col-md-6"></div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="admissions.items" [count]="admissions.totalCount" [list]="list" default>
+            <ngx-datatable-column [name]="'::PatientName' | abpLocalization" prop="patientName"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::MRN' | abpLocalization" prop="patientFileNumber"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::RoomNumber' | abpLocalization" prop="roomNumber"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::AdmissionDate' | abpLocalization" prop="admissionDate">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ value | date:'short' }}
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    {{ '::Enum:AdmissionStatus:' + value | abpLocalization }}
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [sortable]="false" [maxWidth]="150">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div ngbDropdown container="body" class="d-inline-block">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" ngbDropdownToggle>
+                            <i class="fa fa-cog me-1"></i>{{ '::Actions' | abpLocalization }}
+                        </button>
+                        <div ngbDropdownMenu>
+                            <button ngbDropdownItem (click)="viewChart(row)"> <!-- Need to implement viewChart -->
+                                {{ '::ViewChart' | abpLocalization }}
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>

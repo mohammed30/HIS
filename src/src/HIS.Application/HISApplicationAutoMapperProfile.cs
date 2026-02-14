@@ -189,5 +189,39 @@ public class HISApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.PatientName, opt => opt.Ignore())
             .ForMember(dest => dest.DoctorName, opt => opt.Ignore());
         CreateMap<Operations.CreateUpdateSurgicalOperationDto, Operations.SurgicalOperation>();
+
+        // Nursing
+        CreateMap<Nursing.MedicationAdministration, Nursing.MedicationAdministrationDto>()
+             .ForMember(x => x.PatientName, opt => opt.Ignore());
+        CreateMap<Nursing.CreateMedicationAdministrationDto, Nursing.MedicationAdministration>();
+
+        // Phase 2
+        CreateMap<Nursing.PatientRound, Nursing.PatientRoundDto>();
+        CreateMap<Nursing.CreatePatientRoundDto, Nursing.PatientRound>();
+        
+        CreateMap<Nursing.PainAssessment, Nursing.PainAssessmentDto>();
+        CreateMap<Nursing.CreatePainAssessmentDto, Nursing.PainAssessment>();
+        
+        CreateMap<Nursing.FallRiskAssessment, Nursing.FallRiskAssessmentDto>();
+        CreateMap<Nursing.CreateFallRiskAssessmentDto, Nursing.FallRiskAssessment>();
+        
+        CreateMap<Nursing.WoundCare, Nursing.WoundCareDto>();
+        CreateMap<Nursing.CreateWoundCareDto, Nursing.WoundCare>();
+        
+        CreateMap<Nursing.FluidBalance, Nursing.FluidBalanceDto>();
+        CreateMap<Nursing.CreateFluidBalanceDto, Nursing.FluidBalance>();
+        
+        CreateMap<Nursing.ShiftHandover, Nursing.ShiftHandoverDto>();
+        CreateMap<Nursing.CreateShiftHandoverDto, Nursing.ShiftHandover>();
+
+        CreateMap<Nursing.CarePlan, Nursing.CarePlanDto>()
+             .ForMember(x => x.PatientName, opt => opt.Ignore());
+        CreateMap<Nursing.CreateCarePlanDto, Nursing.CarePlan>();
+
+        CreateMap<Clinical.MedicalOrder, Nursing.DueMedicationDto>()
+             .ForMember(x => x.DrugName, map => map.MapFrom(s => s.ServiceName))
+             .ForMember(x => x.OrderDate, map => map.MapFrom(s => s.CreationTime));
     }
 }
+
+

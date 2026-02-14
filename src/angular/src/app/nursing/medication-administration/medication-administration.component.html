@@ -1,0 +1,61 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ '::DueMedications' | abpLocalization }}</h5>
+            </div>
+            <div class="card-body">
+                <div *ngIf="dueMedications.length === 0" class="text-muted">
+                    {{ '::NoDueMedications' | abpLocalization }}
+                </div>
+                <div class="list-group">
+                    <div *ngFor="let med of dueMedications" class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ med.drugName }} <small class="text-muted">({{ med.dosage }})</small>
+                            </h6>
+                            <small>{{ med.orderDate | date:'shortTime' }}</small>
+                        </div>
+                        <p class="mb-1">{{ med.instructions }}</p>
+                        <small>Route: {{ med.route }} | Freq: {{ med.frequency }}</small>
+                        <div class="mt-2 text-end">
+                            <div ngbDropdown class="d-inline-block">
+                                <button class="btn btn-outline-secondary btn-sm" ngbDropdownToggle>{{ '::Actions' |
+                                    abpLocalization }}</button>
+                                <div ngbDropdownMenu>
+                                    <button ngbDropdownItem (click)="markAs(med, status.Refused)">{{ '::Refused' |
+                                        abpLocalization }}</button>
+                                    <button ngbDropdownItem (click)="markAs(med, status.Skipped)">{{ '::Skipped' |
+                                        abpLocalization }}</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-success btn-sm ms-2" (click)="administer(med)">{{ '::Give' |
+                                abpLocalization }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ '::AdministrationHistory' | abpLocalization }}</h5>
+            </div>
+            <div class="card-body">
+                <ngx-datatable [rows]="history" [list]="{ maxResultCount: 10, skipCount: 0 }" default>
+                    <ngx-datatable-column [name]="'::Drug' | abpLocalization" prop="drugName"></ngx-datatable-column>
+                    <ngx-datatable-column [name]="'::Time' | abpLocalization" prop="administrationTime">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            {{ value | date:'short' }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            {{ '::Enum:AdministrationStatus:' + value | abpLocalization }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</div>

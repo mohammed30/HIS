@@ -13,6 +13,12 @@ public class Drug : FullAuditedAggregateRoot<Guid>
     public string Manufacturer { get; set; }
     public string? BatchNumberPrefix { get; set; }
     
+    // --- Phase 3: Stock & POS ---
+    public int MinimumStockLevel { get; set; }
+    public int ReorderLevel { get; set; }
+    public string? BinLocation { get; set; }
+
+    
     // Link to ServiceItem for Billing/Ordering
     public Guid? ServiceItemId { get; set; }
 

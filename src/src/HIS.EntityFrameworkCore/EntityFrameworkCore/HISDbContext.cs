@@ -1,4 +1,5 @@
 using HIS.General;
+using HIS.Nursing;
 using HIS.ActivityLogs;
 using HIS.Patients;
 using HIS.Settings;
@@ -113,6 +114,10 @@ public class HISDbContext :
     
     // Pharmacy (Master Data)
     public DbSet<HIS.Pharmacy.Drug> Drugs { get; set; }
+    
+    // Phase 3: Stock & POS
+    public DbSet<HIS.Pharmacy.StockTransfer> StockTransfers { get; set; }
+    public DbSet<HIS.Pharmacy.DispensingVerification> DispensingVerifications { get; set; }
 
     // Rooms & Inpatient
     public DbSet<HIS.Rooms.Room> Rooms { get; set; }
@@ -120,6 +125,18 @@ public class HISDbContext :
 
     // Operations (Surgery)
     public DbSet<HIS.Operations.SurgicalOperation> SurgicalOperations { get; set; }
+    
+    // Nursing Services
+    public DbSet<MedicationAdministration> MedicationAdministrations { get; set; }
+    public DbSet<CarePlan> CarePlans { get; set; }
+    
+    // Phase 2
+    public DbSet<PatientRound> PatientRounds { get; set; }
+    public DbSet<PainAssessment> PainAssessments { get; set; }
+    public DbSet<FallRiskAssessment> FallRiskAssessments { get; set; }
+    public DbSet<WoundCare> WoundCares { get; set; }
+    public DbSet<FluidBalance> FluidBalances { get; set; }
+    public DbSet<ShiftHandover> ShiftHandovers { get; set; }
 
     #region Entities from the modules
 
@@ -955,11 +972,92 @@ public class HISDbContext :
             b.Property(x => x.PatientShare).HasColumnType("decimal(18,2)");
             b.Property(x => x.InsuranceTotal).HasColumnType("decimal(18,2)");
             
-            b.HasIndex(x => x.PatientId);
             b.HasIndex(x => x.DoctorId);
             b.HasIndex(x => x.Status);
         });
+
+        // --- Nursing Module ---
+
+        builder.Entity<MedicationAdministration>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "MedicationAdministrations", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.DrugName).HasMaxLength(256);
+            b.Property(x => x.Dosage).HasMaxLength(128);
+            b.Property(x => x.Notes).HasMaxLength(500);
+
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.MedicalOrderId);
+            b.HasIndex(x => x.AdministrationTime);
+        });
+
+        builder.Entity<CarePlan>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "CarePlans", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Diagnosis).HasMaxLength(512).IsRequired();
+            b.Property(x => x.Goal).HasMaxLength(1024).IsRequired();
+            b.Property(x => x.Interventions).HasMaxLength(2048);
+            b.Property(x => x.Evaluation).HasMaxLength(1024);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.Status);
+        });
+
+            // Phase 2 Configurations
+
+            builder.Entity<PatientRound>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PatientRounds", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Note).HasMaxLength(2048).IsRequired();
+                b.HasIndex(x => x.PatientId);
+            });
+
+            builder.Entity<PainAssessment>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PainAssessments", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Characteristics).HasMaxLength(512);
+                b.Property(x => x.Intervention).HasMaxLength(512);
+                b.HasIndex(x => x.PatientId);
+            });
+
+            builder.Entity<FallRiskAssessment>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "FallRiskAssessments", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.HasIndex(x => x.PatientId);
+            });
+
+            builder.Entity<WoundCare>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "WoundCares", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Location).HasMaxLength(128);
+                b.Property(x => x.Exudate).HasMaxLength(128);
+                b.Property(x => x.Treatment).HasMaxLength(512);
+                b.Property(x => x.Notes).HasMaxLength(1024);
+                b.HasIndex(x => x.PatientId);
+            });
+
+            builder.Entity<FluidBalance>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "FluidBalances", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Notes).HasMaxLength(512);
+                b.HasIndex(x => x.PatientId);
+                b.HasIndex(x => x.EntryTime);
+            });
+
+            builder.Entity<ShiftHandover>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "ShiftHandovers", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Notes).HasMaxLength(4096);
+                b.HasIndex(x => x.HandoverTime);
+            });
     }
 }
-
-

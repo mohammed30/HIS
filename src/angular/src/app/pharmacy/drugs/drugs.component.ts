@@ -63,6 +63,15 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
                {{ '::' + row.form | abpLocalization }}
             </ng-template>
           </ngx-datatable-column>
+          
+          <ngx-datatable-column [name]="'::Bin' | abpLocalization" prop="binLocation" [width]="80"></ngx-datatable-column>
+          
+          <ngx-datatable-column [name]="'::StockParams' | abpLocalization" [width]="150">
+             <ng-template let-row="row" ngx-datatable-cell-template>
+                <small>Min: {{ row.minimumStockLevel }} | Re: {{ row.reorderLevel }}</small>
+             </ng-template>
+          </ngx-datatable-column>
+          
           <ngx-datatable-column [name]="'::Manufacturer' | abpLocalization" prop="manufacturer"></ngx-datatable-column>
  
           <ngx-datatable-column [name]="'::Actions' | abpLocalization" sortable="false" [width]="120">
