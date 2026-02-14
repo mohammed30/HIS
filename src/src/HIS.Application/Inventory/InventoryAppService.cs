@@ -7,6 +7,8 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using HIS.Inventory.Dtos;
+using HIS.Settings;
+using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
@@ -20,17 +22,20 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     private readonly IRepository<Warehouse, Guid> _warehouseRepository;
     private readonly IRepository<InventoryItem, Guid> _inventoryItemRepository;
     private readonly IRepository<InventoryTransaction, Guid> _inventoryTransactionRepository;
+    private readonly IRepository<Department, Guid> _departmentRepository;
     private readonly InventoryManager _inventoryManager;
 
     public InventoryAppService(
         IRepository<Warehouse, Guid> warehouseRepository,
         IRepository<InventoryItem, Guid> inventoryItemRepository,
         IRepository<InventoryTransaction, Guid> inventoryTransactionRepository,
+        IRepository<Department, Guid> departmentRepository,
         InventoryManager inventoryManager)
     {
         _warehouseRepository = warehouseRepository;
         _inventoryItemRepository = inventoryItemRepository;
         _inventoryTransactionRepository = inventoryTransactionRepository;
+        _departmentRepository = departmentRepository;
         _inventoryManager = inventoryManager;
     }
 
@@ -110,12 +115,12 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     [Authorize(HISPermissions.Inventory.StockOperations)]
     public async Task IssueStockAsync(IssueStockDto input)
     {
-        // TODO: Pass DepartmentId to Manager if needed for Accounting
         await _inventoryManager.IssueStockAsync(
             input.WarehouseId,
             input.ProductId,
             input.Quantity,
-            input.ReferenceNumber
+            input.ReferenceNumber,
+            input.DepartmentId
         );
     }
 
@@ -131,5 +136,58 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     {
         var item = await _inventoryItemRepository.GetAsync(id);
         return ObjectMapper.Map<InventoryItem, InventoryItemDto>(item);
+    }
+    [HttpGet("consumption-report")]
+    public async Task<List<DepartmentConsumptionReportDto>> GetConsumptionReportAsync(GetConsumptionReportInput input)
+    {
+        var query = await _inventoryTransactionRepository.GetQueryableAsync();
+        var itemQuery = await _inventoryItemRepository.GetQueryableAsync();
+        
+        // Filter transactions
+        var transactions = query.Where(x => 
+            x.TransactionType == TransactionType.Issue &&
+            x.TransactionDate >= input.StartDate &&
+            x.TransactionDate <= input.EndDate &&
+            (input.DepartmentId == null || x.DepartmentId == input.DepartmentId)
+        );
+
+        // Join with Items
+        var joined = from t in transactions
+                     join i in itemQuery on t.InventoryItemId equals i.Id
+                     select new { t, i };
+
+        var list = await AsyncExecuter.ToListAsync(joined);
+
+        // Group and Project (Doing in memory for now due to complexity of aggregates with Department name lookup)
+        // Optimization: Resolve department names separately
+        
+        var grouped = list
+            .GroupBy(x => new { x.t.DepartmentId, x.i.ProductId, x.i.ProductName })
+            .Select(g => new DepartmentConsumptionReportDto
+            {
+                DepartmentId = g.Key.DepartmentId ?? Guid.Empty,
+                DepartmentName = "", // To be filled
+                ProductId = g.Key.ProductId,
+                ProductName = g.Key.ProductName,
+                Quantity = g.Sum(x => x.t.Quantity),
+                TotalCost = g.Sum(x => x.t.Quantity * x.t.UnitCost)
+            })
+            .Where(x => x.DepartmentId != Guid.Empty)
+            .ToList();
+
+        // Fill Department Names
+        var departmentIds = grouped.Select(x => x.DepartmentId).Distinct().ToList();
+        var departments = await _departmentRepository.GetListAsync(x => departmentIds.Contains(x.Id));
+        var deptMap = departments.ToDictionary(x => x.Id, x => x.NameAr ?? x.NameEn);
+
+        foreach (var item in grouped)
+        {
+             if (deptMap.TryGetValue(item.DepartmentId, out var name))
+             {
+                 item.DepartmentName = name;
+             }
+        }
+        
+        return grouped;
     }
 }

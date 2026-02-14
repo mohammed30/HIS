@@ -1,0 +1,65 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title m-0">
+            <i class="fa fa-shopping-cart me-2"></i> Purchase Orders
+        </h5>
+        <button class="btn btn-primary" (click)="create()">
+            <i class="fa fa-plus me-1"></i> New Order
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Supplier</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of items">
+                        <td>{{ item.orderNumber }}</td>
+                        <td>{{ item.supplierName }}</td> <!-- Assuming BE maps this, or we need to fetch -->
+                        <td>{{ item.orderDate | date:'shortDate' }}</td>
+                        <td>
+                            <span class="badge" [ngClass]="{
+                'bg-secondary': item.status === PurchaseOrderStatus.Draft,
+                'bg-primary': item.status === PurchaseOrderStatus.Confirmed,
+                'bg-success': item.status === PurchaseOrderStatus.Received,
+                'bg-danger': item.status === PurchaseOrderStatus.Cancelled
+              }">
+                                {{ item.status === 0 ? 'Draft' : item.status === 1 ? 'Confirmed' : item.status === 2 ?
+                                'Received' : 'Cancelled' }}
+                            </span>
+                        </td>
+                        <td>{{ item.totalAmount | currency }}</td>
+                        <td>
+                            <button *ngIf="item.status === PurchaseOrderStatus.Draft"
+                                class="btn btn-sm btn-primary me-1" (click)="edit(item.id)">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                            <button *ngIf="item.status === PurchaseOrderStatus.Draft" class="btn btn-sm btn-danger"
+                                (click)="delete(item.id)">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="items.length === 0">
+                        <td colspan="6" class="text-center">No orders found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalCount > 0">
+            <ngb-pagination [(page)]="page" [pageSize]="pageSize" [collectionSize]="totalCount"
+                (pageChange)="onPageChange($event)" [maxSize]="5" [boundaryLinks]="true">
+            </ngb-pagination>
+            <span class="text-muted">Total: {{ totalCount }}</span>
+        </div>
+    </div>
+</div>

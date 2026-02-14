@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Services;
 using Volo.Abp.Domain.Repositories;
 using HIS.Accounting;
+using HIS.Settings;
 using System.Linq;
 
 namespace HIS.Inventory;
@@ -13,6 +14,7 @@ public class InventoryManager : DomainService
     private readonly IRepository<InventoryTransaction, Guid> _transactionRepository;
     private readonly IRepository<InventoryBatch, Guid> _batchRepository;
     private readonly IRepository<Account, Guid> _accountRepository;
+    private readonly IRepository<Department, Guid> _departmentRepository;
     private readonly AccountingManager _accountingManager;
 
     public InventoryManager(
@@ -20,12 +22,14 @@ public class InventoryManager : DomainService
         IRepository<InventoryTransaction, Guid> transactionRepository,
         IRepository<InventoryBatch, Guid> batchRepository,
         IRepository<Account, Guid> accountRepository,
+        IRepository<Department, Guid> departmentRepository,
         AccountingManager accountingManager)
     {
         _inventoryItemRepository = inventoryItemRepository;
         _transactionRepository = transactionRepository;
         _batchRepository = batchRepository;
         _accountRepository = accountRepository;
+        _departmentRepository = departmentRepository;
         _accountingManager = accountingManager;
     }
 
@@ -91,7 +95,7 @@ public class InventoryManager : DomainService
         }
     }
 
-    public async Task IssueStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference)
+    public async Task IssueStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference, Guid? departmentId = null)
     {
         var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
         if (item == null || item.Quantity < quantity)
@@ -136,13 +140,29 @@ public class InventoryManager : DomainService
             quantity,
             quantity > 0 ? totalCostOfIssue / quantity : 0, // Effective Unit Cost for this Issue
             DateTime.Now,
-            reference
+            reference,
+            departmentId
         );
         await _transactionRepository.InsertAsync(transaction);
         
         // Integration Point: Accounting (Dr Expense, Cr Inventory)
+        // Integration Point: Accounting (Dr Expense, Cr Inventory)
         var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
-        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");   // Supplies Expense
+        Account expenseAccount = null;
+
+        if (departmentId.HasValue)
+        {
+             var department = await _departmentRepository.GetAsync(departmentId.Value);
+             if (department.CostCenterId.HasValue)
+             {
+                 expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == department.CostCenterId.Value);
+             }
+        }
+
+        if (expenseAccount == null)
+        {
+             expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");   // Supplies Expense (Default)
+        }
 
         if (inventoryAccount != null && expenseAccount != null)
         {

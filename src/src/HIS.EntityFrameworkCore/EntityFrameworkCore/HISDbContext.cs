@@ -44,6 +44,7 @@ public class HISDbContext :
     public DbSet<Clinic> Clinics { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<HIS.Settings.Laboratory> Laboratories { get; set; }
+    public DbSet<JobTitle> JobTitles { get; set; }
 
     // General Master Data (Definitions)
     public DbSet<Nationality> Nationalities { get; set; }
@@ -102,6 +103,9 @@ public class HISDbContext :
     public DbSet<HIS.Inventory.InventoryItem> InventoryItems { get; set; }
     public DbSet<HIS.Inventory.InventoryTransaction> InventoryTransactions { get; set; }
     public DbSet<HIS.Inventory.InventoryBatch> InventoryBatches { get; set; }
+    
+    public DbSet<HIS.Inventory.PurchaseOrder> PurchaseOrders { get; set; }
+    public DbSet<HIS.Inventory.PurchaseOrderLine> PurchaseOrderLines { get; set; }
     
     // Clinical
     public DbSet<HIS.Clinical.MedicalOrder> MedicalOrders { get; set; }
@@ -769,6 +773,17 @@ public class HISDbContext :
             b.Property(x => x.ContactPerson).HasMaxLength(128);
             b.Property(x => x.Phone).HasMaxLength(32);
             b.Property(x => x.Email).HasMaxLength(128);
+            b.Property(x => x.TaxId).HasMaxLength(50);
+        });
+
+        builder.Entity<HIS.Settings.JobTitle>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "JobTitles", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128);
+            b.Property(x => x.Description).HasMaxLength(512);
+            b.HasIndex(x => x.DepartmentId);
         });
 
         builder.Entity<HIS.Inventory.InventoryItem>(b =>
@@ -803,6 +818,36 @@ public class HISDbContext :
             b.HasIndex(x => x.InventoryItemId);
             b.HasIndex(x => x.ReceivedDate);
         });
+
+        builder.Entity<HIS.Inventory.PurchaseOrder>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PurchaseOrders", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.OrderNumber).HasMaxLength(32).IsRequired();
+            b.Property(x => x.ReferenceNumber).HasMaxLength(64);
+            b.Property(x => x.Notes).HasMaxLength(2048);
+            b.Property(x => x.TotalAmount).HasPrecision(18, 2);
+            
+            b.HasIndex(x => x.OrderNumber).IsUnique();
+            b.HasIndex(x => x.SupplierId);
+        });
+
+        builder.Entity<HIS.Inventory.PurchaseOrderLine>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PurchaseOrderLines", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Quantity).HasPrecision(18, 4);
+            b.Property(x => x.UnitPrice).HasPrecision(18, 2);
+            b.Property(x => x.Discount).HasPrecision(18, 2);
+            b.Property(x => x.TotalAmount).HasPrecision(18, 2);
+            b.Property(x => x.Description).HasMaxLength(256);
+            
+            b.HasIndex(x => x.PurchaseOrderId);
+            b.HasIndex(x => x.ProductId);
+            
+            b.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).IsRequired(false);
+        });
+
 
         // Medical Order
         builder.Entity<HIS.Clinical.MedicalOrder>(b => 

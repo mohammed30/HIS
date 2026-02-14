@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -18,4 +19,5 @@ public interface IInventoryAppService : IApplicationService
     Task<PagedResultDto<InventoryItemDto>> GetStockLevelsAsync(Guid warehouseId);
     Task ReceiveStockAsync(ReceiveStockDto input);
     Task IssueStockAsync(IssueStockDto input);
+    Task<List<DepartmentConsumptionReportDto>> GetConsumptionReportAsync(GetConsumptionReportInput input);
 }

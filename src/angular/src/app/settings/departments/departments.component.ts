@@ -15,6 +15,7 @@ interface Department {
   extensionNumber?: string;
   isActive: boolean;
   sortOrder: number;
+  costCenterId?: string;
 }
 
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -142,6 +143,15 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
                   <label class="form-label">الترتيب</label>
                   <input type="number" class="form-control" [(ngModel)]="formData.sortOrder">
                 </div>
+                <div class="mb-3">
+                  <label class="form-label">مركز التكلفة (الحساب)</label>
+                  <select class="form-select" [(ngModel)]="formData.costCenterId">
+                    <option [ngValue]="null">-- اختر مركز التكلفة --</option>
+                    @for (acc of accounts; track acc.id) {
+                      <option [ngValue]="acc.id">{{ acc.code }} - {{ acc.name }}</option>
+                    }
+                  </select>
+                </div>
                 <div class="form-check mb-3">
                   <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" id="isActive">
                   <label class="form-check-label" for="isActive">نشط</label>
@@ -170,6 +180,7 @@ export class DepartmentsComponent implements OnInit {
   private confirmation = inject(ConfirmationService);
 
   items: Department[] = [];
+  accounts: any[] = [];
   searchText = '';
   showForm = false;
   editingItem: Department | null = null;
@@ -182,10 +193,11 @@ export class DepartmentsComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
+    this.loadAccounts();
   }
 
   getEmptyForm(): Partial<Department> {
-    return { code: '', nameAr: '', nameEn: '', description: '', location: '', extensionNumber: '', isActive: true, sortOrder: 0 };
+    return { code: '', nameAr: '', nameEn: '', description: '', location: '', extensionNumber: '', isActive: true, sortOrder: 0, costCenterId: null };
   }
 
   resetForm() {
@@ -198,6 +210,15 @@ export class DepartmentsComponent implements OnInit {
       next: (res) => {
         this.items = res.items || [];
         this.totalCount = res.totalCount || 0;
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  loadAccounts() {
+    this.http.get<any>(environment.apis.default.url + '/api/app/account?maxResultCount=1000').subscribe({
+      next: (res) => {
+        this.accounts = res.items || [];
       },
       error: (err) => console.error(err)
     });

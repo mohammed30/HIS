@@ -12,4 +12,5 @@ public class InventoryTransactionDto : EntityDto<Guid>
     public decimal TotalValue => Quantity * UnitCost;
     public DateTime TransactionDate { get; set; }
     public string ReferenceNumber { get; set; }
+    public Guid? DepartmentId { get; set; }
 }

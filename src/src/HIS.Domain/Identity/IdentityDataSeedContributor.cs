@@ -64,7 +64,8 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults" 
         });
         await GrantPermissionsAsync("StoreKeeper", new[] { 
-            "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations" 
+            "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations",
+            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption"
         });
         await GrantPermissionsAsync("PatientsUser", new[] { 
             "HIS.Patients", "HIS.Appointments", "HIS.Billing" 
@@ -78,7 +79,29 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock",
             "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets",
             "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices",
-            "HIS.Reception.Payments"
+            "HIS.Reception.Payments",
+            "HIS.Billing.FinancialReports"
+        });
+        
+        // Ensure Admin has EVERYTHING (Root + All Children)
+        await GrantPermissionsAsync("admin", new[] { 
+            "HIS.Settings",
+            "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
+            "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
+            "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets", 
+            "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
+            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults", 
+            "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
+            "HIS.Emergency", "HIS.Emergency.Dashboard",
+            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
+            "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete",
+            "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations", "HIS.Inventory.Dashboard", 
+            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
+            "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries", 
+            "HIS.Billing.Payments", "HIS.Billing.DeferredPayments", "HIS.Billing.FinancialReports",
+            "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
+            "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
+            "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods"
         });
         
         await SetAdminPasswordAsync();

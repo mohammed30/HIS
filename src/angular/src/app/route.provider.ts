@@ -94,6 +94,15 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Billing.JournalEntries',
     },
+    {
+      path: '/accounting/reports',
+      name: '::Menu:FinancialReports',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-chart-line',
+      order: 33,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.FinancialReports',
+    },
     // Insurance
     {
       name: '::Menu:Insurance',
@@ -261,6 +270,15 @@ function configureRoutes() {
       order: 114,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Definitions.ReferralSources',
+    },
+    {
+      path: '/settings/job-titles',
+      name: '::Menu:JobTitles',
+      parentName: '::Menu:Definitions',
+      iconClass: 'fas fa-user-tag',
+      order: 115,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/appointments/waiting-list',
@@ -445,6 +463,33 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Inventory.ManageWarehouses',
     },
     {
+      path: '/inventory/suppliers',
+      name: '::Menu:Suppliers',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-truck',
+      order: 38,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.Suppliers',
+    },
+    {
+      path: '/inventory/purchase-orders',
+      name: '::Menu:PurchaseOrders',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-shopping-cart',
+      order: 39,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.PurchaseOrders',
+    },
+    {
+      path: '/inventory/reports/department-consumption',
+      name: '::Menu:DepartmentalConsumption',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-chart-pie',
+      order: 40,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.DepartmentalConsumption',
+    },
+    {
       path: '/setting-management',
       name: '::Menu:Settings',
       iconClass: 'fas fa-cog',
@@ -452,5 +497,6 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Settings',
     }
+    // Force rebuild 2
   ]);
 }

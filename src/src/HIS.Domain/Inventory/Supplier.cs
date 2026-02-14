@@ -11,9 +11,11 @@ public class Supplier : FullAuditedAggregateRoot<Guid>
     public string Email { get; set; }
     public string Address { get; set; }
 
+    public string TaxId { get; set; }
+
     protected Supplier() { }
 
-    public Supplier(Guid id, string name, string contactPerson = null, string phone = null, string email = null, string address = null) 
+    public Supplier(Guid id, string name, string contactPerson = null, string phone = null, string email = null, string address = null, string taxId = null) 
         : base(id)
     {
         Name = name;
@@ -21,5 +23,6 @@ public class Supplier : FullAuditedAggregateRoot<Guid>
         Phone = phone;
         Email = email;
         Address = address;
+        TaxId = taxId;
     }
 }

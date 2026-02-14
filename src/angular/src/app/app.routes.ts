@@ -43,8 +43,7 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'settings',
-    canActivate: [authGuard, permissionGuard],
-    // data: { requiredPolicy: 'HIS.Settings' }, // Removed to allow granular child control
+    canActivate: [authGuard],
     children: [
       {
         path: 'hospital',
@@ -87,13 +86,18 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./settings/doctor-schedule').then(c => c.DoctorScheduleComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Settings' }
+      },
+      {
+        path: 'job-titles',
+        loadComponent: () => import('./settings/job-titles/job-titles.component').then(c => c.JobTitlesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       }
     ]
   },
   {
     path: 'definitions',
-    canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Definitions' },
+    canActivate: [authGuard],
     children: [
       {
         path: 'nationalities',
@@ -154,8 +158,7 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'reception',
-    canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Reception' },
+    canActivate: [authGuard],
     children: [
       {
         path: 'insurance-companies',
@@ -210,8 +213,7 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'accounting',
-    canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Billing' },
+    canActivate: [authGuard],
     children: [
       {
         path: 'chart-of-accounts',
@@ -224,13 +226,18 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./accounting/journal-entries/journal-entries').then(c => c.JournalEntriesComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Billing.JournalEntries' }
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./accounting/reports/financial-reports.component').then(c => c.FinancialReportsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
       }
     ]
   },
   {
     path: 'inventory',
-    canActivate: [authGuard, permissionGuard],
-    data: { requiredPolicy: 'HIS.Inventory' },
+    canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
@@ -261,6 +268,24 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./inventory/issue-stock/issue-stock.component').then(c => c.IssueStockComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
+      },
+      {
+        path: 'suppliers',
+        loadChildren: () => import('./inventory/suppliers/suppliers-module').then(m => m.SuppliersModule),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.Suppliers' }
+      },
+      {
+        path: 'purchase-orders',
+        loadChildren: () => import('./inventory/purchase-orders/purchase-orders.module').then(m => m.PurchaseOrdersModule),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.PurchaseOrders' }
+      },
+      {
+        path: 'reports/department-consumption',
+        loadComponent: () => import('./inventory/reports/department-consumption-report.component').then(c => c.DepartmentConsumptionReportComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.DepartmentalConsumption' }
       }
     ]
   },

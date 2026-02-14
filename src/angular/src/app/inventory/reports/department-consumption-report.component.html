@@ -1,0 +1,75 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">{{ '::DepartmentConsumptionReport' | abpLocalization }}</h5>
+    </div>
+    <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="generateReport()">
+            <div class="row align-items-end">
+                <div class="col-md-3 form-group">
+                    <label>{{ '::StartDate' | abpLocalization }}</label>
+                    <div class="input-group">
+                        <input class="form-control" name="dp1" formControlName="startDate" ngbDatepicker
+                            #d1="ngbDatepicker">
+                        <button class="btn btn-outline-secondary" (click)="d1.toggle()" type="button">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label>{{ '::EndDate' | abpLocalization }}</label>
+                    <div class="input-group">
+                        <input class="form-control" name="dp2" formControlName="endDate" ngbDatepicker
+                            #d2="ngbDatepicker">
+                        <button class="btn btn-outline-secondary" (click)="d2.toggle()" type="button">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label>{{ '::Department' | abpLocalization }}</label>
+                    <select class="form-control" formControlName="departmentId">
+                        <option [ngValue]="null">{{ '::AllDepartments' | abpLocalization }}</option>
+                        <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.nameAr || d.nameEn }}</option>
+                    </select>
+                </div>
+                <div class="col-md-3 form-group">
+                    <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || isLoading">
+                        <i class="fa fa-sync" [class.fa-spin]="isLoading"></i> {{ '::Generate' | abpLocalization }}
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>{{ '::Department' | abpLocalization }}</th>
+                        <th>{{ '::Product' | abpLocalization }}</th>
+                        <th>{{ '::Quantity' | abpLocalization }}</th>
+                        <th>{{ '::TotalCost' | abpLocalization }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of reportData">
+                        <td>{{ row.departmentName }}</td>
+                        <td>{{ row.productName }}</td>
+                        <td>{{ row.quantity | number }}</td>
+                        <td>{{ row.totalCost | currency }}</td>
+                    </tr>
+                    <tr *ngIf="reportData.length === 0 && !isLoading">
+                        <td colspan="4" class="text-center">{{ '::NoDataFound' | abpLocalization }}</td>
+                    </tr>
+                </tbody>
+                <tfoot *ngIf="reportData.length > 0">
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-end">{{ '::Total' | abpLocalization }}</td>
+                        <td>{{ getTotalCost() | currency }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

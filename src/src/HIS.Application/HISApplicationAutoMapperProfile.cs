@@ -1,5 +1,6 @@
 using AutoMapper;
 using HIS.Settings;
+using HIS.Settings.Dtos;
 
 namespace HIS;
 
@@ -16,6 +17,9 @@ public class HISApplicationAutoMapperProfile : Profile
 
         CreateMap<Department, DepartmentDto>();
         CreateMap<CreateUpdateDepartmentDto, Department>();
+
+        CreateMap<JobTitle, JobTitleDto>();
+        CreateMap<CreateUpdateJobTitleDto, JobTitle>();
 
         CreateMap<Clinic, ClinicDto>();
         CreateMap<CreateUpdateClinicDto, Clinic>();
@@ -49,6 +53,17 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Inventory.Dtos.CreateUpdateWarehouseDto, Inventory.Warehouse>();
         
         CreateMap<Inventory.InventoryItem, Inventory.Dtos.InventoryItemDto>();
+        
+        CreateMap<Inventory.Supplier, Inventory.Dtos.SupplierDto>();
+        CreateMap<Inventory.Dtos.CreateUpdateSupplierDto, Inventory.Supplier>();
+
+        CreateMap<Inventory.PurchaseOrder, Inventory.Dtos.PurchaseOrderDto>()
+            .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name));
+        
+        CreateMap<Inventory.PurchaseOrderLine, Inventory.Dtos.PurchaseOrderLineDto>()
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+        CreateMap<Inventory.Dtos.CreateUpdatePurchaseOrderDto, Inventory.PurchaseOrder>()
+            .ForMember(x => x.PurchaseOrderLines, opt => opt.Ignore());
 
         CreateMap<ActivityLogs.ActivityLog, ActivityLogs.ActivityLogDto>();
 

@@ -59,6 +59,9 @@ public static class HISPermissions
         public const string ManageWarehouses = Default + ".ManageWarehouses";
         public const string StockOperations = Default + ".StockOperations";
         public const string Dashboard = Default + ".Dashboard";
+        public const string Suppliers = Default + ".Suppliers";
+        public const string PurchaseOrders = Default + ".PurchaseOrders";
+        public const string DepartmentalConsumption = Default + ".DepartmentalConsumption";
     }
 
     public static class Billing
@@ -69,6 +72,7 @@ public static class HISPermissions
         public const string JournalEntries = Default + ".JournalEntries";
         public const string Payments = Default + ".Payments";
         public const string DeferredPayments = Default + ".DeferredPayments";
+        public const string FinancialReports = Default + ".FinancialReports";
     }
 
     public static class Definitions

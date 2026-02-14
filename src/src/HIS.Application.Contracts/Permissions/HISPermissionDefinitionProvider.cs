@@ -53,6 +53,9 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         inventory.AddChild(HISPermissions.Inventory.ManageWarehouses, L("Permission:ManageWarehouses"));
         inventory.AddChild(HISPermissions.Inventory.StockOperations, L("Permission:StockOperations"));
         inventory.AddChild(HISPermissions.Inventory.Dashboard, L("Permission:Dashboard"));
+        inventory.AddChild(HISPermissions.Inventory.Suppliers, L("Permission:Suppliers"));
+        inventory.AddChild(HISPermissions.Inventory.PurchaseOrders, L("Permission:PurchaseOrders"));
+        inventory.AddChild(HISPermissions.Inventory.DepartmentalConsumption, L("Permission:DepartmentalConsumption"));
 
         // Billing
         var billing = hisGroup.AddPermission(HISPermissions.Billing.Default, L("Permission:Billing"));
@@ -61,6 +64,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
         billing.AddChild(HISPermissions.Billing.Payments, L("Permission:Payments"));
         billing.AddChild(HISPermissions.Billing.DeferredPayments, L("Permission:DeferredPayments"));
+        billing.AddChild(HISPermissions.Billing.FinancialReports, L("Permission:FinancialReports"));
 
         // Definitions
         var definitions = hisGroup.AddPermission(HISPermissions.Definitions.Default, L("Permission:Definitions"));

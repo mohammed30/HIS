@@ -59,6 +59,11 @@ public class Department : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// <summary>
     /// هل هو قسم طبي؟ إذا كان true يظهر في قائمة تعريف الأطباء
     /// </summary>
+    /// <summary>
+    /// مركز التكلفة (الحساب المالي)
+    /// </summary>
+    public Guid? CostCenterId { get; set; }
+
     public bool IsMedical { get; set; } = false;
 
     protected Department()
