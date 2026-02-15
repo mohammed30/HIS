@@ -76,20 +76,23 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         });
 
         await GrantPermissionsAsync("AdminStaff", new[] { 
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock",
+            "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
+            "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
+            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
             "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets",
-            "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices",
-            "HIS.Reception.Payments",
-            "HIS.Billing.FinancialReports",
-            "HIS.Billing.ReceiptVouchers",
-            "HIS.Billing.PaymentVouchers",
-            "HIS.Billing.BankTransactions",
-            "HIS.Billing.ContractClaims",
+            "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
+            "HIS.Laboratory", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
+            "HIS.Billing", "HIS.Billing.FinancialReports", "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers",
+            "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims", "HIS.Billing.ManageInvoices", "HIS.Billing.JournalEntries",
+            "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
+            "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
+            "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods",
             "HIS.Inpatient",
             "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
             "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
             "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
-            "HIS.Inpatient.Dashboard"
+            "HIS.Inpatient.Dashboard",
+            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket"
         });
         
         // Ensure Admin has EVERYTHING (Root + All Children)

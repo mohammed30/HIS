@@ -6,22 +6,30 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace HIS.Accounting;
 
 public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDependency
 {
     private readonly IRepository<Account, Guid> _accountRepository;
+    private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
+    public ILogger<FinancialDataSeedContributor> Logger { get; set; }
 
     public FinancialDataSeedContributor(
         IRepository<Account, Guid> accountRepository,
+        IRepository<JournalEntry, Guid> journalEntryRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant)
     {
         _accountRepository = accountRepository;
+        _journalEntryRepository = journalEntryRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
+        Logger = NullLogger<FinancialDataSeedContributor>.Instance;
     }
 
     public async Task SeedAsync(DataSeedContext context)
@@ -39,7 +47,15 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
     private async Task PatchArabicNamesAsync()
     {
-        await UpdateNameArAsync("1000", "الأصول");
+        Logger.LogInformation("Starting Financial Data Patch...");
+
+        // Ensure Root accounts exist even in patch mode
+        var assets = await EnsureAccountExistsAsync("1000", "Assets", "الأصول", AccountType.Asset, null);
+        var liabilities = await EnsureAccountExistsAsync("2000", "Liabilities", "الخصوم", AccountType.Liability, null);
+        var equity = await EnsureAccountExistsAsync("3000", "Equity", "حقوق الملكية", AccountType.Equity, null);
+        var revenue = await EnsureAccountExistsAsync("4000", "Revenue", "الإيرادات", AccountType.Revenue, null);
+        var expenses = await EnsureAccountExistsAsync("5000", "Expenses", "المصروفات", AccountType.Expense, null);
+
         await UpdateNameArAsync("1100", "أصول متداولة");
         await UpdateNameArAsync("1110", "النقدية");
         await UpdateNameArAsync("1120", "المدينون");
@@ -49,33 +65,62 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         await UpdateNameArAsync("1210", "مباني");
         await UpdateNameArAsync("1220", "أجهزة طبية");
 
-        await UpdateNameArAsync("2000", "الخصوم");
         await UpdateNameArAsync("2100", "خصوم متداولة");
         await UpdateNameArAsync("2110", "الدائنون");
 
-        await UpdateNameArAsync("3000", "حقوق الملكية");
         await UpdateNameArAsync("3100", "رأس المال");
         await UpdateNameArAsync("3200", "أرباح مبقاة");
 
-        await UpdateNameArAsync("4000", "الإيرادات");
         await UpdateNameArAsync("4100", "إيرادات خدمات طبية");
-        await UpdateNameArAsync("4110", "إيرادات العمليات");
         await UpdateNameArAsync("4200", "إيرادات صيدلية");
 
-        await UpdateNameArAsync("5000", "المصروفات");
         await UpdateNameArAsync("5100", "مصروفات الرواتب");
         await UpdateNameArAsync("5200", "مصروفات مستلزمات");
         await UpdateNameArAsync("5300", "مصروفات مرافق");
 
         // Ensure Surgery Revenue exists
-        if (await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4110") == null)
+        await EnsureAccountExistsAsync("4110", "Surgery Revenue", "إيرادات العمليات", AccountType.Revenue, revenue.Id);
+        
+        Logger.LogInformation("Financial Data Patch Completed.");
+    }
+
+    private async Task<Account> EnsureAccountExistsAsync(string code, string name, string nameAr, AccountType type, Guid? parentId)
+    {
+        var account = await _accountRepository.FirstOrDefaultAsync(x => x.Code == code);
+        if (account == null)
         {
-            var revenue = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4000"); // Parent: Revenue
-            if (revenue != null)
-            {
-                await CreateAccountAsync("4110", "Surgery Revenue", "إيرادات العمليات", AccountType.Revenue, revenue.Id);
-            }
+            Logger.LogInformation($"Account {code} missing. Creating...");
+            return await CreateAccountAsync(code, name, nameAr, type, parentId);
         }
+        
+        bool changed = false;
+        // Update NameAr if it was missing
+        if (string.IsNullOrEmpty(account.NameAr) && !string.IsNullOrEmpty(nameAr))
+        {
+            account.NameAr = nameAr;
+            changed = true;
+        }
+
+        if (account.ParentId != parentId)
+        {
+            Logger.LogInformation($"Account {code} has wrong parent (Current: {account.ParentId}, Expected: {parentId}). Updating...");
+            account.ParentId = parentId;
+            changed = true;
+        }
+
+        if (account.Type != type)
+        {
+            Logger.LogInformation($"Account {code} has wrong type (Current: {account.Type}, Expected: {type}). Updating...");
+            account.Type = type;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await _accountRepository.UpdateAsync(account);
+        }
+        
+        return account;
     }
 
     private async Task UpdateNameArAsync(string code, string nameAr)
@@ -93,7 +138,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         // 1. Assets (الأصول)
         var assets = await CreateAccountAsync("1000", "Assets", "الأصول", AccountType.Asset, null);
         var currentAssets = await CreateAccountAsync("1100", "Current Assets", "أصول متداولة", AccountType.Asset, assets.Id);
-        await CreateAccountAsync("1110", "Cash", "النقدية", AccountType.Asset, currentAssets.Id);
+        var cash = await CreateAccountAsync("1110", "Cash", "النقدية", AccountType.Asset, currentAssets.Id);
         await CreateAccountAsync("1120", "Accounts Receivable", "المدينون", AccountType.Asset, currentAssets.Id);
         await CreateAccountAsync("1130", "Inventory", "المخزون", AccountType.Asset, currentAssets.Id);
 
@@ -108,7 +153,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
         // 3. Equity (حقوق الملكية)
         var equity = await CreateAccountAsync("3000", "Equity", "حقوق الملكية", AccountType.Equity, null);
-        await CreateAccountAsync("3100", "Capital", "رأس المال", AccountType.Equity, equity.Id);
+        var capital = await CreateAccountAsync("3100", "Capital", "رأس المال", AccountType.Equity, equity.Id);
         await CreateAccountAsync("3200", "Retained Earnings", "أرباح مبقاة", AccountType.Equity, equity.Id);
 
         // 4. Revenue (الإيرادات)
@@ -122,6 +167,22 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         await CreateAccountAsync("5100", "Salaries Expense", "مصروفات الرواتب", AccountType.Expense, expenses.Id);
         await CreateAccountAsync("5200", "Supplies Expense", "مصروفات مستلزمات", AccountType.Expense, expenses.Id);
         await CreateAccountAsync("5300", "Utilities Expense", "مصروفات مرافق", AccountType.Expense, expenses.Id);
+
+        // 6. Sample Journal Entries (only on fresh seed)
+        await CreateJournalEntryAsync(DateTime.Now.AddDays(-30), "Initial Capital Injection", 
+            new[] { (cash.Id, 100000m, 0m), (capital.Id, 0m, 100000m) });
+    }
+
+    private async Task CreateJournalEntryAsync(DateTime date, string description, (Guid AccountId, decimal Debit, decimal Credit)[] lines)
+    {
+        var entry = new JournalEntry(_guidGenerator.Create(), date, "JE-" + date.ToString("yyyyMMdd") + "-" + new Random().Next(100, 999), description);
+
+        foreach (var line in lines)
+        {
+            entry.AddLine(_guidGenerator, line.AccountId, line.Debit, line.Credit);
+        }
+
+        await _journalEntryRepository.InsertAsync(entry);
     }
 
     private async Task<Account> CreateAccountAsync(string code, string name, string nameAr, AccountType type, Guid? parentId)
