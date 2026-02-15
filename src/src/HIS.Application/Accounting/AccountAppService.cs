@@ -19,6 +19,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<ReceiptVoucher, Guid> _receiptVoucherRepository;
     private readonly IRepository<PaymentVoucher, Guid> _paymentVoucherRepository;
+    private readonly IRepository<JournalEntryLine, Guid> _journalEntryLineRepository;
 
     public AccountAppService(
         IRepository<Account, Guid> repository,
@@ -26,7 +27,8 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         IRepository<Invoice, Guid> invoiceRepository,
         IRepository<Patient, Guid> patientRepository,
         IRepository<ReceiptVoucher, Guid> receiptVoucherRepository,
-        IRepository<PaymentVoucher, Guid> paymentVoucherRepository)
+        IRepository<PaymentVoucher, Guid> paymentVoucherRepository,
+        IRepository<JournalEntryLine, Guid> journalEntryLineRepository)
         : base(repository)
     {
         _journalEntryRepository = journalEntryRepository;
@@ -34,6 +36,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         _patientRepository = patientRepository;
         _receiptVoucherRepository = receiptVoucherRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
+        _journalEntryLineRepository = journalEntryLineRepository;
     }
 
     public async Task<IncomeStatementDto> GetIncomeStatementAsync(DateRangeDto input)
@@ -422,13 +425,16 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         // 3. Journal Entries (Optional: exclude those generated from vouchers if they are duplicates)
         // For now, list all.
         var jes = await _journalEntryRepository.GetListAsync(
-            x => x.Date >= startDate && x.Date <= endDate,
-            includeDetails: true
+            x => x.Date >= startDate && x.Date <= endDate
         );
         
+        var jeIds = jes.Select(x => x.Id).ToList();
+        var allJeLines = await _journalEntryLineRepository.GetListAsync(x => jeIds.Contains(x.JournalEntryId));
+
         foreach (var je in jes)
         {
-            var amount = je.Lines?.Sum(l => l.Debit) ?? 0;
+            var lines = allJeLines.Where(x => x.JournalEntryId == je.Id).ToList();
+            var amount = lines.Sum(l => l.Debit); // Sum of debits for the entry volume
             dto.Transactions.Add(new ReportTransactionDto
             {
                 Date = je.Date,
@@ -441,6 +447,16 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         }
 
         dto.Transactions = dto.Transactions.OrderByDescending(x => x.Date).ToList();
+        
+        // Explicitly calculate totals since we changed them to auto-properties for serialization
+        dto.TotalReceipts = dto.Transactions
+            .Where(x => x.Type == "Receipt" || (x.Type == "JournalEntry" && x.Amount > 0))
+            .Sum(x => x.Amount);
+            
+        dto.TotalPayments = dto.Transactions
+            .Where(x => x.Type == "Payment" || (x.Type == "JournalEntry" && x.Amount < 0))
+            .Sum(x => Math.Abs(x.Amount)); // Ensure payments are positive for display if stored as negative
+
         return dto;
     }
 
@@ -451,20 +467,30 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         var invoicesQuery = await _invoiceRepository.GetQueryableAsync();
         var patientsQuery = await _patientRepository.GetQueryableAsync();
 
-        var debts = from i in invoicesQuery
-                    group i by i.PatientId into g
-                    join p in patientsQuery on g.Key equals p.Id
+        // Aggregate invoices first
+        var invoiceTotals = from i in invoicesQuery
+                            group i by i.PatientId into g
+                            select new
+                            {
+                                PatientId = g.Key,
+                                TotalInvoiced = g.Sum(x => x.NetAmount),
+                                TotalPaid = g.Sum(x => x.PaidAmount)
+                            };
+
+        // Join with patients and calculate DueAmount
+        var query = from t in invoiceTotals
+                    join p in patientsQuery on t.PatientId equals p.Id
                     select new CustomerDebtDto
                     {
                         PatientId = p.Id,
                         PatientName = p.FirstNameAr + " " + p.LastNameAr,
                         MRN = p.MRN,
-                        TotalInvoiced = g.Sum(x => x.NetAmount),
-                        TotalPaid = g.Sum(x => x.PaidAmount),
-                        DueAmount = g.Sum(x => x.DueAmount)
+                        TotalInvoiced = t.TotalInvoiced,
+                        TotalPaid = t.TotalPaid,
+                        DueAmount = t.TotalInvoiced - t.TotalPaid
                     };
 
-        dto.Debts = await AsyncExecuter.ToListAsync(debts.Where(x => x.DueAmount > 0));
+        dto.Debts = await AsyncExecuter.ToListAsync(query.Where(x => x.DueAmount > 0));
         return dto;
     }
 

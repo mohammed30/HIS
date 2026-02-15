@@ -1,0 +1,23 @@
+/* Basic styling for master-detail layout */
+.table-active {
+    background-color: rgba(var(--abp-primary-rgb), 0.1) !important;
+    border-left: 4px solid var(--abp-primary) !important;
+}
+
+.sticky-top {
+    z-index: 10;
+}
+
+.form-select-sm,
+.form-control-sm {
+    font-size: 0.8rem;
+}
+
+.card-header.bg-dark {
+    background-color: #2c3e50 !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--abp-danger);
+    border-color: var(--abp-danger);
+}

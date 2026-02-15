@@ -54,6 +54,7 @@ export interface GetAdmissionsInput extends PagedAndSortedResultRequestDto {
     patientId?: string;
     status?: AdmissionStatus;
     roomId?: string;
+    roomTypeId?: number;
     fromDate?: string;
     toDate?: string;
 }

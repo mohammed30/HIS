@@ -1,108 +1,122 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CoreModule } from '@abp/ng.core';
 import { AdmissionService } from '@proxy/inpatient';
 import { AdmissionDto } from '@proxy/inpatient/models';
-import { CoreModule } from '@abp/ng.core';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { roomTypeOptions } from '@proxy/rooms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-    selector: 'app-admission-list',
-    standalone: true,
-    imports: [CommonModule, CoreModule, ThemeSharedModule],
-    template: `
-    <div class="container-fluid p-4">
-      <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center bg-transparent py-3">
-          <h2 class="m-0 h4"><i class="fas fa-hospital-user me-2 text-primary"></i> Admissions</h2>
-          <button class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> New Admission
-          </button>
-        </div>
-        
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>Patient</th>
-                  <th>MRN</th>
-                  <th>Room</th>
-                  <th>Admission Date</th>
-                  <th>Status</th>
-                  <th class="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let admission of admissions">
-                  <td>
-                    <div class="fw-bold">{{ admission.patientName }}</div>
-                  </td>
-                  <td><code class="text-secondary">{{ admission.patientFileNumber }}</code></td>
-                  <td>
-                    <span class="badge bg-light text-dark border">
-                      <i class="fas fa-door-open me-1 text-muted"></i> {{ admission.roomNumber }}
-                    </span>
-                  </td>
-                  <td class="small">{{ admission.admissionDate | date:'mediumDate' }}</td>
-                  <td>
-                    <span class="badge rounded-pill" [ngClass]="getStatusSeverityClass(admission.status)">
-                      {{ getStatusName(admission.status) }}
-                    </span>
-                  </td>
-                  <td class="text-end">
-                    <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-info" title="View">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-primary" title="Edit">
-                        <i class="fas fa-pencil-alt"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr *ngIf="admissions.length === 0">
-                  <td colspan="6" class="text-center py-5 text-muted">
-                    <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
-                    No admissions found
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  selector: 'app-admission-list',
+  standalone: true,
+  imports: [CommonModule, CoreModule, ThemeSharedModule, ReactiveFormsModule, NgbModule],
+  templateUrl: './admission-list.component.html',
+  styleUrls: ['./admission-list.component.scss']
 })
 export class AdmissionListComponent implements OnInit {
-    private admissionService = inject(AdmissionService);
-    admissions: AdmissionDto[] = [];
+  private admissionService = inject(AdmissionService);
+  private fb = inject(FormBuilder);
+  private toaster = inject(ToasterService);
 
-    ngOnInit() {
-        this.loadAdmissions();
-    }
+  admissions: AdmissionDto[] = [];
+  selectedAdmission: AdmissionDto | null = null;
+  roomTypes = roomTypeOptions;
 
-    loadAdmissions() {
-        this.admissionService.getList({ maxResultCount: 100 }).subscribe(result => {
-            this.admissions = result.items || [];
-        });
-    }
+  filterForm = this.fb.group({
+    roomTypeId: [null],
+    searchText: ['']
+  });
 
-    getStatusName(status: number | undefined): string {
-        switch (status) {
-            case 0: return 'Admitted';
-            case 1: return 'Discharged';
-            case 2: return 'Cancelled';
-            default: return 'Unknown';
+  detailForm = this.fb.group({
+    companionName: [''],
+    companionPhone: [''],
+    companionAddress: [''],
+    insuranceCeiling: [0],
+    isServicesStopped: [false],
+    pharmacyPercentage: [0],
+    purpose: [''],
+    notes: ['']
+  });
+
+  ngOnInit() {
+    this.loadAdmissions();
+  }
+
+  loadAdmissions() {
+    const filter = this.filterForm.value;
+    this.admissionService.getList({
+      maxResultCount: 100,
+      roomTypeId: filter.roomTypeId,
+      searchText: filter.searchText
+    }).subscribe(result => {
+      this.admissions = result.items || [];
+      if (this.selectedAdmission) {
+        // try to re-select if exists in new list
+        const found = this.admissions.find(x => x.id === this.selectedAdmission.id);
+        if (found) {
+          this.selectAdmission(found);
+        } else {
+          this.selectedAdmission = null;
         }
-    }
+      }
+    });
+  }
 
-    getStatusSeverityClass(status: number | undefined): string {
-        switch (status) {
-            case 0: return 'bg-info text-dark';
-            case 1: return 'bg-success';
-            case 2: return 'bg-danger';
-            default: return 'bg-secondary';
-        }
+  selectAdmission(admission: AdmissionDto) {
+    this.selectedAdmission = admission;
+    this.detailForm.patchValue({
+      companionName: admission.companionName,
+      companionPhone: admission.companionPhone,
+      companionAddress: admission.companionAddress,
+      insuranceCeiling: admission.insuranceCeiling,
+      isServicesStopped: admission.isServicesStopped,
+      pharmacyPercentage: admission.pharmacyPercentage,
+      purpose: admission.purpose,
+      notes: admission.notes
+    });
+  }
+
+  saveDetails() {
+    if (!this.selectedAdmission) return;
+
+    const formVal = this.detailForm.value;
+    // We need a specific update method in AppService for details, or use generic Update
+    // Assuming generic update for now, merging form values into selectedAdmission
+
+    const updateDto = {
+      ...this.selectedAdmission,
+      ...formVal,
+      patientId: this.selectedAdmission.patientId,
+      roomId: this.selectedAdmission.roomId,
+      bedId: this.selectedAdmission.bedId
+    };
+
+    this.admissionService.update(this.selectedAdmission.id, updateDto).subscribe(updated => {
+      this.toaster.success('::SuccessfullySaved');
+      this.selectAdmission(updated);
+      // Update list item without reload
+      const index = this.admissions.findIndex(x => x.id === updated.id);
+      if (index > -1) this.admissions[index] = updated;
+    });
+  }
+
+  getStatusName(status: number | undefined): string {
+    switch (status) {
+      case 0: return '::Enum:AdmissionStatus:0';
+      case 1: return '::Enum:AdmissionStatus:1';
+      case 2: return '::Enum:AdmissionStatus:2';
+      default: return '::Unknown';
     }
+  }
+
+  getStatusSeverityClass(status: number | undefined): string {
+    switch (status) {
+      case 0: return 'bg-info text-dark';
+      case 1: return 'bg-secondary';
+      case 2: return 'bg-danger';
+      default: return 'bg-light';
+    }
+  }
 }

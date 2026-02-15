@@ -10,7 +10,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ReservationDetailComponent } from '../reservation-detail/reservation-detail';
 import { ToasterService } from '@abp/ng.theme.shared';
 
-import { CoreModule } from '@abp/ng.core';
+import { CoreModule, PermissionService } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { FullCalendarModule } from '@fullcalendar/angular';
 
@@ -25,6 +25,7 @@ export class ReservationListComponent implements OnInit {
   reservationService = inject(ReservationService);
   modalService = inject(NgbModal);
   toaster = inject(ToasterService);
+  permissionService = inject(PermissionService);
 
   calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
@@ -66,7 +67,11 @@ export class ReservationListComponent implements OnInit {
   }
 
   handleDateClick(arg: DateClickArg) {
-    this.openModal(null, arg.dateStr);
+    if (this.permissionService.getGrantedPolicy('HIS.Inpatient.Reservations.Create')) {
+      this.openModal(null, arg.dateStr);
+    } else {
+      this.toaster.error('::Permission:Denied');
+    }
   }
 
   handleEventClick(arg: EventClickArg) {

@@ -21,8 +21,16 @@ public class RoomAppService : CrudAppService<
     GetRoomsInput,
     CreateUpdateRoomDto>, IRoomAppService
 {
-    public RoomAppService(IRepository<Room, Guid> repository) : base(repository)
+    private readonly IRepository<HIS.Inpatient.Admission, Guid> _admissionRepository;
+    private readonly IRepository<HIS.Inpatient.Reservation, Guid> _reservationRepository;
+
+    public RoomAppService(
+        IRepository<Room, Guid> repository,
+        IRepository<HIS.Inpatient.Admission, Guid> admissionRepository,
+        IRepository<HIS.Inpatient.Reservation, Guid> reservationRepository) : base(repository)
     {
+        _admissionRepository = admissionRepository;
+        _reservationRepository = reservationRepository;
     }
 
     public override async Task<RoomDto> GetAsync(Guid id)
@@ -149,5 +157,21 @@ public class RoomAppService : CrudAppService<
             .ToList();
 
         return ObjectMapper.Map<List<Room>, List<RoomLookupDto>>(rooms);
+    }
+    public override async Task DeleteAsync(Guid id)
+    {
+        var hasAdmissions = await _admissionRepository.AnyAsync(x => x.RoomId == id);
+        if (hasAdmissions)
+        {
+            throw new Volo.Abp.UserFriendlyException(L["Error:RoomHasAdmissions"]);
+        }
+
+        var hasReservations = await _reservationRepository.AnyAsync(x => x.RoomId == id);
+        if (hasReservations)
+        {
+            throw new Volo.Abp.UserFriendlyException(L["Error:RoomHasReservations"]);
+        }
+
+        await base.DeleteAsync(id);
     }
 }

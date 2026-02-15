@@ -6,10 +6,10 @@ import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 
 @Component({
-    selector: 'app-room-dashboard',
-    standalone: true,
-    imports: [CommonModule, CoreModule, ThemeSharedModule],
-    template: `
+  selector: 'app-room-dashboard',
+  standalone: true,
+  imports: [CommonModule, CoreModule, ThemeSharedModule],
+  template: `
     <div class="container-fluid p-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="m-0"><i class="fas fa-bed me-2"></i> {{ '::Menu:Inpatient' | abpLocalization }}</h2>
@@ -45,7 +45,7 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 
             <div class="card-footer d-flex gap-2 bg-transparent">
               <button class="btn btn-outline-primary btn-sm w-100">Details</button>
-              <button class="btn btn-primary btn-sm w-100" [disabled]="room.availableBeds === 0">Assign</button>
+              <button *abpPermission="'HIS.Inpatient.Admissions.Create'" class="btn btn-primary btn-sm w-100" [disabled]="room.availableBeds === 0">Assign</button>
             </div>
           </div>
         </div>
@@ -54,27 +54,27 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
   `
 })
 export class RoomDashboardComponent implements OnInit {
-    private roomService = inject(RoomService);
-    rooms: RoomDto[] = [];
+  private roomService = inject(RoomService);
+  rooms: RoomDto[] = [];
 
-    ngOnInit() {
-        this.loadRooms();
-    }
+  ngOnInit() {
+    this.loadRooms();
+  }
 
-    loadRooms() {
-        this.roomService.getList({ maxResultCount: 100 }).subscribe(result => {
-            this.rooms = result.items || [];
-        });
-    }
+  loadRooms() {
+    this.roomService.getList({ maxResultCount: 100 }).subscribe(result => {
+      this.rooms = result.items || [];
+    });
+  }
 
-    getRoomTypeName(type: number): string {
-        // Basic mapping for now, should ideally use localization
-        switch (type) {
-            case 0: return 'Private';
-            case 1: return 'Semi-Private';
-            case 2: return 'Ward';
-            case 3: return 'ICU';
-            default: return 'Other';
-        }
+  getRoomTypeName(type: number): string {
+    // Basic mapping for now, should ideally use localization
+    switch (type) {
+      case 0: return 'Private';
+      case 1: return 'Semi-Private';
+      case 2: return 'Ward';
+      case 3: return 'ICU';
+      default: return 'Other';
     }
+  }
 }

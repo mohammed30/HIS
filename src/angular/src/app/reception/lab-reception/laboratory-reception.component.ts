@@ -27,6 +27,8 @@ import { SurgicalOperationService } from '../../proxy/operations/surgical-operat
 import { RoomType } from '../../proxy/rooms/room-type.enum';
 import { AdmissionStatus } from '../../proxy/inpatient/admission-status.enum';
 import { OperationStatus } from '../../proxy/operations/operation-status.enum';
+import { BedDto } from '../../proxy/rooms/models';
+import { BedStatus } from '../../proxy/rooms/bed-status.enum';
 
 @Component({
     selector: 'app-laboratory-reception',
@@ -106,8 +108,12 @@ export class LaboratoryReceptionComponent implements OnInit {
         numberOfDays: 0,
         notes: '',
         paidAmount: 0,
-        isServicesStopped: false
+
+        isServicesStopped: false,
+        bedId: null
     };
+
+    availableBedsList: BedDto[] = [];
 
     // Operation Model
     operation: any = {
@@ -519,14 +525,15 @@ export class LaboratoryReceptionComponent implements OnInit {
             this.toaster.error('يجب اختيار مريض أولاً', 'خطأ');
             return;
         }
-        if (!this.admission.roomId) {
-            this.toaster.warn('يرجى اختيار غرفة', 'تنبيه');
+        if (!this.admission.roomId || !this.admission.bedId) {
+            this.toaster.warn('يرجى اختيار غرفة وسرير', 'تنبيه');
             return;
         }
 
         const input = {
             patientId: this.patientInfo.id,
             roomId: this.admission.roomId,
+            bedId: this.admission.bedId,
             insuranceCeiling: this.admission.insuranceCeiling,
             companionName: this.admission.companionName,
             companionPhone: this.admission.companionPhone,

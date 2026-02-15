@@ -1024,7 +1024,7 @@
                         </div>
                     </div>
                     <div class="row g-2 mb-2">
-                        <div class="col-6">
+                        <div class="col-4">
                             <label class="small fw-bold mb-1">نوع الغرفة</label>
                             <select class="form-select form-select-sm" [(ngModel)]="admission.roomType"
                                 (change)="loadAvailableRooms()">
@@ -1032,12 +1032,21 @@
                                 <option *ngFor="let rt of roomTypes" [ngValue]="rt.id">{{ rt.name }}</option>
                             </select>
                         </div>
-                        <div class="col-6">
+                        <div class="col-4">
                             <label class="small fw-bold mb-1">رقم الغرفة</label>
-                            <select class="form-select form-select-sm" [(ngModel)]="admission.roomId">
+                            <select class="form-select form-select-sm" [(ngModel)]="admission.roomId"
+                                (change)="onRoomChange()">
                                 <option [ngValue]="null">-- اختر --</option>
                                 <option *ngFor="let r of availableRooms" [ngValue]="r.id">{{ r.roomNumber }} - {{ r.name
                                     }}</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label class="small fw-bold mb-1">السرير</label>
+                            <select class="form-select form-select-sm" [(ngModel)]="admission.bedId"
+                                [disabled]="!admission.roomId">
+                                <option [ngValue]="null">-- اختر --</option>
+                                <option *ngFor="let b of availableBedsList" [ngValue]="b.id">{{ b.bedNumber }}</option>
                             </select>
                         </div>
                     </div>

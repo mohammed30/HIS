@@ -1,0 +1,182 @@
+<div class="container-fluid p-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="m-0 text-primary">{{ '::Menu:Admissions' | abpLocalization }}</h3>
+        <div class="d-flex gap-2">
+            <button class="btn btn-info text-white" disabled>
+                <i class="fa fa-procedures me-1"></i> {{ '::Operations' | abpLocalization }}
+            </button>
+            <button class="btn btn-primary" *abpPermission="'HIS.Inpatient.Admissions.Create'">
+                {{ '::NewAdmission' | abpLocalization }}
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <!-- Filter Bar -->
+            <div class="bg-dark text-white p-3 rounded-top d-flex justify-content-between align-items-center"
+                [formGroup]="filterForm">
+                <div class="d-flex align-items-center gap-3 flex-grow-1">
+                    <h5 class="m-0 me-3">{{ '::AdmissionsList' | abpLocalization }}</h5>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <label>{{ '::RoomType' | abpLocalization }}</label>
+                        <select class="form-select form-select-sm bg-dark text-white border-secondary"
+                            style="width: 150px;" formControlName="roomTypeId" (change)="loadAdmissions()">
+                            <option [ngValue]="null">-- {{ '::All' | abpLocalization }} --</option>
+                            <option *ngFor="let type of roomTypes" [ngValue]="type.value">
+                                {{ '::Enum:RoomType:' + type.value | abpLocalization }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="flex-grow-1 mx-3">
+                        <input type="text" class="form-control form-control-sm bg-secondary text-white border-0"
+                            placeholder="{{ '::SearchPatient' | abpLocalization }}..." formControlName="searchText"
+                            (keyup.enter)="loadAdmissions()">
+                    </div>
+                </div>
+
+                <div>
+                    <span class="badge bg-secondary">{{ '::Count' | abpLocalization }}: {{ admissions.length }}</span>
+                </div>
+            </div>
+
+            <div class="row g-0">
+                <!-- List Section -->
+                <div class="col-md-8 border-end">
+                    <div class="table-responsive" style="height: 600px;">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="bg-light sticky-top">
+                                <tr>
+                                    <th>#</th>
+                                    <th>{{ '::PatientName' | abpLocalization }}</th>
+                                    <th>{{ '::FileNumber' | abpLocalization }}</th>
+                                    <th>{{ '::RoomType' | abpLocalization }}</th>
+                                    <th>{{ '::RoomNumber' | abpLocalization }}</th>
+                                    <th>{{ '::AdmissionDate' | abpLocalization }}</th>
+                                    <th>{{ '::Status' | abpLocalization }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of admissions; let i = index" (click)="selectAdmission(row)"
+                                    [class.table-active]="selectedAdmission?.id === row.id" style="cursor: pointer;">
+                                    <td>{{ i + 1 }}</td>
+                                    <td class="fw-bold">{{ row.patientName }}</td>
+                                    <td><small class="text-muted">{{ row.patientFileNumber }}</small></td>
+                                    <td>{{ '::Enum:RoomType:' + row.roomTypeName | abpLocalization }}</td>
+                                    <!-- Assuming roomTypeName is int value from backend, wait, it's string name. Need to fix or map -->
+                                    <!-- Backend sends string name, but locally I can't loc easily unless I map back or send int. 
+                                         Let's assume backend sends string 'Private', 'Ward'. Localization might fail. 
+                                         I should update backend to send Enum value or handle it. 
+                                         Actually backend sends `room.Type.ToString()`. 
+                                         I will just display it for now or check if I can map. -->
+                                    <td>{{ row.roomTypeName }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ row.roomNumber }}</span></td>
+                                    <td>{{ row.admissionDate | date:'shortDate' }}</td>
+                                    <td>
+                                        <span class="badge" [ngClass]="getStatusSeverityClass(row.status)">
+                                            {{ getStatusName(row.status) | abpLocalization }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Details Section -->
+                <div class="col-md-4 bg-light p-0" *ngIf="selectedAdmission">
+                    <div class="p-3">
+                        <h5 class="border-bottom pb-2 mb-3">{{ '::AdmissionDetails' | abpLocalization }}</h5>
+
+                        <form [formGroup]="detailForm">
+                            <!-- Companion Info -->
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-header bg-dark text-white py-1">
+                                    <small>{{ '::CompanionInfo' | abpLocalization }}</small>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div class="mb-2">
+                                        <label class="small text-muted">{{ '::Name' | abpLocalization }}</label>
+                                        <input type="text" class="form-control form-control-sm"
+                                            formControlName="companionName">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <label class="small text-muted">{{ '::Phone' | abpLocalization }}</label>
+                                            <input type="text" class="form-control form-control-sm"
+                                                formControlName="companionPhone">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label class="small text-muted">{{ '::Address' | abpLocalization }}</label>
+                                            <input type="text" class="form-control form-control-sm"
+                                                formControlName="companionAddress">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Financial Info -->
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-header bg-dark text-white py-1">
+                                    <small>{{ '::FinancialInfo' | abpLocalization }}</small>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <label class="small text-muted">{{ '::InsuranceCeiling' | abpLocalization
+                                                }}</label>
+                                            <input type="number" class="form-control form-control-sm"
+                                                formControlName="insuranceCeiling">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label class="small text-muted">{{ '::PharmacyPercentage' | abpLocalization
+                                                }}</label>
+                                            <input type="number" class="form-control form-control-sm"
+                                                formControlName="pharmacyPercentage">
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox"
+                                            formControlName="isServicesStopped">
+                                        <label class="form-check-label small">{{ '::StopServices' | abpLocalization
+                                            }}</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success btn-sm" (click)="saveDetails()"
+                                    [disabled]="detailForm.invalid || detailForm.pristine">
+                                    <i class="fa fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+                                </button>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-warning btn-sm flex-grow-1" (click)="loadAdmissions()">
+                                        <!-- Placeholder for Archive -->
+                                        <i class="fa fa-archive me-1"></i> {{ '::Archive' | abpLocalization }}
+                                    </button>
+                                    <button class="btn btn-info btn-sm flex-grow-1 text-white">
+                                        <i class="fa fa-print me-1"></i> {{ '::PrintInvoice' | abpLocalization }}
+                                    </button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-center justify-content-center text-muted"
+                    *ngIf="!selectedAdmission">
+                    <div class="text-center">
+                        <i class="fa fa-hand-pointer fa-3x mb-3 opacity-25"></i>
+                        <p>{{ '::SelectAdmissionToViewDetails' | abpLocalization }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -64,8 +64,8 @@ public class DateRangeDto
 public class DailyAccountsReportDto
 {
     public List<ReportTransactionDto> Transactions { get; set; } = new();
-    public decimal TotalReceipts => Transactions.Where(x => x.Type == "Receipt").Sum(x => x.Amount);
-    public decimal TotalPayments => Transactions.Where(x => x.Type == "Payment").Sum(x => x.Amount);
+    public decimal TotalReceipts { get; set; }
+    public decimal TotalPayments { get; set; }
 }
 
 public class ReportTransactionDto

@@ -153,6 +153,26 @@ public class AdmissionAppService : CrudAppService<
     {
         var queryable = await base.CreateFilteredQueryAsync(input);
 
+        if (input.RoomTypeId.HasValue)
+        {
+            var roomsQuery = await _roomRepository.GetQueryableAsync();
+            queryable = from admission in queryable
+                        join room in roomsQuery on admission.RoomId equals room.Id
+                        where room.Type == (RoomType)input.RoomTypeId.Value
+                        select admission;
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.SearchText))
+        {
+            var patientsQuery = await _patientRepository.GetQueryableAsync();
+            queryable = from admission in queryable
+                        join patient in patientsQuery on admission.PatientId equals patient.Id
+                        where patient.FirstNameAr.Contains(input.SearchText) ||
+                              patient.LastNameAr.Contains(input.SearchText) ||
+                              patient.MRN.Contains(input.SearchText)
+                        select admission;
+        }
+
         return queryable
             .WhereIf(input.PatientId.HasValue, x => x.PatientId == input.PatientId!.Value)
             .WhereIf(input.Status.HasValue, x => x.Status == input.Status!.Value)

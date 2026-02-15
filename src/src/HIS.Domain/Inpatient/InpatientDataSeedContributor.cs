@@ -31,6 +31,13 @@ namespace HIS.Inpatient
             await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Rooms.Create", true);
             await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Rooms.Edit", true);
             await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Rooms.Delete", true);
+            
+            await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Admissions", true);
+            await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Admissions.Create", true);
+            await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Admissions.Edit", true);
+            await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Admissions.Delete", true);
+            
+            await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Dashboard", true);
 
             await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Reservations", true);
             await _permissionManager.SetForRoleAsync("admin", "HIS.Inpatient.Reservations.Create", true);

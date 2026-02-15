@@ -61,6 +61,7 @@ public class GetAdmissionsInput : PagedAndSortedResultRequestDto
     public Guid? PatientId { get; set; }
     public AdmissionStatus? Status { get; set; }
     public Guid? RoomId { get; set; }
+    public int? RoomTypeId { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
 }

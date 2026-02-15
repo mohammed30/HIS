@@ -118,8 +118,17 @@ public static class HISPermissions
     {
         public const string Default = GroupName + ".Inpatient";
         public const string Rooms = Default + ".Rooms";
+        public const string RoomsCreate = Rooms + ".Create";
+        public const string RoomsEdit = Rooms + ".Edit";
+        public const string RoomsDelete = Rooms + ".Delete";
         public const string Admissions = Default + ".Admissions";
+        public const string AdmissionsCreate = Admissions + ".Create";
+        public const string AdmissionsEdit = Admissions + ".Edit";
+        public const string AdmissionsDelete = Admissions + ".Delete";
         public const string Reservations = Default + ".Reservations";
+        public const string ReservationsCreate = Reservations + ".Create";
+        public const string ReservationsEdit = Reservations + ".Edit";
+        public const string ReservationsDelete = Reservations + ".Delete";
         public const string Dashboard = Default + ".Dashboard";
     }
 
