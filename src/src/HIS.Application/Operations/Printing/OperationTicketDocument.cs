@@ -33,7 +33,7 @@ public class OperationTicketDocument : IDocument
         Creator = "HIS System",
         Producer = "HIS System",
         CreationDate = DateTime.Now,
-        ModificationDate = DateTime.Now
+        ModifiedDate = DateTime.Now
     };
 
     public void Compose(IDocumentContainer container)

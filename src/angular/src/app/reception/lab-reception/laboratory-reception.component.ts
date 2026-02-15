@@ -11,6 +11,7 @@ import { PatientCategoryService } from '../../proxy/general/patient-category.ser
 import { ReferralSourceService } from '../../proxy/general/referral-source.service';
 import { NationalityDto, ProfessionDto, ContractDto, PatientCategoryDto, ReferralSourceDto } from '../../proxy/general/models';
 
+import { DoctorService } from '../../proxy/settings/doctor.service';
 import { PatientService } from '../../proxy/patients/patient.service';
 import { ServiceItemService } from '../../proxy/services/service-item.service';
 import { InvoiceService } from '../../proxy/billing/invoice.service';
@@ -50,6 +51,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     private admissionService = inject(AdmissionService);
     private roomService = inject(RoomService);
     private operationService = inject(SurgicalOperationService);
+    private doctorService = inject(DoctorService);
 
     @ViewChild('testSearchInput') testSearchInput!: ElementRef;
 
@@ -210,6 +212,7 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.loadMasterData();
         this.loadClinicData();
         this.loadOperationTypes();
+        this.loadAllDoctors();
     }
 
     loadMasterData() {
@@ -218,6 +221,12 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.contractService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.contracts = res.items || []);
         this.patientCategoryService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.patientCategories = res.items || []);
         this.referralSourceService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.referralSources = res.items || []);
+    }
+
+    loadAllDoctors() {
+        this.doctorService.getLookup().subscribe(res => {
+            this.doctors = (res as any[]) || [];
+        });
     }
 
     loadLabTests() {

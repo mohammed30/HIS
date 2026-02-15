@@ -55,6 +55,12 @@ public class PricingDataSeedContributor : IDataSeedContributor, ITransientDepend
         await SeedClinicServiceAsync("CONS-001", "General Consultation", 50, ServiceCategory.Consultation, priceListId);
         await SeedClinicServiceAsync("CONS-002", "Specialist Consultation", 100, ServiceCategory.Consultation, priceListId);
         await SeedClinicServiceAsync("PROC-001", "Wound Dressing", 30, ServiceCategory.Procedure, priceListId);
+
+        // Seed Surgery Services
+        await SeedClinicServiceAsync("SURG-001", "Appendectomy (الزائدة الدودية)", 5000, ServiceCategory.Surgery, priceListId);
+        await SeedClinicServiceAsync("SURG-002", "Cholecystectomy (استئصال المرارة)", 7000, ServiceCategory.Surgery, priceListId);
+        await SeedClinicServiceAsync("SURG-003", "Hernia Repair (إصلاح الفتق)", 4000, ServiceCategory.Surgery, priceListId);
+        await SeedClinicServiceAsync("SURG-004", "Knee Replacement (استبدال الركبة)", 15000, ServiceCategory.Surgery, priceListId);
     }
 
     private async Task<Guid> SeedPriceListAsync()

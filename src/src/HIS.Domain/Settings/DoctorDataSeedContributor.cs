@@ -72,6 +72,9 @@ public class DoctorDataSeedContributor : IDataSeedContributor, ITransientDepende
         // 10. Psychiatry (OPD Dept for now)
         await CreateDoctorAsync("DOC-020", "د. طارق الحبيب", "Dr. Tariq Al-Habib", "DEP-OPD", "SUB-PSYCH", 500);
         await CreateDoctorAsync("DOC-021", "د. منى الصواف", "Dr. Mona Al-Sawaf", "DEP-OPD", "SUB-PSYCH", 500);
+
+        // 11. New Surgeon for Operations Test
+        await CreateDoctorAsync("DOC-MH-001", "د. محمد حسن", "Dr. Mohammed Hassan", "SPEC-GS", "SP-GS", 400);
     }
 
     private async Task CreateDoctorAsync(string code, string nameAr, string nameEn, string departmentCode, string specialtyCode, decimal fee)

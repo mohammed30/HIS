@@ -59,12 +59,23 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
         await UpdateNameArAsync("4000", "الإيرادات");
         await UpdateNameArAsync("4100", "إيرادات خدمات طبية");
+        await UpdateNameArAsync("4110", "إيرادات العمليات");
         await UpdateNameArAsync("4200", "إيرادات صيدلية");
 
         await UpdateNameArAsync("5000", "المصروفات");
         await UpdateNameArAsync("5100", "مصروفات الرواتب");
         await UpdateNameArAsync("5200", "مصروفات مستلزمات");
         await UpdateNameArAsync("5300", "مصروفات مرافق");
+
+        // Ensure Surgery Revenue exists
+        if (await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4110") == null)
+        {
+            var revenue = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4000"); // Parent: Revenue
+            if (revenue != null)
+            {
+                await CreateAccountAsync("4110", "Surgery Revenue", "إيرادات العمليات", AccountType.Revenue, revenue.Id);
+            }
+        }
     }
 
     private async Task UpdateNameArAsync(string code, string nameAr)
@@ -103,6 +114,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         // 4. Revenue (الإيرادات)
         var revenue = await CreateAccountAsync("4000", "Revenue", "الإيرادات", AccountType.Revenue, null);
         await CreateAccountAsync("4100", "Medical Services Revenue", "إيرادات خدمات طبية", AccountType.Revenue, revenue.Id);
+        await CreateAccountAsync("4110", "Surgery Revenue", "إيرادات العمليات", AccountType.Revenue, revenue.Id);
         await CreateAccountAsync("4200", "Pharmacy Revenue", "إيرادات صيدلية", AccountType.Revenue, revenue.Id);
 
         // 5. Expenses (المصروفات)

@@ -38,6 +38,8 @@ public enum ServiceType
     Inpatient = 5,
     /// <summary>مستهلكات</summary>
     Consumables = 6,
+    /// <summary>عملية جراحية</summary>
+    Surgery = 7,
     /// <summary>أخرى</summary>
     Other = 99
 }

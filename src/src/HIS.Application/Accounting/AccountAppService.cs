@@ -38,9 +38,11 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
 
     public async Task<IncomeStatementDto> GetIncomeStatementAsync(DateRangeDto input)
     {
+        var (startDate, endDate) = GetNormalizedDateRange(input);
+        
         var query = await _journalEntryRepository.GetQueryableAsync();
         var lines = query
-            .Where(x => x.Date >= input.StartDate && x.Date <= input.EndDate)
+            .Where(x => x.Date >= startDate && x.Date <= endDate)
             .SelectMany(x => x.Lines);
 
         var accountQuery = await Repository.GetQueryableAsync();
@@ -182,9 +184,10 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
             Amount = netIncome 
         });
 
+        var (startDate, endDate) = GetNormalizedDateRange(input);
         var query = await _journalEntryRepository.GetQueryableAsync();
         var lines = query
-            .Where(x => x.Date >= input.StartDate && x.Date <= input.EndDate)
+            .Where(x => x.Date >= startDate && x.Date <= endDate)
             .SelectMany(x => x.Lines);
 
         var accountQuery = await Repository.GetQueryableAsync();
@@ -271,8 +274,9 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         // Usually, direct equity entries (Capital stock issuance, Dividends declared).
         // We query Class 3 movements during period.
         
+        var (startDate, endDate) = GetNormalizedDateRange(input);
         var periodLines = query
-            .Where(x => x.Date >= input.StartDate && x.Date <= input.EndDate)
+            .Where(x => x.Date >= startDate && x.Date <= endDate)
             .SelectMany(x => x.Lines);
             
         var equityMovements = from l in periodLines
@@ -383,9 +387,10 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
     public async Task<DailyAccountsReportDto> GetDailyAccountsReportAsync(DateRangeDto input)
     {
         var dto = new DailyAccountsReportDto();
+        var (startDate, endDate) = GetNormalizedDateRange(input);
 
         // 1. Receipts
-        var receipts = await _receiptVoucherRepository.GetListAsync(x => x.Date >= input.StartDate && x.Date <= input.EndDate);
+        var receipts = await _receiptVoucherRepository.GetListAsync(x => x.Date >= startDate && x.Date <= endDate);
         foreach (var r in receipts)
         {
             dto.Transactions.Add(new ReportTransactionDto
@@ -400,7 +405,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         }
 
         // 2. Payments
-        var payments = await _paymentVoucherRepository.GetListAsync(x => x.Date >= input.StartDate && x.Date <= input.EndDate);
+        var payments = await _paymentVoucherRepository.GetListAsync(x => x.Date >= startDate && x.Date <= endDate);
         foreach (var p in payments)
         {
             dto.Transactions.Add(new ReportTransactionDto
@@ -416,17 +421,22 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
 
         // 3. Journal Entries (Optional: exclude those generated from vouchers if they are duplicates)
         // For now, list all.
-        var jes = await _journalEntryRepository.GetListAsync(x => x.Date >= input.StartDate && x.Date <= input.EndDate);
+        var jes = await _journalEntryRepository.GetListAsync(
+            x => x.Date >= startDate && x.Date <= endDate,
+            includeDetails: true
+        );
+        
         foreach (var je in jes)
         {
+            var amount = je.Lines?.Sum(l => l.Debit) ?? 0;
             dto.Transactions.Add(new ReportTransactionDto
             {
                 Date = je.Date,
                 ReferenceNumber = je.ReferenceNumber,
                 Description = je.Description,
-                Amount = 0, // JE doesn't have a single "Amount"
+                Amount = amount,
                 Type = "JournalEntry",
-                AccountName = "Journal Entry"
+                AccountName = "قيد يومية"
             });
         }
 
@@ -447,7 +457,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
                     select new CustomerDebtDto
                     {
                         PatientId = p.Id,
-                        PatientName = p.FirstName + " " + p.LastName,
+                        PatientName = p.FirstNameAr + " " + p.LastNameAr,
                         MRN = p.MRN,
                         TotalInvoiced = g.Sum(x => x.NetAmount),
                         TotalPaid = g.Sum(x => x.PaidAmount),
@@ -462,22 +472,32 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
     {
         var dto = new DiscountsReportDto();
 
+        var (startDate, endDate) = GetNormalizedDateRange(input);
+        
         var invoicesQuery = await _invoiceRepository.GetQueryableAsync();
         var patientsQuery = await _patientRepository.GetQueryableAsync();
 
         var discountLines = from i in invoicesQuery
                             join p in patientsQuery on i.PatientId equals p.Id
-                            where i.InvoiceDate >= input.StartDate && i.InvoiceDate <= input.EndDate && i.DiscountAmount > 0
+                            where i.InvoiceDate >= startDate && i.InvoiceDate <= endDate && i.DiscountAmount > 0
                             select new DiscountReportLineDto
                             {
                                 Date = i.InvoiceDate,
                                 InvoiceNumber = i.InvoiceNumber,
-                                PatientName = p.FirstName + " " + p.LastName,
+                                PatientName = p.FirstNameAr + " " + p.LastNameAr,
                                 TotalAmount = i.NetAmount,
                                 DiscountAmount = i.DiscountAmount
                             };
 
         dto.Lines = await AsyncExecuter.ToListAsync(discountLines);
         return dto;
+    }
+
+    private (DateTime startDate, DateTime endDate) GetNormalizedDateRange(DateRangeDto input)
+    {
+        // Use the Clock property from ApplicationService
+        var start = Clock.Normalize(input.StartDate).Date;
+        var end = Clock.Normalize(input.EndDate).Date.AddDays(1).AddTicks(-1);
+        return (start, end);
     }
 }

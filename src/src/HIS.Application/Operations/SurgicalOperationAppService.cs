@@ -113,10 +113,13 @@ public class SurgicalOperationAppService : CrudAppService<
 
              if (receivablesAccount != null && revenueAccount != null)
              {
+                 var patient = await _patientRepository.FindAsync(input.PatientId);
+                 var patientName = patient?.FullNameAr ?? "Patient";
+                 
                  var je = await _accountingManager.CreateEntryAsync(
                      input.OperationDate, 
                      $"INV-{invoice.InvoiceNumber}", 
-                     $"Surgery Invoice: {input.OperationName} - {invoice.PatientName}");
+                     $"فاتورة جراحة: {input.OperationName} - {patientName}");
 
                  je.AddLine(GuidGenerator, receivablesAccount.Id, input.TotalAmount, 0);
                  je.AddLine(GuidGenerator, revenueAccount.Id, 0, input.TotalAmount);
