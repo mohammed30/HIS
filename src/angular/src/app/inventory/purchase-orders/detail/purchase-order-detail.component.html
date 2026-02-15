@@ -18,6 +18,12 @@
                 <i class="fa fa-arrow-left me-1"></i> Back
             </button>
 
+            <ng-container *ngIf="order && order?.status === PurchaseOrderStatus.Confirmed">
+                <button class="btn btn-primary me-1" (click)="receiveOrder()">
+                    <i class="fa fa-truck me-1"></i> Receive Stock
+                </button>
+            </ng-container>
+
             <ng-container *ngIf="order && order?.status === PurchaseOrderStatus.Draft">
                 <button class="btn btn-success me-1" (click)="confirmOrder()">
                     <i class="fa fa-check me-1"></i> Confirm
@@ -89,11 +95,17 @@
                     <tbody formArrayName="purchaseOrderLines">
                         <tr *ngFor="let line of lines.controls; let i=index" [formGroupName]="i">
                             <td>
-                                <select class="form-select form-select-sm" formControlName="productId">
-                                    <option [ngValue]="null">Select Product</option>
-                                    <option *ngFor="let p of products" [value]="p.id">{{ p.nameAr }} / {{ p.nameEn }}
-                                    </option>
-                                </select>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select" formControlName="productId">
+                                        <option [ngValue]="null">Select Product</option>
+                                        <option *ngFor="let p of products" [value]="p.id">{{ p.nameAr }} / {{ p.nameEn
+                                            }}</option>
+                                    </select>
+                                    <button class="btn btn-outline-info" type="button" (click)="showPriceComparison(i)"
+                                        [disabled]="!lines.at(i).get('productId')?.value">
+                                        <i class="fa fa-history"></i>
+                                    </button>
+                                </div>
                             </td>
                             <td>
                                 <input type="text" class="form-control form-control-sm" formControlName="description">

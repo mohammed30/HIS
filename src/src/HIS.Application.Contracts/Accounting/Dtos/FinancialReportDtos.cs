@@ -13,10 +13,15 @@ public class FinancialReportLineDto
 public class IncomeStatementDto
 {
     public List<FinancialReportLineDto> RevenueLines { get; set; } = new();
-    public List<FinancialReportLineDto> ExpenseLines { get; set; } = new();
+    public List<FinancialReportLineDto> CostOfSalesLines { get; set; } = new();
+    public List<FinancialReportLineDto> OperatingExpenseLines { get; set; } = new();
+    
     public decimal TotalRevenue { get; set; }
-    public decimal TotalExpense { get; set; }
-    public decimal NetIncome => TotalRevenue - TotalExpense;
+    public decimal TotalCostOfSales { get; set; }
+    public decimal GrossProfit => TotalRevenue - TotalCostOfSales;
+    
+    public decimal TotalOperatingExpenses { get; set; }
+    public decimal NetIncome => GrossProfit - TotalOperatingExpenses;
 }
 
 public class BalanceSheetDto
@@ -34,7 +39,10 @@ public class CashFlowStatementDto
     public List<FinancialReportLineDto> OperatingActivities { get; set; } = new();
     public List<FinancialReportLineDto> InvestingActivities { get; set; } = new();
     public List<FinancialReportLineDto> FinancingActivities { get; set; } = new();
-    public decimal NetCashFlow { get; set; }
+    public decimal TotalOperating { get; set; }
+    public decimal TotalInvesting { get; set; }
+    public decimal TotalFinancing { get; set; }
+    public decimal NetCashFlow => TotalOperating + TotalInvesting + TotalFinancing;
 }
 
 public class ChangesInEquityDto

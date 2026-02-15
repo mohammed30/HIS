@@ -28,6 +28,40 @@
             </div>
         </div>
 
+        <div class="alert alert-warning mb-4 shadow-sm" *ngIf="lowStockItems.length > 0">
+            <h5 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>{{ '::LowStockAlerts' |
+                abpLocalization }}</h5>
+            <p class="mb-0">{{ '::LowStockMessage' | abpLocalization }}</p>
+            <div class="table-responsive mt-2">
+                <table class="table table-sm table-bordered bg-white">
+                    <thead class="table-light">
+                        <tr>
+                            <th>{{ '::ProductName' | abpLocalization }}</th>
+                            <th>{{ '::CurrentQty' | abpLocalization }}</th>
+                            <th>{{ '::MinStockLevel' | abpLocalization }}</th>
+                            <th>{{ '::ReorderLevel' | abpLocalization }}</th>
+                            <th>{{ '::Action' | abpLocalization }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of lowStockItems">
+                            <td>{{ item.productName }}</td>
+                            <td class="text-danger fw-bold">{{ item.quantity }}</td>
+                            <td>{{ item.minStockLevel }}</td>
+                            <td>{{ item.reorderLevel }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"
+                                    [routerLink]="['/inventory/purchase-requisitions/create']"
+                                    [queryParams]="{ itemId: item.productId }">
+                                    {{ '::OrderNow' | abpLocalization }}
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
             <ngx-datatable-column [name]="'::ProductName' | abpLocalization" prop="productName"></ngx-datatable-column>
 
@@ -42,12 +76,21 @@
                 </ng-template>
             </ngx-datatable-column>
 
-            <ngx-datatable-column [name]="'::Quantity' | abpLocalization" prop="quantity"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Quantity' | abpLocalization" prop="quantity">
+                <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                    <span [class.text-danger]="row.minStockLevel && value <= row.minStockLevel">{{ value }}</span>
+                    <i class="fas fa-exclamation-circle text-danger ms-1"
+                        *ngIf="row.minStockLevel && value <= row.minStockLevel"
+                        title="{{ '::LowStock' | abpLocalization }}"></i>
+                </ng-template>
+            </ngx-datatable-column>
+
             <ngx-datatable-column [name]="'::AvgCost' | abpLocalization" prop="averageCost">
                 <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
                     {{ value | currency }}
                 </ng-template>
             </ngx-datatable-column>
+
             <ngx-datatable-column [name]="'::TotalValue' | abpLocalization" prop="quantity">
                 <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
                     {{ (row.quantity * row.averageCost) | currency }}

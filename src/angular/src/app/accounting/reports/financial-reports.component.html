@@ -46,25 +46,43 @@
                             </tr>
                             <tr class="fw-bold bg-light">
                                 <td>{{ '::TotalRevenue' | abpLocalization }}</td>
-                                <td class="text-end">{{ incomeStatement.totalRevenue | currency }}</td>
+                                <td class="text-end text-success">{{ incomeStatement.totalRevenue | currency }}</td>
                             </tr>
                         </table>
 
-                        <h6 class="fw-bold text-danger mt-3">{{ '::Expenses' | abpLocalization }}</h6>
+                        <h6 class="fw-bold text-danger mt-3">{{ '::CostOfSales' | abpLocalization }}</h6>
                         <table class="table table-sm">
-                            <tr *ngFor="let line of incomeStatement.expenseLines">
+                            <tr *ngFor="let line of incomeStatement.costOfSalesLines">
                                 <td>{{ line.accountCode }} - {{ line.accountName }}</td>
                                 <td class="text-end">{{ line.amount | currency }}</td>
                             </tr>
-                            <tr class="fw-bold bg-light">
-                                <td>{{ '::TotalExpense' | abpLocalization }}</td>
-                                <td class="text-end">{{ incomeStatement.totalExpense | currency }}</td>
+                            <tr class="fw-bold bg-light text-danger">
+                                <td>{{ '::TotalCostOfSales' | abpLocalization }}</td>
+                                <td class="text-end">({{ incomeStatement.totalCostOfSales | currency }})</td>
+                            </tr>
+                        </table>
+
+                        <div class="alert alert-secondary py-2 fw-bold d-flex justify-content-between mt-2">
+                            <span>{{ '::GrossProfit' | abpLocalization }}</span>
+                            <span>{{ incomeStatement.grossProfit | currency }}</span>
+                        </div>
+
+                        <h6 class="fw-bold text-warning mt-3">{{ '::OperatingExpenses' | abpLocalization }}</h6>
+                        <table class="table table-sm">
+                            <tr *ngFor="let line of incomeStatement.operatingExpenseLines">
+                                <td>{{ line.accountCode }} - {{ line.accountName }}</td>
+                                <td class="text-end">{{ line.amount | currency }}</td>
+                            </tr>
+                            <tr class="fw-bold bg-light text-warning">
+                                <td>{{ '::TotalOperatingExpenses' | abpLocalization }}</td>
+                                <td class="text-end">({{ incomeStatement.totalOperatingExpenses | currency }})</td>
                             </tr>
                         </table>
 
                         <div class="alert alert-info mt-3 fw-bold fs-5 d-flex justify-content-between">
                             <span>{{ '::NetIncome' | abpLocalization }}</span>
-                            <span>{{ incomeStatement.netIncome | currency }}</span>
+                            <span [class.text-danger]="incomeStatement.netIncome < 0">{{ incomeStatement.netIncome |
+                                currency }}</span>
                         </div>
                     </div>
                 </ng-template>
@@ -126,15 +144,43 @@
                 <a ngbNavLink>{{ '::CashFlow' | abpLocalization }}</a>
                 <ng-template ngbNavContent>
                     <div *ngIf="cashFlow" class="mt-3">
-                        <h6 class="fw-bold">{{ '::OperatingActivities' | abpLocalization }}</h6>
+                        <h6 class="fw-bold text-primary">{{ '::OperatingActivities' | abpLocalization }}</h6>
                         <table class="table table-sm">
                             <tr *ngFor="let line of cashFlow.operatingActivities">
                                 <td>{{ line.accountName }}</td>
                                 <td class="text-end">{{ line.amount | currency }}</td>
                             </tr>
+                            <tr class="fw-bold bg-light">
+                                <td>{{ '::TotalOperating' | abpLocalization }}</td>
+                                <td class="text-end">{{ cashFlow.totalOperating | currency }}</td>
+                            </tr>
                         </table>
 
-                        <div class="alert alert-info fw-bold d-flex justify-content-between">
+                        <h6 class="fw-bold text-info mt-3">{{ '::InvestingActivities' | abpLocalization }}</h6>
+                        <table class="table table-sm">
+                            <tr *ngFor="let line of cashFlow.investingActivities">
+                                <td>{{ line.accountName }}</td>
+                                <td class="text-end">{{ line.amount | currency }}</td>
+                            </tr>
+                            <tr class="fw-bold bg-light">
+                                <td>{{ '::TotalInvesting' | abpLocalization }}</td>
+                                <td class="text-end">{{ cashFlow.totalInvesting | currency }}</td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-bold text-secondary mt-3">{{ '::FinancingActivities' | abpLocalization }}</h6>
+                        <table class="table table-sm">
+                            <tr *ngFor="let line of cashFlow.financingActivities">
+                                <td>{{ line.accountName }}</td>
+                                <td class="text-end">{{ line.amount | currency }}</td>
+                            </tr>
+                            <tr class="fw-bold bg-light">
+                                <td>{{ '::TotalFinancing' | abpLocalization }}</td>
+                                <td class="text-end">{{ cashFlow.totalFinancing | currency }}</td>
+                            </tr>
+                        </table>
+
+                        <div class="alert alert-info mt-3 fw-bold d-flex justify-content-between">
                             <span>{{ '::NetCashFlow' | abpLocalization }}</span>
                             <span>{{ cashFlow.netCashFlow | currency }}</span>
                         </div>

@@ -8,6 +8,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
+using System.Linq.Dynamic.Core;
 
 namespace HIS.Accounting;
 
@@ -32,29 +33,69 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
 
     public async Task<PagedResultDto<JournalEntryDto>> GetListAsync(PagedAndSortedResultRequestDto input)
     {
-        var query = await _journalEntryRepository.WithDetailsAsync(x => x.Lines);
-
+        // 1. Get queryable without details for Count
+        var query = await _journalEntryRepository.GetQueryableAsync();
+        
+        // 2. Count
         var totalCount = await AsyncExecuter.CountAsync(query);
 
-        query = query.OrderByDescending(x => x.Date);
+        // 3. Apply Sorting
+        if (!input.Sorting.IsNullOrWhiteSpace())
+        {
+             query = query.OrderBy(input.Sorting);
+        }
+        else
+        {
+             query = query.OrderByDescending(x => x.Date);
+        }
 
-        var items = await AsyncExecuter.ToListAsync(query.PageBy(input));
+        // 4. Apply Paging
+        query = query.PageBy(input);
+
+        // 5. Fetch IDs first to keep main query light or just fetch entities with details?
+        // Better pattern: fetch paged entities with details.
+        
+        // We need to re-construct query with details for the fetch? 
+        // Or can we use implicit loading? 
+        // With ABP, we can just use the repository's WithDetails on the *paged* result? No, WithDetails returns a new IQueryable.
+        
+        // Let's get a fresh query with details, apply same filter/sort/page.
+        // Actually, since we don't have filters in this method (only PagedAndSorted), it's simple.
+        
+        var queryWithDetails = await _journalEntryRepository.WithDetailsAsync(x => x.Lines);
+        
+        if (!input.Sorting.IsNullOrWhiteSpace())
+        {
+             queryWithDetails = queryWithDetails.OrderBy(input.Sorting);
+        }
+        else
+        {
+             queryWithDetails = queryWithDetails.OrderByDescending(x => x.Date);
+        }
+        
+        var items = await AsyncExecuter.ToListAsync(queryWithDetails.PageBy(input));
 
         var entryDtos = ObjectMapper.Map<List<JournalEntry>, List<JournalEntryDto>>(items);
 
-        var accountIds = items.SelectMany(x => x.Lines).Select(x => x.AccountId).Distinct().ToList();
-        var accounts = await _accountRepository.GetListAsync(x => accountIds.Contains(x.Id));
-        var accountDict = accounts.ToDictionary(x => x.Id);
-
-        foreach (var entryDto in entryDtos)
+        if (items.Any())
         {
-            foreach (var lineDto in entryDto.Lines)
+            var accountIds = items.SelectMany(x => x.Lines).Select(x => x.AccountId).Distinct().ToList();
+            if (accountIds.Any())
             {
-                if (accountDict.TryGetValue(lineDto.AccountId, out var account))
+                var accounts = await _accountRepository.GetListAsync(x => accountIds.Contains(x.Id));
+                var accountDict = accounts.ToDictionary(x => x.Id);
+
+                foreach (var entryDto in entryDtos)
                 {
-                    lineDto.AccountName = account.Name;
-                    lineDto.AccountCode = account.Code;
-                    lineDto.AccountNameAr = account.NameAr;
+                    foreach (var lineDto in entryDto.Lines)
+                    {
+                        if (accountDict.TryGetValue(lineDto.AccountId, out var account))
+                        {
+                            lineDto.AccountName = account.Name;
+                            lineDto.AccountCode = account.Code;
+                            lineDto.AccountNameAr = account.NameAr;
+                        }
+                    }
                 }
             }
         }

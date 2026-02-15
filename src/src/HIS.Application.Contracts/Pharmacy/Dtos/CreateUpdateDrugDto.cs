@@ -34,5 +34,10 @@ public class CreateUpdateDrugDto
     [StringLength(64)]
     public string? BinLocation { get; set; }
 
+    public bool IsControlled { get; set; }
+
+    [StringLength(32)]
+    public string? LegalCategory { get; set; }
+
     public decimal Price { get; set; } // To set on ServiceItem
 }

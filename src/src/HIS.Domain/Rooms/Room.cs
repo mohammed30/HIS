@@ -1,6 +1,8 @@
 using System;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace HIS.Rooms;
 
@@ -56,6 +58,16 @@ public class Room : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// وسائل الراحة (تكييف، ثلاجة، تلفاز، ...)
+    /// </summary>
+    public string? Amenities { get; set; }
+
+    /// <summary>
+    /// قائمة الأسرة
+    /// </summary>
+    public virtual ICollection<Bed> Beds { get; set; }
+
     protected Room() { }
 
     public Room(Guid id, Guid? tenantId, string roomNumber, RoomType type, decimal dailyRate, int bedCount = 1)
@@ -67,5 +79,6 @@ public class Room : FullAuditedAggregateRoot<Guid>, IMultiTenant
         DailyRate = dailyRate;
         BedCount = bedCount;
         AvailableBeds = bedCount;
+        Beds = new Collection<Bed>();
     }
 }

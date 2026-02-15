@@ -1,0 +1,29 @@
+<div *ngIf="beds && beds.length > 0">
+    <h6>{{ '::Beds' | abpLocalization }}</h6>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>{{ '::BedNumber' | abpLocalization }}</th>
+                <th>{{ '::Status' | abpLocalization }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let bed of beds">
+                <td>{{ bed.bedNumber }}</td>
+                <td>
+                    <span class="badge" [ngClass]="{
+                    'bg-success': bed.status === 0,
+                    'bg-danger': bed.status === 1,
+                    'bg-warning': bed.status === 2,
+                    'bg-secondary': bed.status === 3
+                  }">
+                        {{ '::Enum:BedStatus:' + bed.status | abpLocalization }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div *ngIf="!beds || beds.length === 0">
+    <p class="text-muted">{{ '::NoBedsAvailable' | abpLocalization }}</p>
+</div>

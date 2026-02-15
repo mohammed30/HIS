@@ -1,4 +1,5 @@
 import type { AdmissionStatus } from './admission-status.enum';
+import type { ReservationStatus } from './reservation-status.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface AdmissionDto extends FullAuditedEntityDto<string> {
@@ -8,6 +9,8 @@ export interface AdmissionDto extends FullAuditedEntityDto<string> {
     roomId?: string;
     roomNumber?: string;
     roomTypeName?: string;
+    bedId?: string;
+    bedNumber?: string;
     admissionDate?: string;
     dischargeDate?: string;
     numberOfDays?: number;
@@ -30,6 +33,7 @@ export interface AdmissionDto extends FullAuditedEntityDto<string> {
 export interface CreateUpdateAdmissionDto {
     patientId?: string;
     roomId?: string;
+    bedId?: string;
     insuranceCeiling?: number;
     companionName?: string;
     companionPhone?: string;
@@ -52,4 +56,35 @@ export interface GetAdmissionsInput extends PagedAndSortedResultRequestDto {
     roomId?: string;
     fromDate?: string;
     toDate?: string;
+}
+
+export interface ReservationDto extends FullAuditedEntityDto<string> {
+    patientId?: string;
+    patientName?: string;
+    roomId?: string;
+    roomNumber?: string;
+    bedId?: string;
+    bedNumber?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: ReservationStatus;
+    notes?: string;
+}
+
+export interface CreateUpdateReservationDto {
+    patientId?: string;
+    roomId?: string;
+    bedId?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: ReservationStatus;
+    notes?: string;
+}
+
+export interface GetReservationsInput extends PagedAndSortedResultRequestDto {
+    patientId?: string;
+    roomId?: string;
+    fromDate?: string;
+    toDate?: string;
+    status?: ReservationStatus;
 }

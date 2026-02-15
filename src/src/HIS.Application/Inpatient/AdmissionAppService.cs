@@ -24,30 +24,41 @@ public class AdmissionAppService : CrudAppService<
 {
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<Room, Guid> _roomRepository;
+    private readonly IRepository<Bed, Guid> _bedRepository;
 
     public AdmissionAppService(
         IRepository<Admission, Guid> repository,
         IRepository<Patient, Guid> patientRepository,
-        IRepository<Room, Guid> roomRepository) : base(repository)
+        IRepository<Room, Guid> roomRepository,
+        IRepository<Bed, Guid> bedRepository) : base(repository)
     {
         _patientRepository = patientRepository;
         _roomRepository = roomRepository;
+        _bedRepository = bedRepository;
     }
 
     public override async Task<AdmissionDto> CreateAsync(CreateUpdateAdmissionDto input)
     {
-        // Validate room availability
+        // 1. Validate Room
         var room = await _roomRepository.GetAsync(input.RoomId);
-        if (room.AvailableBeds <= 0)
+        
+        // 2. Validate Bed
+        var bed = await _bedRepository.GetAsync(input.BedId);
+        if (bed.RoomId != input.RoomId)
         {
-            throw new UserFriendlyException("لا توجد أسرة متاحة في هذه الغرفة");
+            throw new UserFriendlyException("السرير المختار لا ينتمي للغرفة المحددة");
+        }
+        if (bed.Status != BedStatus.Available)
+        {
+             throw new UserFriendlyException("السرير المختار غير متاح حالياً");
         }
 
         var admission = new Admission(
             GuidGenerator.Create(),
             CurrentTenant.Id,
             input.PatientId,
-            input.RoomId
+            input.RoomId,
+            input.BedId
         )
         {
             InsuranceCeiling = input.InsuranceCeiling,
@@ -62,13 +73,18 @@ public class AdmissionAppService : CrudAppService<
 
         await Repository.InsertAsync(admission);
 
-        // Update room available beds
+        // Update room legacy counter
         room.AvailableBeds--;
+        if (room.AvailableBeds < 0) room.AvailableBeds = 0;
         if (room.AvailableBeds == 0)
         {
             room.Status = RoomStatus.Occupied;
         }
         await _roomRepository.UpdateAsync(room);
+
+        // Update Bed status
+        bed.Status = BedStatus.Occupied;
+        await _bedRepository.UpdateAsync(bed);
 
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
         await EnrichAdmissionDtoAsync(dto);
@@ -98,12 +114,17 @@ public class AdmissionAppService : CrudAppService<
         await Repository.UpdateAsync(admission);
 
         // Free up the bed
-        room.AvailableBeds++;
+        room.AvailableBeds++; // Keep legacy counter in sync
         if (room.Status == RoomStatus.Occupied)
         {
             room.Status = RoomStatus.Available;
         }
         await _roomRepository.UpdateAsync(room);
+
+        // Update Bed status
+        var bed = await _bedRepository.GetAsync(admission.BedId);
+        bed.Status = BedStatus.Cleaning; // Mark as cleaning before available
+        await _bedRepository.UpdateAsync(bed);
 
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
         await EnrichAdmissionDtoAsync(dto);
@@ -166,6 +187,15 @@ public class AdmissionAppService : CrudAppService<
         {
             dto.RoomNumber = room.RoomNumber;
             dto.RoomTypeName = room.Type.ToString();
+        }
+
+        if (dto.BedId.HasValue)
+        {
+            var bed = await _bedRepository.FindAsync(dto.BedId.Value);
+            if (bed != null)
+            {
+                dto.BedNumber = bed.BedNumber;
+            }
         }
     }
 }

@@ -1,0 +1,97 @@
+<div class="modal-header">
+    <h5 class="modal-title">{{ (selectedId ? '::Edit' : '::NewRoom') | abpLocalization }}</h5>
+    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::RoomNumber' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="roomNumber">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::Name' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="name">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::Type' | abpLocalization }}</label>
+                <select class="form-select" formControlName="type">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let type of roomTypes" [ngValue]="type.value">
+                        {{ '::Enum:RoomType:' + type.value | abpLocalization }}
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::BedCount' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="bedCount">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::DailyRate' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="dailyRate">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::Floor' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="floor">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::Status' | abpLocalization }}</label>
+                <select class="form-select" formControlName="status">
+                    <option *ngFor="let status of roomStatuses" [ngValue]="status.value">
+                        {{ '::Enum:RoomStatus:' + status.value | abpLocalization }}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">{{ '::Amenities' | abpLocalization }}</label>
+            <textarea class="form-control" formControlName="amenities"></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+            <textarea class="form-control" formControlName="notes"></textarea>
+        </div>
+    </form>
+
+    <div *ngIf="selectedId && beds.length > 0">
+        <h6>{{ '::Beds' | abpLocalization }}</h6>
+        <table class="table table-sm table-bordered">
+            <thead>
+                <tr>
+                    <th>{{ '::BedNumber' | abpLocalization }}</th>
+                    <th>{{ '::Status' | abpLocalization }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let bed of beds">
+                    <td>{{ bed.bedNumber }}</td>
+                    <td>
+                        <span class="badge" [ngClass]="{
+                        'bg-success': bed.status === 0,
+                        'bg-danger': bed.status === 1,
+                        'bg-warning': bed.status === 2
+                      }">
+                            {{ '::Enum:BedStatus:' + bed.status | abpLocalization }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">
+        {{ '::Cancel' | abpLocalization }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+        <i class="fa fa-check me-1"></i>{{ '::Save' | abpLocalization }}
+    </button>
+</div>

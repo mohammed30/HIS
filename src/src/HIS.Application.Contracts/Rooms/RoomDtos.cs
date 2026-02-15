@@ -1,5 +1,6 @@
 using System;
 using Volo.Abp.Application.Dtos;
+using System.Collections.Generic;
 
 namespace HIS.Rooms;
 
@@ -15,6 +16,16 @@ public class RoomDto : FullAuditedEntityDto<Guid>
     public string? Floor { get; set; }
     public RoomStatus Status { get; set; }
     public string? Notes { get; set; }
+    public string? Amenities { get; set; }
+    public List<BedDto> Beds { get; set; } = new();
+}
+
+public class BedDto : FullAuditedEntityDto<Guid>
+{
+    public Guid RoomId { get; set; }
+    public string BedNumber { get; set; } = string.Empty;
+    public BedType Type { get; set; }
+    public BedStatus Status { get; set; }
 }
 
 public class CreateUpdateRoomDto
@@ -27,6 +38,7 @@ public class CreateUpdateRoomDto
     public string? Floor { get; set; }
     public RoomStatus Status { get; set; } = RoomStatus.Available;
     public string? Notes { get; set; }
+    public string? Amenities { get; set; }
 }
 
 public class GetRoomsInput : PagedAndSortedResultRequestDto

@@ -109,7 +109,10 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
         );
 
         // 2. Record Dispensing Event
-        var dispensing = new Dispensing(GuidGenerator.Create(), order.Id, order.PatientId);
+        var dispensing = new Dispensing(GuidGenerator.Create(), order.Id, order.PatientId)
+        {
+            CounselingNotes = input.CounselingNotes
+        };
         foreach (var b in batchDetails)
         {
             dispensing.AddItem(order.ServiceItemId, b.BatchId, b.Quantity, b.BatchNumber, b.UnitCost);
@@ -119,6 +122,24 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
         // 3. Complete Order
         order.Status = OrderStatus.Completed;
         await _medicalOrderRepository.UpdateAsync(order);
+    }
+
+    public async Task<Dtos.DispensingLabelDto> GetLabelAsync(Guid dispensingId)
+    {
+         var dispensing = await _dispensingRepository.GetAsync(dispensingId);
+         var patient = await _patientRepository.GetAsync(dispensing.PatientId);
+         var order = await _medicalOrderRepository.GetAsync(dispensing.MedicalOrderId);
+
+         return new Dtos.DispensingLabelDto
+         {
+             PatientName = !string.IsNullOrEmpty(patient.FullNameAr) ? patient.FullNameAr : patient.FullNameEn,
+             MRN = patient.MRN,
+             DrugName = order.ServiceName,
+             DosageInstructions = order.Instructions ?? "As directed",
+             DispensedDate = dispensing.CreationTime.ToString("yyyy-MM-dd HH:mm"),
+             ExpiryDate = "Check Packaging", // In real app, get from batch
+             PharmacistName = "Pharmacist"
+         };
     }
 
     public async Task<List<string>> CheckInteractionsAsync(Guid patientId, string newDrugName)

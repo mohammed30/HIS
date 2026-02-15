@@ -8,6 +8,7 @@ import { NgbDateStruct, NgbDateAdapter, NgbDateNativeAdapter, NgbDatepickerModul
 import { PurchaseOrderService } from '../../../proxy/inventory/purchase-order.service';
 import { SupplierService } from '../../../proxy/inventory/supplier.service';
 import { ServiceItemService } from '../../../proxy/services/service-item.service';
+import { InventoryService } from '../../../proxy/inventory/inventory.service';
 import { PurchaseOrderDto, PurchaseOrderStatus } from '../../../proxy/inventory/dtos/purchase-order-dto';
 import { SupplierDto } from '../../../proxy/inventory/dtos/supplier-dto';
 import { ServiceItemDto } from '../../../proxy/services/models';
@@ -24,6 +25,7 @@ export class PurchaseOrderDetailComponent implements OnInit {
     private service = inject(PurchaseOrderService);
     private supplierService = inject(SupplierService);
     private productService = inject(ServiceItemService);
+    private inventoryService = inject(InventoryService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private toaster = inject(ToasterService);
@@ -194,6 +196,40 @@ export class PurchaseOrderDetailComponent implements OnInit {
                 this.service.cancelOrder(this.id!).subscribe(() => {
                     this.toaster.success('::SuccessfullyCancelled');
                     this.loadOrder(this.id!);
+                });
+            }
+        });
+    }
+
+    showPriceComparison(index: number) {
+        const productId = this.lines.at(index).get('productId')?.value;
+        if (!productId) return;
+
+        // Simplified: Alerting the feature for now as modal needs more boilerplate
+        this.service.getPriceComparison(productId).subscribe(res => {
+            if (res.length === 0) {
+                this.toaster.info('No historical price data found for this product.', 'Price Analysis');
+            } else {
+                const history = res.map(x => `${x.supplierName}: ${x.unitPrice} (${new Date(x.orderDate).toLocaleDateString()})`).join('\n');
+                alert('Last 5 Purchase Prices:\n' + history);
+            }
+        });
+    }
+
+    receiveOrder() {
+        if (!this.id) return;
+        this.confirmation.warn('This will update stock levels. Proceed?', 'Receive Order').subscribe(status => {
+            if (status === Confirmation.Status.confirm) {
+                this.inventoryService.getWarehouseList({ maxResultCount: 1 }).subscribe(whs => {
+                    const whId = whs.items[0]?.id;
+                    if (whId) {
+                        this.service.receiveOrder(this.id!, whId).subscribe(() => {
+                            this.toaster.success('Order received and stock updated', 'Success');
+                            this.loadOrder(this.id!);
+                        });
+                    } else {
+                        this.toaster.error('No warehouse found to receive stock into.', 'Error');
+                    }
                 });
             }
         });

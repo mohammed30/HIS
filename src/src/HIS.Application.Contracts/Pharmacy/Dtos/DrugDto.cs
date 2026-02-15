@@ -18,4 +18,6 @@ public class DrugDto : AuditedEntityDto<Guid>
     public int MinimumStockLevel { get; set; }
     public int ReorderLevel { get; set; }
     public string BinLocation { get; set; }
+    public bool IsControlled { get; set; }
+    public string? LegalCategory { get; set; }
 }

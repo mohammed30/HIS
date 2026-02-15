@@ -98,6 +98,13 @@ public class HISDbContext :
     public DbSet<HIS.Accounting.Account> Accounts { get; set; }
     public DbSet<HIS.Accounting.JournalEntry> JournalEntries { get; set; }
     public DbSet<HIS.Accounting.JournalEntryLine> JournalEntryLines { get; set; }
+
+    public DbSet<HIS.Accounting.PaymentVoucher> PaymentVouchers { get; set; }
+    public DbSet<HIS.Accounting.PaymentVoucherLine> PaymentVoucherLines { get; set; }
+    public DbSet<HIS.Accounting.ReceiptVoucher> ReceiptVouchers { get; set; }
+    public DbSet<HIS.Accounting.ReceiptVoucherLine> ReceiptVoucherLines { get; set; }
+    public DbSet<HIS.Accounting.ContractClaim> ContractClaims { get; set; }
+    public DbSet<HIS.Accounting.BankTransaction> BankTransactions { get; set; }
     
     public DbSet<HIS.Inventory.Warehouse> Warehouses { get; set; }
     public DbSet<HIS.Inventory.Supplier> Suppliers { get; set; }
@@ -122,6 +129,8 @@ public class HISDbContext :
     // Rooms & Inpatient
     public DbSet<HIS.Rooms.Room> Rooms { get; set; }
     public DbSet<HIS.Inpatient.Admission> Admissions { get; set; }
+    public DbSet<HIS.Rooms.Bed> Beds { get; set; }
+    public DbSet<HIS.Inpatient.Reservation> Reservations { get; set; }
 
     // Operations (Surgery)
     public DbSet<HIS.Operations.SurgicalOperation> SurgicalOperations { get; set; }
@@ -774,6 +783,50 @@ public class HISDbContext :
             b.HasIndex(x => x.AccountId);
         });
 
+        builder.Entity<HIS.Accounting.PaymentVoucher>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PaymentVouchers", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+            b.HasMany(x => x.Lines).WithOne().HasForeignKey(x => x.PaymentVoucherId).IsRequired();
+        });
+
+        builder.Entity<HIS.Accounting.PaymentVoucherLine>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PaymentVoucherLines", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+        });
+
+        builder.Entity<HIS.Accounting.ReceiptVoucher>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "ReceiptVouchers", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+            b.HasMany(x => x.Lines).WithOne().HasForeignKey(x => x.ReceiptVoucherId).IsRequired();
+        });
+
+        builder.Entity<HIS.Accounting.ReceiptVoucherLine>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "ReceiptVoucherLines", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+        });
+
+        builder.Entity<HIS.Accounting.ContractClaim>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "ContractClaims", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+        });
+
+        builder.Entity<HIS.Accounting.BankTransaction>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "BankTransactions", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+        });
+
         builder.Entity<HIS.Inventory.Warehouse>(b =>
         {
             b.ToTable(HISConsts.DbTablePrefix + "Warehouses", HISConsts.DbSchema);
@@ -809,6 +862,8 @@ public class HISDbContext :
             b.ConfigureByConvention();
             b.Property(x => x.Quantity).HasPrecision(18, 4);
             b.Property(x => x.AverageCost).HasPrecision(18, 4);
+            b.Property(x => x.MinStockLevel).HasPrecision(18, 4);
+            b.Property(x => x.ReorderLevel).HasPrecision(18, 4);
             b.HasIndex(x => new { x.WarehouseId, x.ProductId }).IsUnique();
         });
 
@@ -955,6 +1010,34 @@ public class HISDbContext :
             
             b.HasIndex(x => x.PatientId);
             b.HasIndex(x => x.RoomId);
+            b.HasIndex(x => x.Status);
+        });
+
+        // Beds
+        builder.Entity<HIS.Rooms.Bed>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Beds", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.BedNumber).HasMaxLength(32).IsRequired();
+            
+            b.HasIndex(x => x.RoomId);
+            b.HasIndex(x => x.Status);
+            b.HasIndex(x => new { x.RoomId, x.BedNumber }).IsUnique();
+        });
+
+        // Reservations
+        builder.Entity<HIS.Inpatient.Reservation>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "Reservations", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.RoomId);
+            b.HasIndex(x => x.BedId);
+            b.HasIndex(x => x.StartDate);
             b.HasIndex(x => x.Status);
         });
 

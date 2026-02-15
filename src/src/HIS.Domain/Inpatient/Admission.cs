@@ -22,6 +22,11 @@ public class Admission : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public Guid RoomId { get; set; }
 
     /// <summary>
+    /// السرير
+    /// </summary>
+    public Guid BedId { get; set; }
+
+    /// <summary>
     /// تاريخ الدخول
     /// </summary>
     public DateTime AdmissionDate { get; set; }
@@ -108,12 +113,13 @@ public class Admission : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     protected Admission() { }
 
-    public Admission(Guid id, Guid? tenantId, Guid patientId, Guid roomId)
+    public Admission(Guid id, Guid? tenantId, Guid patientId, Guid roomId, Guid bedId)
         : base(id)
     {
         TenantId = tenantId;
         PatientId = patientId;
         RoomId = roomId;
+        BedId = bedId;
         AdmissionDate = DateTime.Now;
         Status = AdmissionStatus.Active;
     }

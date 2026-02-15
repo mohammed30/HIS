@@ -7,9 +7,11 @@ USE [HIS];
 GO
 
 -- Update HIS_App (Angular Frontend)
+-- Update HIS_App (Angular Frontend)
 UPDATE [OpenIddictApplications]
 SET [RedirectUris] = '["http://localhost:4200", "http://localhost:4200/"]',
-    [PostLogoutRedirectUris] = '["http://localhost:4200", "http://localhost:4200/"]'
+    [PostLogoutRedirectUris] = '["http://localhost:4200", "http://localhost:4200/"]',
+    [ClientUri] = 'http://localhost:4200'  -- Added ClientUri update
 WHERE [ClientId] = 'HIS_App';
 
 -- Update HIS_Swagger (Swagger UI)

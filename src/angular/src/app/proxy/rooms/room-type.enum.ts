@@ -1,3 +1,5 @@
+import { mapEnumToOptions } from '@abp/ng.core';
+
 export enum RoomType {
     Standard = 0,
     Private = 1,
@@ -5,3 +7,5 @@ export enum RoomType {
     Suite = 3,
     Isolation = 4,
 }
+
+export const roomTypeOptions = mapEnumToOptions(RoomType);

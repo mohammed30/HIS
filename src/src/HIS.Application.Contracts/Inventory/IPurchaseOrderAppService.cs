@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -10,4 +11,6 @@ public interface IPurchaseOrderAppService : ICrudAppService<PurchaseOrderDto, Gu
 {
     Task<PurchaseOrderDto> ConfirmOrderAsync(Guid id);
     Task<PurchaseOrderDto> CancelOrderAsync(Guid id);
+    Task ReceiveOrderAsync(Guid id, Guid warehouseId);
+    Task<List<PriceComparisonDto>> GetPriceComparisonAsync(Guid productId);
 }

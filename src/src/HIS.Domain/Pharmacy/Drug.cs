@@ -17,6 +17,8 @@ public class Drug : FullAuditedAggregateRoot<Guid>
     public int MinimumStockLevel { get; set; }
     public int ReorderLevel { get; set; }
     public string? BinLocation { get; set; }
+    public bool IsControlled { get; set; }
+    public string? LegalCategory { get; set; } // e.g., GSL, P, POM
 
     
     // Link to ServiceItem for Billing/Ordering

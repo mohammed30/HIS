@@ -11,4 +11,5 @@ public interface IPharmacyAppService : IApplicationService
     Task<List<Inventory.Dtos.InventoryItemDto>> GetPharmacyStockAsync();
     Task DispenseMedicationAsync(DispenseDto input);
     Task<List<string>> CheckInteractionsAsync(System.Guid patientId, string newDrugName);
+    Task<Dtos.DispensingLabelDto> GetLabelAsync(System.Guid dispensingId);
 }

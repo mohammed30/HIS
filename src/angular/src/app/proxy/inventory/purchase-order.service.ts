@@ -54,10 +54,26 @@ export class PurchaseOrderService {
         },
             { apiName: this.apiName });
 
+    getPriceComparison = (productId: string) =>
+        this.restService.request<any, any[]>({
+            method: 'GET',
+            url: `/api/app/purchase-order/price-comparison`,
+            params: { productId }
+        },
+            { apiName: this.apiName });
+
     cancelOrder = (id: string) =>
         this.restService.request<any, PurchaseOrderDto>({
             method: 'POST',
             url: `/api/app/purchase-order/${id}/cancel`,
+        },
+            { apiName: this.apiName });
+
+    receiveOrder = (id: string, warehouseId: string) =>
+        this.restService.request<any, void>({
+            method: 'POST',
+            url: `/api/app/purchase-order/${id}/receive`,
+            params: { warehouseId }
         },
             { apiName: this.apiName });
 

@@ -1,5 +1,7 @@
 import type { RoomType } from './room-type.enum';
 import type { RoomStatus } from './room-status.enum';
+import type { BedType } from './bed-type.enum';
+import type { BedStatus } from './bed-status.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface RoomDto extends FullAuditedEntityDto<string> {
@@ -12,6 +14,15 @@ export interface RoomDto extends FullAuditedEntityDto<string> {
     floor?: string;
     status?: RoomStatus;
     notes?: string;
+    amenities?: string;
+    beds?: BedDto[];
+}
+
+export interface BedDto extends FullAuditedEntityDto<string> {
+    roomId?: string;
+    bedNumber?: string;
+    type?: BedType;
+    status?: BedStatus;
 }
 
 export interface CreateUpdateRoomDto {
@@ -23,6 +34,7 @@ export interface CreateUpdateRoomDto {
     floor?: string;
     status?: RoomStatus;
     notes?: string;
+    amenities?: string;
 }
 
 export interface GetRoomsInput extends PagedAndSortedResultRequestDto {

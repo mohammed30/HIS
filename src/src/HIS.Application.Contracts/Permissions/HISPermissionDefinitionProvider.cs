@@ -104,6 +104,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         var inpatient = hisGroup.AddPermission(HISPermissions.Inpatient.Default, L("Permission:Inpatient"));
         inpatient.AddChild(HISPermissions.Inpatient.Rooms, L("Permission:RoomManagement"));
         inpatient.AddChild(HISPermissions.Inpatient.Admissions, L("Permission:Admissions"));
+        inpatient.AddChild(HISPermissions.Inpatient.Reservations, L("Permission:Reservations"));
         inpatient.AddChild(HISPermissions.Inpatient.Dashboard, L("Permission:InpatientDashboard"));
     }
 

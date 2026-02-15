@@ -119,6 +119,7 @@ public static class HISPermissions
         public const string Default = GroupName + ".Inpatient";
         public const string Rooms = Default + ".Rooms";
         public const string Admissions = Default + ".Admissions";
+        public const string Reservations = Default + ".Reservations";
         public const string Dashboard = Default + ".Dashboard";
     }
 }

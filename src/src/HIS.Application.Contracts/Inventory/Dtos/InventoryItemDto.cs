@@ -12,4 +12,6 @@ public class InventoryItemDto : EntityDto<Guid>
     public InventoryItemType Type { get; set; }
     public decimal Quantity { get; set; }
     public decimal AverageCost { get; set; }
+    public decimal MinStockLevel { get; set; }
+    public decimal ReorderLevel { get; set; }
 }

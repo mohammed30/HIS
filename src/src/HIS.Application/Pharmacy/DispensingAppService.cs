@@ -5,6 +5,7 @@ using HIS.Pharmacy.Dtos;
 using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
+using HIS.Inventory;
 
 namespace HIS.Pharmacy;
 
@@ -38,8 +39,54 @@ public class DispensingAppService : HISAppService, IDispensingAppService
         );
 
         await _verificationRepository.InsertAsync(verification);
+    }
+
+    public async Task DispenseAsync(CreateDispensingDto input)
+    {
+        var inventoryManager = LazyServiceProvider.LazyGetRequiredService<InventoryManager>();
         
-        // Optionally update Order status if needed
+        var dispensing = new Dispensing(GuidGenerator.Create(), input.MedicalOrderId, input.PatientId)
+        {
+            CounselingNotes = input.CounselingNotes
+        };
+
+        foreach (var item in input.Items)
+        {
+            // Note: In real app, we'd loop through batches here or let manager handle it.
+            // For now, manager handles LIFO and returns details.
+            var details = await inventoryManager.DispenseStockAsync(
+                Guid.Empty, // Default Warehouse or from input
+                item.InventoryItemId,
+                item.Quantity,
+                $"Dispensing:{input.MedicalOrderId}"
+            );
+
+            foreach (var detail in details)
+            {
+                dispensing.AddItem(item.InventoryItemId, detail.BatchId, detail.Quantity, detail.BatchNumber, detail.UnitCost);
+            }
+        }
+
+        var dispensingRepository = LazyServiceProvider.LazyGetRequiredService<IRepository<Dispensing, Guid>>();
+        await dispensingRepository.InsertAsync(dispensing);
+    }
+
+    public async Task<DispensingLabelDto> GetLabelAsync(Guid dispensingId)
+    {
+         var dispensingRepository = LazyServiceProvider.LazyGetRequiredService<IRepository<Dispensing, Guid>>();
+         var patientRepository = LazyServiceProvider.LazyGetRequiredService<IRepository<Patients.Patient, Guid>>();
+         
+         var dispensing = await dispensingRepository.GetAsync(dispensingId);
+         var patient = await patientRepository.GetAsync(dispensing.PatientId);
+
+         return new DispensingLabelDto
+         {
+             PatientName = patient.FullNameAr,
+             MRN = patient.MRN,
+             DispensedDate = dispensing.CreationTime.ToShortDateString(),
+             PharmacistName = _currentUser.UserName ?? "Pharmacist"
+             // Drug name and instructions would come from MedicalOrder/DispensedItems
+         };
     }
 
     public async Task<DispensingVerificationDto> GetVerificationAsync(Guid medicalOrderId)

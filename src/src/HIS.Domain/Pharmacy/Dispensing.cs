@@ -8,6 +8,7 @@ public class Dispensing : FullAuditedAggregateRoot<Guid>
 {
     public Guid MedicalOrderId { get; set; }
     public Guid PatientId { get; set; }
+    public string? CounselingNotes { get; set; }
     public List<DispensedItem> Items { get; set; }
 
     protected Dispensing()

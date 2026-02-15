@@ -213,6 +213,18 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./inpatient/admission-list/admission-list.component').then(c => c.AdmissionListComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Inpatient.Admissions' }
+      },
+      {
+        path: 'rooms',
+        loadChildren: () => import('./inpatient/rooms/rooms-module').then(m => m.RoomsModule),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inpatient.Rooms' }
+      },
+      {
+        path: 'reservations',
+        loadChildren: () => import('./inpatient/reservations/reservations-module').then(m => m.ReservationsModule),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inpatient.Reservations' }
       }
     ]
   },
@@ -244,6 +256,48 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./accounting/journal-entries/journal-entries').then(c => c.JournalEntriesComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Billing.JournalEntries' }
+      },
+      {
+        path: 'payment-vouchers',
+        loadComponent: () => import('./accounting/payment-vouchers/payment-vouchers/payment-vouchers').then(c => c.PaymentVouchers),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing' }
+      },
+      {
+        path: 'receipt-vouchers',
+        loadComponent: () => import('./accounting/receipt-vouchers/receipt-vouchers/receipt-vouchers').then(c => c.ReceiptVouchers),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing' }
+      },
+      {
+        path: 'bank-transactions',
+        loadComponent: () => import('./accounting/bank-transactions/bank-transactions/bank-transactions').then(c => c.BankTransactions),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing' }
+      },
+      {
+        path: 'claims',
+        loadComponent: () => import('./accounting/claims/contract-claims/contract-claims').then(c => c.ContractClaims),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing' }
+      },
+      {
+        path: 'reports/daily',
+        loadComponent: () => import('./accounting/reports/daily-accounts-report/daily-accounts-report').then(c => c.DailyAccountsReport),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
+      },
+      {
+        path: 'reports/debts',
+        loadComponent: () => import('./accounting/reports/customer-debts-report/customer-debts-report').then(c => c.CustomerDebtsReport),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
+      },
+      {
+        path: 'reports/discounts',
+        loadComponent: () => import('./accounting/reports/discounts-report/discounts-report').then(c => c.DiscountsReport),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
       },
       {
         path: 'reports',
@@ -298,6 +352,12 @@ export const APP_ROUTES: Routes = [
         loadChildren: () => import('./inventory/purchase-orders/purchase-orders.module').then(m => m.PurchaseOrdersModule),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Inventory.PurchaseOrders' }
+      },
+      {
+        path: 'purchase-requisitions',
+        loadChildren: () => import('./inventory/purchase-requisitions/purchase-requisitions-routing.module').then(m => m.PurchaseRequisitionsRoutingModule),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.PurchaseRequisitions' }
       },
       {
         path: 'reports/department-consumption',

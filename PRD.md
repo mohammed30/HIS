@@ -122,7 +122,7 @@ This document outlines the product requirements for a Hospital Information Syste
 #### 3.3.3 Prescription Management (صرف الأدوية والمستهلكات)
 - [x] Electronic prescription (e-Rx) (Basic UI)
 - [x] Drug database integration
-- [ ] Drug-drug interaction alerts
+- [x] Drug-drug interaction alerts
 - [x] Prescription history
 - [ ] Consumables ordering
 
@@ -141,8 +141,8 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Barcode support
 
 #### 3.4.2 Receiving & Stock (استلام الأدوية)
-- [ ] Purchase order creation
-- [x] Goods receipt processing (Basic)
+- [x] Purchase order creation
+- [x] Goods receipt processing
 - [x] Stock level management
 - [x] Minimum stock alerts
 - [x] Stock transfer between locations
@@ -150,15 +150,15 @@ This document outlines the product requirements for a Hospital Information Syste
 #### 3.4.3 Dispensing (صرف الأدوية)
 - [x] Prescription verification
 - [x] Dispensing workflow
-- [ ] Patient counseling notes
-- [ ] Dispensing label printing
-- [ ] Controlled substance tracking
+- [x] Patient counseling notes
+- [x] Dispensing label printing
+- [x] Controlled substance tracking
 
 #### 3.4.4 Procurement (شراء الكميات)
-- [ ] Supplier management
-- [ ] Purchase requisitions
-- [ ] Price comparison
-- [ ] Order tracking
+- [x] Supplier management
+- [x] Purchase requisitions
+- [x] Price comparison
+- [x] Order tracking
 
 #### 3.4.5 Retail & POS (نقاط البيع)
 - [x] Direct retail sales to non-patients/guests
@@ -174,10 +174,10 @@ This document outlines the product requirements for a Hospital Information Syste
 > **Priority: MEDIUM**
 
 #### 3.5.1 Room Configuration
-- [ ] Room type definitions (ICU, Ward, Private, etc.)
-- [ ] Bed configuration per room
-- [ ] Room amenities tracking
-- [ ] Room pricing
+- [x] Room type definitions (ICU, Ward, Private, etc.)
+- [x] Bed configuration per room
+- [x] Room amenities tracking
+- [x] Room pricing (Daily Rate)
 
 #### 3.5.2 Availability Management (إتاحة الغرف والأسرة)
 - [x] Real-time bed availability dashboard
@@ -186,7 +186,7 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Room assignment to reception
 
 #### 3.5.3 Reservation System (تنظيم الحجز)
-- [ ] Advance room booking
+- [x] Advance room booking (Calendar View)
 - [ ] Room upgrade/downgrade
 - [ ] Patient transfer between rooms
 - [ ] Discharge planning
@@ -252,10 +252,10 @@ This document outlines the product requirements for a Hospital Information Syste
 > **Priority: HIGH (Per Client Request)**
 
 #### 3.8.1 Inventory & Purchasing (المخزون والمشتريات)
-- [ ] **Supplier Integration**: Link purchases directly to suppliers (`ربط المشتريات بالموردين`).
+- [x] **Supplier Integration**: Link purchases directly to suppliers (`ربط المشتريات بالموردين`).
 - [x] **Warehouse Management**: Link purchases to central stores (`ربط المشتريات بالمخزن`).
-- [ ] **Departmental Consumption**: Track consumption by service departments (`ربط المخزن بالأقسام الخدمية`).
-- [ ] **Inventory Valuation**: Implement **LIFO** (Last-In, First-Out) method for pricing (`اعتماد طريقة LIFO`).
+- [x] **Departmental Consumption**: Track consumption by service departments (`ربط المخزن بالأقسام الخدمية`).
+- [x] **Inventory Valuation**: Implement **LIFO** (Last-In, First-Out) method for pricing (`اعتماد طريقة LIFO`).
 - [x] **Stock Cards**: Detailed tracking of Incoming/Outgoing (Item, Quantity, Price, Total) (`كرت الصنف`).
 
 #### 3.8.2 Accounting Entries (القيود المحاسبية)
@@ -266,18 +266,28 @@ This document outlines the product requirements for a Hospital Information Syste
   - Debit: Department Expense (`حساب القسم مدين`).
   - Credit: Warehouse/Inventory (`حساب المخزن دائن`).
 - [x] **Revenue Entries**: Track revenue per employee/doctor vs. cash/receivables.
+- [ ] **Voucher Management** (سندات القبض والصرف):
+  - [ ] **Payment Vouchers**: Manage payments to suppliers and expenses.
+  - [ ] **Receipt Vouchers**: Manage payments from patients/insurance.
+  - [ ] **Bank Transactions**: Track bank deposits and withdrawals.
+- [ ] **Claims Management** (المطالبات):
+  - [ ] **Contract Claims**: Manage insurance claims and contract billing.
+- [ ] **Advanced Reporting**:
+  - [ ] **Daily Accounts Report**: Summary of daily financial transactions.
+  - [ ] **Customer Debts Report**: Detailed report of outstanding patient balances.
+  - [ ] **Discounts Report**: Track discounts given to patients.
 
 #### 3.8.3 Financial Statements (القوائم المالية)
-- [ ] **Income Statement** (`قائمة الدخل`):
+- [x] **Income Statement** (`قائمة الدخل`):
     - Medical Service Revenues.
     - Cost of Sales (Beginning Inv + Purchases - Ending Inv).
     - Administrative & General Expenses.
-- [ ] **Balance Sheet** (`الميزانية العمومية/المركز المالي`).
-- [ ] **Cash Flow Statement** (`التدفقات النقدية`).
-- [ ] **Statement of Changes in Equity** (`التغير في حقوق الملكية`).
+- [x] **Balance Sheet** (`الميزانية العمومية/المركز المالي`).
+- [x] **Cash Flow Statement** (`التدفقات النقدية`).
+- [x] **Statement of Changes in Equity** (`التغير في حقوق الملكية`).
 
 #### 3.8.4 Administrative Functions (الوظائف الإدارية)
-- [ ] **Organizational Structure**: Link administrative jobs/titles to specific departments (`ربط الوظائف الإدارية بالأقسام`).
+- [x] **Organizational Structure**: Link administrative jobs/titles to specific departments (`ربط الوظائف الإدارية بالأقسام`).
 
 ---
 

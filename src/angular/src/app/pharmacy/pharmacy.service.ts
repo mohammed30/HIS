@@ -39,6 +39,13 @@ export class PharmacyService {
         });
     }
 
+    getLabel(dispensingId: string): Observable<any> {
+        return this.restService.request({
+            method: 'GET',
+            url: `/api/app/pharmacy/label?dispensingId=${dispensingId}`
+        });
+    }
+
     checkInteractions(patientId: string, newDrugName: string): Observable<string[]> {
         return this.restService.request({
             method: 'POST',

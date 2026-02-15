@@ -13,6 +13,9 @@ public class InventoryItem : FullAuditedAggregateRoot<Guid>
     // For LIFO/FIFO, we might need a separate Transaction table to trace batches, 
     // but this aggregated entity keeps current stock.
     public decimal AverageCost { get; set; } 
+    
+    public decimal MinStockLevel { get; set; }
+    public decimal ReorderLevel { get; set; }
 
     protected InventoryItem() { }
 

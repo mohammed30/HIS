@@ -148,4 +148,52 @@ public class PurchaseOrderAppService : CrudAppService<PurchaseOrder, PurchaseOrd
         
         return await MapToGetOutputDtoAsync(entity);
     }
+
+    public async Task ReceiveOrderAsync(Guid id, Guid warehouseId)
+    {
+        var entity = await Repository.WithDetailsAsync(x => x.PurchaseOrderLines);
+        var po = await AsyncExecuter.FirstOrDefaultAsync(entity.Where(x => x.Id == id));
+        
+        if (po == null) throw new Volo.Abp.Domain.Entities.EntityNotFoundException(typeof(PurchaseOrder), id);
+        if (po.Status != PurchaseOrderStatus.Confirmed)
+        {
+            throw new Volo.Abp.UserFriendlyException("Only confirmed orders can be received.");
+        }
+
+        var inventoryManager = LazyServiceProvider.LazyGetRequiredService<InventoryManager>();
+
+        foreach (var line in po.PurchaseOrderLines)
+        {
+            await inventoryManager.ReceiveStockAsync(
+                warehouseId,
+                line.ProductId,
+                null, // Manager will find name
+                InventoryItemType.Medication, // Default
+                line.Quantity,
+                line.UnitPrice,
+                po.OrderNumber
+            );
+        }
+
+        po.Status = PurchaseOrderStatus.Received;
+        await Repository.UpdateAsync(po);
+    }
+
+    public async Task<List<PriceComparisonDto>> GetPriceComparisonAsync(Guid productId)
+    {
+        // Simplified query for demo:
+        var query = from po in await Repository.GetQueryableAsync()
+                    from line in po.PurchaseOrderLines
+                    where line.ProductId == productId && po.Status == PurchaseOrderStatus.Received
+                    orderby po.OrderDate descending
+                    select new PriceComparisonDto
+                    {
+                        SupplierName = po.Supplier.Name,
+                        OrderDate = po.OrderDate,
+                        UnitPrice = line.UnitPrice,
+                        OrderNumber = po.OrderNumber
+                    };
+
+        return query.Take(5).ToList();
+    }
 }

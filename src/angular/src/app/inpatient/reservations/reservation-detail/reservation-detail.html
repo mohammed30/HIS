@@ -1,0 +1,73 @@
+<div class="modal-header">
+    <h5 class="modal-title">{{ (selectedId ? '::Edit' : '::NewReservation') | abpLocalization }}</h5>
+    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="mb-3">
+            <label class="form-label">{{ '::Patient' | abpLocalization }}</label>
+            <select class="form-select" formControlName="patientId">
+                <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                <option *ngFor="let p of patients" [ngValue]="p.id">{{ p.fullNameAr }} - {{ p.mrn }}</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::Room' | abpLocalization }}</label>
+                <select class="form-select" formControlName="roomId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let r of rooms" [ngValue]="r.id">{{ r.roomNumber }} - {{ '::Enum:RoomType.' + r.type
+                        | abpLocalization }}</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::Bed' | abpLocalization }}</label>
+                <select class="form-select" formControlName="bedId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let b of beds" [ngValue]="b.id">{{ b.bedNumber }} ({{ '::Enum:BedStatus.' + b.status
+                        | abpLocalization }})</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::StartDate' | abpLocalization }}</label>
+                <div class="input-group">
+                    <input class="form-control" formControlName="startDate" type="datetime-local">
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ '::EndDate' | abpLocalization }}</label>
+                <div class="input-group">
+                    <input class="form-control" formControlName="endDate" type="datetime-local">
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::Status' | abpLocalization }}</label>
+            <select class="form-select" formControlName="status">
+                <option *ngFor="let status of reservationStatuses" [ngValue]="status.value">
+                    {{ '::Enum:ReservationStatus.' + status.value | abpLocalization }}
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+            <textarea class="form-control" formControlName="notes"></textarea>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">
+        {{ '::Cancel' | abpLocalization }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+        <i class="fa fa-check me-1"></i>{{ '::Save' | abpLocalization }}
+    </button>
+</div>

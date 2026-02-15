@@ -48,6 +48,30 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Accounting.JournalEntry, Accounting.Dtos.JournalEntryDto>();
         CreateMap<Accounting.JournalEntryLine, Accounting.Dtos.JournalEntryLineDto>();
 
+        // Vouchers & Claims
+        CreateMap<Accounting.PaymentVoucher, Accounting.Dtos.PaymentVoucherDto>()
+             .ForMember(x => x.SupplierName, opt => opt.Ignore()) // Populate in AppService or via Include
+             .ForMember(x => x.PaymentMethodName, opt => opt.Ignore());
+        CreateMap<Accounting.PaymentVoucherLine, Accounting.Dtos.PaymentVoucherLineDto>()
+             .ForMember(x => x.AccountName, opt => opt.Ignore());
+        CreateMap<Accounting.Dtos.CreateUpdatePaymentVoucherDto, Accounting.PaymentVoucher>();
+        CreateMap<Accounting.Dtos.CreateUpdatePaymentVoucherLineDto, Accounting.PaymentVoucherLine>();
+
+        CreateMap<Accounting.ReceiptVoucher, Accounting.Dtos.ReceiptVoucherDto>()
+             .ForMember(x => x.PatientName, opt => opt.Ignore())
+             .ForMember(x => x.PaymentMethodName, opt => opt.Ignore());
+        CreateMap<Accounting.ReceiptVoucherLine, Accounting.Dtos.ReceiptVoucherLineDto>()
+             .ForMember(x => x.AccountName, opt => opt.Ignore());
+        CreateMap<Accounting.Dtos.CreateUpdateReceiptVoucherDto, Accounting.ReceiptVoucher>();
+        CreateMap<Accounting.Dtos.CreateUpdateReceiptVoucherLineDto, Accounting.ReceiptVoucherLine>();
+
+        CreateMap<Accounting.ContractClaim, Accounting.Dtos.ContractClaimDto>()
+             .ForMember(x => x.ContractName, opt => opt.Ignore());
+        CreateMap<Accounting.Dtos.CreateUpdateContractClaimDto, Accounting.ContractClaim>();
+
+        CreateMap<Accounting.BankTransaction, Accounting.Dtos.BankTransactionDto>();
+        CreateMap<Accounting.Dtos.CreateUpdateBankTransactionDto, Accounting.BankTransaction>();
+
         // Inventory
         CreateMap<Inventory.Warehouse, Inventory.Dtos.WarehouseDto>();
         CreateMap<Inventory.Dtos.CreateUpdateWarehouseDto, Inventory.Warehouse>();
@@ -106,6 +130,10 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<MedicalRecords.PatientNote, MedicalRecords.PatientNoteDto>();
         CreateMap<MedicalRecords.CreateUpdatePatientNoteDto, MedicalRecords.PatientNote>();
 
+        // Patients
+        CreateMap<Patients.Patient, Patients.PatientDto>();
+        CreateMap<Patients.CreateUpdatePatientDto, Patients.Patient>();
+
         // Services & Radiology
         CreateMap<Services.ServiceItem, Services.ServiceItemDto>();
         CreateMap<Services.CreateUpdateServiceItemDto, Services.ServiceItem>();
@@ -152,6 +180,20 @@ public class HISApplicationAutoMapperProfile : Profile
             .ForMember(x => x.ServiceItemName, opt => opt.Ignore()); // Can populate later if needed
         CreateMap<Pharmacy.Dtos.CreateUpdateDrugDto, Pharmacy.Drug>();
 
+        CreateMap<Pharmacy.Dispensing, Pharmacy.Dtos.DispensingDto>()
+            .ForMember(x => x.PatientName, opt => opt.Ignore());
+        CreateMap<Pharmacy.DispensedItem, Pharmacy.Dtos.DispensedItemDto>()
+            .ForMember(x => x.ProductName, opt => opt.Ignore());
+
+        // Procurement (Inventory)
+        CreateMap<Inventory.PurchaseRequisition, Inventory.Dtos.PurchaseRequisitionDto>()
+            .ForMember(x => x.RequestorName, opt => opt.Ignore())
+            .ForMember(x => x.DepartmentName, opt => opt.Ignore());
+        CreateMap<Inventory.PurchaseRequisitionLine, Inventory.Dtos.PurchaseRequisitionLineDto>()
+            .ForMember(x => x.ProductName, opt => opt.Ignore());
+        CreateMap<Inventory.Dtos.CreateUpdatePurchaseRequisitionDto, Inventory.PurchaseRequisition>();
+        CreateMap<Inventory.Dtos.CreateUpdatePurchaseRequisitionLineDto, Inventory.PurchaseRequisitionLine>();
+
         // General Master Data (Definitions)
         CreateMap<General.Nationality, General.NationalityDto>();
         CreateMap<General.CreateUpdateNationalityDto, General.Nationality>();
@@ -176,6 +218,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Rooms.CreateUpdateRoomDto, Rooms.Room>();
         CreateMap<Rooms.Room, Rooms.RoomLookupDto>();
 
+        CreateMap<Rooms.Bed, Rooms.BedDto>();
+
         // Inpatient (Admissions)
         CreateMap<Inpatient.Admission, Inpatient.AdmissionDto>()
             .ForMember(dest => dest.PatientName, opt => opt.Ignore())
@@ -183,6 +227,9 @@ public class HISApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.RoomNumber, opt => opt.Ignore())
             .ForMember(dest => dest.RoomTypeName, opt => opt.Ignore());
         CreateMap<Inpatient.CreateUpdateAdmissionDto, Inpatient.Admission>();
+
+        CreateMap<Inpatient.Reservation, Inpatient.ReservationDto>();
+        CreateMap<Inpatient.CreateUpdateReservationDto, Inpatient.Reservation>();
 
         // Operations (Surgery)
         CreateMap<Operations.SurgicalOperation, Operations.SurgicalOperationDto>()

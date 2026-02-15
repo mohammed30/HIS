@@ -13,8 +13,10 @@ export interface InventoryItemDto extends EntityDto<string> {
   productId?: string;
   productName?: string;
   type?: InventoryItemType;
-  quantity?: number;
-  averageCost?: number;
+  quantity: number;
+  averageCost: number;
+  minStockLevel: number;
+  reorderLevel: number;
 }
 
 export interface InventoryTransactionDto extends EntityDto<string> {

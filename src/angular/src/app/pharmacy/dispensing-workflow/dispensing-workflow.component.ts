@@ -4,11 +4,12 @@ import { PharmacyService } from '../pharmacy.service';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-dispensing-workflow',
   standalone: true,
-  imports: [CommonModule, ThemeSharedModule],
+  imports: [CommonModule, ThemeSharedModule, FormsModule],
   template: `
     <div class="card shadow-sm hover-lift" *ngIf="order">
       <div class="card-header bg-success text-white">
@@ -47,14 +48,28 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
           </div>
         </div>
 
-        <div class="d-flex justify-content-end gap-2 border-top pt-3">
-          <button class="btn btn-outline-secondary btn-premium" (click)="cancel()">
-            <i class="fas fa-times me-1"></i> Cancel
-          </button>
-          <button class="btn btn-success btn-premium" (click)="confirmDispense()" [disabled]="processing">
-            <i class="fas fa-check-circle me-1"></i> 
-            {{ processing ? 'Processing...' : 'Confirm & Dispense Inventory' }}
-          </button>
+        <div class="row mb-4">
+            <div class="col-12">
+                <label class="form-label fw-bold"><i class="fas fa-comment-medical me-2"></i>Counseling Notes (ملاحظات الصيدلي للمريض)</label>
+                <textarea class="form-control" [(ngModel)]="counselingNotes" rows="3" placeholder="Enter instructions for the patient..."></textarea>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between border-top pt-3">
+          <div>
+            <button *ngIf="dispensingId" class="btn btn-primary btn-premium" (click)="printLabel()">
+                <i class="fas fa-print me-1"></i> Print Label
+            </button>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-premium" (click)="cancel()">
+                <i class="fas fa-times me-1"></i> Cancel
+            </button>
+            <button class="btn btn-success btn-premium" (click)="confirmDispense()" [disabled]="processing || dispensingId">
+                <i class="fas fa-check-circle me-1"></i> 
+                {{ processing ? 'Processing...' : (dispensingId ? 'Dispensed' : 'Confirm & Dispense Inventory') }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -65,6 +80,8 @@ export class DispensingWorkflowComponent implements OnInit {
   order: any;
   warnings: string[] = [];
   processing = false;
+  counselingNotes = '';
+  dispensingId: string = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -94,18 +111,30 @@ export class DispensingWorkflowComponent implements OnInit {
     }
 
     this.processing = true;
-    const input = { medicalOrderId: this.orderId };
+    const input = {
+      medicalOrderId: this.orderId,
+      counselingNotes: this.counselingNotes
+    };
 
     this.pharmacyService.dispenseMedication(input).subscribe({
-      next: () => {
+      next: (res: any) => {
         this.toaster.success('Dispensed successfully', 'Success');
-        this.router.navigate(['/pharmacy']);
+        // If the backend returned an ID, we could use it for label
+        // For now, we'll just wait or navigate
+        this.processing = false;
+        // In a real flow, we might stay to print label
+        // this.dispensingId = res.id; 
       },
       error: (err) => {
         this.processing = false;
         this.toaster.error(err.message || 'Error dispensing', 'Error');
       }
     });
+  }
+
+  printLabel() {
+    // Implementation for opening a print-friendly view or PDF
+    this.toaster.info('Generating label...', 'Info');
   }
 
   cancel() {

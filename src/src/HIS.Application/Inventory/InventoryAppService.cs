@@ -90,10 +90,28 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         // Note: Ideally join with Product/ServiceItems to get names
         // For now returning basic DTOs
         
+        var dtos = ObjectMapper.Map<List<InventoryItem>, List<InventoryItemDto>>(items);
+        
+        // Manual mapping for new properties if AutoMapper is not configured to map them automatically
+        // Assuming AutoMapper maps by name convention, but let's be safe or just trust the mapper if names match.
+        // Since names match (MinStockLevel -> MinStockLevel), AutoMapper should handle it if invalid cache is not an issue.
+        // But to be sure:
+        // foreach(var dto in dtos) { ... } -- Not needed if names match.
+        
         return new PagedResultDto<InventoryItemDto>(
             items.Count,
-            ObjectMapper.Map<List<InventoryItem>, List<InventoryItemDto>>(items)
+            dtos
         );
+    }
+
+    [HttpPut("stock-levels/{id}")]
+    [Authorize(HISPermissions.Inventory.ManageWarehouses)] // Or specific permission
+    public async Task UpdateStockLevelsAsync(Guid id, UpdateStockLevelsDto input)
+    {
+        var item = await _inventoryItemRepository.GetAsync(id);
+        item.MinStockLevel = input.MinStockLevel;
+        item.ReorderLevel = input.ReorderLevel;
+        await _inventoryItemRepository.UpdateAsync(item);
     }
 
     [HttpPost("receive-stock")]

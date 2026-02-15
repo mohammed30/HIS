@@ -13,6 +13,8 @@ public class AdmissionDto : FullAuditedEntityDto<Guid>
     public Guid RoomId { get; set; }
     public string? RoomNumber { get; set; }
     public string? RoomTypeName { get; set; }
+    public Guid? BedId { get; set; }
+    public string? BedNumber { get; set; }
     public DateTime AdmissionDate { get; set; }
     public DateTime? DischargeDate { get; set; }
     public int NumberOfDays { get; set; }
@@ -36,6 +38,7 @@ public class CreateUpdateAdmissionDto
 {
     public Guid PatientId { get; set; }
     public Guid RoomId { get; set; }
+    public Guid BedId { get; set; }
     public decimal InsuranceCeiling { get; set; }
     public string? CompanionName { get; set; }
     public string? CompanionPhone { get; set; }
