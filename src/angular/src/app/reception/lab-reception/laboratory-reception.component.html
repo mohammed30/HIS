@@ -1262,6 +1262,11 @@
                     (click)="saveOperation()">
                     <i class="fas fa-plus-circle"></i> انشاء فاتورة مبدئية
                 </button>
+                <div class="form-check d-flex align-items-center gap-2 border px-3 rounded shadow-sm bg-white">
+                    <input class="form-check-input m-0" type="checkbox" id="opPrintTicket"
+                        [(ngModel)]="printTicketChecked">
+                    <label class="form-check-label fw-bold small cursor-pointer" for="opPrintTicket">طباعة تذكرة</label>
+                </div>
                 <button class="btn btn-warning d-flex align-items-center gap-2 px-4 shadow-sm fw-bold"
                     style="min-width: 150px; background-color: #fbc02d; border-color: #fbc02d;">
                     <i class="fas fa-exchange-alt"></i> ترحيل طبية
@@ -1287,6 +1292,7 @@
                             <th>التاريخ</th>
                             <th>المبلغ</th>
                             <th>الحالة</th>
+                            <th>طباعة</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1297,9 +1303,15 @@
                             <td>{{ item.operationDate | date:'short' }}</td>
                             <td>{{ item.totalAmount }}</td>
                             <td>{{ item.status }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info text-white" (click)="printOperationTicket(item.id)"
+                                    title="طباعة تذكرة">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </td>
                         </tr>
                         <tr *ngIf="operationsList.length === 0" class="text-muted">
-                            <td colspan="6" class="py-5">لا توجد عمليات مضافة</td>
+                            <td colspan="7" class="py-5">لا توجد عمليات مضافة</td>
                         </tr>
                     </tbody>
                 </table>

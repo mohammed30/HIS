@@ -7,19 +7,33 @@ using Volo.Abp.Domain.Repositories;
 using HIS.Accounting.Dtos;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using HIS.Billing;
+using HIS.Patients;
 
 namespace HIS.Accounting;
 
 public class AccountAppService : CrudAppService<Account, AccountDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateAccountDto>, IAccountAppService
 {
     private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
+    private readonly IRepository<Invoice, Guid> _invoiceRepository;
+    private readonly IRepository<Patient, Guid> _patientRepository;
+    private readonly IRepository<ReceiptVoucher, Guid> _receiptVoucherRepository;
+    private readonly IRepository<PaymentVoucher, Guid> _paymentVoucherRepository;
 
     public AccountAppService(
         IRepository<Account, Guid> repository,
-        IRepository<JournalEntry, Guid> journalEntryRepository)
+        IRepository<JournalEntry, Guid> journalEntryRepository,
+        IRepository<Invoice, Guid> invoiceRepository,
+        IRepository<Patient, Guid> patientRepository,
+        IRepository<ReceiptVoucher, Guid> receiptVoucherRepository,
+        IRepository<PaymentVoucher, Guid> paymentVoucherRepository)
         : base(repository)
     {
         _journalEntryRepository = journalEntryRepository;
+        _invoiceRepository = invoiceRepository;
+        _patientRepository = patientRepository;
+        _receiptVoucherRepository = receiptVoucherRepository;
+        _paymentVoucherRepository = paymentVoucherRepository;
     }
 
     public async Task<IncomeStatementDto> GetIncomeStatementAsync(DateRangeDto input)
@@ -364,5 +378,106 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         input.Code = nextCode;
 
         return await base.CreateAsync(input);
+    }
+
+    public async Task<DailyAccountsReportDto> GetDailyAccountsReportAsync(DateRangeDto input)
+    {
+        var dto = new DailyAccountsReportDto();
+
+        // 1. Receipts
+        var receipts = await _receiptVoucherRepository.GetListAsync(x => x.Date >= input.StartDate && x.Date <= input.EndDate);
+        foreach (var r in receipts)
+        {
+            dto.Transactions.Add(new ReportTransactionDto
+            {
+                Date = r.Date,
+                ReferenceNumber = r.VoucherNumber,
+                Description = r.Description,
+                Amount = r.Amount,
+                Type = "Receipt",
+                AccountName = r.PayerName
+            });
+        }
+
+        // 2. Payments
+        var payments = await _paymentVoucherRepository.GetListAsync(x => x.Date >= input.StartDate && x.Date <= input.EndDate);
+        foreach (var p in payments)
+        {
+            dto.Transactions.Add(new ReportTransactionDto
+            {
+                Date = p.Date,
+                ReferenceNumber = p.VoucherNumber,
+                Description = p.Description,
+                Amount = p.Amount,
+                Type = "Payment",
+                AccountName = p.PayeeName
+            });
+        }
+
+        // 3. Journal Entries (Optional: exclude those generated from vouchers if they are duplicates)
+        // For now, list all.
+        var jes = await _journalEntryRepository.GetListAsync(x => x.Date >= input.StartDate && x.Date <= input.EndDate);
+        foreach (var je in jes)
+        {
+            dto.Transactions.Add(new ReportTransactionDto
+            {
+                Date = je.Date,
+                ReferenceNumber = je.ReferenceNumber,
+                Description = je.Description,
+                Amount = 0, // JE doesn't have a single "Amount"
+                Type = "JournalEntry",
+                AccountName = "Journal Entry"
+            });
+        }
+
+        dto.Transactions = dto.Transactions.OrderByDescending(x => x.Date).ToList();
+        return dto;
+    }
+
+    public async Task<CustomerDebtsReportDto> GetCustomerDebtsReportAsync()
+    {
+        var dto = new CustomerDebtsReportDto();
+
+        var invoicesQuery = await _invoiceRepository.GetQueryableAsync();
+        var patientsQuery = await _patientRepository.GetQueryableAsync();
+
+        var debts = from i in invoicesQuery
+                    group i by i.PatientId into g
+                    join p in patientsQuery on g.Key equals p.Id
+                    select new CustomerDebtDto
+                    {
+                        PatientId = p.Id,
+                        PatientName = p.FirstName + " " + p.LastName,
+                        MRN = p.MRN,
+                        TotalInvoiced = g.Sum(x => x.NetAmount),
+                        TotalPaid = g.Sum(x => x.PaidAmount),
+                        DueAmount = g.Sum(x => x.DueAmount)
+                    };
+
+        dto.Debts = await AsyncExecuter.ToListAsync(debts.Where(x => x.DueAmount > 0));
+        return dto;
+    }
+
+    public async Task<DiscountsReportDto> GetDiscountsReportAsync(DateRangeDto input)
+    {
+        var dto = new DiscountsReportDto();
+
+        var invoicesQuery = await _invoiceRepository.GetQueryableAsync();
+        var patientsQuery = await _patientRepository.GetQueryableAsync();
+
+        var discountLines = from i in invoicesQuery
+                            join p in patientsQuery on i.PatientId equals p.Id
+                            where i.InvoiceDate >= input.StartDate && i.InvoiceDate <= input.EndDate && i.DiscountAmount > 0
+                            select new DiscountReportLineDto
+                            {
+                                Date = i.InvoiceDate,
+                                InvoiceNumber = i.InvoiceNumber,
+                                PatientName = p.FirstName + " " + p.LastName,
+                                TotalAmount = i.NetAmount,
+                                DiscountAmount = i.DiscountAmount
+                            };
+
+        dto.Lines = await AsyncExecuter.ToListAsync(discountLines);
+        return dto;
     }
 }

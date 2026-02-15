@@ -579,13 +579,49 @@ export class LaboratoryReceptionComponent implements OnInit {
         };
 
         this.operationService.create(input).subscribe({
-            next: () => {
+            next: (res) => { // Use 'res' to get the created operation
                 this.toaster.success('تم حفظ بيانات العملية بنجاح', 'نجاح');
                 this.loadOperationsList();
+                if (this.printTicketChecked) {
+                    this.printOperationTicket(res.id);
+                }
+                // Optional: clear form
+                this.operation = {
+                    operationTypeId: '',
+                    operationDate: new Date().toISOString().slice(0, 16),
+                    doctorId: '',
+                    totalAmount: 0,
+                    companyShare: 0,
+                    patientShare: 0,
+                    details: '',
+                    notes: ''
+                };
             },
             error: (err) => {
                 console.error(err);
                 this.toaster.error('حدث خطأ أثناء حفظ بيانات العملية', 'خطأ');
+            }
+        });
+    }
+
+    printOperationTicket(operationId: string) {
+        this.operationService.getOperationTicketPdf(operationId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                iframe.contentWindow?.print();
+
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    window.URL.revokeObjectURL(url);
+                }, 10000);
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('فشل طباعة تذكرة العملية', 'خطأ');
             }
         });
     }

@@ -106,6 +106,11 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         inpatient.AddChild(HISPermissions.Inpatient.Admissions, L("Permission:Admissions"));
         inpatient.AddChild(HISPermissions.Inpatient.Reservations, L("Permission:Reservations"));
         inpatient.AddChild(HISPermissions.Inpatient.Dashboard, L("Permission:InpatientDashboard"));
+
+        // Operations
+        var operations = hisGroup.AddPermission(HISPermissions.Operations.Default, L("Permission:Operations"));
+        operations.AddChild(HISPermissions.Operations.PrintTicket, L("Permission:PrintTicket"));
+        operations.AddChild(HISPermissions.Operations.Manage, L("Permission:Manage"));
     }
 
     private static LocalizableString L(string name)

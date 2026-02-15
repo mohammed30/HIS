@@ -167,3 +167,50 @@ export interface CreateUpdateBankTransactionDto {
   amount: number;
   transactionType: BankTransactionType;
 }
+
+export interface DateRangeDto {
+  startDate: string;
+  endDate: string;
+}
+
+export interface ReportTransactionDto {
+  date: string;
+  referenceNumber: string;
+  description: string;
+  amount: number;
+  type: string;
+  accountName: string;
+}
+
+export interface DailyAccountsReportDto {
+  transactions: ReportTransactionDto[];
+  totalReceipts: number;
+  totalPayments: number;
+}
+
+export interface CustomerDebtDto {
+  patientId: string;
+  patientName: string;
+  mrn: string;
+  totalInvoiced: number;
+  totalPaid: number;
+  dueAmount: number;
+}
+
+export interface CustomerDebtsReportDto {
+  debts: CustomerDebtDto[];
+  totalOverallDebt: number;
+}
+
+export interface DiscountReportLineDto {
+  date: string;
+  invoiceNumber: string;
+  patientName: string;
+  totalAmount: number;
+  discountAmount: number;
+}
+
+export interface DiscountsReportDto {
+  lines: DiscountReportLineDto[];
+  totalDiscounts: number;
+}

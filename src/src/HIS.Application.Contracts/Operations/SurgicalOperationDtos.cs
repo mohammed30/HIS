@@ -52,7 +52,13 @@ public class GetSurgicalOperationsInput : PagedAndSortedResultRequestDto
 #endregion
 
 #region Interface
-public interface ISurgicalOperationAppService
+public interface ISurgicalOperationAppService : Volo.Abp.Application.Services.ICrudAppService<
+    SurgicalOperationDto,
+    Guid,
+    GetSurgicalOperationsInput,
+    CreateUpdateSurgicalOperationDto>
 {
+    System.Threading.Tasks.Task<Volo.Abp.Content.IRemoteStreamContent> GetOperationTicketPdfAsync(Guid id);
+    System.Threading.Tasks.Task<SurgicalOperationDto> UpdateStatusAsync(Guid id, OperationStatus status);
 }
 #endregion

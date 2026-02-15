@@ -59,3 +59,51 @@ public class DateRangeDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
 }
+
+public class DailyAccountsReportDto
+{
+    public List<ReportTransactionDto> Transactions { get; set; } = new();
+    public decimal TotalReceipts => Transactions.Where(x => x.Type == "Receipt").Sum(x => x.Amount);
+    public decimal TotalPayments => Transactions.Where(x => x.Type == "Payment").Sum(x => x.Amount);
+}
+
+public class ReportTransactionDto
+{
+    public DateTime Date { get; set; }
+    public string ReferenceNumber { get; set; }
+    public string Description { get; set; }
+    public decimal Amount { get; set; }
+    public string Type { get; set; } // Receipt, Payment, JournalEntry
+    public string AccountName { get; set; }
+}
+
+public class CustomerDebtsReportDto
+{
+    public List<CustomerDebtDto> Debts { get; set; } = new();
+    public decimal TotalOverallDebt => Debts.Sum(x => x.DueAmount);
+}
+
+public class CustomerDebtDto
+{
+    public Guid PatientId { get; set; }
+    public string PatientName { get; set; }
+    public string MRN { get; set; }
+    public decimal TotalInvoiced { get; set; }
+    public decimal TotalPaid { get; set; }
+    public decimal DueAmount { get; set; }
+}
+
+public class DiscountsReportDto
+{
+    public List<DiscountReportLineDto> Lines { get; set; } = new();
+    public decimal TotalDiscounts => Lines.Sum(x => x.DiscountAmount);
+}
+
+public class DiscountReportLineDto
+{
+    public DateTime Date { get; set; }
+    public string InvoiceNumber { get; set; }
+    public string PatientName { get; set; }
+    public decimal TotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+}

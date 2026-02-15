@@ -122,5 +122,12 @@ public static class HISPermissions
         public const string Reservations = Default + ".Reservations";
         public const string Dashboard = Default + ".Dashboard";
     }
+
+    public static class Operations
+    {
+        public const string Default = GroupName + ".Operations";
+        public const string PrintTicket = Default + ".PrintTicket";
+        public const string Manage = Default + ".Manage";
+    }
 }
 

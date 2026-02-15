@@ -11,7 +11,7 @@ import { RoomBedListComponent } from '../room-bed-list/room-bed-list';
 @Component({
   selector: 'app-room-detail',
   standalone: true,
-  imports: [CoreModule, ThemeSharedModule, RoomBedListComponent],
+  imports: [CoreModule, ThemeSharedModule],
   templateUrl: './room-detail.html'
 })
 export class RoomDetailComponent implements OnInit {

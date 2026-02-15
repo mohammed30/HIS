@@ -9,7 +9,7 @@ import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.th
 @Component({
   selector: 'app-supplier-list',
   standalone: true,
-  imports: [CommonModule, NgbPaginationModule, ThemeSharedModule, SupplierDetailComponent],
+  imports: [CommonModule, NgbPaginationModule, ThemeSharedModule],
   // Note: SupplierDetailComponent in imports only if it's standalone and used in template. 
   // If used via NgbModal.open, it might not need to be in imports if not used in template directly.
   // Actually, NgbModal.open needs the component class.

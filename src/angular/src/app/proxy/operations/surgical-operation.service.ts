@@ -56,4 +56,12 @@ export class SurgicalOperationService {
             params: { status },
         },
             { apiName: this.apiName, ...config });
+
+    getOperationTicketPdf = (id: string, config?: Partial<Rest.Config>) =>
+        this.restService.request<any, Blob>({
+            method: 'GET',
+            responseType: 'blob',
+            url: `/api/app/surgical-operation/ticket-pdf/${id}`,
+        },
+            { apiName: this.apiName, ...config });
 }

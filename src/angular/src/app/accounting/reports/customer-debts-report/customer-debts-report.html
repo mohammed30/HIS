@@ -1,1 +1,62 @@
-<p>customer-debts-report works!</p>
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">{{ '::CustomerDebtsReport' | abpLocalization }}</h5>
+            </div>
+            <div class="col col-md-6 text-end">
+                <button class="btn btn-primary btn-sm" (click)="fetchReport()" [disabled]="loading">
+                    <i class="fa fa-refresh me-1"></i> {{ '::Refresh' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div *ngIf="!loading">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-warning">
+                        <div class="card-body py-3">
+                            <h6 class="card-title mb-1">{{ '::TotalOverallDebt' | abpLocalization }}</h6>
+                            <h4 class="mb-0">{{ report.totalOverallDebt | number:'1.2-2' }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ '::MRN' | abpLocalization }}</th>
+                            <th>{{ '::PatientName' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::TotalInvoiced' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::TotalPaid' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::DueAmount' | abpLocalization }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of report.debts">
+                            <td>{{ item.mrn }}</td>
+                            <td>{{ item.patientName }}</td>
+                            <td class="text-end">{{ item.totalInvoiced | number:'1.2-2' }}</td>
+                            <td class="text-end text-success">{{ item.totalPaid | number:'1.2-2' }}</td>
+                            <td class="text-end text-danger font-weight-bold">{{ item.dueAmount | number:'1.2-2' }}</td>
+                        </tr>
+                        <tr *ngIf="report.debts.length === 0">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                {{ '::NoDataFound' | abpLocalization }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
