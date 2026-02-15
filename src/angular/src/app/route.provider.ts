@@ -110,7 +110,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice-dollar',
       order: 34,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      requiredPolicy: 'HIS.Billing.PaymentVouchers',
     },
     {
       path: '/accounting/receipt-vouchers',
@@ -119,7 +119,7 @@ function configureRoutes() {
       iconClass: 'fas fa-receipt',
       order: 35,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      requiredPolicy: 'HIS.Billing.ReceiptVouchers',
     },
     {
       path: '/accounting/bank-transactions',
@@ -128,7 +128,7 @@ function configureRoutes() {
       iconClass: 'fas fa-university',
       order: 36,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      requiredPolicy: 'HIS.Billing.BankTransactions',
     },
     {
       path: '/accounting/claims',
@@ -137,7 +137,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-contract',
       order: 37,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      requiredPolicy: 'HIS.Billing.ContractClaims',
     },
     {
       path: '/accounting/reports/daily',

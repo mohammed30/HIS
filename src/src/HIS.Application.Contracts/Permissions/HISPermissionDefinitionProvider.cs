@@ -65,6 +65,10 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         billing.AddChild(HISPermissions.Billing.Payments, L("Permission:Payments"));
         billing.AddChild(HISPermissions.Billing.DeferredPayments, L("Permission:DeferredPayments"));
         billing.AddChild(HISPermissions.Billing.FinancialReports, L("Permission:FinancialReports"));
+        billing.AddChild(HISPermissions.Billing.ReceiptVouchers, L("Permission:ReceiptVouchers"));
+        billing.AddChild(HISPermissions.Billing.PaymentVouchers, L("Permission:PaymentVouchers"));
+        billing.AddChild(HISPermissions.Billing.BankTransactions, L("Permission:BankTransactions"));
+        billing.AddChild(HISPermissions.Billing.ContractClaims, L("Permission:ContractClaims"));
 
         // Definitions
         var definitions = hisGroup.AddPermission(HISPermissions.Definitions.Default, L("Permission:Definitions"));

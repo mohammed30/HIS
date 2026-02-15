@@ -80,7 +80,16 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets",
             "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices",
             "HIS.Reception.Payments",
-            "HIS.Billing.FinancialReports"
+            "HIS.Billing.FinancialReports",
+            "HIS.Billing.ReceiptVouchers",
+            "HIS.Billing.PaymentVouchers",
+            "HIS.Billing.BankTransactions",
+            "HIS.Billing.ContractClaims",
+            "HIS.Inpatient",
+            "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
+            "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
+            "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
+            "HIS.Inpatient.Dashboard"
         });
         
         // Ensure Admin has EVERYTHING (Root + All Children)
@@ -99,12 +108,17 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
             "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries", 
             "HIS.Billing.Payments", "HIS.Billing.DeferredPayments", "HIS.Billing.FinancialReports",
+            "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers", "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims",
             "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
             "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
             "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods",
             "HIS.Nursing", "HIS.Nursing.PatientList", "HIS.Nursing.VitalSigns", "HIS.Nursing.MedicationAdministration", 
             "HIS.Nursing.CarePlans", "HIS.Nursing.Assessments", "HIS.Nursing.FluidBalance", "HIS.Nursing.ShiftHandover",
-            "HIS.Inpatient", "HIS.Inpatient.Rooms", "HIS.Inpatient.Admissions", "HIS.Inpatient.Dashboard"
+            "HIS.Inpatient", 
+            "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
+            "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
+            "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
+            "HIS.Inpatient.Dashboard"
         });
         
         await SetAdminPasswordAsync();

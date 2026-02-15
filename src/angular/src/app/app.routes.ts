@@ -261,25 +261,25 @@ export const APP_ROUTES: Routes = [
         path: 'payment-vouchers',
         loadComponent: () => import('./accounting/payment-vouchers/payment-vouchers/payment-vouchers').then(c => c.PaymentVouchers),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Billing' }
+        data: { requiredPolicy: 'HIS.Billing.PaymentVouchers' }
       },
       {
         path: 'receipt-vouchers',
         loadComponent: () => import('./accounting/receipt-vouchers/receipt-vouchers/receipt-vouchers').then(c => c.ReceiptVouchers),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Billing' }
+        data: { requiredPolicy: 'HIS.Billing.ReceiptVouchers' }
       },
       {
         path: 'bank-transactions',
         loadComponent: () => import('./accounting/bank-transactions/bank-transactions/bank-transactions').then(c => c.BankTransactions),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Billing' }
+        data: { requiredPolicy: 'HIS.Billing.BankTransactions' }
       },
       {
         path: 'claims',
         loadComponent: () => import('./accounting/claims/contract-claims/contract-claims').then(c => c.ContractClaims),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Billing' }
+        data: { requiredPolicy: 'HIS.Billing.ContractClaims' }
       },
       {
         path: 'reports/daily',

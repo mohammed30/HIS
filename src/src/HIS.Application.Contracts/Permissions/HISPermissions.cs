@@ -73,6 +73,10 @@ public static class HISPermissions
         public const string Payments = Default + ".Payments";
         public const string DeferredPayments = Default + ".DeferredPayments";
         public const string FinancialReports = Default + ".FinancialReports";
+        public const string ReceiptVouchers = Default + ".ReceiptVouchers";
+        public const string PaymentVouchers = Default + ".PaymentVouchers";
+        public const string BankTransactions = Default + ".BankTransactions";
+        public const string ContractClaims = Default + ".ContractClaims";
     }
 
     public static class Definitions
