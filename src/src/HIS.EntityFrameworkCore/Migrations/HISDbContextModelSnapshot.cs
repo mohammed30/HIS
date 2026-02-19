@@ -4707,7 +4707,7 @@ namespace HIS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DispensingVerifications");
+                    b.ToTable("DispensingVerifications", (string)null);
                 });
 
             modelBuilder.Entity("HIS.Pharmacy.Drug", b =>
@@ -4885,7 +4885,7 @@ namespace HIS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StockTransfers");
+                    b.ToTable("StockTransfers", (string)null);
                 });
 
             modelBuilder.Entity("HIS.Pharmacy.StockTransferItem", b =>
@@ -4942,7 +4942,7 @@ namespace HIS.Migrations
 
                     b.HasIndex("StockTransferId");
 
-                    b.ToTable("StockTransferItem");
+                    b.ToTable("StockTransferItem", (string)null);
                 });
 
             modelBuilder.Entity("HIS.Pricing.PriceList", b =>
