@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +32,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
     private readonly ICurrentTenant _currentTenant;
     private readonly ActivityLogManager _activityLogManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private static int _mrnCounter = 1000;
+
 
     public PatientAppService(
         IRepository<Patient, Guid> patientRepository,
@@ -116,7 +117,17 @@ public class PatientAppService : ApplicationService, IPatientAppService
     [Authorize(HISPermissions.Patients.Create)]
     public async Task<PatientDto> CreateAsync(CreateUpdatePatientDto input)
     {
-        var mrn = GenerateMRN();
+        // Validate Payment Method
+        if (input.PaymentMethodId.HasValue)
+        {
+            var paymentMethodExists = await _paymentMethodRepository.AnyAsync(x => x.Id == input.PaymentMethodId.Value);
+            if (!paymentMethodExists)
+            {
+                throw new UserFriendlyException("طريقة الدفع المختارة غير موجودة. يرجى تحديث الصفحة والمحاولة مرة أخرى.");
+            }
+        }
+
+        var mrn = await GenerateMrnAsync();
 
         var patient = new Patient(
             id: _guidGenerator.Create(),
@@ -313,10 +324,32 @@ public class PatientAppService : ApplicationService, IPatientAppService
         return patient == null ? null : MapToDto(patient);
     }
 
-    private static string GenerateMRN()
+    private async Task<string> GenerateMrnAsync()
     {
-        var mrn = $"MRN{DateTime.Now:yyyyMMdd}{++_mrnCounter:D4}";
-        return mrn;
+        var todayPrefix = $"MRN{DateTime.Now:yyyyMMdd}";
+        var queryable = await _patientRepository.GetQueryableAsync();
+        
+        // We need to order by length first then by string to handle numeric ordering correctly if lengths differed,
+        // but MRN format is fixed length (MRN + 8 date + 4 seq = 15 chars).
+        // However, standard string sort is fine for fixed length.
+        var lastMrn = await AsyncExecuter.FirstOrDefaultAsync(
+            queryable
+                .Where(p => p.MRN.StartsWith(todayPrefix))
+                .OrderByDescending(p => p.MRN)
+                .Select(p => p.MRN)
+        );
+
+        int nextNumber = 1000;
+        if (!string.IsNullOrEmpty(lastMrn) && lastMrn.Length >= 4)
+        {
+            // Extract last 4 digits
+            if (int.TryParse(lastMrn.Substring(lastMrn.Length - 4), out int lastNumber))
+            {
+                nextNumber = lastNumber + 1;
+            }
+        }
+
+        return $"{todayPrefix}{nextNumber:D4}";
     }
 
     private static PatientDto MapToDto(Patient patient)

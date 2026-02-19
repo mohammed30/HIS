@@ -31,18 +31,12 @@ public class PaymentMethodDataSeedContributor : IDataSeedContributor, ITransient
     public async Task SeedAsync(DataSeedContext context)
     {
         // 1. Grant Permissions to Admin and AdminStaff
-        // Using string literal to avoid dependency on HIS.Application.Contracts
         const string paymentMethodsPermission = "HIS.Definitions.PaymentMethods";
         
         await _permissionManager.SetForRoleAsync("admin", paymentMethodsPermission, true);
         await _permissionManager.SetForRoleAsync("AdminStaff", paymentMethodsPermission, true);
 
         // 2. Seed Data
-        if (await _paymentMethodRepository.GetCountAsync() > 0)
-        {
-            return;
-        }
-
         await CreatePaymentMethodAsync("نقدي", "Cash", "CASH", true);
         await CreatePaymentMethodAsync("شبكة", "Card", "CARD", false);
         await CreatePaymentMethodAsync("تحويل بنكي", "Bank Transfer", "TRANSFER", false);
@@ -53,6 +47,11 @@ public class PaymentMethodDataSeedContributor : IDataSeedContributor, ITransient
 
     private async Task CreatePaymentMethodAsync(string nameAr, string nameEn, string code, bool isDefault)
     {
+        if (await _paymentMethodRepository.AnyAsync(x => x.Code == code))
+        {
+            return;
+        }
+
         var paymentMethod = new PaymentMethod(
             _guidGenerator.Create(),
             nameAr,
