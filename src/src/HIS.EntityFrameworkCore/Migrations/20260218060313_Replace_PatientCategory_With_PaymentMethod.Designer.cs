@@ -4,6 +4,7 @@ using HIS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace HIS.Migrations
 {
     [DbContext(typeof(HISDbContext))]
-    partial class HISDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218060313_Replace_PatientCategory_With_PaymentMethod")]
+    partial class Replace_PatientCategory_With_PaymentMethod
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4502,7 +4505,7 @@ namespace HIS.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<Guid?>("PaymentMethodId")
+                    b.Property<Guid?>("PatientCategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PhoneNumber")
@@ -4566,7 +4569,7 @@ namespace HIS.Migrations
 
                     b.HasIndex("NationalityId");
 
-                    b.HasIndex("PaymentMethodId");
+                    b.HasIndex("PatientCategoryId");
 
                     b.HasIndex("ProfessionId");
 
@@ -7909,9 +7912,9 @@ namespace HIS.Migrations
                         .WithMany()
                         .HasForeignKey("NationalityId");
 
-                    b.HasOne("HIS.General.PaymentMethod", null)
+                    b.HasOne("HIS.General.PatientCategory", null)
                         .WithMany()
-                        .HasForeignKey("PaymentMethodId");
+                        .HasForeignKey("PatientCategoryId");
 
                     b.HasOne("HIS.General.Profession", null)
                         .WithMany()

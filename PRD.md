@@ -59,6 +59,7 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Payment installment plans
 - [x] Outstanding balance management
 - [x] Refund processing
+- [x] Payment methods master data management
 - [ ] Daily cash reconciliation
 
 #### 3.1.4 Laboratory Reception (استقبال المعمل)
@@ -69,6 +70,7 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Support for multiple payment methods (Cash, POS, Transfer, Credit)
 - [x] Printing options (Work Order, Barcode, Ticket)
 - [x] Integrated accounting and discount management
+- [x] Automatic age calculation (Years, Months, Days)
 
 ---
 
@@ -266,16 +268,16 @@ This document outlines the product requirements for a Hospital Information Syste
   - Debit: Department Expense (`حساب القسم مدين`).
   - Credit: Warehouse/Inventory (`حساب المخزن دائن`).
 - [x] **Revenue Entries**: Track revenue per employee/doctor vs. cash/receivables.
-- [ ] **Voucher Management** (سندات القبض والصرف):
-  - [ ] **Payment Vouchers**: Manage payments to suppliers and expenses.
-  - [ ] **Receipt Vouchers**: Manage payments from patients/insurance.
-  - [ ] **Bank Transactions**: Track bank deposits and withdrawals.
-- [ ] **Claims Management** (المطالبات):
-  - [ ] **Contract Claims**: Manage insurance claims and contract billing.
+- [x] **Voucher Management** (سندات القبض والصرف):
+  - [x] **Payment Vouchers**: Manage payments to suppliers and expenses.
+  - [x] **Receipt Vouchers**: Manage payments from patients/insurance.
+  - [x] **Bank Transactions**: Track bank deposits and withdrawals.
+- [x] **Claims Management** (المطالبات):
+  - [x] **Contract Claims**: Manage insurance claims and contract billing.
 - [ ] **Advanced Reporting**:
-  - [ ] **Daily Accounts Report**: Summary of daily financial transactions.
-  - [ ] **Customer Debts Report**: Detailed report of outstanding patient balances.
-  - [ ] **Discounts Report**: Track discounts given to patients.
+  - [x] **Daily Accounts Report**: Summary of daily financial transactions.
+  - [x] **Customer Debts Report**: Detailed report of outstanding patient balances.
+  - [x] **Discounts Report**: Track discounts given to patients.
 
 #### 3.8.3 Financial Statements (القوائم المالية)
 - [x] **Income Statement** (`قائمة الدخل`):

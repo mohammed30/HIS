@@ -63,8 +63,8 @@
 
                         <!-- Row 2 -->
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الميلاد</label>
-                            <input type="date" class="form-control form-control-sm text-dark"
+                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الميلاد *</label>
+                            <input type="date" class="form-control form-control-sm text-dark border-info"
                                 [(ngModel)]="patientInfo.dateOfBirth" (ngModelChange)="calculateAge()">
                         </div>
                         <div class="col-md-4">
@@ -196,18 +196,19 @@
 
                         <!-- Row 6: Sponsor & Contracts -->
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">فئة المريض</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">طريقة الدفع *</label>
                             <select class="form-select form-select-sm text-dark border-warning"
-                                [(ngModel)]="patientInfo.patientCategoryId">
+                                [(ngModel)]="patientInfo.paymentMethodId"
+                                (ngModelChange)="onPaymentMethodChange($event)">
                                 <option [ngValue]="null">-- اختر --</option>
-                                <option *ngFor="let c of patientCategories" [ngValue]="c.id">{{ c.nameAr }}</option>
+                                <option *ngFor="let m of paymentMethods" [ngValue]="m.id">{{ m.nameAr }}</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small mb-0 fw-bold text-dark">جهة التعاقد</label>
                             <select class="form-select form-select-sm text-dark border-warning"
                                 [(ngModel)]="patientInfo.contractId">
-                                <option [ngValue]="null">-- نقدي (كاش) --</option>
+                                <option [ngValue]="null">-- اختر --</option>
                                 <option *ngFor="let ct of contracts" [ngValue]="ct.id">{{ ct.nameAr }}</option>
                             </select>
                         </div>
@@ -282,32 +283,108 @@
 
     <!-- Content Row -->
     <div class="row g-2 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'lab'">
-        <!-- Tests Column -->
-        <div class="col-md-3 d-flex flex-column">
-            <div class="card h-100 shadow-sm border-0">
+        <!-- Billing Column -->
+        <div class="col-md-4 d-flex flex-column">
+            <div class="card h-100 shadow-sm border-0 overflow-auto">
                 <div class="card-header bg-primary text-white py-1">
-                    <span class="small fw-bold">information</span>
+                    <span class="small fw-bold">الحسابات</span>
                 </div>
-                <div class="card-body p-2 accounts-panel rounded">
-                    <div class="d-flex gap-2 mb-2">
-                        <div class="form-check small">
-                            <input class="form-check-input" type="radio" name="searchType" id="searchByCode" checked>
-                            <label class="form-check-label" for="searchByCode">بحث برمز التحليل</label>
+                <div class="card-body p-2 d-flex flex-column gap-2 bg-white">
+                    <div class="payment-methods p-1 border rounded bg-light">
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">نقداً</label>
+                            <div class="col-8">
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="billingDetails.cash" (ngModelChange)="calculateBillingTotals()"
+                                    placeholder="0" [readonly]="activePaymentType !== 'Cash'">
+                            </div>
                         </div>
-                        <div class="form-check small">
-                            <input class="form-check-input" type="radio" name="searchType" id="searchByName">
-                            <label class="form-check-label" for="searchByName">بحث باسم التحليل</label>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">شبكة</label>
+                            <div class="col-8">
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="billingDetails.card" (ngModelChange)="calculateBillingTotals()"
+                                    placeholder="0" [readonly]="activePaymentType !== 'Card'">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">تحويل</label>
+                            <div class="col-8">
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="billingDetails.transfer" (ngModelChange)="calculateBillingTotals()"
+                                    placeholder="0" [readonly]="activePaymentType !== 'Transfer'">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-0 align-items-center">
+                            <label class="col-4 small text-end fw-bold">رصيد العميل</label>
+                            <div class="col-8">
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="billingDetails.clientBalance"
+                                    (ngModelChange)="calculateBillingTotals()" placeholder="0"
+                                    [readonly]="activePaymentType !== 'ClientBalance'">
+                            </div>
                         </div>
                     </div>
-                    <input type="text" class="form-control form-control-sm mb-2" placeholder="اكتب للبحث..."
-                        [(ngModel)]="testSearchText" (ngModelChange)="filterTests()" #testSearchInput>
-                    <div class="flex-grow-1 overflow-auto border rounded bg-white">
-                        <ul class="list-group list-group-flush small">
-                            <li class="list-group-item list-group-item-action py-1 px-2 pointer"
-                                *ngFor="let test of displayTests" (click)="addTestToOrder(test)">
-                                {{ test.name }}
-                            </li>
-                        </ul>
+
+                    <div class="billing-fields">
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">المبلغ المدفوع</label>
+                            <div class="col-8"><input type="text"
+                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0"
+                                    [value]="billingDetails.paidAmount">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">المبلغ المتبقي</label>
+                            <div class="col-8"><input type="text"
+                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0"
+                                    [value]="billingDetails.remainingAmount">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold fs-5">تخفيض</label>
+                            <div class="col-8"><input type="number"
+                                    class="form-control form-control-sm text-center fw-bold fs-5" placeholder="0"
+                                    [(ngModel)]="billingDetails.discount" (ngModelChange)="calculateBillingTotals()">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">تصديق من</label>
+                            <div class="col-8">
+                                <select class="form-select form-select-sm">
+                                    <option value="">-- اختر --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">الاجمالي</label>
+                            <div class="col-8"><input type="text"
+                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0"
+                                    [value]="billingDetails.total">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">التعاقد</label>
+                            <div class="col-8"><input type="text"
+                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">الضريبة</label>
+                            <div class="col-8 d-flex gap-2">
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="billingDetails.applyTax"
+                                    (change)="calculateBillingTotals()">
+                                <input type="text" class="form-control form-control-sm text-center fw-bold" readonly
+                                    placeholder="0" [value]="billingDetails.tax">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-0 align-items-center mt-2">
+                            <label class="col-4 small text-end fs-4 fw-bold text-primary">الاجمالي</label>
+                            <div class="col-8"><input type="text"
+                                    class="form-control form-control-lg text-center fw-bold border-primary" readonly
+                                    placeholder="0" style="font-size: 1.5rem;" [value]="billingDetails.grandTotal">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -380,92 +457,32 @@
             </div>
         </div>
 
-        <!-- Billing Column -->
-        <div class="col-md-4 d-flex flex-column">
-            <div class="card h-100 shadow-sm border-0 overflow-auto">
+        <!-- Tests Column -->
+        <div class="col-md-3 d-flex flex-column">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-header bg-primary text-white py-1">
-                    <span class="small fw-bold">الحسابات</span>
+                    <span class="small fw-bold">information</span>
                 </div>
-                <div class="card-body p-2 d-flex flex-column gap-2 bg-white">
-                    <div class="payment-methods p-1 border rounded bg-light">
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">نقداً</label>
-                            <div class="col-8">
-                                <span class="badge bg-primary w-100 text-start">0</span>
-                            </div>
+                <div class="card-body p-2 accounts-panel rounded">
+                    <div class="d-flex gap-2 mb-2">
+                        <div class="form-check small">
+                            <input class="form-check-input" type="radio" name="searchType" id="searchByCode" checked>
+                            <label class="form-check-label" for="searchByCode">بحث برمز التحليل</label>
                         </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">شبكة</label>
-                            <div class="col-8">
-                                <span class="badge bg-primary w-100 text-start">0</span>
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">تحويل</label>
-                            <div class="col-8">
-                                <span class="badge bg-primary w-100 text-start">0</span>
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-0 align-items-center">
-                            <label class="col-4 small text-end fw-bold">رصيد العميل</label>
-                            <div class="col-8">
-                                <span class="badge bg-primary w-100 text-start">0</span>
-                            </div>
+                        <div class="form-check small">
+                            <input class="form-check-input" type="radio" name="searchType" id="searchByName">
+                            <label class="form-check-label" for="searchByName">بحث باسم التحليل</label>
                         </div>
                     </div>
-
-                    <div class="billing-fields">
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">المبلغ المدفوع</label>
-                            <div class="col-8"><input type="text"
-                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">المبلغ المتبقي</label>
-                            <div class="col-8"><input type="text"
-                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold fs-5">تخفيض</label>
-                            <div class="col-8"><input type="text"
-                                    class="form-control form-control-sm text-center fw-bold fs-5" placeholder="0"></div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">تصديق من</label>
-                            <div class="col-8">
-                                <select class="form-select form-select-sm">
-                                    <option value="">-- اختر --</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">الاجمالي</label>
-                            <div class="col-8"><input type="text"
-                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">التعاقد</label>
-                            <div class="col-8"><input type="text"
-                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">الضريبة</label>
-                            <div class="col-8 d-flex gap-2">
-                                <input type="checkbox" class="form-check-input" checked>
-                                <input type="text" class="form-control form-control-sm text-center fw-bold" readonly
-                                    placeholder="0">
-                            </div>
-                        </div>
-                        <div class="row g-1 mb-0 align-items-center mt-2">
-                            <label class="col-4 small text-end fs-4 fw-bold text-primary">الاجمالي</label>
-                            <div class="col-8"><input type="text"
-                                    class="form-control form-control-lg text-center fw-bold border-primary" readonly
-                                    placeholder="0" style="font-size: 1.5rem;"></div>
-                        </div>
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="اكتب للبحث..."
+                        [(ngModel)]="testSearchText" (ngModelChange)="filterTests()" #testSearchInput>
+                    <div class="flex-grow-1 overflow-auto border rounded bg-white">
+                        <ul class="list-group list-group-flush small">
+                            <li class="list-group-item list-group-item-action py-1 px-2 pointer"
+                                *ngFor="let test of displayTests" (click)="addTestToOrder(test)">
+                                {{ test.name }}
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -591,26 +608,92 @@
             </div>
 
             <!-- Patient Statement Screen -->
-            <div *ngIf="activeSubTab === 'statement'" class="statement-sub-screen">
-                <div class="p-4 mx-auto text-center" style="max-width: 600px;">
-                    <h3 class="mb-5 fw-bold text-primary border-bottom pb-2">كشف حساب المريض</h3>
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="row g-3 justify-content-center align-items-center">
-                                <div class="col-md-5">
-                                    <label class="form-label fw-bold">التاريخ من</label>
-                                    <input type="date" class="form-control" [(ngModel)]="fromDate">
+            <div *ngIf="activeSubTab === 'statement'" class="statement-sub-screen p-2 d-flex flex-column h-100">
+                <div
+                    class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded shadow-sm bg-light">
+                    <h5 class="fw-bold text-primary m-0"><i class="fas fa-file-invoice-dollar me-2"></i>كشف حساب المريض
+                    </h5>
+                    <div class="d-flex gap-2 align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small fw-bold mb-0">من</label>
+                            <input type="date" class="form-control form-control-sm" [(ngModel)]="fromDate"
+                                style="width: 130px;">
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small fw-bold mb-0">إلى</label>
+                            <input type="date" class="form-control form-control-sm" [(ngModel)]="toDate"
+                                style="width: 130px;">
+                        </div>
+                        <button class="btn btn-primary btn-sm px-4 fw-bold" (click)="getPatientStatement()">
+                            <i class="fas fa-search me-1"></i> عرض
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-grow-1 overflow-auto border rounded shadow-sm mb-3">
+                    <table
+                        class="table table-sm table-striped table-hover table-bordered mb-0 small text-center sticky-header">
+                        <thead class="bg-primary text-white custom-sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>التاريخ</th>
+                                <th>البيان</th>
+                                <th>رقم المرجع</th>
+                                <th>مدين (Debit)</th>
+                                <th>دائن (Credit)</th>
+                                <th>الرصيد</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of patientStatement; let i = index">
+                                <td>{{ i + 1 }}</td>
+                                <td>{{ item.date | date:'yyyy-MM-dd HH:mm' }}</td>
+                                <td>{{ item.type }}</td>
+                                <td>{{ item.reference }}</td>
+                                <td class="text-danger">{{ item.debit | number:'1.2-2' }}</td>
+                                <td class="text-success">{{ item.credit | number:'1.2-2' }}</td>
+                                <td class="fw-bold" [class.text-danger]="item.balance > 0"
+                                    [class.text-success]="item.balance < 0">
+                                    {{ item.balance | number:'1.2-2' }}
+                                </td>
+                                <td class="text-start">{{ item.notes }}</td>
+                            </tr>
+                            <tr *ngIf="patientStatement.length === 0">
+                                <td colspan="8" class="text-muted py-4">لا توجد بيانات للعرض</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card shadow-sm border-0 bg-light">
+                    <div class="card-body p-2">
+                        <div class="row text-center fw-bold">
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-white">
+                                    <div class="text-muted small mb-1">إجمالي المدين</div>
+                                    <div class="text-danger fs-5">{{ statementSummary.totalDebit | number:'1.2-2' }}
+                                    </div>
                                 </div>
-                                <div class="col-md-5">
-                                    <label class="form-label fw-bold">وحتى</label>
-                                    <input type="date" class="form-control" [(ngModel)]="toDate">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-white">
+                                    <div class="text-muted small mb-1">إجمالي الدائن</div>
+                                    <div class="text-success fs-5">{{ statementSummary.totalCredit | number:'1.2-2' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-white">
+                                    <div class="text-muted small mb-1">الرصيد النهائي</div>
+                                    <div class="fs-5" [class.text-danger]="statementSummary.balance > 0"
+                                        [class.text-success]="statementSummary.balance < 0">
+                                        {{ statementSummary.balance | number:'1.2-2' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-success px-5 py-2 fw-bold mb-4">
-                        <i class="fas fa-save me-2"></i> عرض
-                    </button>
                 </div>
             </div>
         </div>
@@ -741,12 +824,14 @@
 
                     <div class="row g-2">
                         <div class="col-6"><button class="btn btn-primary btn-sm w-100 fw-bold"
-                                (click)="bookAppointment()">حجز/بيان</button></div>
+                                (click)="bookAppointment('statement')">حجز/بيان</button></div>
                         <div class="col-6"><button class="btn btn-success btn-sm w-100 fw-bold"
-                                (click)="bookAppointment()">حجز/سند</button></div>
-                        <div class="col-6"><button class="btn btn-warning btn-sm w-100 fw-bold">حجز/متابعة</button>
+                                (click)="bookAppointment('bond')">حجز/سند</button></div>
+                        <div class="col-6"><button class="btn btn-warning btn-sm w-100 fw-bold"
+                                (click)="bookAppointment('followup')">حجز/متابعة</button>
                         </div>
-                        <div class="col-6"><button class="btn btn-info btn-sm w-100 fw-bold">طبع استمارة</button></div>
+                        <div class="col-6"><button class="btn btn-info btn-sm w-100 fw-bold"
+                                (click)="printRegistrationForm()">طبع استمارة</button></div>
                     </div>
                 </div>
             </div>
@@ -828,15 +913,20 @@
             <div class="payment-fields small">
                 <div class="row g-2 mb-2 align-items-center">
                     <label class="col-5 text-end fw-bold">المبلغ المدفوع</label>
-                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0"></div>
+                    <div class="col-7"><input type="number" class="form-control form-control-sm"
+                            [(ngModel)]="medicalServicesPayment.amountPaid"
+                            (ngModelChange)="updateMedicalServicesTotals()"></div>
                 </div>
                 <div class="row g-2 mb-2 align-items-center">
                     <label class="col-5 text-end fw-bold">المبلغ المتبقي</label>
-                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0"></div>
+                    <div class="col-7"><input type="number" class="form-control form-control-sm"
+                            [value]="medicalServicesPayment.remainingAmount" readonly></div>
                 </div>
                 <div class="row g-2 mb-2 align-items-center">
                     <label class="col-5 text-end fw-bold">تخفيض</label>
-                    <div class="col-7"><input type="text" class="form-control form-control-sm" value="0"></div>
+                    <div class="col-7"><input type="number" class="form-control form-control-sm"
+                            [(ngModel)]="medicalServicesPayment.discount"
+                            (ngModelChange)="updateMedicalServicesTotals()"></div>
                 </div>
                 <div class="row g-2 mb-2 align-items-center">
                     <label class="col-5 text-end fw-bold">تصديق من</label>
@@ -868,7 +958,7 @@
 
             <div class="mb-3 d-flex align-items-center gap-4">
                 <div class="form-check small"><input class="form-check-input" type="checkbox" id="printTicMs"
-                        checked><label for="printTicMs">طباعة تذكرة</label></div>
+                        [(ngModel)]="printMedicalServicesTicket"><label for="printTicMs">طباعة تذكرة</label></div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="small fw-bold">عدد نسخة التذكرة</span>
                     <input type="number" class="form-control form-control-sm" style="width: 50px;" value="1">
@@ -902,7 +992,7 @@
                             <label class="col-auto small fw-bold">المجموعة</label>
                             <div class="col-md-6">
                                 <select class="form-select form-select-sm" [(ngModel)]="selectedCategory"
-                                    (change)="onCategoryChange()">
+                                    (change)="onMedicalCategoryChange()">
                                     <option [ngValue]="null">-- اختر --</option>
                                     <option *ngFor="let cat of medicalServiceCategories" [ngValue]="cat.id">{{ cat.name
                                         }}</option>

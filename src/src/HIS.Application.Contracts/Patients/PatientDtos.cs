@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Application.Dtos;
 
 namespace HIS.Patients;
@@ -29,8 +30,8 @@ public class PatientDto : FullAuditedEntityDto<Guid>
     public string? ProfessionName { get; set; }
     public Guid? ContractId { get; set; }
     public string? ContractName { get; set; }
-    public Guid? PatientCategoryId { get; set; }
-    public string? PatientCategoryName { get; set; }
+    public Guid? PaymentMethodId { get; set; }
+    public string? PaymentMethodName { get; set; }
     public Guid? ReferralSourceId { get; set; }
     public string? ReferralSourceName { get; set; }
 
@@ -85,6 +86,7 @@ public class PatientDto : FullAuditedEntityDto<Guid>
 /// </summary>
 public class CreateUpdatePatientDto
 {
+    [Required]
     public string? FullNameAr { get; set; }
     public string? FullNameEn { get; set; }
     public string FirstNameAr { get; set; } = string.Empty;
@@ -101,7 +103,8 @@ public class CreateUpdatePatientDto
     public Guid? NationalityId { get; set; }
     public Guid? ProfessionId { get; set; }
     public Guid? ContractId { get; set; }
-    public Guid? PatientCategoryId { get; set; }
+    [Required]
+    public Guid? PaymentMethodId { get; set; }
     public Guid? ReferralSourceId { get; set; }
 
     // Identity
@@ -124,6 +127,7 @@ public class CreateUpdatePatientDto
     public DateTime? VisaExpiryDate { get; set; }
 
     // Contact
+    [Required]
     public string MobileNumber { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
@@ -159,7 +163,7 @@ public class GetPatientsInput : PagedAndSortedResultRequestDto
     public string? IdentityNumber { get; set; }
     public string? MobileNumber { get; set; }
     public Gender? Gender { get; set; }
-    public Guid? PatientCategoryId { get; set; }
+    public Guid? PaymentMethodId { get; set; }
     public bool? IsActive { get; set; }
 }
 

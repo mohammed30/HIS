@@ -25,7 +25,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
     private readonly IRepository<Nationality, Guid> _nationalityRepository;
     private readonly IRepository<Profession, Guid> _professionRepository;
     private readonly IRepository<Contract, Guid> _contractRepository;
-    private readonly IRepository<PatientCategory, Guid> _categoryRepository;
+    private readonly IRepository<PaymentMethod, Guid> _paymentMethodRepository;
     private readonly IRepository<ReferralSource, Guid> _referralSourceRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
@@ -38,7 +38,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         IRepository<Nationality, Guid> nationalityRepository,
         IRepository<Profession, Guid> professionRepository,
         IRepository<Contract, Guid> contractRepository,
-        IRepository<PatientCategory, Guid> categoryRepository,
+        IRepository<PaymentMethod, Guid> paymentMethodRepository,
         IRepository<ReferralSource, Guid> referralSourceRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
@@ -49,7 +49,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         _nationalityRepository = nationalityRepository;
         _professionRepository = professionRepository;
         _contractRepository = contractRepository;
-        _categoryRepository = categoryRepository;
+        _paymentMethodRepository = paymentMethodRepository;
         _referralSourceRepository = referralSourceRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
@@ -63,7 +63,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         var nationalityQuery = await _nationalityRepository.GetQueryableAsync();
         var professionQuery = await _professionRepository.GetQueryableAsync();
         var contractQuery = await _contractRepository.GetQueryableAsync();
-        var categoryQuery = await _categoryRepository.GetQueryableAsync();
+        var paymentMethodQuery = await _paymentMethodRepository.GetQueryableAsync();
         var referralQuery = await _referralSourceRepository.GetQueryableAsync();
 
         // Apply filters to patients
@@ -86,11 +86,11 @@ public class PatientAppService : ApplicationService, IPatientAppService
                     from prof in profs.DefaultIfEmpty()
                     join cont in contractQuery on patient.ContractId equals cont.Id into conts
                     from cont in conts.DefaultIfEmpty()
-                    join cat in categoryQuery on patient.PatientCategoryId equals cat.Id into cats
-                    from cat in cats.DefaultIfEmpty()
+                    join pm in paymentMethodQuery on patient.PaymentMethodId equals pm.Id into pms
+                    from pm in pms.DefaultIfEmpty()
                     join refSrc in referralQuery on patient.ReferralSourceId equals refSrc.Id into refs
                     from refSrc in refs.DefaultIfEmpty()
-                    select new { patient, NationalityName = nat.NameAr, ProfessionName = prof.NameAr, ContractName = cont.NameAr, CategoryName = cat.NameAr, ReferralName = refSrc.NameAr };
+                    select new { patient, NationalityName = nat.NameAr, ProfessionName = prof.NameAr, ContractName = cont.NameAr, PaymentMethodName = pm.NameAr, ReferralName = refSrc.NameAr };
 
         var results = await AsyncExecuter.ToListAsync(query);
 
@@ -99,7 +99,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
             dto.NationalityName = x.NationalityName;
             dto.ProfessionName = x.ProfessionName;
             dto.ContractName = x.ContractName;
-            dto.PatientCategoryName = x.CategoryName;
+            dto.PaymentMethodName = x.PaymentMethodName;
             dto.ReferralSourceName = x.ReferralName;
             return dto;
         }).ToList();
@@ -156,7 +156,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         patient.EmergencyContactName = input.EmergencyContactName;
         patient.EmergencyContactRelation = input.EmergencyContactRelation;
         patient.EmergencyContactPhone = input.EmergencyContactPhone;
-        patient.PatientCategoryId = input.PatientCategoryId;
+        patient.PaymentMethodId = input.PaymentMethodId;
         patient.ContractId = input.ContractId;
         patient.ReferralSourceId = input.ReferralSourceId;
         patient.CardNumber = input.CardNumber;
@@ -222,7 +222,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         patient.EmergencyContactName = input.EmergencyContactName;
         patient.EmergencyContactRelation = input.EmergencyContactRelation;
         patient.EmergencyContactPhone = input.EmergencyContactPhone;
-        patient.PatientCategoryId = input.PatientCategoryId;
+        patient.PaymentMethodId = input.PaymentMethodId;
         patient.ContractId = input.ContractId;
         patient.ReferralSourceId = input.ReferralSourceId;
         patient.CardNumber = input.CardNumber;
@@ -362,7 +362,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
             EmergencyContactName = patient.EmergencyContactName,
             EmergencyContactRelation = patient.EmergencyContactRelation,
             EmergencyContactPhone = patient.EmergencyContactPhone,
-            PatientCategoryId = patient.PatientCategoryId,
+            PaymentMethodId = patient.PaymentMethodId,
             ContractId = patient.ContractId,
             ReferralSourceId = patient.ReferralSourceId,
             CardNumber = patient.CardNumber,
@@ -402,8 +402,8 @@ public class PatientAppService : ApplicationService, IPatientAppService
         if (input.Gender.HasValue)
             queryable = queryable.Where(x => x.Gender == input.Gender);
 
-        if (input.PatientCategoryId.HasValue)
-            queryable = queryable.Where(x => x.PatientCategoryId == input.PatientCategoryId);
+        if (input.PaymentMethodId.HasValue)
+            queryable = queryable.Where(x => x.PaymentMethodId == input.PaymentMethodId);
 
         if (input.IsActive.HasValue)
             queryable = queryable.Where(x => x.IsActive == input.IsActive);

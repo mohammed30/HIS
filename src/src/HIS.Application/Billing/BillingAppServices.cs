@@ -9,6 +9,8 @@ using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using HIS.Permissions;
+using HIS.Accounting;
+using HIS.General;
 
 namespace HIS.Billing;
 
@@ -19,16 +21,22 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 {
     private readonly IRepository<InvoiceItem, Guid> _itemRepository;
     private readonly IRepository<HIS.Patients.Patient, Guid> _patientRepository;
+    private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
+    private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
     private readonly IWebHostEnvironment _env;
 
     public InvoiceAppService(
         IRepository<Invoice, Guid> repository,
         IRepository<InvoiceItem, Guid> itemRepository,
         IRepository<HIS.Patients.Patient, Guid> patientRepository,
+        IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
+        IRepository<HIS.Accounting.Account, Guid> accountRepository,
         IWebHostEnvironment env) : base(repository)
     {
         _itemRepository = itemRepository;
         _patientRepository = patientRepository;
+        _journalEntryRepository = journalEntryRepository;
+        _accountRepository = accountRepository;
         _env = env;
         
         GetPolicyName = HISPermissions.Billing.Default;
@@ -92,7 +100,35 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
         await Repository.InsertAsync(invoice);
 
+        // Auto-Create Journal Entry (Debit AR 1120, Credit Revenue 4100)
+        await CreateInvoiceJournalEntryAsync(invoice, totalAmount);
+
         return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
+    }
+
+    private async Task CreateInvoiceJournalEntryAsync(Invoice invoice, decimal amount)
+    {
+        if (amount <= 0) return;
+
+        var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
+        var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
+
+        if (arAccount != null && revenueAccount != null)
+        {
+            var je = new HIS.Accounting.JournalEntry(
+                GuidGenerator.Create(),
+                invoice.InvoiceDate,
+                invoice.InvoiceNumber,
+                $"Invoice #{invoice.InvoiceNumber} - Patient: {invoice.PatientId}"
+            );
+            
+            // Debit AR
+            je.AddLine(GuidGenerator, arAccount.Id, amount, 0);
+            // Credit Revenue
+            je.AddLine(GuidGenerator, revenueAccount.Id, 0, amount);
+
+            await _journalEntryRepository.InsertAsync(je);
+        }
     }
 
     public async Task<InvoiceDto> GetWithItemsAsync(Guid id)
@@ -205,12 +241,27 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPaymentsInput, CreatePaymentDto>, IPaymentAppService
 {
     private readonly IRepository<Invoice, Guid> _invoiceRepository;
+    private readonly IRepository<HIS.Accounting.ReceiptVoucher, Guid> _receiptVoucherRepository;
+    private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
+    private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
+    private readonly IRepository<HIS.General.PaymentMethod, Guid> _paymentMethodRepository;
+    private readonly IRepository<HIS.Patients.Patient, Guid> _patientRepository;
 
     public PaymentAppService(
         IRepository<Payment, Guid> repository,
-        IRepository<Invoice, Guid> invoiceRepository) : base(repository)
+        IRepository<Invoice, Guid> invoiceRepository,
+        IRepository<HIS.Accounting.ReceiptVoucher, Guid> receiptVoucherRepository,
+        IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
+        IRepository<HIS.Accounting.Account, Guid> accountRepository,
+        IRepository<HIS.General.PaymentMethod, Guid> paymentMethodRepository,
+        IRepository<HIS.Patients.Patient, Guid> patientRepository) : base(repository)
     {
         _invoiceRepository = invoiceRepository;
+        _receiptVoucherRepository = receiptVoucherRepository;
+        _journalEntryRepository = journalEntryRepository;
+        _accountRepository = accountRepository;
+        _paymentMethodRepository = paymentMethodRepository;
+        _patientRepository = patientRepository;
         
         GetPolicyName = HISPermissions.Billing.Default;
         GetListPolicyName = HISPermissions.Billing.Default;
@@ -249,10 +300,69 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
                 invoice.Status = InvoiceStatus.PartiallyPaid;
                 
             await _invoiceRepository.UpdateAsync(invoice);
+
+            // Auto-Create Receipt Voucher and Journal Entry
+            await CreatePaymentAccountingEntriesAsync(payment, invoice, input.PaymentMethod);
         }
 
         return ObjectMapper.Map<Payment, PaymentDto>(payment);
     }
+
+    private async Task CreatePaymentAccountingEntriesAsync(Payment payment, Invoice invoice, HIS.Billing.PaymentMethod methodType)
+    {
+        var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
+        var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+        var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Name.Contains("Bank") || x.NameAr.Contains("بنك")); 
+        
+        var debitAccount = (methodType == HIS.Billing.PaymentMethod.Cash) ? cashAccount : (bankAccount ?? cashAccount);
+
+        if (arAccount != null && debitAccount != null)
+        {
+            // Get Patient Name
+            var patient = await _patientRepository.GetAsync(payment.PatientId);
+            var payerName = patient != null ? $"{patient.FirstNameAr} {patient.LastNameAr}" : "Unknown";
+
+            // 1. Receipt Voucher
+            var rvNumber = $"RV-{payment.PaymentNumber}";
+            var rv = new HIS.Accounting.ReceiptVoucher
+            {
+                VoucherNumber = rvNumber,
+                Date = payment.PaymentDate,
+                PatientId = payment.PatientId,
+                PayerName = payerName,
+                Amount = payment.Amount,
+                Description = $"Payment for Invoice {invoice.InvoiceNumber}",
+                PaymentMethodId = null
+            };
+            
+            rv.Lines.Add(new HIS.Accounting.ReceiptVoucherLine
+            {
+                ReceiptVoucherId = rv.Id,
+                AccountId = arAccount.Id, 
+                Amount = payment.Amount, 
+                Description = "Payment on Account" 
+            });
+            
+            await _receiptVoucherRepository.InsertAsync(rv);
+
+
+            // 2. Journal Entry
+            var je = new HIS.Accounting.JournalEntry(
+                GuidGenerator.Create(),
+                payment.PaymentDate,
+                payment.PaymentNumber,
+                $"Receipt #{payment.PaymentNumber} - Patient: {payerName}"
+            );
+
+            // Debit Cash/Bank
+            je.AddLine(GuidGenerator, debitAccount.Id, payment.Amount, 0);
+            // Credit AR
+            je.AddLine(GuidGenerator, arAccount.Id, 0, payment.Amount);
+
+            await _journalEntryRepository.InsertAsync(je);
+        }
+    }
+
 
     public async Task<decimal> GetTotalByDateRangeAsync(DateTime from, DateTime to)
     {

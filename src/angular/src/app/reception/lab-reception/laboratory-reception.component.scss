@@ -426,3 +426,9 @@
         text-align: right !important;
     }
 }
+
+.custom-sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}

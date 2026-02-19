@@ -219,7 +219,7 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// <summary>
     /// فئة المريض
     /// </summary>
-    public Guid? PatientCategoryId { get; set; }
+    public Guid? PaymentMethodId { get; set; }
 
     /// <summary>
     /// التعاقد

@@ -261,7 +261,7 @@ public class HISDbContext :
             b.HasOne<Nationality>().WithMany().HasForeignKey(x => x.NationalityId);
             b.HasOne<Profession>().WithMany().HasForeignKey(x => x.ProfessionId);
             b.HasOne<Contract>().WithMany().HasForeignKey(x => x.ContractId);
-            b.HasOne<PatientCategory>().WithMany().HasForeignKey(x => x.PatientCategoryId);
+            b.HasOne<PaymentMethod>().WithMany().HasForeignKey(x => x.PaymentMethodId);
             b.HasOne<ReferralSource>().WithMany().HasForeignKey(x => x.ReferralSourceId);
         });
 

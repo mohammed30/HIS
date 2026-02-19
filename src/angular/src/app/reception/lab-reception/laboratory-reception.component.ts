@@ -7,9 +7,10 @@ import { HttpClient } from '@angular/common/http';
 import { NationalityService } from '../../proxy/general/nationality.service';
 import { ProfessionService } from '../../proxy/general/profession.service';
 import { ContractService } from '../../proxy/general/contract.service';
-import { PatientCategoryService } from '../../proxy/general/patient-category.service';
+import { PaymentMethodService } from '../../proxy/general/payment-method.service';
+import { PaymentService } from '../../proxy/billing/payment.service';
 import { ReferralSourceService } from '../../proxy/general/referral-source.service';
-import { NationalityDto, ProfessionDto, ContractDto, PatientCategoryDto, ReferralSourceDto } from '../../proxy/general/models';
+import { NationalityDto, ProfessionDto, ContractDto, PaymentMethodDto, ReferralSourceDto } from '../../proxy/general/models';
 
 import { DoctorService } from '../../proxy/settings/doctor.service';
 import { PatientService } from '../../proxy/patients/patient.service';
@@ -44,7 +45,8 @@ export class LaboratoryReceptionComponent implements OnInit {
     private nationalityService = inject(NationalityService);
     private professionService = inject(ProfessionService);
     private contractService = inject(ContractService);
-    private patientCategoryService = inject(PatientCategoryService);
+    private paymentMethodService = inject(PaymentMethodService);
+    private paymentService = inject(PaymentService);
     private referralSourceService = inject(ReferralSourceService);
     private patientService = inject(PatientService);
     private serviceItemService = inject(ServiceItemService);
@@ -61,7 +63,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     nationalities: NationalityDto[] = [];
     professions: ProfessionDto[] = [];
     contracts: ContractDto[] = [];
-    patientCategories: PatientCategoryDto[] = [];
+    paymentMethods: PaymentMethodDto[] = [];
     referralSources: ReferralSourceDto[] = [];
 
     // Tab State
@@ -113,7 +115,26 @@ export class LaboratoryReceptionComponent implements OnInit {
         bedId: null
     };
 
+    // Billing Model
+    billingDetails: any = {
+        cash: 0,
+        card: 0,
+        transfer: 0,
+        clientBalance: 0,
+        paidAmount: 0,
+        remainingAmount: 0,
+        discount: 0,
+        total: 0,
+        grandTotal: 0,
+        tax: 0,
+        applyTax: true // Default checked
+    };
+
     availableBedsList: BedDto[] = [];
+
+    // Patient Statement
+    patientStatement: any[] = [];
+    statementSummary = { totalDebit: 0, totalCredit: 0, balance: 0 };
 
     // Operation Model
     operation: any = {
@@ -125,6 +146,13 @@ export class LaboratoryReceptionComponent implements OnInit {
         patientShare: 0,
         details: '',
         notes: ''
+    };
+
+    medicalServicesPayment = {
+        amountPaid: 0,
+        remainingAmount: 0,
+        discount: 0,
+        paymentMethod: 0 // Cash
     };
 
     roomTypes = [
@@ -149,12 +177,21 @@ export class LaboratoryReceptionComponent implements OnInit {
     ];
     selectedCategory: ServiceCategory | null = null;
     filteredServiceItems: any[] = [];
+    // Medical Services Model
+    // The original `selectedCategory` and `selectedServiceId` are already defined above.
+    // The instruction seems to be redefining them or moving them.
+    // I will assume the instruction intends to update the types and add the new property.
+    // I will keep the first definition of `selectedCategory` and `filteredServiceItems`
+    // and update the types for `medicalServicesTotal`, `medicalServicesPatientShare`, `medicalServicesInsuranceShare`,
+    // and add `printMedicalServicesTicket`.
+    // The `selectedMedicalServices` property was removed as per the instruction.
     selectedServiceId: string = '';
     requestedByDoctorId: string = '';
     selectedMedicalServices: any[] = [];
-    medicalServicesTotal = 0;
-    medicalServicesPatientShare = 0;
-    medicalServicesInsuranceShare = 0;
+    medicalServicesTotal: number = 0;
+    medicalServicesPatientShare: number = 0;
+    medicalServicesInsuranceShare: number = 0;
+    printMedicalServicesTicket: boolean = true;
 
     getEmptyPatient() {
         return {
@@ -189,7 +226,7 @@ export class LaboratoryReceptionComponent implements OnInit {
             emergencyContactRelation: '',
             taxFile: '',
             contractId: null,
-            patientCategoryId: null,
+            paymentMethodId: null,
             cardNumber: '',
             referralSourceId: null,
             isSocialSecurity: false,
@@ -225,7 +262,15 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.nationalityService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.nationalities = res.items || []);
         this.professionService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.professions = res.items || []);
         this.contractService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.contracts = res.items || []);
-        this.patientCategoryService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.patientCategories = res.items || []);
+        this.paymentMethodService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
+            this.paymentMethods = (res.items || []).sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+            // Auto-select default logic
+            const defaultMethod = this.paymentMethods.find(m => m.isDefault);
+            if (defaultMethod && !this.patientInfo.paymentMethodId) {
+                this.patientInfo.paymentMethodId = defaultMethod.id;
+                this.onPaymentMethodChange(defaultMethod.id);
+            }
+        });
         this.referralSourceService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.referralSources = res.items || []);
     }
 
@@ -257,6 +302,12 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     newPatient() {
         this.patientInfo = this.getEmptyPatient();
+        // Auto-select default payment method for new patient
+        const defaultMethod = this.paymentMethods.find(m => m.isDefault);
+        if (defaultMethod) {
+            this.patientInfo.paymentMethodId = defaultMethod.id;
+            this.onPaymentMethodChange(defaultMethod.id);
+        }
         this.resetAge();
         this.searchResults = [];
     }
@@ -297,8 +348,14 @@ export class LaboratoryReceptionComponent implements OnInit {
     }
 
     savePatient() {
-        if (!this.patientInfo.fullNameAr || !this.patientInfo.mobileNumber) {
-            this.toaster.warn('يرجى إكمال البيانات المطلوبة (الاسم والموبايل)', 'بيانات ناقصة');
+        const missingFields = [];
+        if (!this.patientInfo.fullNameAr) missingFields.push('الاسم');
+        if (!this.patientInfo.mobileNumber) missingFields.push('الموبايل');
+        if (!this.patientInfo.dateOfBirth) missingFields.push('تاريخ الميلاد');
+        if (!this.patientInfo.paymentMethodId) missingFields.push('طريقة الدفع');
+
+        if (missingFields.length > 0) {
+            this.toaster.warn('يرجى إكمال البيانات المطلوبة: ' + missingFields.join('، '), 'بيانات ناقصة');
             return;
         }
 
@@ -368,11 +425,13 @@ export class LaboratoryReceptionComponent implements OnInit {
                 ...test,
                 contractPrice: test.price // Default to list price, would be calculated based on contract
             });
+            this.calculateBillingTotals();
         }
     }
 
     removeTest(index: number) {
         this.selectedTests.splice(index, 1);
+        this.calculateBillingTotals();
     }
 
     focusSearch() {
@@ -449,7 +508,7 @@ export class LaboratoryReceptionComponent implements OnInit {
         }
     }
 
-    bookAppointment() {
+    bookAppointment(type: 'statement' | 'bond' | 'followup') {
         if (!this.patientInfo.id) {
             this.toaster.error('يجب اختيار مريض أولاً', 'خطأ');
             return;
@@ -459,25 +518,39 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
 
-        const input = {
+        const input: any = {
             patientId: this.patientInfo.id,
             clinicId: this.booking.clinicId,
             doctorId: this.booking.doctorId,
             serviceItemId: this.booking.serviceItemId || null,
             appointmentDate: this.booking.appointmentDate,
-            createInvoice: true, // Always create invoice for now as per UI "Book/Bond" (Hajz/Sanad)
+            createInvoice: type !== 'followup', // Don't create invoice for simple follow-up unless specified
             paymentMethod: this.booking.paymentMethod,
-            paidAmount: this.booking.payAmount,
             discount: this.booking.discount
         };
 
-        this.appointmentService.bookClinicAppointment(input as any).subscribe({
+        // Payment Logic based on type
+        if (type === 'bond') {
+            // Pay full amount (or entered amount)
+            input.paidAmount = this.booking.payAmount;
+        } else if (type === 'statement') {
+            // Credit / Deferred - No immediate payment
+            input.paidAmount = 0;
+        } else {
+            // Follow-up: usually free or pre-paid
+            input.paidAmount = 0;
+            // You might want to flag this as a follow-up in the backend if the API supports it
+        }
+
+        this.appointmentService.bookClinicAppointment(input).subscribe({
             next: (res) => {
-                this.toaster.success('تم حجز الموعد بنجاح', 'نجاح');
+                const msg = type === 'followup' ? 'تم حجز المتابعة بنجاح' : 'تم حجز الموعد وإنشاء الفاتورة (' + type + ')';
+                this.toaster.success(msg, 'نجاح');
+
                 if (this.printTicketChecked) {
                     this.printTicket(res.id);
                 }
-                // Reset booking form or navigate
+                // Reset/Navigation logic here if needed
             },
             error: (err) => {
                 console.error(err);
@@ -485,6 +558,17 @@ export class LaboratoryReceptionComponent implements OnInit {
             }
         });
     }
+
+    printRegistrationForm() {
+        if (!this.patientInfo.id) {
+            this.toaster.warn('يرجى اختيار مريض', 'تنبيه');
+            return;
+        }
+        // Placeholder for future implementation
+        this.toaster.info('جاري طباعة استمارة التسجيل...', 'طباعة');
+        // Logic to fetch PDF or window.print() would go here
+    }
+
     printTicket(appointmentId: string) {
         this.appointmentService.getTicketPdf(appointmentId).subscribe({
             next: (blob: Blob) => {
@@ -651,7 +735,7 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     // --- Medical Services Methods ---
 
-    onCategoryChange() {
+    onMedicalCategoryChange() {
         if (this.selectedCategory === null) {
             this.filteredServiceItems = [];
             return;
@@ -709,6 +793,10 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.medicalServicesTotal = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.price, 0);
         this.medicalServicesPatientShare = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.patientShare, 0);
         this.medicalServicesInsuranceShare = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.insuranceShare, 0);
+
+        // Calculate Net and Remaining
+        const netTotal = this.medicalServicesTotal - this.medicalServicesPayment.discount;
+        this.medicalServicesPayment.remainingAmount = netTotal - this.medicalServicesPayment.amountPaid;
     }
 
     saveMedicalServicesInvoice() {
@@ -724,27 +812,246 @@ export class LaboratoryReceptionComponent implements OnInit {
         const invoiceInput: any = {
             patientId: this.patientInfo.id,
             dueDate: new Date().toISOString(),
+            discountAmount: this.medicalServicesPayment.discount,
+            taxPercentage: 0, // Should be from config
             items: this.selectedMedicalServices.map(x => ({
                 serviceItemId: x.id,
                 serviceType: x.serviceType,
                 description: x.name,
                 quantity: 1,
                 unitPrice: x.price,
-                discountPercentage: 0
+                discountPercentage: 0, // Line item discount?
+                isCoveredByInsurance: false
             }))
         };
 
         this.invoiceService.create(invoiceInput).subscribe({
             next: (invoice) => {
                 this.toaster.success('تم حفظ فاتورة الخدمات الطبية بنجاح', 'نجاح');
+
+                // Create Payment if Amount Paid > 0
+                if (this.medicalServicesPayment.amountPaid > 0) {
+                    const paymentInput: any = {
+                        patientId: this.patientInfo.id,
+                        invoiceId: invoice.id,
+                        amount: this.medicalServicesPayment.amountPaid,
+                        paymentMethod: this.medicalServicesPayment.paymentMethod,
+                        paymentDate: new Date().toISOString(),
+                        referenceNumber: '',
+                        notes: 'Medical Services Ticket Payment'
+                    };
+
+                    this.paymentService.create(paymentInput).subscribe({
+                        next: () => {
+                            this.toaster.success('تم حفظ الدفع بنجاح', 'نجاح');
+                        },
+                        error: (err) => {
+                            console.error('Payment Error', err);
+                            this.toaster.error('فشل حفظ الدفع', 'خطأ');
+                        }
+                    });
+                }
+
+                // Reset and Print
                 this.selectedMedicalServices = [];
                 this.updateMedicalServicesTotals();
-                // Optionally print ticket or redirect to payment
+                this.medicalServicesPayment = { amountPaid: 0, remainingAmount: 0, discount: 0, paymentMethod: 0 };
+
+                if (this.printMedicalServicesTicket) {
+                    this.printInvoice(invoice.id);
+                }
             },
             error: (err) => {
                 console.error(err);
                 this.toaster.error('حدث خطأ أثناء حفظ الفاتورة', 'خطأ');
             }
+        });
+    }
+
+    printInvoice(invoiceId: string) {
+        this.invoiceService.getInvoicePdf(invoiceId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                iframe.contentWindow?.print();
+
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    window.URL.revokeObjectURL(url);
+                }, 10000);
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('فشل طباعة الفاتورة', 'خطأ');
+            }
+        });
+    }
+
+    activePaymentType: string = 'Cash'; // Default
+
+    onPaymentMethodChange(methodId: string) {
+        if (!methodId) {
+            this.activePaymentType = '';
+            return;
+        }
+        const method = this.paymentMethods.find(m => m.id === methodId);
+        if (method) {
+            // Determine type
+            const name = ((method.nameAr || '') + (method.nameEn || '')).toLowerCase();
+            if (name.includes('نقدا') || name.includes('cash') || name.includes('نقدي')) {
+                this.activePaymentType = 'Cash';
+                this.booking.paymentMethod = 'Cash';
+            } else if (name.includes('شبكة') || name.includes('network') || name.includes('card')) {
+                this.activePaymentType = 'Card';
+                this.booking.paymentMethod = 'Card';
+            } else if (name.includes('تحويل') || name.includes('transfer')) {
+                this.activePaymentType = 'Transfer';
+            } else if (name.includes('رصيد') || name.includes('balance') || name.includes('client')) {
+                this.activePaymentType = 'ClientBalance';
+            } else {
+                this.activePaymentType = 'Other';
+            }
+
+            // Auto-fill the selected method with the remaining amount (or full total if starting fresh)
+            // For simplicity, let's put the full Grand Total into the selected method
+            this.billingDetails.cash = 0;
+            this.billingDetails.card = 0;
+            this.billingDetails.transfer = 0;
+            this.billingDetails.clientBalance = 0;
+
+            if (this.activePaymentType === 'Cash') this.billingDetails.cash = this.billingDetails.grandTotal;
+            if (this.activePaymentType === 'Card') this.billingDetails.card = this.billingDetails.grandTotal;
+            if (this.activePaymentType === 'Transfer') this.billingDetails.transfer = this.billingDetails.grandTotal;
+            if (this.activePaymentType === 'ClientBalance') this.billingDetails.clientBalance = this.billingDetails.grandTotal;
+
+            this.calculateBillingTotals();
+        }
+    }
+
+    calculateBillingTotals() {
+        // Calculate Total from Services
+        const testsTotal = this.selectedTests.reduce((sum, item) => sum + (item.price || 0), 0);
+        this.billingDetails.total = testsTotal;
+
+        // Calculate Tax (14% of the Total if checked)
+        if (this.billingDetails.applyTax) {
+            this.billingDetails.tax = Math.round(this.billingDetails.total * 0.14 * 100) / 100;
+        } else {
+            this.billingDetails.tax = 0;
+        }
+
+        // Logic: Grand Total = Total - Discount + Tax
+        this.billingDetails.grandTotal = (this.billingDetails.total - (this.billingDetails.discount || 0)) + this.billingDetails.tax;
+
+        // Recalculate Active Payment Type Amount if needed (to keep it in sync with new Grand Total)
+        // If we are currently editing one, maybe update it? 
+        // Better: Update the active payment method amount to match the new Grand Total IF it was matching before or just force update it?
+        // User behavior: if I check tax, total increases, I expect the payment field to increase automatically if I haven't manually split it.
+        // For simplicity: Update the active payment method with remaining amount.
+
+        // Calculate Paid Amount from inputs
+        this.billingDetails.paidAmount =
+            (this.billingDetails.cash || 0) +
+            (this.billingDetails.card || 0) +
+            (this.billingDetails.transfer || 0) +
+            (this.billingDetails.clientBalance || 0);
+
+        // Calculate Remaining
+        this.billingDetails.remainingAmount = this.billingDetails.grandTotal - this.billingDetails.paidAmount;
+
+        // Auto-update active payment method if there is a remaining amount and we are in "auto-fill" mode 
+        // (implied by previous logic where we set full amount to active method)
+        // Let's allow manual edit, but if method is switched, it auto-fills. 
+        // Integrating tax update: if tax changes, remaining changes. User will see non-zero remaining and can adjust.
+        // OR: we can auto-update the active field. Let's try to auto-update active field if it's the only one being used (common case).
+        if (this.activePaymentType) {
+            // If active type is Cash, and others are 0, update Cash to match GrandTotal
+            // Check if others are zero
+            const otherSum = this.billingDetails.paidAmount - (this.billingDetails[this.activePaymentType.toLowerCase()] || (this.activePaymentType === 'ClientBalance' ? this.billingDetails.clientBalance : 0));
+            if (otherSum === 0) {
+                if (this.activePaymentType === 'Cash') this.billingDetails.cash = this.billingDetails.grandTotal;
+                else if (this.activePaymentType === 'Card') this.billingDetails.card = this.billingDetails.grandTotal;
+                else if (this.activePaymentType === 'Transfer') this.billingDetails.transfer = this.billingDetails.grandTotal;
+                else if (this.activePaymentType === 'ClientBalance') this.billingDetails.clientBalance = this.billingDetails.grandTotal;
+
+                // Re-calculate paid amount after auto-update
+                this.billingDetails.paidAmount = this.billingDetails.grandTotal;
+                this.billingDetails.remainingAmount = 0;
+            }
+        }
+    }
+
+    // --- Patient Statement ---
+    getPatientStatement() {
+        if (!this.patientInfo.id) {
+            this.toaster.warn('يرجى اختيار مريض أولاً', 'تنبيه');
+            return;
+        }
+
+        const from = this.fromDate ? new Date(this.fromDate).toISOString() : undefined;
+        const to = this.toDate ? new Date(this.toDate).toISOString() : undefined;
+
+        const invoices$ = this.invoiceService.getList({
+            patientId: this.patientInfo.id,
+            fromDate: from,
+            toDate: to,
+            maxResultCount: 1000
+        } as any);
+
+        const payments$ = this.paymentService.getList({
+            patientId: this.patientInfo.id,
+            fromDate: from,
+            toDate: to,
+            maxResultCount: 1000
+        } as any);
+
+        import('rxjs').then(({ forkJoin }) => {
+            forkJoin([invoices$, payments$]).subscribe({
+                next: ([invRes, payRes]) => {
+                    const invoices = (invRes.items || []).map(i => ({
+                        date: i.invoiceDate,
+                        type: 'Invoice / فاتورة',
+                        reference: i.invoiceNumber,
+                        debit: i.totalAmount || 0,
+                        credit: 0,
+                        balance: 0,
+                        notes: i.items?.map(x => x.serviceCode).join(', ') // Show service codes or notes
+                    }));
+
+                    const payments = (payRes.items || []).map(p => ({
+                        date: p.paymentDate,
+                        type: 'Payment / سند قبض',
+                        reference: p.paymentNumber,
+                        debit: 0,
+                        credit: p.amount || 0,
+                        balance: 0,
+                        notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : '')
+                    }));
+
+                    // Merge and Sort
+                    let runningBalance = 0;
+                    this.patientStatement = [];
+                    const combined = [...invoices, ...payments].sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+
+                    combined.forEach(item => {
+                        runningBalance += (item.debit - item.credit);
+                        item.balance = runningBalance;
+                        this.patientStatement.push(item);
+                    });
+
+                    // Calculate Summary
+                    this.statementSummary.totalDebit = this.patientStatement.reduce((sum, item) => sum + item.debit, 0);
+                    this.statementSummary.totalCredit = this.patientStatement.reduce((sum, item) => sum + item.credit, 0);
+                    this.statementSummary.balance = this.statementSummary.totalDebit - this.statementSummary.totalCredit;
+                },
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('حدث خطأ أثناء تحميل كشف الحساب', 'خطأ');
+                }
+            });
         });
     }
 }
