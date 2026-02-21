@@ -58,11 +58,11 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         var result = await AsyncExecuter.ToListAsync(joined);
 
         var grouped = result
-            .GroupBy(x => new { x.a.Code, x.a.Name })
+            .GroupBy(x => new { x.a.Code, x.a.Name, x.a.NameAr })
             .Select(g => new
             {
                 g.Key.Code,
-                g.Key.Name,
+                Name = !string.IsNullOrEmpty(g.Key.NameAr) ? g.Key.NameAr : g.Key.Name,
                 Amount = g.Sum(x => x.l.Credit - x.l.Debit) 
             })
             .ToList();
@@ -80,7 +80,10 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
 
             if (item.Code.StartsWith("4"))
             {
-                dto.RevenueLines.Add(line);
+                if (item.Code.StartsWith("48") || item.Code.StartsWith("49"))
+                    dto.OtherRevenueLines.Add(line);
+                else
+                    dto.RevenueLines.Add(line);
             }
             else if (item.Code.StartsWith("50"))
             {
@@ -89,14 +92,19 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
             }
             else if (item.Code.StartsWith("5"))
             {
-                // Other Operating Expenses
-                dto.OperatingExpenseLines.Add(line);
+                if (item.Code.StartsWith("58") || item.Code.StartsWith("59"))
+                    dto.OtherExpenseLines.Add(line);
+                else
+                    // General and Admin Expenses
+                    dto.GeneralAndAdminExpenseLines.Add(line);
             }
         }
 
         dto.TotalRevenue = dto.RevenueLines.Sum(x => x.Amount);
         dto.TotalCostOfSales = dto.CostOfSalesLines.Sum(x => x.Amount);
-        dto.TotalOperatingExpenses = dto.OperatingExpenseLines.Sum(x => x.Amount);
+        dto.TotalGeneralAndAdminExpenses = dto.GeneralAndAdminExpenseLines.Sum(x => x.Amount);
+        dto.TotalOtherRevenues = dto.OtherRevenueLines.Sum(x => x.Amount);
+        dto.TotalOtherExpenses = dto.OtherExpenseLines.Sum(x => x.Amount);
         
         return dto;
     }
@@ -121,11 +129,11 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         var result = await AsyncExecuter.ToListAsync(joined);
 
         var grouped = result
-            .GroupBy(x => new { x.a.Code, x.a.Name })
+            .GroupBy(x => new { x.a.Code, x.a.Name, x.a.NameAr })
             .Select(g => new
             {
                 g.Key.Code,
-                g.Key.Name,
+                Name = !string.IsNullOrEmpty(g.Key.NameAr) ? g.Key.NameAr : g.Key.Name,
                 Amount = g.Sum(x => x.l.Debit - x.l.Credit) // Assets are Debit Normal. Amount > 0 is Debit.
             })
             .ToList();
@@ -165,6 +173,19 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         dto.TotalLiabilities = dto.LiabilityLines.Sum(x => x.Amount);
         dto.TotalEquity = dto.EquityLines.Sum(x => x.Amount);
         
+        // Calculate Previous Year Equity (Start of period)
+        var previousYearLines = await _journalEntryRepository.GetQueryableAsync();
+        var prevLines = previousYearLines.Where(x => x.Date < input.StartDate).SelectMany(x => x.Lines);
+        
+        var prevEquity = await AsyncExecuter.SumAsync(
+            from l in prevLines
+            join a in accountQuery on l.AccountId equals a.Id
+            where a.Code.StartsWith("3")
+            select (decimal?)(l.Credit - l.Debit)
+        ) ?? 0;
+        
+        dto.PreviousYearEquity = prevEquity;
+        
         // Note: Retained Earnings (Current Year Net Income) might not be in Journal Entries yet if not closed.
         // A real system calculates Net Income for the period and adds it to Equity section dynamically.
         // For now, simple aggregation.
@@ -183,7 +204,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         dto.OperatingActivities.Add(new FinancialReportLineDto 
         { 
             AccountCode = "NET_INCOME", 
-            AccountName = "Net Income", 
+            AccountName = "صافي الربح", 
             Amount = netIncome 
         });
 
@@ -205,11 +226,11 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         var result = await AsyncExecuter.ToListAsync(joined);
 
         var grouped = result
-            .GroupBy(x => new { x.a.Code, x.a.Name })
+            .GroupBy(x => new { x.a.Code, x.a.Name, x.a.NameAr })
             .Select(g => new
             {
                 g.Key.Code,
-                g.Key.Name,
+                Name = !string.IsNullOrEmpty(g.Key.NameAr) ? g.Key.NameAr : g.Key.Name,
                 // For Assets (Class 1): Debit (pos) means Decrease in Cash (negative flow). Credit (neg) means Increase.
                 // For Lib/Equity (Class 2/3): Credit (pos) means Increase in Cash (positive flow).
                 Amount = g.Key.Code.StartsWith("1") 
@@ -243,74 +264,77 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         dto.TotalInvesting = dto.InvestingActivities.Sum(x => x.Amount);
         dto.TotalFinancing = dto.FinancingActivities.Sum(x => x.Amount);
         
+        // Calculate Cash at Beginning
+        var prevLines = query.Where(x => x.Date < startDate).SelectMany(x => x.Lines);
+        var cashAtBeginning = await AsyncExecuter.SumAsync(
+            from l in prevLines
+            join a in accountQuery on l.AccountId equals a.Id
+            where a.Code.StartsWith("10")
+            select (decimal?)(l.Debit - l.Credit) // Cash is Debit normal
+        ) ?? 0;
+        
+        dto.CashAtBeginning = cashAtBeginning;
+        dto.CashAtEnd = dto.CashAtBeginning + dto.NetCashFlow;
+        
         return dto;
     }
 
     public async Task<ChangesInEquityDto> GetChangesInEquityAsync(DateRangeDto input)
     {
         var dto = new ChangesInEquityDto();
+        var (startDate, endDate) = GetNormalizedDateRange(input);
         
-        // 1. Opening Balance (Equity Accounts at StartDate)
-        // Query journal lines before StartDate for Class 3
         var query = await _journalEntryRepository.GetQueryableAsync();
-        var openingLines = query
-            .Where(x => x.Date < input.StartDate) // Before start
-            .SelectMany(x => x.Lines);
-            
         var accountQuery = await Repository.GetQueryableAsync();
 
-        var openingEquity = await AsyncExecuter.SumAsync(
-            from l in openingLines
+        // Previous Periods Calculations (Before StartDate)
+        var prevLines = query.Where(x => x.Date < startDate).SelectMany(x => x.Lines);
+        var prevEquityData = await AsyncExecuter.ToListAsync(
+            from l in prevLines
             join a in accountQuery on l.AccountId equals a.Id
             where a.Code.StartsWith("3")
-            select (decimal?)(l.Credit - l.Debit) // Equity is Credit Normal
-        ) ?? 0;
+            select new { Code = a.Code, Amount = l.Credit - l.Debit } // Credit normal
+        );
+        
+        var prevIncomeData = await AsyncExecuter.ToListAsync(
+            from l in prevLines
+            join a in accountQuery on l.AccountId equals a.Id
+            where a.Code.StartsWith("4") || a.Code.StartsWith("5")
+            select new { Code = a.Code, Amount = l.Credit - l.Debit } // Revenue(Cr) - Expense(Dr)
+        );
 
-        dto.OpeningBalance = openingEquity;
+        // Previous Capital (31)
+        dto.Capital.PreviousYear = prevEquityData.Where(x => x.Code.StartsWith("31")).Sum(x => x.Amount);
+        
+        // Previous Retained Earnings (32 + all previous Net Income)
+        var previousRetainedEarningsDirect = prevEquityData.Where(x => x.Code.StartsWith("32")).Sum(x => x.Amount);
+        var previousNetIncomeAccumulated = prevIncomeData.Sum(x => x.Amount);
+        dto.RetainedEarnings.PreviousYear = previousRetainedEarningsDirect + previousNetIncomeAccumulated;
+        
+        // Previous Dividends (33)
+        dto.Dividends.PreviousYear = prevEquityData.Where(x => x.Code.StartsWith("33")).Sum(x => x.Amount);
+        
+        // Net Income Previous Year is typically 0 in this matrix (it gets rolled into RE)
+        dto.NetIncome.PreviousYear = 0;
 
-        // 2. Net Income for the period
+        // Current Period Changes
+        var periodLines = query.Where(x => x.Date >= startDate && x.Date <= endDate).SelectMany(x => x.Lines);
+        var periodEquityData = await AsyncExecuter.ToListAsync(
+            from l in periodLines
+            join a in accountQuery on l.AccountId equals a.Id
+            where a.Code.StartsWith("3")
+            select new { Code = a.Code, Amount = l.Credit - l.Debit }
+        );
+
+        // Changes
+        dto.Capital.Change = periodEquityData.Where(x => x.Code.StartsWith("31")).Sum(x => x.Amount);
+        dto.RetainedEarnings.Change = periodEquityData.Where(x => x.Code.StartsWith("32")).Sum(x => x.Amount);
+        dto.Dividends.Change = periodEquityData.Where(x => x.Code.StartsWith("33")).Sum(x => x.Amount);
+        
+        // Current Period Net Income
         var incomeStatement = await GetIncomeStatementAsync(input);
-        dto.NetIncome = incomeStatement.NetIncome;
+        dto.NetIncome.Change = incomeStatement.NetIncome;
 
-        // 3. Dividends or Capital Injections
-        // Look for specific accounts or movements in Equity (3xxx) during period EXCEPT Net Income closing?
-        // Usually, direct equity entries (Capital stock issuance, Dividends declared).
-        // We query Class 3 movements during period.
-        
-        var (startDate, endDate) = GetNormalizedDateRange(input);
-        var periodLines = query
-            .Where(x => x.Date >= startDate && x.Date <= endDate)
-            .SelectMany(x => x.Lines);
-            
-        var equityMovements = from l in periodLines
-                              join a in accountQuery on l.AccountId equals a.Id
-                              where a.Code.StartsWith("3")
-                              select new { l, a };
-
-        var movements = await AsyncExecuter.ToListAsync(equityMovements);
-        
-        foreach (var move in movements)
-        {
-             // These are direct equity changes.
-             // If we assume Retained Earnings is NOT auto-posted yet.
-             // We list them.
-             var amount = move.l.Credit - move.l.Debit;
-             dto.DetailLines.Add(new FinancialReportLineDto
-             {
-                 AccountCode = move.a.Code,
-                 AccountName = move.a.Name,
-                 Amount = amount
-             });
-        }
-        
-        dto.CapitalChanges = dto.DetailLines.Sum(x => x.Amount);
-
-        // Closing Balance
-        // Opening + Net Income + Movements
-        // Note: Check if Net Income is already in movements? 
-        // If not closed, it's NOT in movements of Class 3. It's in Class 4/5. 
-        // So we add it explicitly.
-        
         return dto;
     }
 

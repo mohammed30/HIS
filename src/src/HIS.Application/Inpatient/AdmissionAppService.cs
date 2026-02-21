@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
@@ -25,16 +26,22 @@ public class AdmissionAppService : CrudAppService<
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<Room, Guid> _roomRepository;
     private readonly IRepository<Bed, Guid> _bedRepository;
+    private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
+    private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
 
     public AdmissionAppService(
         IRepository<Admission, Guid> repository,
         IRepository<Patient, Guid> patientRepository,
         IRepository<Room, Guid> roomRepository,
-        IRepository<Bed, Guid> bedRepository) : base(repository)
+        IRepository<Bed, Guid> bedRepository,
+        IRepository<HIS.Accounting.Account, Guid> accountRepository,
+        IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository) : base(repository)
     {
         _patientRepository = patientRepository;
         _roomRepository = roomRepository;
         _bedRepository = bedRepository;
+        _accountRepository = accountRepository;
+        _journalEntryRepository = journalEntryRepository;
     }
 
     public override async Task<AdmissionDto> CreateAsync(CreateUpdateAdmissionDto input)
@@ -85,6 +92,42 @@ public class AdmissionAppService : CrudAppService<
         // Update Bed status
         bed.Status = BedStatus.Occupied;
         await _bedRepository.UpdateAsync(bed);
+
+        // Accounting Journal Entry
+        var patient = await _patientRepository.GetAsync(input.PatientId);
+        var patientName = !string.IsNullOrWhiteSpace(patient.FullNameAr) ? patient.FullNameAr : patient.MRN;
+        
+        var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
+        var checkAmount = input.NumberOfDays > 0 ? (input.NumberOfDays * room.DailyRate) : (input.PaidAmount > 0 ? input.PaidAmount : 1000m); // Default fallback
+
+        if (arAccount != null)
+        {
+            var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
+            var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+            var jeNumber = $"ADM-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+            
+            var je = new HIS.Accounting.JournalEntry(
+                GuidGenerator.Create(),
+                DateTime.Now,
+                jeNumber,
+                $"حجز تنويم - المريض: {patientName}"
+            );
+
+            if (input.PaidAmount > 0 && cashAccount != null)
+            {
+                // Advance Payment Booking: Debit Cash, Credit AR
+                je.AddLine(GuidGenerator, cashAccount.Id, input.PaidAmount, 0);
+                je.AddLine(GuidGenerator, arAccount.Id, 0, input.PaidAmount);
+            }
+            else if (revenueAccount != null)
+            {
+                // Standard Booking: Debit AR, Credit Revenue
+                je.AddLine(GuidGenerator, arAccount.Id, checkAmount, 0);
+                je.AddLine(GuidGenerator, revenueAccount.Id, 0, checkAmount);
+            }
+
+            await _journalEntryRepository.InsertAsync(je);
+        }
 
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
         await EnrichAdmissionDtoAsync(dto);
@@ -184,6 +227,16 @@ public class AdmissionAppService : CrudAppService<
     protected override IQueryable<Admission> ApplyDefaultSorting(IQueryable<Admission> query)
     {
         return query.OrderByDescending(x => x.AdmissionDate);
+    }
+
+    public override async Task<PagedResultDto<AdmissionDto>> GetListAsync(GetAdmissionsInput input)
+    {
+        var result = await base.GetListAsync(input);
+        foreach (var dto in result.Items)
+        {
+            await EnrichAdmissionDtoAsync(dto);
+        }
+        return result;
     }
 
     public override async Task<AdmissionDto> GetAsync(Guid id)

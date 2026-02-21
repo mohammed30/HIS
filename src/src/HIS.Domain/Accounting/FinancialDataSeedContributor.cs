@@ -5,6 +5,7 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
 using Volo.Abp.MultiTenancy;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -34,14 +35,15 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
     public async Task SeedAsync(DataSeedContext context)
     {
+        var allAccounts = await _accountRepository.GetListAsync();
+
         // Check if we need to patch existing accounts with NameAr
-        if (await _accountRepository.GetCountAsync() > 0)
+        if (allAccounts.Count > 0)
         {
             await PatchArabicNamesAsync();
             return;
         }
 
-        // ... (Standard creation logic remains, but we add the logic to create new if empty)
         await CreateStandardAccountsAsync();
     }
 
@@ -56,30 +58,29 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         var revenue = await EnsureAccountExistsAsync("4000", "Revenue", "الإيرادات", AccountType.Revenue, null);
         var expenses = await EnsureAccountExistsAsync("5000", "Expenses", "المصروفات", AccountType.Expense, null);
 
-        await UpdateNameArAsync("1100", "أصول متداولة");
-        await UpdateNameArAsync("1110", "النقدية");
-        await UpdateNameArAsync("1120", "المدينون");
-        await UpdateNameArAsync("1130", "المخزون");
-        
-        await UpdateNameArAsync("1200", "أصول ثابتة");
-        await UpdateNameArAsync("1210", "مباني");
-        await UpdateNameArAsync("1220", "أجهزة طبية");
+        // Core Charts - Force Arabic Names
+        await UpdateNameArAsync("1100", "أصول متداولة", true);
+        await UpdateNameArAsync("1110", "النقدية", true);
+        await UpdateNameArAsync("1120", "المدينون", true);
+        await UpdateNameArAsync("1130", "المخزون", true);
+        await UpdateNameArAsync("1200", "أصول ثابتة", true);
+        await UpdateNameArAsync("1210", "مباني", true);
+        await UpdateNameArAsync("1220", "أجهزة طبية", true);
 
-        await UpdateNameArAsync("2100", "خصوم متداولة");
-        await UpdateNameArAsync("2110", "الدائنون");
+        var currentLiabs = await EnsureAccountExistsAsync("2100", "Current Liabilities", "خصوم متداولة", AccountType.Liability, liabilities.Id);
+        await UpdateNameArAsync("2110", "الدائنون", true);
+        await EnsureAccountExistsAsync("2200", "VAT Payable", "ضريبة القيمة المضافة المستحقة", AccountType.Liability, currentLiabs.Id);
 
-        await UpdateNameArAsync("3100", "رأس المال");
-        await UpdateNameArAsync("3200", "أرباح مبقاة");
+        await UpdateNameArAsync("3100", "رأس المال", true);
+        await UpdateNameArAsync("3200", "أرباح مبقاة", true);
 
-        await UpdateNameArAsync("4100", "إيرادات خدمات طبية");
-        await UpdateNameArAsync("4200", "إيرادات صيدلية");
+        await UpdateNameArAsync("4100", "إيرادات خدمات طبية", true);
+        await UpdateNameArAsync("4110", "إيرادات العمليات", true);
+        await UpdateNameArAsync("4200", "إيرادات صيدلية", true);
 
-        await UpdateNameArAsync("5100", "مصروفات الرواتب");
-        await UpdateNameArAsync("5200", "مصروفات مستلزمات");
-        await UpdateNameArAsync("5300", "مصروفات مرافق");
-
-        // Ensure Surgery Revenue exists
-        await EnsureAccountExistsAsync("4110", "Surgery Revenue", "إيرادات العمليات", AccountType.Revenue, revenue.Id);
+        await UpdateNameArAsync("5100", "مصروفات الرواتب", true);
+        await UpdateNameArAsync("5200", "مصروفات مستلزمات", true);
+        await UpdateNameArAsync("5300", "مصروفات مرافق", true);
         
         Logger.LogInformation("Financial Data Patch Completed.");
     }
@@ -123,13 +124,20 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         return account;
     }
 
-    private async Task UpdateNameArAsync(string code, string nameAr)
+    private async Task UpdateNameArAsync(string code, string nameAr, bool force = false)
     {
-        var account = await _accountRepository.FirstOrDefaultAsync(a => a.Code == code);
-        if (account != null)
+        var accounts = await _accountRepository.GetListAsync(a => a.Code == code || a.Code.Trim() == code);
+        foreach (var account in accounts)
         {
-            account.NameAr = nameAr;
-            await _accountRepository.UpdateAsync(account);
+            if (force || string.IsNullOrEmpty(account.NameAr) || account.NameAr == account.Name)
+            {
+                if (account.NameAr != nameAr)
+                {
+                    account.NameAr = nameAr;
+                    await _accountRepository.UpdateAsync(account);
+                    Logger.LogInformation($"Updated Account {code} NameAr to: {nameAr}");
+                }
+            }
         }
     }
 
@@ -150,6 +158,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         var liabilities = await CreateAccountAsync("2000", "Liabilities", "الخصوم", AccountType.Liability, null);
         var currentLiabilities = await CreateAccountAsync("2100", "Current Liabilities", "خصوم متداولة", AccountType.Liability, liabilities.Id);
         await CreateAccountAsync("2110", "Accounts Payable", "الدائنون", AccountType.Liability, currentLiabilities.Id);
+        await CreateAccountAsync("2200", "VAT Payable", "ضريبة القيمة المضافة المستحقة", AccountType.Liability, currentLiabilities.Id);
 
         // 3. Equity (حقوق الملكية)
         var equity = await CreateAccountAsync("3000", "Equity", "حقوق الملكية", AccountType.Equity, null);

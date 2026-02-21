@@ -18,8 +18,8 @@ public class PatientDto : FullAuditedEntityDto<Guid>
     public string? LastNameEn { get; set; }
     public string FullNameAr { get; set; } = string.Empty;
     public string? FullNameEn { get; set; }
-    public DateTime DateOfBirth { get; set; }
-    public int Age { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public int? Age { get; set; }
     public Gender Gender { get; set; }
     public MaritalStatus? MaritalStatus { get; set; }
     
@@ -95,7 +95,7 @@ public class CreateUpdatePatientDto
     public string? FirstNameEn { get; set; }
     public string? MiddleNameEn { get; set; }
     public string? LastNameEn { get; set; }
-    public DateTime DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
     public Gender Gender { get; set; }
     public MaritalStatus? MaritalStatus { get; set; }
     

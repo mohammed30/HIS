@@ -15,14 +15,26 @@ public class IncomeStatementDto
 {
     public List<FinancialReportLineDto> RevenueLines { get; set; } = new();
     public List<FinancialReportLineDto> CostOfSalesLines { get; set; } = new();
-    public List<FinancialReportLineDto> OperatingExpenseLines { get; set; } = new();
     
     public decimal TotalRevenue { get; set; }
     public decimal TotalCostOfSales { get; set; }
     public decimal GrossProfit => TotalRevenue - TotalCostOfSales;
     
-    public decimal TotalOperatingExpenses { get; set; }
-    public decimal NetIncome => GrossProfit - TotalOperatingExpenses;
+    public List<FinancialReportLineDto> GeneralAndAdminExpenseLines { get; set; } = new();
+    public decimal TotalGeneralAndAdminExpenses { get; set; }
+    
+    public decimal OperatingProfit => GrossProfit - TotalGeneralAndAdminExpenses;
+    
+    public List<FinancialReportLineDto> OtherRevenueLines { get; set; } = new();
+    public decimal TotalOtherRevenues { get; set; }
+    
+    public List<FinancialReportLineDto> OtherExpenseLines { get; set; } = new();
+    public decimal TotalOtherExpenses { get; set; }
+    
+    public decimal ProfitBeforeTax => OperatingProfit + TotalOtherRevenues - TotalOtherExpenses;
+    
+    // For now, NetIncome is ProfitBeforeTax unless taxes are introduced later
+    public decimal NetIncome => ProfitBeforeTax;
 }
 
 public class BalanceSheetDto
@@ -33,6 +45,7 @@ public class BalanceSheetDto
     public decimal TotalAssets { get; set; }
     public decimal TotalLiabilities { get; set; }
     public decimal TotalEquity { get; set; }
+    public decimal PreviousYearEquity { get; set; }
 }
 
 public class CashFlowStatementDto
@@ -44,15 +57,28 @@ public class CashFlowStatementDto
     public decimal TotalInvesting { get; set; }
     public decimal TotalFinancing { get; set; }
     public decimal NetCashFlow => TotalOperating + TotalInvesting + TotalFinancing;
+    public decimal CashAtBeginning { get; set; }
+    public decimal CashAtEnd { get; set; }
 }
 
 public class ChangesInEquityDto
 {
-    public decimal OpeningBalance { get; set; }
-    public decimal NetIncome { get; set; }
-    public decimal CapitalChanges { get; set; }
-    public decimal ClosingBalance => OpeningBalance + NetIncome + CapitalChanges;
-    public List<FinancialReportLineDto> DetailLines { get; set; } = new();
+    public EquityItemDto Capital { get; set; } = new EquityItemDto { Name = "رأس المال" };
+    public EquityItemDto RetainedEarnings { get; set; } = new EquityItemDto { Name = "الأرباح المحتجزة" };
+    public EquityItemDto NetIncome { get; set; } = new EquityItemDto { Name = "أرباح العام" };
+    public EquityItemDto Dividends { get; set; } = new EquityItemDto { Name = "توزيعات أرباح" };
+      
+    public decimal TotalPreviousYear => Capital.PreviousYear + RetainedEarnings.PreviousYear + NetIncome.PreviousYear + Dividends.PreviousYear;
+    public decimal TotalChange => Capital.Change + RetainedEarnings.Change + NetIncome.Change + Dividends.Change;
+    public decimal TotalCurrentYear => Capital.CurrentYear + RetainedEarnings.CurrentYear + NetIncome.CurrentYear + Dividends.CurrentYear;
+}
+
+public class EquityItemDto
+{
+    public string Name { get; set; }
+    public decimal PreviousYear { get; set; }
+    public decimal Change { get; set; }
+    public decimal CurrentYear => PreviousYear + Change;
 }
 
 public class DateRangeDto

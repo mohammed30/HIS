@@ -51,7 +51,7 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// <summary>
     /// تاريخ الميلاد
     /// </summary>
-    public DateTime DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
 
     /// <summary>
     /// الجنس
@@ -283,7 +283,7 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
         string mrn,
         string firstNameAr,
         string lastNameAr,
-        DateTime dateOfBirth,
+        DateTime? dateOfBirth,
         Gender gender,
         IdentityType identityType,
         string identityNumber,
@@ -314,5 +314,5 @@ public class Patient : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// <summary>
     /// العمر بالسنوات
     /// </summary>
-    public int Age => DateTime.Today.Year - DateOfBirth.Year - (DateTime.Today.DayOfYear < DateOfBirth.DayOfYear ? 1 : 0);
+    public int? Age => DateOfBirth.HasValue ? DateTime.Today.Year - DateOfBirth.Value.Year - (DateTime.Today.DayOfYear < DateOfBirth.Value.DayOfYear ? 1 : 0) : null;
 }

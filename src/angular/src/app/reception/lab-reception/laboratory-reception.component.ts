@@ -115,6 +115,8 @@ export class LaboratoryReceptionComponent implements OnInit {
         bedId: null
     };
 
+    isSavingAdmission: boolean = false;
+
     // Billing Model
     billingDetails: any = {
         cash: 0,
@@ -202,7 +204,7 @@ export class LaboratoryReceptionComponent implements OnInit {
             gender: 0,
             nationalityId: null,
             professionId: null,
-            dateOfBirth: '',
+            dateOfBirth: null,
             identityNumber: '',
             identityType: 0,
             idExpiryDate: '',
@@ -351,7 +353,7 @@ export class LaboratoryReceptionComponent implements OnInit {
         const missingFields = [];
         if (!this.patientInfo.fullNameAr) missingFields.push('الاسم');
         if (!this.patientInfo.mobileNumber) missingFields.push('الموبايل');
-        if (!this.patientInfo.dateOfBirth) missingFields.push('تاريخ الميلاد');
+
         if (!this.patientInfo.paymentMethodId) missingFields.push('طريقة الدفع');
 
         if (missingFields.length > 0) {
@@ -597,10 +599,27 @@ export class LaboratoryReceptionComponent implements OnInit {
     loadAvailableRooms() {
         if (this.admission.roomType === null) {
             this.availableRooms = [];
+            this.admission.roomId = null;
+            this.onRoomChange();
             return;
         }
         this.roomService.getAvailableRooms(this.admission.roomType).subscribe(res => {
             this.availableRooms = res || [];
+            this.admission.roomId = null;
+            this.onRoomChange();
+        });
+    }
+
+    onRoomChange() {
+        if (!this.admission.roomId) {
+            this.availableBedsList = [];
+            this.admission.bedId = null;
+            return;
+        }
+
+        this.roomService.get(this.admission.roomId).subscribe(res => {
+            this.availableBedsList = (res.beds || []).filter(b => b.status === BedStatus.Available);
+            this.admission.bedId = null;
         });
     }
 
@@ -625,15 +644,38 @@ export class LaboratoryReceptionComponent implements OnInit {
             purpose: this.admission.purpose,
             pharmacyPercentage: this.admission.pharmacyPercentage,
             isServicesStopped: this.admission.isServicesStopped,
-            notes: this.admission.notes
+            notes: this.admission.notes,
+            numberOfDays: this.admission.numberOfDays || 0,
+            paidAmount: this.admission.paidAmount || 0
         };
+
+        this.isSavingAdmission = true;
 
         this.admissionService.create(input).subscribe({
             next: () => {
+                this.isSavingAdmission = false;
                 this.toaster.success('تم تسجيل التنويم بنجاح', 'نجاح');
                 this.loadInpatientList();
+                this.admission = {
+                    roomType: null,
+                    roomId: null,
+                    bedId: null,
+                    insuranceCeiling: 0,
+                    companionName: '',
+                    companionPhone: '',
+                    companionAddress: '',
+                    purpose: '',
+                    pharmacyPercentage: 0,
+                    isServicesStopped: false,
+                    notes: '',
+                    numberOfDays: 0,
+                    paidAmount: 0
+                };
+                this.availableRooms = [];
+                this.availableBedsList = [];
             },
             error: (err) => {
+                this.isSavingAdmission = false;
                 console.error(err);
                 this.toaster.error('حدث خطأ أثناء حفظ بيانات التنويم', 'خطأ');
             }
@@ -644,7 +686,72 @@ export class LaboratoryReceptionComponent implements OnInit {
         if (!this.patientInfo.id) return;
         this.admissionService.getList({ patientId: this.patientInfo.id } as any).subscribe(res => {
             this.inpatientList = res.items || [];
+            this.selectedAdmission = null;
         });
+    }
+
+    selectedAdmission: any = null;
+
+    selectAdmission(item: any) {
+        this.selectedAdmission = item;
+    }
+
+    printAdmissionInvoice() {
+        if (!this.selectedAdmission) {
+            this.toaster.warn('يرجى اختيار التنويم من القائمة أولاً', 'تنبيه');
+            return;
+        }
+
+        if (!this.selectedAdmission.invoiceId) {
+            this.toaster.info('لم يتم إصدار فاتورة لهذا التنويم بعد', 'تنبيه');
+            return;
+        }
+
+        this.invoiceService.getInvoicePdf(this.selectedAdmission.invoiceId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                iframe.contentWindow?.print();
+
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    window.URL.revokeObjectURL(url);
+                }, 10000);
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('فشل طباعة الفاتورة', 'خطأ');
+            }
+        });
+    }
+
+    updateAdmissionDays() {
+        if (!this.selectedAdmission) {
+            this.toaster.warn('يرجى اختيار التنويم من القائمة أولاً', 'تنبيه');
+            return;
+        }
+
+        const newDaysStr = prompt('أدخل عدد الأيام الجديد:', this.selectedAdmission.numberOfDays);
+        if (newDaysStr !== null && newDaysStr.trim() !== '') {
+            const newDays = parseInt(newDaysStr, 10);
+            if (!isNaN(newDays) && newDays >= 0) {
+                this.admissionService.updateDays(this.selectedAdmission.id, newDays).subscribe({
+                    next: () => {
+                        this.toaster.success('تم التعديل بنجاح', 'نجاح');
+                        this.loadInpatientList();
+                    },
+                    error: (err) => {
+                        console.error(err);
+                        this.toaster.error('فشل تعديل عدد الأيام', 'خطأ');
+                    }
+                });
+            } else {
+                this.toaster.warn('الرجاء إدخال رقم صحيح', 'تنبيه');
+            }
+        }
     }
 
     // --- Operations Methods ---

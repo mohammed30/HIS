@@ -34,13 +34,15 @@ export interface CreateUpdateAdmissionDto {
     patientId?: string;
     roomId?: string;
     bedId?: string;
-    insuranceCeiling?: number;
+    numberOfDays?: number;
+    paidAmount?: number;
+    insuranceCeiling: number;
     companionName?: string;
     companionPhone?: string;
     companionAddress?: string;
     purpose?: string;
-    pharmacyPercentage?: number;
-    isServicesStopped?: boolean;
+    pharmacyPercentage: number;
+    isServicesStopped: boolean;
     notes?: string;
 }
 

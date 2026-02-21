@@ -10,26 +10,17 @@ namespace HIS.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_AppPatients_AppPatientCategories_PatientCategoryId",
-                table: "AppPatients");
+            // Safely drop old foreign key
+            migrationBuilder.Sql("IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_AppPatients_AppPatientCategories_PatientCategoryId') ALTER TABLE [AppPatients] DROP CONSTRAINT [FK_AppPatients_AppPatientCategories_PatientCategoryId];");
 
-            migrationBuilder.RenameColumn(
-                name: "PatientCategoryId",
-                table: "AppPatients",
-                newName: "PaymentMethodId");
+            // Safely rename column
+            migrationBuilder.Sql("IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AppPatients') AND name = 'PatientCategoryId') AND NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AppPatients') AND name = 'PaymentMethodId') EXEC sp_rename 'AppPatients.PatientCategoryId', 'PaymentMethodId', 'COLUMN';");
 
-            migrationBuilder.RenameIndex(
-                name: "IX_AppPatients_PatientCategoryId",
-                table: "AppPatients",
-                newName: "IX_AppPatients_PaymentMethodId");
+            // Safely rename index
+            migrationBuilder.Sql("IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_AppPatients_PatientCategoryId' AND object_id = OBJECT_ID('AppPatients')) AND NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_AppPatients_PaymentMethodId' AND object_id = OBJECT_ID('AppPatients')) EXEC sp_rename 'AppPatients.IX_AppPatients_PatientCategoryId', 'IX_AppPatients_PaymentMethodId', 'INDEX';");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_AppPatients_AppPaymentMethods_PaymentMethodId",
-                table: "AppPatients",
-                column: "PaymentMethodId",
-                principalTable: "AppPaymentMethods",
-                principalColumn: "Id");
+            // Safely add new foreign key
+            migrationBuilder.Sql("IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_AppPatients_AppPaymentMethods_PaymentMethodId') ALTER TABLE [AppPatients] ADD CONSTRAINT [FK_AppPatients_AppPaymentMethods_PaymentMethodId] FOREIGN KEY ([PaymentMethodId]) REFERENCES [AppPaymentMethods] ([Id]);");
         }
 
         /// <inheritdoc />

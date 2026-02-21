@@ -10,7 +10,7 @@
                         <div class="col-md-2">
                             <label class="form-label small mb-0 fw-bold text-dark">رقم الملف (MRN)</label>
                             <input type="text" class="form-control form-control-sm border-primary text-dark fw-bold"
-                                [(ngModel)]="patientInfo.mrn" placeholder="NEW">
+                                [(ngModel)]="patientInfo.mrn" placeholder="جديد">
                         </div>
                         <div class="col-md-6 position-relative">
                             <label class="form-label small mb-0 fw-bold text-dark">الاسم (عربي) *</label>
@@ -63,7 +63,7 @@
 
                         <!-- Row 2 -->
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الميلاد *</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الميلاد</label>
                             <input type="date" class="form-control form-control-sm text-dark border-info"
                                 [(ngModel)]="patientInfo.dateOfBirth" (ngModelChange)="calculateAge()">
                         </div>
@@ -1250,7 +1250,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of inpatientList; let i = index">
+                        <tr *ngFor="let item of inpatientList; let i = index"
+                            [class.table-primary]="selectedAdmission?.id === item.id" (click)="selectAdmission(item)"
+                            style="cursor: pointer;">
                             <td>{{ i + 1 }}</td>
                             <td>{{ item.patientName }}</td>
                             <td>{{ item.patientFileNumber }}</td>
@@ -1267,12 +1269,13 @@
             </div>
 
             <div class="d-flex gap-2 mt-auto">
-                <button class="btn btn-info text-white fw-bold shadow-sm border-dark py-2 px-3"><i
-                        class="fas fa-print me-1"></i> طباعة فاتورة</button>
+                <button class="btn btn-info text-white fw-bold shadow-sm border-dark py-2 px-3"
+                    (click)="printAdmissionInvoice()"><i class="fas fa-print me-1"></i> طباعة فاتورة</button>
                 <button class="btn btn-primary fw-bold shadow-sm border-dark py-2 px-3"><i
                         class="fas fa-camera me-1"></i> تصوير فاتورة التنويم</button>
-                <button class="btn btn-success fw-bold shadow-sm border-dark py-2 px-3"><i
-                        class="fas fa-calendar-alt me-1"></i> تعديل عدد ايام الإقامة</button>
+                <button class="btn btn-success fw-bold shadow-sm border-dark py-2 px-3"
+                    (click)="updateAdmissionDays()"><i class="fas fa-calendar-alt me-1"></i> تعديل عدد ايام
+                    الإقامة</button>
             </div>
         </div>
     </div>

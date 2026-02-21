@@ -9,6 +9,7 @@ using Volo.Abp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using HIS.Permissions;
+
 using HIS.Accounting;
 using HIS.General;
 
@@ -64,7 +65,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         {
             DueDate = input.DueDate,
             DiscountAmount = input.DiscountAmount,
-            TaxPercentage = input.TaxPercentage,
+            TaxPercentage = input.TaxPercentage == 0 ? 15m : input.TaxPercentage,
             PatientInsuranceId = input.PatientInsuranceId,
             AppointmentId = input.AppointmentId,
             Notes = input.Notes,
@@ -112,6 +113,10 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
         var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
+        var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
+
+        var patient = await _patientRepository.FindAsync(invoice.PatientId);
+        var patientName = patient != null ? patient.FullNameAr : invoice.PatientId.ToString();
 
         if (arAccount != null && revenueAccount != null)
         {
@@ -119,13 +124,21 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 GuidGenerator.Create(),
                 invoice.InvoiceDate,
                 invoice.InvoiceNumber,
-                $"Invoice #{invoice.InvoiceNumber} - Patient: {invoice.PatientId}"
+                $"فاتورة رقم {invoice.InvoiceNumber} - المريض: {patientName}"
             );
             
-            // Debit AR
-            je.AddLine(GuidGenerator, arAccount.Id, amount, 0);
-            // Credit Revenue
-            je.AddLine(GuidGenerator, revenueAccount.Id, 0, amount);
+            // Debit AR for Net Amount (Total + Tax - Discount)
+            je.AddLine(GuidGenerator, arAccount.Id, invoice.NetAmount, 0);
+            
+            // Credit Revenue for Subtotal (Total - Discount)
+            var revenueAmount = amount - invoice.DiscountAmount;
+            je.AddLine(GuidGenerator, revenueAccount.Id, 0, revenueAmount);
+
+            // Credit Tax Liability 
+            if (invoice.TaxAmount > 0 && taxAccount != null)
+            {
+                je.AddLine(GuidGenerator, taxAccount.Id, 0, invoice.TaxAmount);
+            }
 
             await _journalEntryRepository.InsertAsync(je);
         }
@@ -351,7 +364,7 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
                 GuidGenerator.Create(),
                 payment.PaymentDate,
                 payment.PaymentNumber,
-                $"Receipt #{payment.PaymentNumber} - Patient: {payerName}"
+                $"سند قبض رقم {payment.PaymentNumber} - المريض: {payerName}"
             );
 
             // Debit Cash/Bank

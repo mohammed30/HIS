@@ -83,7 +83,7 @@ public class InventoryManager : DomainService
         if (inventoryAccount != null && payableAccount != null)
         {
             var totalAmount = quantity * unitCost;
-            var description = $"Stock Receipt: {productName} (Ref: {reference})";
+            var description = $"توريد مخزني: {productName} (مرجع: {reference})";
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description);
 
             // Debit Inventory
@@ -167,7 +167,7 @@ public class InventoryManager : DomainService
         if (inventoryAccount != null && expenseAccount != null)
         {
             var totalAmount = totalCostOfIssue;
-            var description = $"Stock Issue: {item.ProductName} (Ref: {reference})";
+            var description = $"صرف مخزني: {item.ProductName} (مرجع: {reference})";
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description);
 
             // Debit Expense
@@ -239,7 +239,7 @@ public class InventoryManager : DomainService
 
         if (inventoryAccount != null && expenseAccount != null)
         {
-             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"Dispensing: {item.ProductName}");
+             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"صرف علاج: {item.ProductName}");
              entry.AddLine(GuidGenerator, expenseAccount.Id, totalCostOfIssue, 0);
              entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalCostOfIssue);
              await _accountingManager.PostEntryAsync(entry);

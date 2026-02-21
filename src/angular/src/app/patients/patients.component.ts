@@ -17,7 +17,7 @@ interface Patient {
   lastNameEn?: string;
   fullNameAr: string;
   fullNameEn?: string;
-  dateOfBirth: string;
+  dateOfBirth?: string | null;
   gender: number;
   mobileNumber: string;
   identityNumber?: string;
@@ -143,8 +143,8 @@ interface Patient {
           </div>
           <div class="row">
             <div class="col-md-3 mb-3">
-              <label class="form-label">{{ '::DateOfBirth' | abpLocalization }} *</label>
-              <input type="date" class="form-control" [(ngModel)]="formData.dateOfBirth" name="dateOfBirth" required>
+              <label class="form-label">{{ '::DateOfBirth' | abpLocalization }}</label>
+              <input type="date" class="form-control" [(ngModel)]="formData.dateOfBirth" name="dateOfBirth">
             </div>
             <div class="col-md-3 mb-3">
               <label class="form-label">{{ '::Gender' | abpLocalization }} *</label>
@@ -248,7 +248,7 @@ export class PatientsComponent implements OnInit {
   getEmptyForm(): Partial<Patient> {
     return {
       firstNameAr: '', lastNameAr: '',
-      dateOfBirth: '', gender: 0,
+      dateOfBirth: null, gender: 0,
       mobileNumber: '', identityNumber: '',
       isActive: true,
       bloodType: null

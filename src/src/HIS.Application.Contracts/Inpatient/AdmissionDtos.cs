@@ -44,6 +44,8 @@ public class CreateUpdateAdmissionDto
     public string? CompanionPhone { get; set; }
     public string? CompanionAddress { get; set; }
     public string? Purpose { get; set; }
+    public int NumberOfDays { get; set; }
+    public decimal PaidAmount { get; set; }
     public decimal PharmacyPercentage { get; set; }
     public bool IsServicesStopped { get; set; }
     public string? Notes { get; set; }

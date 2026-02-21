@@ -67,22 +67,54 @@
                             <span>{{ incomeStatement.grossProfit | currency }}</span>
                         </div>
 
-                        <h6 class="fw-bold text-warning mt-3">{{ '::OperatingExpenses' | abpLocalization }}</h6>
+                        <h6 class="fw-bold text-warning mt-3">المصروفات العمومية والإدارية</h6>
                         <table class="table table-sm">
-                            <tr *ngFor="let line of incomeStatement.operatingExpenseLines">
+                            <tr *ngFor="let line of incomeStatement.generalAndAdminExpenseLines">
                                 <td>{{ line.accountCode }} - {{ line.accountName }}</td>
                                 <td class="text-end">{{ line.amount | currency }}</td>
                             </tr>
                             <tr class="fw-bold bg-light text-warning">
-                                <td>{{ '::TotalOperatingExpenses' | abpLocalization }}</td>
-                                <td class="text-end">({{ incomeStatement.totalOperatingExpenses | currency }})</td>
+                                <td>إجمالي المصروفات العمومية والإدارية</td>
+                                <td class="text-end">({{ incomeStatement.totalGeneralAndAdminExpenses | currency }})
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div class="alert alert-secondary py-2 fw-bold d-flex justify-content-between mt-2">
+                            <span>الربح التشغيلي</span>
+                            <span>{{ incomeStatement.operatingProfit | currency }}</span>
+                        </div>
+
+                        <h6 class="fw-bold text-success mt-3" *ngIf="incomeStatement.otherRevenueLines.length > 0">
+                            إيرادات أخرى</h6>
+                        <table class="table table-sm" *ngIf="incomeStatement.otherRevenueLines.length > 0">
+                            <tr *ngFor="let line of incomeStatement.otherRevenueLines">
+                                <td>{{ line.accountCode }} - {{ line.accountName }}</td>
+                                <td class="text-end">{{ line.amount | currency }}</td>
+                            </tr>
+                            <tr class="fw-bold bg-light text-success">
+                                <td>إجمالي إيرادات أخرى</td>
+                                <td class="text-end">{{ incomeStatement.totalOtherRevenues | currency }}</td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-bold text-danger mt-3" *ngIf="incomeStatement.otherExpenseLines.length > 0">
+                            مصروفات أخرى</h6>
+                        <table class="table table-sm" *ngIf="incomeStatement.otherExpenseLines.length > 0">
+                            <tr *ngFor="let line of incomeStatement.otherExpenseLines">
+                                <td>{{ line.accountCode }} - {{ line.accountName }}</td>
+                                <td class="text-end">{{ line.amount | currency }}</td>
+                            </tr>
+                            <tr class="fw-bold bg-light text-danger">
+                                <td>إجمالي مصروفات أخرى</td>
+                                <td class="text-end">({{ incomeStatement.totalOtherExpenses | currency }})</td>
                             </tr>
                         </table>
 
                         <div class="alert alert-info mt-3 fw-bold fs-5 d-flex justify-content-between">
-                            <span>{{ '::NetIncome' | abpLocalization }}</span>
-                            <span [class.text-danger]="incomeStatement.netIncome < 0">{{ incomeStatement.netIncome |
-                                currency }}</span>
+                            <span>الأرباح قبل الضرائب</span>
+                            <span [class.text-danger]="incomeStatement.profitBeforeTax < 0">{{
+                                incomeStatement.profitBeforeTax | currency }}</span>
                         </div>
                     </div>
                 </ng-template>
@@ -127,6 +159,14 @@
                                     <tr class="fw-bold bg-light">
                                         <td>{{ '::TotalEquity' | abpLocalization }}</td>
                                         <td class="text-end">{{ balanceSheet.totalEquity | currency }}</td>
+                                    </tr>
+                                    <tr class="fw-bold mt-2">
+                                        <td colspan="2" class="border-0 pt-3">الوضع الرأسمالي للسنة الماضية
+                                        </td>
+                                    </tr>
+                                    <tr class="fw-bold text-muted bg-light border-bottom">
+                                        <td>رأس المال المدفوع للعام السابق</td>
+                                        <td class="text-end">{{ balanceSheet.previousYearEquity | currency }}</td>
                                     </tr>
                                 </table>
 
@@ -184,6 +224,18 @@
                             <span>{{ '::NetCashFlow' | abpLocalization }}</span>
                             <span>{{ cashFlow.netCashFlow | currency }}</span>
                         </div>
+
+                        <h6 class="fw-bold mt-3">ملخص النقدية</h6>
+                        <table class="table table-sm mt-2 border">
+                            <tr class="fw-bold bg-light">
+                                <td>النقدية أول الفترة</td>
+                                <td class="text-end">{{ cashFlow.cashAtBeginning | currency }}</td>
+                            </tr>
+                            <tr class="fw-bold bg-light text-success border-top border-2">
+                                <td>النقدية آخر الفترة</td>
+                                <td class="text-end">{{ cashFlow.cashAtEnd | currency }}</td>
+                            </tr>
+                        </table>
                     </div>
                 </ng-template>
             </li>
@@ -191,31 +243,49 @@
                 <a ngbNavLink>{{ '::ChangesInEquity' | abpLocalization }}</a>
                 <ng-template ngbNavContent>
                     <div *ngIf="equity" class="mt-3">
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>{{ '::OpeningBalance' | abpLocalization }}</th>
-                                <td class="text-end">{{ equity.openingBalance | currency }}</td>
-                            </tr>
-                            <tr>
-                                <th>{{ '::NetIncome' | abpLocalization }}</th>
-                                <td class="text-end">{{ equity.netIncome | currency }}</td>
-                            </tr>
-                            <tr>
-                                <th>{{ '::CapitalChanges' | abpLocalization }}</th>
-                                <td class="text-end">{{ equity.capitalChanges | currency }}</td>
-                            </tr>
-                            <tr class="table-dark fw-bold">
-                                <th>{{ '::ClosingBalance' | abpLocalization }}</th>
-                                <td class="text-end">{{ equity.closingBalance | currency }}</td>
-                            </tr>
-                        </table>
-
-                        <h6 class="mt-4">{{ '::Details' | abpLocalization }}</h6>
-                        <table class="table table-sm">
-                            <tr *ngFor="let line of equity.detailLines">
-                                <td>{{ line.accountCode }} - {{ line.accountName }}</td>
-                                <td class="text-end">{{ line.amount | currency }}</td>
-                            </tr>
+                        <table class="table table-bordered table-striped text-center align-middle mt-3">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-start">البيان</th>
+                                    <th>رصيد أول المدة (السنة السابقة)</th>
+                                    <th>التغير خلال الفترة</th>
+                                    <th>رصيد آخر المدة (العام الحالي)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-start fw-bold">{{ equity.capital?.name }}</td>
+                                    <td>{{ equity.capital?.previousYear | currency }}</td>
+                                    <td>{{ equity.capital?.change | currency }}</td>
+                                    <td>{{ equity.capital?.currentYear | currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-start fw-bold">{{ equity.retainedEarnings?.name }}</td>
+                                    <td>{{ equity.retainedEarnings?.previousYear | currency }}</td>
+                                    <td>{{ equity.retainedEarnings?.change | currency }}</td>
+                                    <td>{{ equity.retainedEarnings?.currentYear | currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-start fw-bold">{{ equity.netIncome?.name }}</td>
+                                    <td>{{ equity.netIncome?.previousYear | currency }}</td>
+                                    <td>{{ equity.netIncome?.change | currency }}</td>
+                                    <td>{{ equity.netIncome?.currentYear | currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-start fw-bold">{{ equity.dividends?.name }}</td>
+                                    <td>{{ equity.dividends?.previousYear | currency }}</td>
+                                    <td>{{ equity.dividends?.change | currency }}</td>
+                                    <td>{{ equity.dividends?.currentYear | currency }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-secondary fw-bold">
+                                <tr>
+                                    <td class="text-start">الإجمالي</td>
+                                    <td>{{ equity.totalPreviousYear | currency }}</td>
+                                    <td>{{ equity.totalChange | currency }}</td>
+                                    <td>{{ equity.totalCurrentYear | currency }}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </ng-template>

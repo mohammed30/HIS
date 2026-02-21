@@ -166,7 +166,7 @@ public class PatientMedicalSummaryDto
     public Guid PatientId { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public string? BloodType { get; set; }
-    public int Age { get; set; }
+    public int? Age { get; set; }
     public Gender Gender { get; set; }
     
     public int ActiveAllergiesCount { get; set; }
