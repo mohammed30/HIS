@@ -166,6 +166,15 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Billing.FinancialReports',
     },
+    {
+      path: '/accounting/reports/income-statement',
+      name: '::Menu:IncomeStatement',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-file-invoice-dollar',
+      order: 41,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.FinancialReports',
+    },
     // Insurance
     {
       name: '::Menu:Insurance',

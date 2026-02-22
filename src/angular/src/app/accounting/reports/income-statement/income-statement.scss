@@ -1,0 +1,125 @@
+#income-statement-container {
+  .income-statement-table {
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+
+    td,
+    th {
+      border-color: rgba(0, 0, 0, 0.05);
+      vertical-align: middle;
+    }
+
+    .table-light-header {
+      background-color: rgba(13, 110, 253, 0.03);
+
+      td {
+        border-bottom-width: 2px;
+        letter-spacing: 0.5px;
+        font-variant: small-caps;
+      }
+    }
+
+    .bg-soft-success {
+      background-color: rgba(25, 135, 84, 0.08);
+    }
+
+    .border-bottom {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .border-top {
+      border-top: 2px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .fs-5 {
+      font-size: 1.15rem !important;
+    }
+
+    // RTL adjustments if needed
+    [dir="rtl"] & {
+      .ps-4 {
+        padding-right: 1.5rem !important;
+        padding-left: 0 !important;
+      }
+
+      .ps-5 {
+        padding-right: 3rem !important;
+        padding-left: 0 !important;
+      }
+
+      .text-end {
+        text-align: left !important;
+      }
+
+      .pe-4 {
+        padding-left: 1.5rem !important;
+        padding-right: 0 !important;
+      }
+    }
+  }
+
+  .card {
+    transition: transform 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+    }
+  }
+
+  .form-control-sm {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    cursor: pointer;
+
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+  }
+
+  @media print {
+    .card {
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .card-header {
+      background-color: transparent !important;
+      color: black !important;
+      border-bottom: 2px solid #000;
+    }
+
+    .card-footer,
+    .btn,
+    .form-control,
+    .fa-spin,
+    .text-white-50 {
+      display: none !important;
+    }
+
+    .income-statement-table {
+      font-size: 12pt;
+      width: 100%;
+
+      .bg-primary {
+        background-color: transparent !important;
+        color: black !important;
+      }
+
+      .bg-dark {
+        background-color: transparent !important;
+        color: black !important;
+      }
+
+      .bg-light,
+      .table-light-header,
+      .bg-soft-success {
+        background-color: transparent !important;
+        color: black !important;
+      }
+
+      th,
+      td {
+        border-color: #dee2e6 !important;
+      }
+    }
+  }
+}

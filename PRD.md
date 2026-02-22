@@ -281,9 +281,35 @@ This document outlines the product requirements for a Hospital Information Syste
 
 #### 3.8.3 Financial Statements (القوائم المالية)
 - [x] **Income Statement** (`قائمة الدخل`):
-    - Medical Service Revenues.
-    - Cost of Sales (Beginning Inv + Purchases - Ending Inv).
-    - Administrative & General Expenses.
+    - **Revenue**:
+        - Gross Sales.
+        - (-) Sales Returns, Allowances & Discounts.
+        - (=) Net Sales.
+    - **Cost of Goods Sold (COGS)**:
+        - Beginning Inventory.
+        - (+) Net Purchases.
+        - (=) Goods Available for Sale.
+        - (-) Ending Inventory.
+        - (=) Cost of Goods Sold.
+    - **Profitability**:
+        - (=) Gross Profit.
+        - (-) Selling Expenses.
+        - (-) Administrative Expenses.
+        - (=) Operating Income (Income from Operations).
+    - **Other Items & Taxes**:
+        - (+) Other Revenues and Gains.
+        - (-) Other Expenses and Losses.
+        - (=) Income Before Income Tax.
+        - (-) Income Tax.
+        - (=) Net Income.
+    - **Comprehensive Income** (`قائمة الدخل الشامل`):
+        - Foreign currency translation differences.
+        - Change in fair value of hedging instruments.
+        - Actuarial gains/losses (Defined benefit plans).
+        - Gains/losses reclassified from hedging.
+        - (=) Comprehensive Income.
+        - (=) Total Comprehensive Income for the Year.
+
 - [x] **Balance Sheet** (`الميزانية العمومية/المركز المالي`).
 - [x] **Cash Flow Statement** (`التدفقات النقدية`).
 - [x] **Statement of Changes in Equity** (`التغير في حقوق الملكية`).

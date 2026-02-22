@@ -1,0 +1,192 @@
+<div id="income-statement-container" class="container-fluid py-4">
+  <div class="card shadow-sm border-0 rounded-lg overflow-hidden">
+    <!-- Print Logo (Hidden normally) -->
+    <div class="d-none d-print-flex justify-content-center align-items-center py-4 mb-2 border-bottom">
+      <img src="assets/images/logo/Light.png" alt="Hospital Logo" style="max-height: 80px;" class="me-3">
+    </div>
+
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+      <h3 class="mb-0 fs-4 fw-bold">
+        <i class="fas fa-file-invoice-dollar me-2 d-print-none"></i>
+        {{ '::IncomeStatement' | abpLocalization }}
+      </h3>
+      <div class="d-flex gap-2 align-items-center">
+        <input type="date" class="form-control form-control-sm border-0" [(ngModel)]="startDate"
+          (change)="fetchReport()">
+        <span class="text-white-50 mx-1">/</span>
+        <input type="date" class="form-control form-control-sm border-0" [(ngModel)]="endDate" (change)="fetchReport()">
+        <button class="btn btn-light btn-sm ms-2 shadow-sm" (click)="fetchReport()">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 income-statement-table">
+          <thead class="bg-light text-secondary text-uppercase small fw-bold border-bottom">
+            <tr>
+              <th class="ps-4 py-3">{{ '::Description' | abpLocalization }}</th>
+              <th class="text-end py-3">{{ '::Amount' | abpLocalization }} (جزيء)</th>
+              <th class="text-end pe-4 py-3">{{ '::Amount' | abpLocalization }} (كلي)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- REVENUE -->
+            <tr class="table-light-header">
+              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:Revenue' | abpLocalization }}</td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:GrossSales' | abpLocalization }}</td>
+              <td class="text-end">{{ revenue.grossSales | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:SalesReturns' | abpLocalization }}</td>
+              <td class="text-end text-danger border-bottom">{{ revenue.salesReturns | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr class="fw-bold bg-light">
+              <td class="ps-5">{{ '::IncomeStatement:NetSales' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4">{{ revenue.netSales | number:'1.2-2' }}</td>
+            </tr>
+
+            <!-- COGS -->
+            <tr class="table-light-header border-top">
+              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:COGS' | abpLocalization }}</td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:BeginningInventory' | abpLocalization }}</td>
+              <td class="text-end">{{ cogs.beginningInv | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:NetPurchases' | abpLocalization }}</td>
+              <td class="text-end border-bottom">{{ cogs.netPurchases | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5 fw-bold">{{ '::IncomeStatement:GoodsAvailableForSale' | abpLocalization }}</td>
+              <td class="text-end">{{ cogs.goodsAvailable | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:EndingInventory' | abpLocalization }}</td>
+              <td class="text-end text-danger border-bottom">{{ cogs.endingInv | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr class="fw-bold bg-light">
+              <td class="ps-5">{{ '::IncomeStatement:TotalCOGS' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4 text-danger">({{ cogs.totalCogs | number:'1.2-2' }})</td>
+            </tr>
+
+            <!-- PROFITABILITY -->
+            <tr class="table-light-header border-top">
+              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:Profitability' | abpLocalization
+                }}</td>
+            </tr>
+            <tr class="fw-bold bg-soft-success">
+              <td class="ps-5">{{ '::IncomeStatement:GrossProfit' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4 text-success">{{ profitability.grossProfit | number:'1.2-2' }}</td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:SellingExpenses' | abpLocalization }}</td>
+              <td class="text-end text-danger">{{ profitability.sellingExpenses | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:AdminExpenses' | abpLocalization }}</td>
+              <td class="text-end text-danger border-bottom">{{ profitability.adminExpenses | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr class="fw-bold bg-light">
+              <td class="ps-5">{{ '::IncomeStatement:OperatingIncome' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4">{{ profitability.operatingIncome | number:'1.2-2' }}</td>
+            </tr>
+
+            <!-- OTHER ITEMS -->
+            <tr class="table-light-header border-top">
+              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:OtherItems' | abpLocalization }}
+              </td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:OtherRevenue' | abpLocalization }}</td>
+              <td class="text-end text-success">{{ otherItems.otherRevenue | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:OtherExpenses' | abpLocalization }}</td>
+              <td class="text-end text-danger border-bottom">{{ otherItems.otherExpenses | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr class="fw-bold bg-light">
+              <td class="ps-5">{{ '::IncomeStatement:IncomeBeforeTax' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4">{{ otherItems.incomeBeforeTax | number:'1.2-2' }}</td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:IncomeTax' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4 text-danger border-bottom">({{ otherItems.incomeTax | number:'1.2-2' }})</td>
+            </tr>
+            <tr class="fw-bold bg-primary text-white">
+              <td class="ps-4">{{ '::IncomeStatement:NetIncome' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4">{{ otherItems.netIncome | number:'1.2-2' }}</td>
+            </tr>
+
+            <!-- COMPREHENSIVE INCOME -->
+            <tr class="table-light-header border-top">
+              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:ComprehensiveIncome' |
+                abpLocalization }}</td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:ForeignExchange' | abpLocalization }}</td>
+              <td class="text-end">{{ comprehensiveIncome.foreignExchange | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:HedgingFairValue' | abpLocalization }}</td>
+              <td class="text-end">{{ comprehensiveIncome.hedgingFairValue | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:ActuarialLosses' | abpLocalization }}</td>
+              <td class="text-end">{{ comprehensiveIncome.actuarialLosses | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="ps-5">{{ '::IncomeStatement:ReclassifiedHedging' | abpLocalization }}</td>
+              <td class="text-end border-bottom">{{ comprehensiveIncome.reclassifiedHedging | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+            <tr class="fw-bold bg-light">
+              <td class="ps-5">{{ '::IncomeStatement:TotalComprehensiveIncome' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4">{{ comprehensiveIncome.totalOCI | number:'1.2-2' }}</td>
+            </tr>
+            <tr class="fw-bold bg-dark text-white border-top border-4">
+              <td class="ps-4">{{ '::IncomeStatement:TotalComprehensiveIncomeForYear' | abpLocalization }}</td>
+              <td></td>
+              <td class="text-end pe-4 fs-5">{{ comprehensiveIncome.totalComprehensiveIncome | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer bg-white text-end py-3 d-print-none">
+      <button class="btn btn-outline-primary btn-sm me-2 shadow-sm rounded-pill px-4" (click)="print()">
+        <i class="fas fa-print me-1"></i> {{ '::Print' | abpLocalization }}
+      </button>
+      <button class="btn btn-success btn-sm shadow-sm rounded-pill px-4" (click)="exportToExcel()">
+        <i class="fas fa-file-excel me-1"></i> Excel
+      </button>
+    </div>
+
+  </div>
+</div>

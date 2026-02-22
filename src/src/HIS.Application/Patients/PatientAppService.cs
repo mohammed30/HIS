@@ -127,6 +127,19 @@ public class PatientAppService : ApplicationService, IPatientAppService
             }
         }
 
+        // Validate duplicates
+        if (!string.IsNullOrWhiteSpace(input.IdentityNumber))
+        {
+            var identityExists = await _patientRepository.AnyAsync(x => x.IdentityNumber == input.IdentityNumber);
+            if (identityExists) throw new UserFriendlyException("يوجد مريض مسجل مسبقاً بنفس رقم الهوية.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.MobileNumber))
+        {
+            var mobileExists = await _patientRepository.AnyAsync(x => x.MobileNumber == input.MobileNumber);
+            if (mobileExists) throw new UserFriendlyException("يوجد مريض مسجل مسبقاً بنفس رقم الجوال.");
+        }
+
         var mrn = await GenerateMrnAsync();
 
         var patient = new Patient(
@@ -199,6 +212,19 @@ public class PatientAppService : ApplicationService, IPatientAppService
     public async Task<PatientDto> UpdateAsync(Guid id, CreateUpdatePatientDto input)
     {
         var patient = await _patientRepository.GetAsync(id);
+
+        // Validate duplicates
+        if (!string.IsNullOrWhiteSpace(input.IdentityNumber))
+        {
+            var identityExists = await _patientRepository.AnyAsync(x => x.IdentityNumber == input.IdentityNumber && x.Id != id);
+            if (identityExists) throw new UserFriendlyException("يوجد مريض آخر مسجل بنفس رقم الهوية.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.MobileNumber))
+        {
+            var mobileExists = await _patientRepository.AnyAsync(x => x.MobileNumber == input.MobileNumber && x.Id != id);
+            if (mobileExists) throw new UserFriendlyException("يوجد مريض آخر مسجل بنفس رقم الجوال.");
+        }
 
         // Store old values for logging
         var oldValues = new { patient.FirstNameAr, patient.LastNameAr, patient.MobileNumber, patient.Email };
@@ -289,12 +315,20 @@ public class PatientAppService : ApplicationService, IPatientAppService
 
         if (!string.IsNullOrEmpty(searchText))
         {
-            queryable = queryable.Where(x =>
-                x.MRN.Contains(searchText) ||
-                x.FirstNameAr.Contains(searchText) ||
-                x.LastNameAr.Contains(searchText) ||
-                x.IdentityNumber.Contains(searchText) ||
-                x.MobileNumber.Contains(searchText));
+            var words = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var word in words)
+            {
+                queryable = queryable.Where(x =>
+                    x.MRN.Contains(word) ||
+                    x.FirstNameAr.Contains(word) ||
+                    (x.MiddleNameAr != null && x.MiddleNameAr.Contains(word)) ||
+                    x.LastNameAr.Contains(word) ||
+                    (x.FirstNameEn != null && x.FirstNameEn.Contains(word)) ||
+                    (x.MiddleNameEn != null && x.MiddleNameEn.Contains(word)) ||
+                    (x.LastNameEn != null && x.LastNameEn.Contains(word)) ||
+                    x.IdentityNumber.Contains(word) ||
+                    x.MobileNumber.Contains(word));
+            }
         }
 
         queryable = queryable.Where(x => x.IsActive).Take(20);
@@ -415,12 +449,20 @@ public class PatientAppService : ApplicationService, IPatientAppService
     {
         if (!string.IsNullOrEmpty(input.SearchText))
         {
-            queryable = queryable.Where(x =>
-                x.MRN.Contains(input.SearchText) ||
-                x.FirstNameAr.Contains(input.SearchText) ||
-                x.LastNameAr.Contains(input.SearchText) ||
-                x.IdentityNumber.Contains(input.SearchText) ||
-                x.MobileNumber.Contains(input.SearchText));
+            var words = input.SearchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var word in words)
+            {
+                queryable = queryable.Where(x =>
+                    x.MRN.Contains(word) ||
+                    x.FirstNameAr.Contains(word) ||
+                    (x.MiddleNameAr != null && x.MiddleNameAr.Contains(word)) ||
+                    x.LastNameAr.Contains(word) ||
+                    (x.FirstNameEn != null && x.FirstNameEn.Contains(word)) ||
+                    (x.MiddleNameEn != null && x.MiddleNameEn.Contains(word)) ||
+                    (x.LastNameEn != null && x.LastNameEn.Contains(word)) ||
+                    x.IdentityNumber.Contains(word) ||
+                    x.MobileNumber.Contains(word));
+            }
         }
 
         if (!string.IsNullOrEmpty(input.MRN))

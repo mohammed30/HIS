@@ -78,7 +78,7 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         await GrantPermissionsAsync("AdminStaff", new[] { 
             "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
             "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
+            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs", "HIS.Pharmacy.POS",
             "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets",
             "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
             "HIS.Laboratory", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
