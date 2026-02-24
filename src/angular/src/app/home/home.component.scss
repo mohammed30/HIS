@@ -25,3 +25,41 @@
     height: 100% !important;
   }
 }
+
+/* Home Page Logo Styles */
+.home-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-logo {
+  max-width: 150px;
+  /* Made the logo much larger */
+  height: auto;
+}
+
+.logo-dark {
+  display: none;
+}
+
+.logo-light {
+  display: block;
+}
+
+/* When dark theme is active from LeptonX */
+:host-context([data-theme="dark"]) .logo-light {
+  display: none;
+}
+
+:host-context([data-theme="dark"]) .logo-dark {
+  display: block;
+}
+
+:host-context(.dark) .logo-light {
+  display: none;
+}
+
+:host-context(.dark) .logo-dark {
+  display: block;
+}

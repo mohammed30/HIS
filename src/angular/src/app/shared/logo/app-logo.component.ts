@@ -27,24 +27,7 @@ import { RouterModule } from '@angular/router';
         />
       </a>
 
-      <!-- Menu Search Bar -->
-      <div *ngIf="showSearch" class="menu-search-wrapper px-2 mt-2">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-transparent border-end-0 text-muted">
-            <i class="fas fa-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control bg-transparent border-start-0 ps-0"
-            [placeholder]="'::Search' | abpLocalization"
-            [(ngModel)]="searchText"
-            (input)="onSearch()"
-          />
-          <button *ngIf="searchText" class="btn btn-sm btn-link text-muted p-0 pe-2 position-absolute end-0 top-50 translate-middle-y z-3" (click)="clearSearch()">
-            <i class="fas fa-times-circle"></i>
-          </button>
-        </div>
-      </div>
+      <!-- Menu Search Bar removed by user request -->
     </div>
   `,
   styles: [`
@@ -55,11 +38,11 @@ import { RouterModule } from '@angular/router';
     .logo-container {
       display: flex;
       flex-direction: column;
-      padding: 10px 5px;
+      padding: 5px;
     }
     .navbar-brand {
       display: block;
-      max-width: 120px;
+      max-width: 60px;
       margin: 0 auto;
     }
     .logo-dark { display: none; }

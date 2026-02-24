@@ -1142,3 +1142,21 @@ html:not([data-theme="dark"]) .vital-card {
   background-color: #157347 !important;
   border-color: #146c43 !important;
 }
+
+/* Fix Sidebar Logo Overlap 
+   The custom logo + search bar makes the header taller, which can overlap 
+   the first few menu items in LeptonX. This forces it to fit.
+*/
+.lpx-sidebar-container .lpx-logo-container {
+  height: auto !important;
+  min-height: unset !important;
+  padding: 10px 5px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: inherit;
+  z-index: 10;
+}
+
+.lpx-sidebar-container .lpx-menu {
+  margin-top: 0 !important;
+  /* Menu starts right after the smaller logo header */
+}

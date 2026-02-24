@@ -1,9 +1,13 @@
 <div class="container-fluid py-4">
   <div class="row justify-content-center">
     <div class="col-12 text-center">
-      <div class="d-flex flex-column align-items-center mb-4">
-        <app-logo [showSearch]="false" class="mb-3"></app-logo>
-        <h1 class="display-4">{{ '::WelcomeToAsiaHospital' | abpLocalization }}</h1>
+      <div class="d-flex align-items-center justify-content-center gap-4 mb-4">
+        <div class="home-logo-container">
+          <!-- Logo images for light and dark themes -->
+          <img src="./assets/images/logo/Dark.png" alt="Logo" class="home-logo logo-light" />
+          <img src="./assets/images/logo/Light.png" alt="Logo" class="home-logo logo-dark" />
+        </div>
+        <h1 class="display-4 fw-bold mb-0 text-primary">{{ '::WelcomeToAsiaHospital' | abpLocalization }}</h1>
       </div>
       <p class="lead text-muted">
         {{ '::HospitalInformationSystem' | abpLocalization }}

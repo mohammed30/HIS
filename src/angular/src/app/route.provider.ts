@@ -32,7 +32,7 @@ function configureRoutes() {
       iconClass: 'fas fa-list-alt',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Reception.Tickets',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/patients',
@@ -41,7 +41,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-injured',
       order: 2,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Patients',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Appointments
     {
@@ -49,7 +49,6 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-check',
       order: 20,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Appointments',
     },
     {
       path: '/appointments/booking',
@@ -58,7 +57,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-plus',
       order: 21,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Appointments.Create',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/appointments/my-appointments',
@@ -74,7 +73,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice-dollar',
       order: 30,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/chart-of-accounts',
@@ -83,7 +82,7 @@ function configureRoutes() {
       iconClass: 'fas fa-sitemap',
       order: 31,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.ChartOfAccounts',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/journal-entries',
@@ -92,7 +91,7 @@ function configureRoutes() {
       iconClass: 'fas fa-book',
       order: 32,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.JournalEntries',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports',
@@ -101,7 +100,7 @@ function configureRoutes() {
       iconClass: 'fas fa-chart-line',
       order: 33,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/payment-vouchers',
@@ -110,7 +109,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice-dollar',
       order: 34,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.PaymentVouchers',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/receipt-vouchers',
@@ -119,7 +118,7 @@ function configureRoutes() {
       iconClass: 'fas fa-receipt',
       order: 35,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.ReceiptVouchers',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/bank-transactions',
@@ -128,7 +127,7 @@ function configureRoutes() {
       iconClass: 'fas fa-university',
       order: 36,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.BankTransactions',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/claims',
@@ -137,7 +136,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-contract',
       order: 37,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.ContractClaims',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports/daily',
@@ -146,7 +145,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-day',
       order: 38,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports/debts',
@@ -155,7 +154,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-clock',
       order: 39,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports/discounts',
@@ -164,7 +163,7 @@ function configureRoutes() {
       iconClass: 'fas fa-percentage',
       order: 40,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports/income-statement',
@@ -173,7 +172,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice-dollar',
       order: 41,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports/balance-sheet',
@@ -182,7 +181,7 @@ function configureRoutes() {
       iconClass: 'fas fa-balance-scale',
       order: 42,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/accounting/reports/account-statement',
@@ -191,7 +190,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-alt',
       order: 43,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.FinancialReports',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Insurance
     {
@@ -199,7 +198,7 @@ function configureRoutes() {
       iconClass: 'fas fa-shield-alt',
       order: 40,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/reception/insurance-companies',
@@ -208,7 +207,7 @@ function configureRoutes() {
       iconClass: 'fas fa-building',
       order: 41,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Reception.InsuranceCompanies',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/reception/insurance-plans',
@@ -217,7 +216,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-contract',
       order: 42,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Reception.InsurancePlans',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Billing
     {
@@ -225,7 +224,7 @@ function configureRoutes() {
       iconClass: 'fas fa-money-bill-wave',
       order: 50,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/reception/invoices',
@@ -234,7 +233,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice',
       order: 51,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Reception.Invoices',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/reception/payments',
@@ -243,7 +242,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cash-register',
       order: 52,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Reception.Payments',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/reception/deferred-payments',
@@ -252,7 +251,7 @@ function configureRoutes() {
       iconClass: 'fas fa-clock',
       order: 53,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Billing.DeferredPayments',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Definitions
     {
@@ -269,7 +268,7 @@ function configureRoutes() {
       iconClass: 'fas fa-building',
       order: 101,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/settings/specialties',
@@ -278,7 +277,7 @@ function configureRoutes() {
       iconClass: 'fas fa-stethoscope',
       order: 102,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/settings/clinics',
@@ -287,7 +286,7 @@ function configureRoutes() {
       iconClass: 'fas fa-clinic-medical',
       order: 103,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/settings/doctors',
@@ -296,7 +295,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-md',
       order: 104,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/settings/laboratories',
@@ -305,7 +304,7 @@ function configureRoutes() {
       iconClass: 'fas fa-flask',
       order: 105,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Laboratory',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/settings/doctor-schedule',
@@ -314,7 +313,7 @@ function configureRoutes() {
       iconClass: 'fas fa-clock',
       order: 106,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/definitions/nationalities',
@@ -323,7 +322,7 @@ function configureRoutes() {
       iconClass: 'fas fa-globe',
       order: 110,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.Nationalities',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/definitions/professions',
@@ -332,7 +331,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-tie',
       order: 111,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.Professions',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/definitions/contracts',
@@ -341,7 +340,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-contract',
       order: 112,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.Contracts',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/definitions/patient-categories',
@@ -350,7 +349,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tags',
       order: 113,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.PatientCategories',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/definitions/referral-sources',
@@ -359,7 +358,7 @@ function configureRoutes() {
       iconClass: 'fas fa-handshake',
       order: 114,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.ReferralSources',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/settings/job-titles',
@@ -368,7 +367,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-tag',
       order: 115,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/appointments/waiting-list',
@@ -377,7 +376,7 @@ function configureRoutes() {
       iconClass: 'fas fa-list-ol',
       order: 23,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Appointments',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/appointments/flow',
@@ -386,7 +385,7 @@ function configureRoutes() {
       iconClass: 'fas fa-stream',
       order: 24,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Appointments',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Laboratory
     {
@@ -402,7 +401,7 @@ function configureRoutes() {
       iconClass: 'fas fa-book-medical',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Laboratory.Catalog',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/laboratory/requests',
@@ -411,7 +410,7 @@ function configureRoutes() {
       iconClass: 'fas fa-microscope',
       order: 2,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Laboratory.Requests',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/laboratory/appointments',
@@ -420,7 +419,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-alt',
       order: 3,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Laboratory.Appointments',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       name: '::Menu:Emergency',
@@ -434,7 +433,7 @@ function configureRoutes() {
       iconClass: 'fas fa-pills',
       order: 28,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Pharmacy',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/pharmacy',
@@ -443,7 +442,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-prescription',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Pharmacy.Prescriptions',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/pharmacy/stock',
@@ -452,7 +451,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cubes',
       order: 2,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Pharmacy.Stock',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/pharmacy/drugs',
@@ -461,7 +460,7 @@ function configureRoutes() {
       iconClass: 'fas fa-capsules',
       order: 3,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Pharmacy.Drugs',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/pharmacy/dispensing',
@@ -470,7 +469,7 @@ function configureRoutes() {
       iconClass: 'fas fa-check-double',
       order: 4,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Pharmacy.Dispensing',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/pharmacy/pos',
@@ -479,7 +478,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cash-register',
       order: 5,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Pharmacy.POS',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/emergency/dashboard',
@@ -488,7 +487,7 @@ function configureRoutes() {
       iconClass: 'fas fa-heartbeat',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Emergency.Dashboard',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Services & Pricing
     {
@@ -498,7 +497,7 @@ function configureRoutes() {
       iconClass: 'fas fa-briefcase-medical',
       order: 107,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.Services',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/services/radiology',
@@ -507,7 +506,7 @@ function configureRoutes() {
       iconClass: 'fas fa-x-ray',
       order: 108,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.Radiology',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/services/price-lists',
@@ -516,7 +515,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tags',
       order: 109,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.PriceLists',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/definitions/payment-methods',
@@ -525,7 +524,7 @@ function configureRoutes() {
       iconClass: 'fas fa-credit-card',
       order: 110,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Definitions.PaymentMethods',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Administration
     {
@@ -534,7 +533,7 @@ function configureRoutes() {
       iconClass: 'fas fa-users-cog',
       order: 200,
       layout: eLayoutType.application,
-      requiredPolicy: 'AbpIdentity.Users',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/admin/activity-logs',
@@ -542,7 +541,7 @@ function configureRoutes() {
       iconClass: 'fas fa-history',
       order: 210,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Inventory
     {
@@ -550,7 +549,7 @@ function configureRoutes() {
       iconClass: 'fas fa-boxes',
       order: 35,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inventory/dashboard',
@@ -559,7 +558,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tachometer-alt',
       order: 36,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.Dashboard',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inventory/warehouse-management',
@@ -568,7 +567,7 @@ function configureRoutes() {
       iconClass: 'fas fa-warehouse',
       order: 37,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.ManageWarehouses',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inventory/suppliers',
@@ -577,7 +576,7 @@ function configureRoutes() {
       iconClass: 'fas fa-truck',
       order: 38,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.Suppliers',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inventory/purchase-requisitions',
@@ -586,7 +585,7 @@ function configureRoutes() {
       iconClass: 'fas fa-file-invoice',
       order: 38,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.PurchaseRequisitions',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inventory/purchase-orders',
@@ -595,7 +594,7 @@ function configureRoutes() {
       iconClass: 'fas fa-shopping-cart',
       order: 39,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.PurchaseOrders',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inventory/reports/department-consumption',
@@ -604,7 +603,7 @@ function configureRoutes() {
       iconClass: 'fas fa-chart-pie',
       order: 40,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.DepartmentalConsumption',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Nursing
     {
@@ -612,7 +611,7 @@ function configureRoutes() {
       iconClass: 'fas fa-user-nurse',
       order: 60,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Nursing',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/nursing/patient-list',
@@ -621,7 +620,7 @@ function configureRoutes() {
       iconClass: 'fas fa-list',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Nursing.PatientList',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/nursing/shift-handover',
@@ -630,7 +629,7 @@ function configureRoutes() {
       iconClass: 'fas fa-exchange-alt',
       order: 2,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Nursing.ShiftHandover',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     // Inpatient
     {
@@ -638,7 +637,7 @@ function configureRoutes() {
       iconClass: 'fas fa-bed',
       order: 70,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inpatient',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inpatient/dashboard',
@@ -647,7 +646,7 @@ function configureRoutes() {
       iconClass: 'fas fa-tachometer-alt',
       order: 1,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inpatient.Dashboard',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inpatient/rooms',
@@ -656,7 +655,7 @@ function configureRoutes() {
       iconClass: 'fas fa-door-open',
       order: 2,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inpatient.Rooms',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/inpatient/reservations',
@@ -665,7 +664,7 @@ function configureRoutes() {
       iconClass: 'fas fa-calendar-alt',
       order: 3,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inpatient.Reservations',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
     {
       path: '/setting-management',
@@ -673,7 +672,7 @@ function configureRoutes() {
       iconClass: 'fas fa-cog',
       order: 300,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
+      // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     }
     // Force rebuild 2
   ]);
