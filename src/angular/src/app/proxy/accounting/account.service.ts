@@ -75,4 +75,12 @@ export class AccountService {
       params: { startDate: input.startDate, endDate: input.endDate },
     },
       { apiName: this.apiName, ...config });
+
+  getIncomeStatement = (input: DateRangeDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, any>({
+      method: 'GET',
+      url: '/api/app/account/income-statement',
+      params: { startDate: input.startDate, endDate: input.endDate },
+    },
+      { apiName: this.apiName, ...config });
 }

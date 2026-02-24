@@ -107,6 +107,7 @@
     "Menu:ReceiptVouchers": "Receipt Vouchers",
     "Menu:DiscountsReport": "Discounts Report",
     "Menu:IncomeStatement": "Income Statement",
+    "Menu:BalanceSheet": "Balance Sheet",
     "SelectDay": "Select Day",
     "Menu:DoctorSchedule": "Doctor Schedule",
     "NewSchedule": "New Schedule",
@@ -625,6 +626,17 @@
     "IncomeStatement:ActuarialLosses": "Actuarial Losses from Defined Benefit Plans",
     "IncomeStatement:ReclassifiedHedging": "Losses Reclassified from Hedging to P&L",
     "IncomeStatement:TotalComprehensiveIncome": "(=) Comprehensive Income",
-    "IncomeStatement:TotalComprehensiveIncomeForYear": "(=) Total Comprehensive Income for the Year"
+    "IncomeStatement:TotalComprehensiveIncomeForYear": "(=) Total Comprehensive Income for the Year",
+    "Menu:AccountStatement": "Account Statement",
+    "AccountStatement": "Account Statement",
+    "AccountStatement:Detailed": "Detailed (Subsidiary Accounts)",
+    "AccountStatement:Summary": "Summary (Main Accounts)",
+    "AccountStatement:RunningBalance": "Running Balance",
+    "AccountStatement:OpeningBalance": "Opening Balance",
+    "AccountStatement:ClosingBalance": "Closing Balance",
+    "AccountStatement:SelectAccount": "Select Account",
+    "AccountStatement:NoData": "No transactions found for the selected period",
+    "Debit": "Debit",
+    "Credit": "Credit"
   }
 }

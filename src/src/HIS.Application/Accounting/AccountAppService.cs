@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using HIS.Billing;
 using HIS.Patients;
+using Microsoft.AspNetCore.Hosting;
+using HIS.Accounting.Printing;
 
 namespace HIS.Accounting;
 
@@ -20,6 +22,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
     private readonly IRepository<ReceiptVoucher, Guid> _receiptVoucherRepository;
     private readonly IRepository<PaymentVoucher, Guid> _paymentVoucherRepository;
     private readonly IRepository<JournalEntryLine, Guid> _journalEntryLineRepository;
+    private readonly IWebHostEnvironment _env;
 
     public AccountAppService(
         IRepository<Account, Guid> repository,
@@ -28,7 +31,8 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         IRepository<Patient, Guid> patientRepository,
         IRepository<ReceiptVoucher, Guid> receiptVoucherRepository,
         IRepository<PaymentVoucher, Guid> paymentVoucherRepository,
-        IRepository<JournalEntryLine, Guid> journalEntryLineRepository)
+        IRepository<JournalEntryLine, Guid> journalEntryLineRepository,
+        IWebHostEnvironment env)
         : base(repository)
     {
         _journalEntryRepository = journalEntryRepository;
@@ -37,6 +41,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         _receiptVoucherRepository = receiptVoucherRepository;
         _paymentVoucherRepository = paymentVoucherRepository;
         _journalEntryLineRepository = journalEntryLineRepository;
+        _env = env;
     }
 
     public async Task<IncomeStatementDto> GetIncomeStatementAsync(DateRangeDto input)
@@ -107,6 +112,75 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         dto.TotalOtherExpenses = dto.OtherExpenseLines.Sum(x => x.Amount);
         
         return dto;
+    }
+
+    [HttpGet]
+    [Route("api/app/account/income-statement-pdf")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetIncomeStatementPdfAsync(DateTime startDate, DateTime endDate)
+    {
+        var input = new DateRangeDto { StartDate = startDate, EndDate = endDate };
+        var data = await GetIncomeStatementAsync(input);
+
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+        var doc = new IncomeStatementDocument
+        {
+            StartDate = startDate,
+            EndDate = endDate,
+            PrintedBy = CurrentUser.UserName ?? "System",
+            PrintedAt = Clock.Now,
+            LogoBytes = logoBytes,
+            TotalRevenue = data.TotalRevenue,
+            TotalCostOfSales = data.TotalCostOfSales,
+            TotalGaExpenses = data.TotalGeneralAndAdminExpenses,
+            TotalOtherRevenues = data.TotalOtherRevenues,
+            TotalOtherExpenses = data.TotalOtherExpenses,
+            RevenueLines = data.RevenueLines.Select(l => new IncomeStatementDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            CostOfSalesLines = data.CostOfSalesLines.Select(l => new IncomeStatementDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            GaExpenseLines = data.GeneralAndAdminExpenseLines.Select(l => new IncomeStatementDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            OtherRevenueLines = data.OtherRevenueLines.Select(l => new IncomeStatementDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            OtherExpenseLines = data.OtherExpenseLines.Select(l => new IncomeStatementDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList()
+        };
+
+        var pdf = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(doc);
+        var stream = new System.IO.MemoryStream(pdf);
+        var printTime = Clock.Now;
+        var fileName = $"قائمة_الدخل_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf";
+        return new Volo.Abp.Content.RemoteStreamContent(stream, fileName, "application/pdf");
     }
 
     public async Task<BalanceSheetDto> GetBalanceSheetAsync(DateRangeDto input)
@@ -186,11 +260,63 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         
         dto.PreviousYearEquity = prevEquity;
         
-        // Note: Retained Earnings (Current Year Net Income) might not be in Journal Entries yet if not closed.
-        // A real system calculates Net Income for the period and adds it to Equity section dynamically.
-        // For now, simple aggregation.
-        
         return dto;
+    }
+
+    [HttpGet]
+    [Route("api/app/account/balance-sheet-pdf")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetBalanceSheetPdfAsync(DateTime startDate, DateTime endDate)
+    {
+        var input = new DateRangeDto { StartDate = startDate, EndDate = endDate };
+        var data = await GetBalanceSheetAsync(input);
+
+        // Logo
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+        if (System.IO.File.Exists(logoPath))
+            logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+        var doc = new HIS.Accounting.Printing.BalanceSheetDocument
+        {
+            AsOfDate = endDate,
+            PrintedBy = CurrentUser.UserName ?? CurrentUser.Name,
+            PrintedAt = Clock.Now,
+            LogoBytes = logoBytes,
+            AssetLines = data.AssetLines.Select(l => new HIS.Accounting.Printing.BalanceSheetDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            LiabilityLines = data.LiabilityLines.Select(l => new HIS.Accounting.Printing.BalanceSheetDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            EquityLines = data.EquityLines.Select(l => new HIS.Accounting.Printing.BalanceSheetDocument.ReportLine
+            {
+                AccountCode = l.AccountCode,
+                AccountName = l.AccountName,
+                Amount = l.Amount
+            }).ToList(),
+            TotalAssets = data.TotalAssets,
+            TotalLiabilities = data.TotalLiabilities,
+            TotalEquity = data.TotalEquity
+        };
+
+        var pdf = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(doc);
+        var stream = new System.IO.MemoryStream(pdf);
+        var printTime = Clock.Now;
+        var fileName = $"قائمة_عمومية_{endDate:yyyy-MM-dd}_{printTime:HH-mm-ss}.pdf";
+        return new Volo.Abp.Content.RemoteStreamContent(stream, fileName, "application/pdf");
     }
 
     public async Task<CashFlowStatementDto> GetCashFlowStatementAsync(DateRangeDto input)
@@ -549,5 +675,178 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         var start = Clock.Normalize(input.StartDate).Date;
         var end = Clock.Normalize(input.EndDate).Date.AddDays(1).AddTicks(-1);
         return (start, end);
+    }
+
+    public async Task<AccountStatementDto> GetAccountStatementAsync(AccountStatementInputDto input)
+    {
+        var (startDate, endDate) = GetNormalizedDateRange(new DateRangeDto
+        {
+            StartDate = input.StartDate,
+            EndDate = input.EndDate
+        });
+
+        if (!input.AccountId.HasValue)
+        {
+            return new AccountStatementDto();
+        }
+
+        var account = await Repository.GetAsync(input.AccountId.Value);
+
+        // Get all descendant leaf account IDs (if this is a parent account)
+        var allAccounts = await Repository.GetListAsync();
+        var targetAccountIds = GetDescendantIds(account.Id, allAccounts);
+        targetAccountIds.Add(account.Id);
+
+        // Opening balance: sum of all posted entries before startDate
+        var allEntries = await _journalEntryRepository.GetListAsync();
+        var postedEntryIds = allEntries.Where(e => e.IsPosted).Select(e => e.Id).ToHashSet();
+
+        var allLines = await _journalEntryLineRepository.GetListAsync();
+
+        // Filter lines for target accounts and posted entries
+        var relevantLines = allLines
+            .Where(l => targetAccountIds.Contains(l.AccountId) && postedEntryIds.Contains(l.JournalEntryId))
+            .ToList();
+
+        // Opening balance
+        var openingLines = relevantLines
+            .Where(l => allEntries.First(e => e.Id == l.JournalEntryId).Date < startDate);
+
+        decimal openingBalance = openingLines.Sum(l => l.Debit) - openingLines.Sum(l => l.Credit);
+
+        // Period lines
+        var periodLines = relevantLines
+            .Where(l =>
+            {
+                var entry = allEntries.First(e => e.Id == l.JournalEntryId);
+                return entry.Date >= startDate && entry.Date <= endDate;
+            })
+            .Select(l =>
+            {
+                var entry = allEntries.First(e => e.Id == l.JournalEntryId);
+                return new { Line = l, Entry = entry };
+            })
+            .OrderBy(x => x.Entry.Date)
+            .ThenBy(x => x.Entry.ReferenceNumber)
+            .ToList();
+
+        var dto = new AccountStatementDto
+        {
+            AccountCode = account.Code,
+            AccountName = account.NameAr ?? account.Name,
+            OpeningBalance = openingBalance,
+        };
+
+        decimal runningBalance = openingBalance;
+        foreach (var item in periodLines)
+        {
+            runningBalance += item.Line.Debit - item.Line.Credit;
+            dto.Lines.Add(new AccountStatementLineDto
+            {
+                Date = item.Entry.Date,
+                ReferenceNumber = item.Entry.ReferenceNumber,
+                Description = item.Entry.Description,
+                Debit = item.Line.Debit,
+                Credit = item.Line.Credit,
+                RunningBalance = runningBalance
+            });
+        }
+
+        dto.TotalDebit = periodLines.Sum(x => x.Line.Debit);
+        dto.TotalCredit = periodLines.Sum(x => x.Line.Credit);
+        dto.ClosingBalance = runningBalance;
+
+        return dto;
+    }
+
+    public async Task<List<AccountSummaryDto>> GetAccountSummaryAsync(DateRangeDto input)
+    {
+        var (startDate, endDate) = GetNormalizedDateRange(input);
+
+        var allAccounts = await Repository.GetListAsync();
+        var allEntries = await _journalEntryRepository.GetListAsync();
+        var postedEntryIds = allEntries
+            .Where(e => e.IsPosted && e.Date >= startDate && e.Date <= endDate)
+            .Select(e => e.Id)
+            .ToHashSet();
+
+        var allLines = await _journalEntryLineRepository.GetListAsync();
+        var periodLines = allLines.Where(l => postedEntryIds.Contains(l.JournalEntryId)).ToList();
+
+        // Calculate balances per leaf account
+        var leafBalances = periodLines
+            .GroupBy(l => l.AccountId)
+            .ToDictionary(
+                g => g.Key,
+                g => (Debit: g.Sum(x => x.Debit), Credit: g.Sum(x => x.Credit))
+            );
+
+        // Build hierarchical summary: only top-level (parentId == null) accounts
+        var topLevelAccounts = allAccounts.Where(a => a.ParentId == null).OrderBy(a => a.Code).ToList();
+
+        var result = new List<AccountSummaryDto>();
+        foreach (var parent in topLevelAccounts)
+        {
+            var summary = BuildAccountSummary(parent, allAccounts, leafBalances);
+            if (summary.TotalDebit != 0 || summary.TotalCredit != 0 || summary.Children.Any(c => c.TotalDebit != 0 || c.TotalCredit != 0))
+            {
+                result.Add(summary);
+            }
+        }
+
+        return result;
+    }
+
+    private AccountSummaryDto BuildAccountSummary(
+        Account account,
+        List<Account> allAccounts,
+        Dictionary<Guid, (decimal Debit, decimal Credit)> leafBalances)
+    {
+        var children = allAccounts.Where(a => a.ParentId == account.Id).OrderBy(a => a.Code).ToList();
+
+        var dto = new AccountSummaryDto
+        {
+            AccountId = account.Id,
+            AccountCode = account.Code,
+            AccountName = account.NameAr ?? account.Name,
+            AccountType = account.Type,
+            IsParent = children.Any()
+        };
+
+        if (!children.Any())
+        {
+            // Leaf account: get balance directly
+            if (leafBalances.TryGetValue(account.Id, out var balance))
+            {
+                dto.TotalDebit = balance.Debit;
+                dto.TotalCredit = balance.Credit;
+            }
+        }
+        else
+        {
+            // Parent: aggregate children recursively
+            foreach (var child in children)
+            {
+                var childDto = BuildAccountSummary(child, allAccounts, leafBalances);
+                dto.Children.Add(childDto);
+                dto.TotalDebit += childDto.TotalDebit;
+                dto.TotalCredit += childDto.TotalCredit;
+            }
+        }
+
+        dto.Balance = dto.TotalDebit - dto.TotalCredit;
+        return dto;
+    }
+
+    private List<Guid> GetDescendantIds(Guid parentId, List<Account> allAccounts)
+    {
+        var result = new List<Guid>();
+        var directChildren = allAccounts.Where(a => a.ParentId == parentId).ToList();
+        foreach (var child in directChildren)
+        {
+            result.Add(child.Id);
+            result.AddRange(GetDescendantIds(child.Id, allAccounts));
+        }
+        return result;
     }
 }

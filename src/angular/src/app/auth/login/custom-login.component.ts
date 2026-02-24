@@ -63,12 +63,10 @@ export class CustomLoginComponent implements OnInit {
 
                 console.log('Login successful, preparing redirect to:', returnUrl);
 
-                // Allow a small delay for token to be fully persisted and state synced
-                // before forcing a full page reload.
-                setTimeout(() => {
-                    console.log('Forcing full page reload now...');
-                    window.location.href = returnUrl;
-                }, 200);
+                // Refresh app state to ensure menus & permissions are loaded
+                this.config.refreshAppState().subscribe(() => {
+                    this.router.navigateByUrl(returnUrl);
+                });
             },
             error: (err) => {
                 this.inProgress = false;

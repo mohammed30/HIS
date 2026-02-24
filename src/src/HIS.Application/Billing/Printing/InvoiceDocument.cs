@@ -54,7 +54,7 @@ public class InvoiceDocument : IDocument
                 page.Size(PageSizes.A4);
                 page.Margin(1.5f, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(11).FontColor(TextDark));
+                page.DefaultTextStyle(x => x.FontSize(12).FontColor(TextDark));
                 page.ContentFromRightToLeft(); // RTL for Arabic
 
                 page.Header().Element(ComposeHeader);
@@ -90,9 +90,18 @@ public class InvoiceDocument : IDocument
                     col.Item().Text("ASIA HOSPITAL")
                         .FontSize(14)
                         .FontColor(TextLight);
-                    col.Item().PaddingTop(5).Text("فاتورة ضريبية / TAX INVOICE")
-                        .FontSize(12)
-                        .FontColor(LightBlue);
+                    if (Tax > 0)
+                    {
+                        col.Item().PaddingTop(5).Text("فاتورة ضريبية / TAX INVOICE")
+                            .FontSize(12)
+                            .FontColor(LightBlue);
+                    }
+                    else
+                    {
+                        col.Item().PaddingTop(5).Text("فاتورة / INVOICE")
+                            .FontSize(12)
+                            .FontColor(LightBlue);
+                    }
                 });
 
                 row.ConstantItem(80); // Spacer for balance
@@ -117,8 +126,8 @@ public class InvoiceDocument : IDocument
                 // Right side: Patient Info
                 row.RelativeItem().Element(c => ComposeSection(c, "بيانات المريض", comp =>
                 {
-                    comp.Item().Text(text => { text.Span("الاسم: ").Bold(); text.Span(PatientName ?? "-"); });
-                    comp.Item().Text(text => { text.Span("رقم الملف: ").Bold(); text.Span(PatientNumber ?? "-"); });
+                    comp.Item().PaddingBottom(5).Text(text => { text.Span("الاسم: ").Bold().FontSize(16); text.Span(PatientName ?? "-").FontSize(16); });
+                    comp.Item().Text(text => { text.Span("رقم الملف: ").Bold().FontSize(13); text.Span(PatientNumber ?? "-").FontSize(13); });
                 }));
                 
                 row.ConstantItem(20);
@@ -171,8 +180,11 @@ public class InvoiceDocument : IDocument
                     table.Cell().Element(DataCell).Text($"{Discount:N2}");
                 }
 
-                table.Cell().ColumnSpan(3).Element(TotalLabelCell).Text("ضريبة القيمة المضافة (15%):");
-                table.Cell().Element(DataCell).Text($"{Tax:N2}");
+                if (Tax > 0)
+                {
+                    table.Cell().ColumnSpan(3).Element(TotalLabelCell).Text("ضريبة القيمة المضافة (15%):");
+                    table.Cell().Element(DataCell).Text($"{Tax:N2}");
+                }
 
                 table.Cell().ColumnSpan(3).Element(TotalLabelCell).Text("الاجمالي النهائي:");
                 table.Cell().Element(DataCellHighlight).Text(t => t.Span($"{Total:N2} ج.م").Bold());

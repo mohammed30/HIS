@@ -1,0 +1,9 @@
+/* Balance Sheet SCSS */
+.balance-sheet-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@media print {
+  .d-print-none { display: none !important; }
+  .balance-sheet-table { font-size: 11px; }
+}

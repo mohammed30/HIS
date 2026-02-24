@@ -1,0 +1,221 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">{{ '::AccountStatement' | abpLocalization }}</h5>
+    </div>
+    <div class="card-body">
+        <!-- Tabs -->
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3">
+            <li [ngbNavItem]="1">
+                <a ngbNavLink>
+                    <i class="fas fa-list-alt me-1"></i>
+                    {{ '::AccountStatement:Detailed' | abpLocalization }}
+                </a>
+            </li>
+            <li [ngbNavItem]="2">
+                <a ngbNavLink>
+                    <i class="fas fa-layer-group me-1"></i>
+                    {{ '::AccountStatement:Summary' | abpLocalization }}
+                </a>
+            </li>
+        </ul>
+
+        <!-- Filters -->
+        <form [formGroup]="form" (ngSubmit)="generate()">
+            <div class="row align-items-end mb-4">
+                <!-- Account selector (only for detailed tab) -->
+                <div class="col-md-3 form-group" *ngIf="activeTab === 1">
+                    <label>{{ '::AccountStatement:SelectAccount' | abpLocalization }}</label>
+                    <select class="form-select" [(ngModel)]="selectedAccountId" [ngModelOptions]="{standalone: true}">
+                        <option value="">-- {{ '::AccountStatement:SelectAccount' | abpLocalization }} --</option>
+                        <option *ngFor="let acc of leafAccounts" [value]="acc.id">
+                            {{ acc.code }} - {{ acc.nameAr || acc.name }}
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label>{{ '::StartDate' | abpLocalization }}</label>
+                    <div class="input-group">
+                        <input class="form-control" formControlName="startDate" ngbDatepicker #d1="ngbDatepicker">
+                        <button class="btn btn-outline-secondary" (click)="d1.toggle()" type="button">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label>{{ '::EndDate' | abpLocalization }}</label>
+                    <div class="input-group">
+                        <input class="form-control" formControlName="endDate" ngbDatepicker #d2="ngbDatepicker">
+                        <button class="btn btn-outline-secondary" (click)="d2.toggle()" type="button">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 form-group">
+                    <button type="submit" class="btn btn-primary w-100"
+                        [disabled]="form.invalid || isLoading || (activeTab === 1 && !selectedAccountId)">
+                        <i class="fa fa-sync" [class.fa-spin]="isLoading"></i>
+                        {{ '::Generate' | abpLocalization }}
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Detailed Statement -->
+        <div *ngIf="activeTab === 1 && statement">
+            <div class="alert alert-light border d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <strong>{{ statement.accountCode }}</strong> - {{ statement.accountName }}
+                </div>
+            </div>
+
+            <!-- Opening Balance -->
+            <div class="alert alert-secondary py-2 fw-bold d-flex justify-content-between">
+                <span>{{ '::AccountStatement:OpeningBalance' | abpLocalization }}</span>
+                <span [class.text-danger]="statement.openingBalance < 0">
+                    {{ statement.openingBalance | number:'1.2-2' }}
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>{{ '::Date' | abpLocalization }}</th>
+                            <th>{{ '::ReferenceNumber' | abpLocalization }}</th>
+                            <th>{{ '::Description' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::Debit' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::Credit' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::AccountStatement:RunningBalance' | abpLocalization }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let line of statement.lines">
+                            <td>{{ line.date | date:'yyyy-MM-dd' }}</td>
+                            <td>{{ line.referenceNumber }}</td>
+                            <td>{{ line.description }}</td>
+                            <td class="text-end">
+                                <span *ngIf="line.debit > 0">{{ line.debit | number:'1.2-2' }}</span>
+                            </td>
+                            <td class="text-end">
+                                <span *ngIf="line.credit > 0">{{ line.credit | number:'1.2-2' }}</span>
+                            </td>
+                            <td class="text-end fw-bold" [class.text-danger]="line.runningBalance < 0">
+                                {{ line.runningBalance | number:'1.2-2' }}
+                            </td>
+                        </tr>
+                        <tr *ngIf="statement.lines.length === 0">
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                {{ '::AccountStatement:NoData' | abpLocalization }}
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-secondary fw-bold" *ngIf="statement.lines.length > 0">
+                        <tr>
+                            <td colspan="3">{{ '::FinancialReport:Total' | abpLocalization }}</td>
+                            <td class="text-end">{{ statement.totalDebit | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ statement.totalCredit | number:'1.2-2' }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Closing Balance -->
+            <div class="alert alert-info py-2 fw-bold d-flex justify-content-between"
+                *ngIf="statement.lines.length > 0">
+                <span>{{ '::AccountStatement:ClosingBalance' | abpLocalization }}</span>
+                <span [class.text-danger]="statement.closingBalance < 0">
+                    {{ statement.closingBalance | number:'1.2-2' }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Summary View -->
+        <div *ngIf="activeTab === 2 && summary.length > 0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>{{ '::Code' | abpLocalization }}</th>
+                            <th>{{ '::AccountName' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::Debit' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::Credit' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::Balance' | abpLocalization }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let parent of summary">
+                            <!-- Parent row -->
+                            <tr class="table-primary fw-bold cursor-pointer" (click)="toggleExpand(parent)">
+                                <td>
+                                    <i class="fas me-1" [class.fa-chevron-down]="parent.expanded"
+                                        [class.fa-chevron-left]="!parent.expanded"
+                                        *ngIf="parent.children?.length > 0"></i>
+                                    {{ parent.accountCode }}
+                                </td>
+                                <td>{{ parent.accountName }}</td>
+                                <td class="text-end">{{ parent.totalDebit | number:'1.2-2' }}</td>
+                                <td class="text-end">{{ parent.totalCredit | number:'1.2-2' }}</td>
+                                <td class="text-end" [class.text-danger]="parent.balance < 0">
+                                    {{ parent.balance | number:'1.2-2' }}
+                                </td>
+                            </tr>
+                            <!-- Children rows -->
+                            <ng-container *ngIf="parent.expanded && parent.children?.length > 0">
+                                <ng-container *ngFor="let child of parent.children">
+                                    <tr [class.fw-bold]="child.isParent" [class.table-light]="child.isParent"
+                                        [class]="child.isParent ? 'cursor-pointer' : ''"
+                                        (click)="child.isParent ? toggleExpand(child) : null">
+                                        <td class="ps-4">
+                                            <i class="fas me-1" [class.fa-chevron-down]="child.expanded"
+                                                [class.fa-chevron-left]="!child.expanded"
+                                                *ngIf="child.isParent && child.children?.length > 0"></i>
+                                            {{ child.accountCode }}
+                                        </td>
+                                        <td>{{ child.accountName }}</td>
+                                        <td class="text-end">
+                                            <span *ngIf="child.totalDebit > 0">{{ child.totalDebit | number:'1.2-2'
+                                                }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span *ngIf="child.totalCredit > 0">{{ child.totalCredit | number:'1.2-2'
+                                                }}</span>
+                                        </td>
+                                        <td class="text-end" [class.text-danger]="child.balance < 0">
+                                            {{ child.balance | number:'1.2-2' }}
+                                        </td>
+                                    </tr>
+                                    <!-- Grandchildren -->
+                                    <ng-container *ngIf="child.expanded && child.children?.length > 0">
+                                        <tr *ngFor="let grandchild of child.children">
+                                            <td class="ps-5">{{ grandchild.accountCode }}</td>
+                                            <td>{{ grandchild.accountName }}</td>
+                                            <td class="text-end">
+                                                <span *ngIf="grandchild.totalDebit > 0">{{ grandchild.totalDebit |
+                                                    number:'1.2-2' }}</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <span *ngIf="grandchild.totalCredit > 0">{{ grandchild.totalCredit |
+                                                    number:'1.2-2' }}</span>
+                                            </td>
+                                            <td class="text-end" [class.text-danger]="grandchild.balance < 0">
+                                                {{ grandchild.balance | number:'1.2-2' }}
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- No data for summary -->
+        <div *ngIf="activeTab === 2 && summary.length === 0 && !isLoading" class="text-center text-muted py-4">
+            <i class="fas fa-chart-bar fa-3x mb-3 d-block"></i>
+            <p>{{ '::AccountStatement:NoData' | abpLocalization }}</p>
+        </div>
+    </div>
+</div>

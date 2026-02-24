@@ -1,0 +1,237 @@
+<div id="balance-sheet-container" class="container-fluid py-4">
+    <div class="card shadow-sm border-0 rounded-lg overflow-hidden">
+
+        <!-- Header -->
+        <div class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center py-3">
+            <div class="d-flex align-items-center mb-2 mb-md-0">
+                <h3 class="mb-0 fs-4 fw-bold">
+                    <i class="fas fa-balance-scale me-2 d-print-none"></i>
+                    {{ '::Menu:BalanceSheet' | abpLocalization }} (الميزانية)
+                </h3>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 align-items-center d-print-none">
+                <!-- Search bar - Moved to Top -->
+                <div class="input-group input-group-sm me-md-3" style="width: 250px;">
+                    <span class="input-group-text bg-white border-0 text-muted">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-0" placeholder="بحث عن حساب..."
+                        [(ngModel)]="searchText">
+                    <button *ngIf="searchText" class="btn btn-white border-0" (click)="searchText = ''">
+                        <i class="fas fa-times text-muted"></i>
+                    </button>
+                </div>
+
+                <small class="text-white opacity-75 me-1">في تاريخ / As of:</small>
+                <input type="date" class="form-control form-control-sm border-0" style="width: 140px;"
+                    [(ngModel)]="endDate" (change)="fetchReport()">
+                <button class="btn btn-light btn-sm ms-2 shadow-sm" (click)="fetchReport()" title="تحديث">
+                    <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">جارٍ تحميل البيانات...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!loading && assetLines.length === 0 && liabilityLines.length === 0" class="text-center py-5">
+            <i class="fas fa-balance-scale fa-3x text-muted mb-3"></i>
+            <p class="text-muted">لا توجد بيانات للتاريخ المحدد.<br>
+                <small>تأكد من وجود قيود محاسبية في حسابات الأصول (1xxx) والخصوم (2xxx) وحقوق الملكية (3xxx).</small>
+            </p>
+        </div>
+
+        <!-- Balance Sheet Table -->
+        <div class="card-body p-0" *ngIf="!loading && (assetLines.length > 0 || liabilityLines.length > 0)">
+
+            <!-- Balance indicator -->
+            <div *ngIf="!hasSearchFilter" class="px-3 pt-3 d-flex justify-content-end d-print-none">
+                <span class="badge rounded-pill px-3 py-2 fs-6" [class.bg-success]="isBalanced"
+                    [class.bg-warning]="!isBalanced" [class.text-dark]="!isBalanced">
+                    <i class="fas" [class.fa-check-circle]="isBalanced"
+                        [class.fa-exclamation-triangle]="!isBalanced"></i>
+                    {{ isBalanced ? 'الميزانية متوازنة ✓' : 'الميزانية غير متوازنة' }}
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0 balance-sheet-table"
+                    style="--bs-table-bg: transparent; --bs-table-striped-bg: transparent;">
+                    <thead style="background-color: #003366; color: #ffffff;">
+                        <tr>
+                            <th class="ps-4 py-3 text-end" style="color:#fff;">الأصول</th>
+                            <th class="text-center py-3" style="color:#fff; width:80px;">رمز</th>
+                            <th class="text-end pe-4 py-3" style="color:#fff; width:140px;">المبلغ</th>
+                            <th class="ps-4 py-3 text-end border-start border-2" style="color:#fff;">الخصوم وحقوق
+                                الملكية</th>
+                            <th class="text-center py-3" style="color:#fff; width:80px;">رمز</th>
+                            <th class="text-end pe-4 py-3" style="color:#fff; width:140px;">المبلغ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- NORMAL MODE: side-by-side -->
+                        <ng-container *ngIf="!hasSearchFilter">
+                            <tr *ngFor="let i of [].constructor(maxRows()); let idx = index">
+                                <!-- ASSET SIDE -->
+                                <ng-container *ngIf="assetLines[idx] as asset; else emptyAsset">
+                                    <td class="ps-4 text-end fw-semibold" style="font-size:0.95rem;">{{
+                                        asset.accountName }}</td>
+                                    <td class="text-center text-muted small">{{ asset.accountCode }}</td>
+                                    <td class="text-end pe-4 fw-bold" [class.text-success]="asset.amount >= 0"
+                                        [class.text-danger]="asset.amount < 0">
+                                        {{ asset.amount | number:'1.2-2' }}
+                                    </td>
+                                </ng-container>
+                                <ng-template #emptyAsset>
+                                    <td colspan="3"></td>
+                                </ng-template>
+
+                                <!-- LIABILITY/EQUITY SIDE -->
+                                <ng-container *ngIf="liabilityLine(idx) as item; else emptyLiab">
+                                    <ng-container *ngIf="item.isSectionHeader; else normalCell">
+                                        <td colspan="3" class="ps-4 fw-bold text-white py-2 border-start border-2"
+                                            style="background-color:#003366; font-size:0.9rem;">
+                                            <i class="fas fa-users me-1"></i> {{ item.accountName }}
+                                        </td>
+                                    </ng-container>
+                                    <ng-template #normalCell>
+                                        <td class="ps-4 text-end fw-semibold border-start border-2"
+                                            style="font-size:0.95rem;">{{ item.accountName }}</td>
+                                        <td class="text-center text-muted small">{{ item.accountCode }}</td>
+                                        <td class="text-end pe-4 fw-bold text-danger">{{ item.amount | number:'1.2-2' }}
+                                        </td>
+                                    </ng-template>
+                                </ng-container>
+                                <ng-template #emptyLiab>
+                                    <td colspan="3" class="border-start border-2"></td>
+                                </ng-template>
+                            </tr>
+                        </ng-container>
+
+                        <!-- SEARCH MODE -->
+                        <ng-container *ngIf="hasSearchFilter">
+                            <tr *ngIf="filteredAssetLines.length > 0">
+                                <td colspan="6" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                    الأصول</td>
+                            </tr>
+                            <tr *ngFor="let line of filteredAssetLines">
+                                <td class="ps-4 text-end fw-semibold">{{ line.accountName }}</td>
+                                <td class="text-center text-muted small">{{ line.accountCode }}</td>
+                                <td class="text-end pe-4 fw-bold text-success">{{ line.amount | number:'1.2-2' }}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                            <tr *ngIf="filteredLiabilityLines.length > 0">
+                                <td colspan="6" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                    الخصوم</td>
+                            </tr>
+                            <tr *ngFor="let line of filteredLiabilityLines">
+                                <td colspan="3"></td>
+                                <td class="ps-4 text-end fw-semibold">{{ line.accountName }}</td>
+                                <td class="text-center text-muted small">{{ line.accountCode }}</td>
+                                <td class="text-end pe-4 fw-bold text-danger">{{ line.amount | number:'1.2-2' }}</td>
+                            </tr>
+                            <tr *ngIf="filteredEquityLines.length > 0">
+                                <td colspan="6" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                    حقوق الملكية</td>
+                            </tr>
+                            <tr *ngFor="let line of filteredEquityLines">
+                                <td colspan="3"></td>
+                                <td class="ps-4 text-end fw-semibold">{{ line.accountName }}</td>
+                                <td class="text-center text-muted small">{{ line.accountCode }}</td>
+                                <td class="text-end pe-4 fw-bold text-warning">{{ line.amount | number:'1.2-2' }}</td>
+                            </tr>
+                            <tr
+                                *ngIf="filteredAssetLines.length === 0 && filteredLiabilityLines.length === 0 && filteredEquityLines.length === 0">
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-search me-2 text-primary"></i> لا توجد نتائج لـ "{{ searchText }}"
+                                </td>
+                            </tr>
+                        </ng-container>
+
+                        <!-- TOTALS ROW -->
+                        <tr *ngIf="!hasSearchFilter" style="background-color:#003366; color:#fff;">
+                            <td class="ps-4 py-3 text-end fw-bold fs-6">إجمالي الأصول</td>
+                            <td></td>
+                            <td class="text-end pe-4 py-3 fw-bold fs-6 text-success-emphasis"
+                                style="color:#6fff99 !important;">
+                                {{ totalAssets | number:'1.2-2' }}
+                            </td>
+                            <td class="ps-4 py-3 text-end fw-bold fs-6 border-start border-2">إجمالي الخصوم وحقوق
+                                الملكية</td>
+                            <td></td>
+                            <td class="text-end pe-4 py-3 fw-bold fs-6" style="color:#ffcc44;">
+                                {{ totalLiabilitiesAndEquity | number:'1.2-2' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ===== Summary Cards ===== -->
+            <div class="row g-3 p-3 d-print-none" *ngIf="!hasSearchFilter">
+
+                <!-- Total Assets -->
+                <div class="col-md-3">
+                    <div class="rounded-3 p-3 text-center h-100 shadow-sm" style="background:#003366; color:#fff;">
+                        <div class="small opacity-75 mb-1"><i class="fas fa-building me-1"></i> إجمالي الأصول</div>
+                        <div class="fw-bold fs-4 text-success">{{ totalAssets | number:'1.2-2' }}</div>
+                    </div>
+                </div>
+
+                <!-- Total Liabilities -->
+                <div class="col-md-3">
+                    <div class="rounded-3 p-3 text-center h-100 shadow-sm" style="background:#7b1c1c; color:#fff;">
+                        <div class="small opacity-75 mb-1"><i class="fas fa-hand-holding-usd me-1"></i> إجمالي الخصوم
+                        </div>
+                        <div class="fw-bold fs-4" style="color:#ffaaaa;">{{ totalLiabilities | number:'1.2-2' }}</div>
+                    </div>
+                </div>
+
+                <!-- Equity -->
+                <div class="col-md-3">
+                    <div class="rounded-3 p-3 text-center h-100 shadow-sm" style="background:#1a4a2e; color:#fff;">
+                        <div class="small opacity-75 mb-1"><i class="fas fa-users me-1"></i> حقوق الملكية</div>
+                        <div class="fw-bold fs-4" style="color:#aaffcc;">{{ totalEquity | number:'1.2-2' }}</div>
+                    </div>
+                </div>
+
+                <!-- Working Capital — PROMINENT -->
+                <div class="col-md-3">
+                    <div class="rounded-3 p-3 text-center h-100 shadow-sm border border-3"
+                        [style.background]="isBalanced ? '#0d3b66' : '#5c2800'"
+                        [style.border-color]="isBalanced ? '#0d6efd !important' : '#ff6600 !important'"
+                        style="color:#fff;">
+                        <div class="small opacity-75 mb-1 fw-semibold">
+                            <i class="fas fa-chart-line me-1"></i> رأس المال العامل
+                        </div>
+                        <div class="display-6 fw-bold mt-1" [class.text-warning]="(totalAssets - totalLiabilities) < 0"
+                            [class.text-white]="(totalAssets - totalLiabilities) >= 0">
+                            {{ (totalAssets - totalLiabilities) | number:'1.2-2' }}
+                        </div>
+                        <div class="small mt-1 opacity-75">
+                            {{ isBalanced ? '(أصول − خصوم)' : 'تحقق من القيود' }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white text-end py-3 d-print-none">
+            <button class="btn btn-outline-primary btn-sm me-2 shadow-sm rounded-pill px-4" (click)="print()"
+                [disabled]="loading">
+                <i class="fas fa-print me-1"></i> طباعة PDF
+            </button>
+            <button class="btn btn-success btn-sm shadow-sm rounded-pill px-4" (click)="exportToExcel()">
+                <i class="fas fa-file-excel me-1"></i> Excel
+            </button>
+        </div>
+
+    </div>
+</div>

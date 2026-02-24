@@ -33,7 +33,7 @@ public class CreateUpdateInvoiceDto
     public Guid PatientId { get; set; }
     public DateTime? DueDate { get; set; }
     public decimal DiscountAmount { get; set; }
-    public decimal TaxPercentage { get; set; } = 15;
+    public decimal TaxPercentage { get; set; } = 0;
     public Guid? PatientInsuranceId { get; set; }
     public Guid? AppointmentId { get; set; }
     public string? Notes { get; set; }

@@ -52,11 +52,13 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         // ... implementation (this override will automatically be protected by CreatePolicyName check in base) ...
         await CheckCreatePolicyAsync(); // Good practice to call this or rely on base. But since we have logic before base insert, we should check.
         // Actually base.CreateAsync calls CheckCreatePolicyAsync() then MapToEntity then Repository.Insert.
-        // Since we are COMPLETELY overriding logic without calling base.CreateAsync, we MUST call CheckCreatePolicyAsync().
-        
-        // However, standard CreateAsync calls repository insert. We are doing custom logic.
-        // Let's call CheckCreatePolicyAsync() manually.
-        await CheckCreatePolicyAsync();
+        // Ease permissions: Allow anyone with Billing.Default or LaboratoryReception or ManageInvoices
+        if (!await AuthorizationService.IsGrantedAsync(HISPermissions.Billing.ManageInvoices) && 
+            !await AuthorizationService.IsGrantedAsync(HISPermissions.Reception.LaboratoryReception) &&
+            !await AuthorizationService.IsGrantedAsync(HISPermissions.Billing.Default))
+        {
+            await CheckCreatePolicyAsync(); // This will throw the standard AbpAuthorizationException if none granted
+        }
 
         var invoiceId = GuidGenerator.Create();
         var invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
@@ -65,7 +67,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         {
             DueDate = input.DueDate,
             DiscountAmount = input.DiscountAmount,
-            TaxPercentage = input.TaxPercentage == 0 ? 15m : input.TaxPercentage,
+            TaxPercentage = input.TaxPercentage,
             PatientInsuranceId = input.PatientInsuranceId,
             AppointmentId = input.AppointmentId,
             Notes = input.Notes,
@@ -166,6 +168,70 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
     }
 
+    [Authorize(HISPermissions.Billing.ManageInvoices)]
+    public async Task<InvoiceDto> CancelAsync(Guid id)
+    {
+        var invoice = await Repository.GetAsync(id);
+
+        if (invoice.Status == InvoiceStatus.Cancelled)
+        {
+            throw new UserFriendlyException("Invoice is already cancelled.");
+        }
+
+        invoice.Status = InvoiceStatus.Cancelled;
+        await Repository.UpdateAsync(invoice);
+
+        // Reverse Accounting Entry
+        await CreateInvoiceReversalJournalEntryAsync(invoice);
+
+        // Refund all associated payments
+        var paymentRepository = LazyServiceProvider.LazyGetRequiredService<IRepository<Payment, Guid>>();
+        var payments = await paymentRepository.GetListAsync(p => p.InvoiceId == id && p.Status == PaymentStatus.Completed);
+        
+        var paymentAppService = LazyServiceProvider.LazyGetRequiredService<IPaymentAppService>();
+        foreach (var payment in payments)
+        {
+            await paymentAppService.RefundAsync(payment.Id, "Invoice Cancelled");
+        }
+
+        return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
+    }
+
+    private async Task CreateInvoiceReversalJournalEntryAsync(Invoice invoice)
+    {
+        var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
+        var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100"); // Medical Services Revenue
+        var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200"); // VAT Payable
+
+        if (arAccount == null || revenueAccount == null)
+        {
+            return;
+        }
+
+        var je = new JournalEntry(
+            GuidGenerator.Create(),
+            DateTime.Now,
+            $"REV-{invoice.InvoiceNumber}",
+            $"Reversal for Cancelled Invoice: {invoice.InvoiceNumber}"
+        );
+
+        var revenueAmount = invoice.TotalAmount - invoice.DiscountAmount;
+        
+        je.AddLine(GuidGenerator, revenueAccount.Id, revenueAmount, 0); // Debit Revenue
+        
+        if (invoice.TaxAmount > 0 && taxAccount != null)
+        {
+            je.AddLine(GuidGenerator, taxAccount.Id, invoice.TaxAmount, 0); // Debit Tax
+        }
+        
+        je.AddLine(GuidGenerator, arAccount.Id, 0, invoice.NetAmount); // Credit AR
+
+        await _journalEntryRepository.InsertAsync(je);
+        
+        var accountingManager = LazyServiceProvider.LazyGetRequiredService<AccountingManager>();
+        await accountingManager.PostEntryAsync(je);
+    }
+
     [Microsoft.AspNetCore.Mvc.HttpGet]
     [Microsoft.AspNetCore.Mvc.Route("api/app/billing/invoice-pdf/{id}")]
     public async Task<Volo.Abp.Content.IRemoteStreamContent> GetInvoicePdfAsync(Guid id)
@@ -215,7 +281,9 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
         var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
         var stream = new System.IO.MemoryStream(pdfBytes);
-        return new Volo.Abp.Content.RemoteStreamContent(stream, "Invoice.pdf", "application/pdf");
+        var printTime = Clock.Now;
+        var fileName = $"فاتورة_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf";
+        return new Volo.Abp.Content.RemoteStreamContent(stream, fileName, "application/pdf");
     }
 
     protected override async Task<IQueryable<Invoice>> CreateFilteredQueryAsync(GetInvoicesInput input)
@@ -510,6 +578,9 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         
         await Repository.UpdateAsync(payment);
 
+        // Reverse Accounting Mapping
+        await CreateRefundJournalEntryAsync(payment);
+
         if (payment.InvoiceId.HasValue)
         {
             var invoice = await _invoiceRepository.GetAsync(payment.InvoiceId.Value);
@@ -524,6 +595,31 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         }
 
         return ObjectMapper.Map<Payment, PaymentDto>(payment);
+    }
+
+    private async Task CreateRefundJournalEntryAsync(Payment payment)
+    {
+        var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
+        
+        string creditAccountCode = "1110"; // Default Cash
+        var creditAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == creditAccountCode);
+
+        if (arAccount == null || creditAccount == null) return;
+
+        var je = new JournalEntry(
+            GuidGenerator.Create(),
+            DateTime.Now,
+            $"REF-{payment.PaymentNumber}",
+            $"Reversal for Refunded Payment: {payment.PaymentNumber}"
+        );
+
+        je.AddLine(GuidGenerator, arAccount.Id, payment.Amount, 0); // Debit AR
+        je.AddLine(GuidGenerator, creditAccount.Id, 0, payment.Amount); // Credit Cash/Bank
+
+        await _journalEntryRepository.InsertAsync(je);
+        
+        var accountingManager = LazyServiceProvider.LazyGetRequiredService<AccountingManager>();
+        await accountingManager.PostEntryAsync(je);
     }
 }
 
@@ -617,6 +713,7 @@ public interface IInvoiceAppService : ICrudAppService<InvoiceDto, Guid, GetInvoi
 {
     Task<InvoiceDto> GetWithItemsAsync(Guid id);
     Task<InvoiceDto> UpdateStatusAsync(Guid id, InvoiceStatus status);
+    Task<InvoiceDto> CancelAsync(Guid id);
 }
 
 public interface IPaymentAppService : ICrudAppService<PaymentDto, Guid, GetPaymentsInput, CreatePaymentDto>

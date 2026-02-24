@@ -152,6 +152,10 @@ const statusColors: { [key: number]: string } = {
                       <button class="btn btn-sm btn-outline-info me-1" (click)="printInvoice(item)" title="طباعة">
                         <i class="fas fa-print"></i>
                       </button>
+                      <button class="btn btn-sm btn-outline-danger" *ngIf="item.status !== 4" 
+                              (click)="cancelInvoice(item)" title="إلغاء">
+                        <i class="fas fa-ban"></i>
+                      </button>
 
                     </td>
                   </tr>
@@ -363,6 +367,18 @@ export class InvoicesComponent implements OnInit {
       }).subscribe({
         next: () => { this.loadData(); alert('تم الدفع بنجاح!'); },
         error: (err) => console.error(err)
+      });
+    }
+  }
+
+  cancelInvoice(item: Invoice) {
+    if (confirm(`هل أنت متأكد من إلغاء الفاتورة رقم ${item.invoiceNumber}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`)) {
+      this.http.post(`${this.apiUrl}/${item.id}/cancel`, {}).subscribe({
+        next: () => { this.loadData(); alert('تم إلغاء الفاتورة بنجاح!'); },
+        error: (err) => {
+          console.error(err);
+          alert('حدث خطأ أثناء إلغاء الفاتورة');
+        }
       });
     }
   }

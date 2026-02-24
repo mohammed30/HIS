@@ -32,6 +32,10 @@ export class AppComponent implements OnInit {
       component: AppLogoComponent,
       key: 'Logo',
     });
+    this.replaceableComponents.add({
+      component: AppLogoComponent,
+      key: 'Theme.LogoComponent',
+    });
 
     // Replace Identity Components
     this.replaceableComponents.add({

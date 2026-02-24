@@ -300,8 +300,20 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
       },
       {
+        path: 'reports/balance-sheet',
+        loadComponent: () => import('./accounting/reports/balance-sheet/balance-sheet').then(c => c.BalanceSheetComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
+      },
+      {
         path: 'reports/discounts',
         loadComponent: () => import('./accounting/reports/discounts-report/discounts-report').then(c => c.DiscountsReport),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
+      },
+      {
+        path: 'reports/account-statement',
+        loadComponent: () => import('./accounting/reports/account-statement/account-statement.component').then(c => c.AccountStatementComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
       },

@@ -185,7 +185,9 @@ namespace HIS.Accounting
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
             var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
             var stream = new System.IO.MemoryStream(pdfBytes);
-            return new Volo.Abp.Content.RemoteStreamContent(stream, $"{dto.VoucherNumber}.pdf", "application/pdf");
+            var printTime = Clock.Now;
+            var fileName = $"سند_قبض_{dto.VoucherNumber}_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf";
+            return new Volo.Abp.Content.RemoteStreamContent(stream, fileName, "application/pdf");
         }
     }
 }

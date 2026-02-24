@@ -369,7 +369,7 @@
                                     class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
                             </div>
                         </div>
-                        <div class="row g-1 mb-1 align-items-center">
+                        <div class="row g-1 mb-1 align-items-center d-none">
                             <label class="col-4 small text-end fw-bold">الضريبة</label>
                             <div class="col-8 d-flex gap-2">
                                 <input type="checkbox" class="form-check-input" [(ngModel)]="billingDetails.applyTax"
@@ -431,19 +431,22 @@
                     <div class="row g-1 small align-items-center">
                         <div class="col-auto">
                             <div class="form-check small mb-0">
-                                <input class="form-check-input" type="checkbox" id="printWorkOrder">
+                                <input class="form-check-input" type="checkbox" id="printWorkOrder"
+                                    [(ngModel)]="printWorkOrderChecked">
                                 <label class="form-check-label" for="printWorkOrder">طباعة أمر التشغيل</label>
                             </div>
                         </div>
                         <div class="col-auto">
                             <div class="form-check small mb-0">
-                                <input class="form-check-input" type="checkbox" id="printBarcode">
+                                <input class="form-check-input" type="checkbox" id="printBarcode"
+                                    [(ngModel)]="printBarcodeChecked">
                                 <label class="form-check-label" for="printBarcode">طباعة باركود</label>
                             </div>
                         </div>
                         <div class="col-auto">
                             <div class="form-check small mb-0">
-                                <input class="form-check-input" type="checkbox" id="printTicket">
+                                <input class="form-check-input" type="checkbox" id="printTicket"
+                                    [(ngModel)]="printTicketChecked">
                                 <label class="form-check-label" for="printTicket">طباعة تذكرة</label>
                             </div>
                         </div>
@@ -643,6 +646,7 @@
                                 <th>دائن (Credit)</th>
                                 <th>الرصيد</th>
                                 <th>ملاحظات</th>
+                                <th>الإجراء</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -658,6 +662,18 @@
                                     {{ item.balance | number:'1.2-2' }}
                                 </td>
                                 <td class="text-start">{{ item.notes }}</td>
+                                <td>
+                                    <button *ngIf="item.type.includes('Invoice') && item.status !== 4"
+                                        class="btn btn-xs btn-outline-danger" (click)="cancelInvoice(item)"
+                                        title="إلغاء الفاتورة">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                    <button *ngIf="item.type.includes('Payment') && item.status !== 2"
+                                        class="btn btn-xs btn-outline-warning" (click)="refundPayment(item)"
+                                        title="استرداد المبلغ">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
                             </tr>
                             <tr *ngIf="patientStatement.length === 0">
                                 <td colspan="8" class="text-muted py-4">لا توجد بيانات للعرض</td>

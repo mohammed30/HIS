@@ -199,10 +199,10 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
 
         byte[] pdfBytes = document.GeneratePdf();
         var ms = new MemoryStream(pdfBytes);
-        
+        var printTime = Clock.Now;
         return new Volo.Abp.Content.RemoteStreamContent(
             ms, 
-            $"Ticket_{appt.Id.ToString().Substring(0,8)}.pdf", 
+            $"تذكرة_موعد_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", 
             "application/pdf"
         );
     }

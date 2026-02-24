@@ -140,6 +140,7 @@
     "Menu:ReceiptVouchers": "سندات القبض",
     "Menu:DiscountsReport": "تقرير التخفيضات",
     "Menu:IncomeStatement": "قائمة الدخل",
+    "Menu:BalanceSheet": "القائمة العمومية",
     "SelectDay": "اختر اليوم",
     "Menu:DoctorSchedule": "جدول الأطباء",
     "NewSchedule": "جدول جديد",
@@ -664,6 +665,17 @@
     "IncomeStatement:ActuarialLosses": "الخسائر الأكتوارية من خطط تقاعد المنافع المحددة",
     "IncomeStatement:ReclassifiedHedging": "الخسائر المعاد تصنيفها من أداة التحوط إلى الأرباح أو الخسائر",
     "IncomeStatement:TotalComprehensiveIncome": "(=) الدخل الشامل",
-    "IncomeStatement:TotalComprehensiveIncomeForYear": "(=) إجمالي الدخل الشامل للسنة"
+    "IncomeStatement:TotalComprehensiveIncomeForYear": "(=) إجمالي الدخل الشامل للسنة",
+    "Menu:AccountStatement": "كشف الحساب",
+    "AccountStatement": "كشف الحساب",
+    "AccountStatement:Detailed": "تفصيلي (حسابات مساعدة)",
+    "AccountStatement:Summary": "إجمالي (حسابات رئيسية)",
+    "AccountStatement:RunningBalance": "الرصيد الجاري",
+    "AccountStatement:OpeningBalance": "رصيد أول المدة",
+    "AccountStatement:ClosingBalance": "رصيد آخر المدة",
+    "AccountStatement:SelectAccount": "اختر الحساب",
+    "AccountStatement:NoData": "لا توجد حركات في الفترة المحددة",
+    "Debit": "مدين",
+    "Credit": "دائن"
   }
 }

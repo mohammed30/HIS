@@ -182,7 +182,8 @@ public class SurgicalOperationAppService : CrudAppService<
         
         var pdfBytes = document.GeneratePdf();
         var ms = new MemoryStream(pdfBytes);
-        return new Volo.Abp.Content.RemoteStreamContent(ms, $"Surgery_Ticket_{operation.Id}.pdf", "application/pdf");
+        var printTime = Clock.Now;
+        return new Volo.Abp.Content.RemoteStreamContent(ms, $"تذكرة_عملية_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", "application/pdf");
     }
 
     protected override async Task<IQueryable<SurgicalOperation>> CreateFilteredQueryAsync(GetSurgicalOperationsInput input)

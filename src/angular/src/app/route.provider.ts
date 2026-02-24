@@ -175,6 +175,24 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Billing.FinancialReports',
     },
+    {
+      path: '/accounting/reports/balance-sheet',
+      name: '::Menu:BalanceSheet',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-balance-scale',
+      order: 42,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.FinancialReports',
+    },
+    {
+      path: '/accounting/reports/account-statement',
+      name: '::Menu:AccountStatement',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-file-alt',
+      order: 43,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.FinancialReports',
+    },
     // Insurance
     {
       name: '::Menu:Insurance',

@@ -247,8 +247,8 @@ public class LabAppService : ApplicationService, ILabAppService
 
         var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
         var stream = new System.IO.MemoryStream(pdfBytes);
-        
-        return new Volo.Abp.Content.RemoteStreamContent(stream, "LabResult.pdf", "application/pdf");
+        var printTime = Clock.Now;
+        return new Volo.Abp.Content.RemoteStreamContent(stream, $"نتيجة_تحليل_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", "application/pdf");
     }
 
 
@@ -289,7 +289,8 @@ public class LabAppService : ApplicationService, ILabAppService
 
         var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
         var stream = new System.IO.MemoryStream(pdfBytes);
-        return new Volo.Abp.Content.RemoteStreamContent(stream, "LabOrder.pdf", "application/pdf");
+        var printTime = Clock.Now;
+        return new Volo.Abp.Content.RemoteStreamContent(stream, $"طلب_تحليل_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", "application/pdf");
     }
 
     // --- APPOINTMENTS (حجوزات المعمل) ---
@@ -478,7 +479,8 @@ public class LabAppService : ApplicationService, ILabAppService
 
         var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
         var stream = new System.IO.MemoryStream(pdfBytes);
-        return new Volo.Abp.Content.RemoteStreamContent(stream, "LabAppointment.pdf", "application/pdf");
+        var printTime = Clock.Now;
+        return new Volo.Abp.Content.RemoteStreamContent(stream, $"حجز_معمل_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", "application/pdf");
     }
 }
 

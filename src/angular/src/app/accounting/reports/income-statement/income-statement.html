@@ -1,16 +1,18 @@
 <div id="income-statement-container" class="container-fluid py-4">
   <div class="card shadow-sm border-0 rounded-lg overflow-hidden">
+
     <!-- Print Logo (Hidden normally) -->
     <div class="d-none d-print-flex justify-content-center align-items-center py-4 mb-2 border-bottom">
       <img src="assets/images/logo/Light.png" alt="Hospital Logo" style="max-height: 80px;" class="me-3">
     </div>
 
+    <!-- Header with date range -->
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
       <h3 class="mb-0 fs-4 fw-bold">
         <i class="fas fa-file-invoice-dollar me-2 d-print-none"></i>
         {{ '::IncomeStatement' | abpLocalization }}
       </h3>
-      <div class="d-flex gap-2 align-items-center">
+      <div class="d-flex gap-2 align-items-center d-print-none">
         <input type="date" class="form-control form-control-sm border-0" [(ngModel)]="startDate"
           (change)="fetchReport()">
         <span class="text-white-50 mx-1">/</span>
@@ -21,159 +23,164 @@
       </div>
     </div>
 
-    <div class="card-body p-0">
+    <!-- Search bar -->
+    <div class="card-body pt-3 pb-2 border-bottom d-print-none">
+      <div class="input-group" style="max-width: 400px;">
+        <span class="input-group-text bg-light border-end-0">
+          <i class="fas fa-search text-muted"></i>
+        </span>
+        <input type="text" class="form-control border-start-0" placeholder="ابحث عن حساب..." [(ngModel)]="searchText">
+        <button *ngIf="searchText" class="btn btn-outline-secondary" (click)="searchText = ''">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading / Empty state -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2">جارٍ تحميل البيانات...</p>
+    </div>
+
+    <div *ngIf="!loading && revenueLines.length === 0 && costOfSalesLines.length === 0" class="text-center py-5">
+      <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+      <p class="text-muted">لا توجد بيانات للفترة المحددة.<br>
+        <small>تأكد من وجود قيود محاسبية في حسابات الإيرادات (4xxx) والمصروفات (5xxx).</small>
+      </p>
+    </div>
+
+    <div class="card-body p-0" *ngIf="!loading">
       <div class="table-responsive">
         <table class="table table-hover mb-0 income-statement-table">
           <thead class="bg-light text-secondary text-uppercase small fw-bold border-bottom">
             <tr>
-              <th class="ps-4 py-3">{{ '::Description' | abpLocalization }}</th>
-              <th class="text-end py-3">{{ '::Amount' | abpLocalization }} (جزيء)</th>
-              <th class="text-end pe-4 py-3">{{ '::Amount' | abpLocalization }} (كلي)</th>
+              <th class="ps-4 py-3">البيان</th>
+              <th class="text-end py-3">رمز الحساب</th>
+              <th class="text-end pe-4 py-3">المبلغ</th>
             </tr>
           </thead>
           <tbody>
+
             <!-- REVENUE -->
-            <tr class="table-light-header">
-              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:Revenue' | abpLocalization }}</td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:GrossSales' | abpLocalization }}</td>
-              <td class="text-end">{{ revenue.grossSales | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:SalesReturns' | abpLocalization }}</td>
-              <td class="text-end text-danger border-bottom">{{ revenue.salesReturns | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr class="fw-bold bg-light">
-              <td class="ps-5">{{ '::IncomeStatement:NetSales' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4">{{ revenue.netSales | number:'1.2-2' }}</td>
-            </tr>
-
-            <!-- COGS -->
-            <tr class="table-light-header border-top">
-              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:COGS' | abpLocalization }}</td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:BeginningInventory' | abpLocalization }}</td>
-              <td class="text-end">{{ cogs.beginningInv | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:NetPurchases' | abpLocalization }}</td>
-              <td class="text-end border-bottom">{{ cogs.netPurchases | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="ps-5 fw-bold">{{ '::IncomeStatement:GoodsAvailableForSale' | abpLocalization }}</td>
-              <td class="text-end">{{ cogs.goodsAvailable | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:EndingInventory' | abpLocalization }}</td>
-              <td class="text-end text-danger border-bottom">{{ cogs.endingInv | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr class="fw-bold bg-light">
-              <td class="ps-5">{{ '::IncomeStatement:TotalCOGS' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4 text-danger">({{ cogs.totalCogs | number:'1.2-2' }})</td>
-            </tr>
-
-            <!-- PROFITABILITY -->
-            <tr class="table-light-header border-top">
-              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:Profitability' | abpLocalization
-                }}</td>
-            </tr>
-            <tr class="fw-bold bg-soft-success">
-              <td class="ps-5">{{ '::IncomeStatement:GrossProfit' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4 text-success">{{ profitability.grossProfit | number:'1.2-2' }}</td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:SellingExpenses' | abpLocalization }}</td>
-              <td class="text-end text-danger">{{ profitability.sellingExpenses | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:AdminExpenses' | abpLocalization }}</td>
-              <td class="text-end text-danger border-bottom">{{ profitability.adminExpenses | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-            <tr class="fw-bold bg-light">
-              <td class="ps-5">{{ '::IncomeStatement:OperatingIncome' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4">{{ profitability.operatingIncome | number:'1.2-2' }}</td>
-            </tr>
-
-            <!-- OTHER ITEMS -->
-            <tr class="table-light-header border-top">
-              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:OtherItems' | abpLocalization }}
+            <tr class="table-light-header" *ngIf="filteredRevenueLines.length > 0 || !hasSearchFilter">
+              <td colspan="3" class="ps-4 fw-bold text-primary border-top pt-3">
+                <i class="fas fa-arrow-up me-1 small"></i> الإيرادات
               </td>
             </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:OtherRevenue' | abpLocalization }}</td>
-              <td class="text-end text-success">{{ otherItems.otherRevenue | number:'1.2-2' }}</td>
-              <td></td>
+            <tr *ngFor="let line of filteredRevenueLines">
+              <td class="ps-5">{{ line.accountName }}</td>
+              <td class="text-end text-muted small">{{ line.accountCode }}</td>
+              <td class="text-end pe-4 text-success">{{ line.amount | number:'1.2-2' }}</td>
             </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:OtherExpenses' | abpLocalization }}</td>
-              <td class="text-end text-danger border-bottom">{{ otherItems.otherExpenses | number:'1.2-2' }}</td>
+            <tr class="fw-bold bg-light" *ngIf="filteredRevenueLines.length > 0 || !hasSearchFilter">
+              <td class="ps-5">إجمالي الإيرادات</td>
               <td></td>
-            </tr>
-            <tr class="fw-bold bg-light">
-              <td class="ps-5">{{ '::IncomeStatement:IncomeBeforeTax' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4">{{ otherItems.incomeBeforeTax | number:'1.2-2' }}</td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:IncomeTax' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4 text-danger border-bottom">({{ otherItems.incomeTax | number:'1.2-2' }})</td>
-            </tr>
-            <tr class="fw-bold bg-primary text-white">
-              <td class="ps-4">{{ '::IncomeStatement:NetIncome' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4">{{ otherItems.netIncome | number:'1.2-2' }}</td>
+              <td class="text-end pe-4 text-success border-top">{{ totalRevenue | number:'1.2-2' }}</td>
             </tr>
 
-            <!-- COMPREHENSIVE INCOME -->
-            <tr class="table-light-header border-top">
-              <td colspan="3" class="ps-4 fw-bold text-primary">{{ '::IncomeStatement:ComprehensiveIncome' |
-                abpLocalization }}</td>
-            </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:ForeignExchange' | abpLocalization }}</td>
-              <td class="text-end">{{ comprehensiveIncome.foreignExchange | number:'1.2-2' }}</td>
+            <!-- COST OF SALES -->
+            <ng-container *ngIf="filteredCostLines.length > 0 || (!hasSearchFilter && costOfSalesLines.length > 0)">
+              <tr class="table-light-header border-top">
+                <td colspan="3" class="ps-4 fw-bold text-primary pt-3">
+                  <i class="fas fa-shopping-cart me-1 small"></i> تكلفة البضاعة المباعة
+                </td>
+              </tr>
+              <tr *ngFor="let line of filteredCostLines">
+                <td class="ps-5">{{ line.accountName }}</td>
+                <td class="text-end text-muted small">{{ line.accountCode }}</td>
+                <td class="text-end pe-4 text-danger">{{ line.amount | number:'1.2-2' }}</td>
+              </tr>
+              <tr class="fw-bold bg-light">
+                <td class="ps-5">إجمالي تكلفة البضاعة المباعة</td>
+                <td></td>
+                <td class="text-end pe-4 text-danger border-top">({{ totalCostOfSales | number:'1.2-2' }})</td>
+              </tr>
+            </ng-container>
+
+            <!-- GROSS PROFIT -->
+            <tr class="fw-bold bg-soft-success border-top border-2" *ngIf="!hasSearchFilter">
+              <td class="ps-4">مجمل الربح</td>
               <td></td>
+              <td class="text-end pe-4" [class.text-success]="grossProfit >= 0" [class.text-danger]="grossProfit < 0">
+                {{ grossProfit | number:'1.2-2' }}
+              </td>
             </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:HedgingFairValue' | abpLocalization }}</td>
-              <td class="text-end">{{ comprehensiveIncome.hedgingFairValue | number:'1.2-2' }}</td>
+
+            <!-- GENERAL & ADMIN EXPENSES -->
+            <ng-container *ngIf="filteredGaLines.length > 0 || (!hasSearchFilter && gaExpenseLines.length > 0)">
+              <tr class="table-light-header border-top">
+                <td colspan="3" class="ps-4 fw-bold text-primary pt-3">
+                  <i class="fas fa-file-invoice me-1 small"></i> المصروفات العمومية والإدارية
+                </td>
+              </tr>
+              <tr *ngFor="let line of filteredGaLines">
+                <td class="ps-5">{{ line.accountName }}</td>
+                <td class="text-end text-muted small">{{ line.accountCode }}</td>
+                <td class="text-end pe-4 text-danger">{{ line.amount | number:'1.2-2' }}</td>
+              </tr>
+              <tr class="fw-bold bg-light">
+                <td class="ps-5">إجمالي المصروفات</td>
+                <td></td>
+                <td class="text-end pe-4 text-danger border-top">({{ totalGaExpenses | number:'1.2-2' }})</td>
+              </tr>
+            </ng-container>
+
+            <!-- OPERATING INCOME -->
+            <tr class="fw-bold bg-light border-top border-2" *ngIf="!hasSearchFilter">
+              <td class="ps-4">الدخل من العمليات</td>
               <td></td>
+              <td class="text-end pe-4" [class.text-success]="operatingIncome >= 0"
+                [class.text-danger]="operatingIncome < 0">
+                {{ operatingIncome | number:'1.2-2' }}
+              </td>
             </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:ActuarialLosses' | abpLocalization }}</td>
-              <td class="text-end">{{ comprehensiveIncome.actuarialLosses | number:'1.2-2' }}</td>
+
+            <!-- OTHER REVENUE -->
+            <ng-container
+              *ngIf="filteredOtherRevenueLines.length > 0 || (!hasSearchFilter && otherRevenueLines.length > 0)">
+              <tr class="table-light-header border-top">
+                <td colspan="3" class="ps-4 fw-bold text-primary pt-3">
+                  <i class="fas fa-plus-circle me-1 small"></i> الإيرادات الأخرى
+                </td>
+              </tr>
+              <tr *ngFor="let line of filteredOtherRevenueLines">
+                <td class="ps-5">{{ line.accountName }}</td>
+                <td class="text-end text-muted small">{{ line.accountCode }}</td>
+                <td class="text-end pe-4 text-success">{{ line.amount | number:'1.2-2' }}</td>
+              </tr>
+            </ng-container>
+
+            <!-- OTHER EXPENSES -->
+            <ng-container
+              *ngIf="filteredOtherExpenseLines.length > 0 || (!hasSearchFilter && otherExpenseLines.length > 0)">
+              <tr class="table-light-header border-top"
+                *ngIf="filteredOtherRevenueLines.length === 0 && !hasSearchFilter">
+                <!-- Only show header if other revenue already didn't -->
+              </tr>
+              <tr *ngFor="let line of filteredOtherExpenseLines">
+                <td class="ps-5">{{ line.accountName }}</td>
+                <td class="text-end text-muted small">{{ line.accountCode }}</td>
+                <td class="text-end pe-4 text-danger">{{ line.amount | number:'1.2-2' }}</td>
+              </tr>
+            </ng-container>
+
+            <!-- NET INCOME -->
+            <tr class="fw-bold bg-primary text-white border-top border-4" *ngIf="!hasSearchFilter">
+              <td class="ps-4 py-3">
+                <i class="fas fa-chart-line me-2"></i> صافي الربح
+              </td>
               <td></td>
+              <td class="text-end pe-4 py-3 fs-5">{{ netIncome | number:'1.2-2' }}</td>
             </tr>
-            <tr>
-              <td class="ps-5">{{ '::IncomeStatement:ReclassifiedHedging' | abpLocalization }}</td>
-              <td class="text-end border-bottom">{{ comprehensiveIncome.reclassifiedHedging | number:'1.2-2' }}</td>
-              <td></td>
+
+            <!-- No results for search -->
+            <tr
+              *ngIf="hasSearchFilter && filteredRevenueLines.length === 0 && filteredCostLines.length === 0 && filteredGaLines.length === 0 && filteredOtherRevenueLines.length === 0 && filteredOtherExpenseLines.length === 0">
+              <td colspan="3" class="text-center text-muted py-4">
+                <i class="fas fa-search me-2"></i> لا توجد نتائج لـ "{{ searchText }}"
+              </td>
             </tr>
-            <tr class="fw-bold bg-light">
-              <td class="ps-5">{{ '::IncomeStatement:TotalComprehensiveIncome' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4">{{ comprehensiveIncome.totalOCI | number:'1.2-2' }}</td>
-            </tr>
-            <tr class="fw-bold bg-dark text-white border-top border-4">
-              <td class="ps-4">{{ '::IncomeStatement:TotalComprehensiveIncomeForYear' | abpLocalization }}</td>
-              <td></td>
-              <td class="text-end pe-4 fs-5">{{ comprehensiveIncome.totalComprehensiveIncome | number:'1.2-2' }}</td>
-            </tr>
+
           </tbody>
         </table>
       </div>

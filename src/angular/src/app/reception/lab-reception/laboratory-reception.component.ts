@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CoreModule, LocalizationService } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { NationalityService } from '../../proxy/general/nationality.service';
 import { ProfessionService } from '../../proxy/general/profession.service';
 import { ContractService } from '../../proxy/general/contract.service';
@@ -88,6 +89,8 @@ export class LaboratoryReceptionComponent implements OnInit {
     };
 
     printTicketChecked: boolean = true;
+    printBarcodeChecked: boolean = false;
+    printWorkOrderChecked: boolean = false;
 
     // Date Filters
     fromDate: string = new Date().toISOString().split('T')[0];
@@ -129,7 +132,7 @@ export class LaboratoryReceptionComponent implements OnInit {
         total: 0,
         grandTotal: 0,
         tax: 0,
-        applyTax: true // Default checked
+        applyTax: false // Default unchecked as per user request
     };
 
     availableBedsList: BedDto[] = [];
@@ -476,8 +479,10 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.invoiceService.create(invoice).subscribe({
             next: (res) => {
                 this.toaster.success('تم حفظ الفاتورة بنجاح', 'نجاح');
+                if (this.printTicketChecked) {
+                    this.printInvoice(res.id);
+                }
                 this.selectedTests = [];
-                // Could navigate to billing or show print dialog
             },
             error: (err) => {
                 console.error(err);
@@ -1119,22 +1124,26 @@ export class LaboratoryReceptionComponent implements OnInit {
             forkJoin([invoices$, payments$]).subscribe({
                 next: ([invRes, payRes]) => {
                     const invoices = (invRes.items || []).map(i => ({
+                        id: i.id,
                         date: i.invoiceDate,
                         type: 'Invoice / فاتورة',
                         reference: i.invoiceNumber,
                         debit: i.totalAmount || 0,
                         credit: 0,
                         balance: 0,
-                        notes: i.items?.map(x => x.serviceCode).join(', ') // Show service codes or notes
+                        status: i.status,
+                        notes: i.items?.map(x => x.serviceCode).join(', ')
                     }));
 
                     const payments = (payRes.items || []).map(p => ({
+                        id: p.id,
                         date: p.paymentDate,
                         type: 'Payment / سند قبض',
                         reference: p.paymentNumber,
                         debit: 0,
                         credit: p.amount || 0,
                         balance: 0,
+                        status: p.status,
                         notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : '')
                     }));
 
@@ -1160,5 +1169,36 @@ export class LaboratoryReceptionComponent implements OnInit {
                 }
             });
         });
+    }
+
+    cancelInvoice(item: any) {
+        if (confirm(`هل أنت متأكد من إلغاء الفاتورة رقم ${item.reference}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`)) {
+            this.http.post(`${environment.apis.default.url}/api/app/invoice/${item.id}/cancel`, {}).subscribe({
+                next: () => {
+                    this.toaster.success('تم إلغاء الفاتورة بنجاح');
+                    this.getPatientStatement();
+                },
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('حدث خطأ أثناء إلغاء الفاتورة');
+                }
+            });
+        }
+    }
+
+    refundPayment(item: any) {
+        const reason = prompt(`استرداد مبلغ السند ${item.reference}\nأدخل سبب الاسترداد:`);
+        if (reason !== null) {
+            this.http.post(`${environment.apis.default.url}/api/app/payment/${item.id}/refund?reason=${reason}`, {}).subscribe({
+                next: () => {
+                    this.toaster.success('تم استرداد المبلغ بنجاح');
+                    this.getPatientStatement();
+                },
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('حدث خطأ أثناء استرداد المبلغ');
+                }
+            });
+        }
     }
 }

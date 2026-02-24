@@ -22,4 +22,8 @@ public interface IAccountAppService : ICrudAppService<AccountDto, Guid, PagedAnd
     Task<CustomerDebtsReportDto> GetCustomerDebtsReportAsync();
 
     Task<DiscountsReportDto> GetDiscountsReportAsync(DateRangeDto input);
+
+    Task<AccountStatementDto> GetAccountStatementAsync(AccountStatementInputDto input);
+
+    Task<List<AccountSummaryDto>> GetAccountSummaryAsync(DateRangeDto input);
 }
