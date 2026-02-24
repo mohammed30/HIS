@@ -63,3 +63,33 @@
 :host-context(.dark) .logo-dark {
   display: block;
 }
+
+/* Dashboard Styles */
+.home-dashboard {
+  .stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 0.75rem;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .chart-container {
+    height: 350px;
+    width: 100%;
+  }
+
+  .card {
+    border-radius: 0.75rem;
+  }
+}

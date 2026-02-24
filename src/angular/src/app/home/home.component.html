@@ -1,9 +1,9 @@
-<div class="container-fluid py-4">
-  <div class="row justify-content-center">
+<div class="container-fluid py-4 home-dashboard">
+  <!-- Header Section -->
+  <div class="row mb-5">
     <div class="col-12 text-center">
-      <div class="d-flex align-items-center justify-content-center gap-4 mb-4">
+      <div class="d-flex align-items-center justify-content-center gap-4 mb-3">
         <div class="home-logo-container">
-          <!-- Logo images for light and dark themes -->
           <img src="./assets/images/logo/Dark.png" alt="Logo" class="home-logo logo-light" />
           <img src="./assets/images/logo/Light.png" alt="Logo" class="home-logo logo-dark" />
         </div>
@@ -12,6 +12,96 @@
       <p class="lead text-muted">
         {{ '::HospitalInformationSystem' | abpLocalization }}
       </p>
+    </div>
+  </div>
+
+  <!-- Summary Cards Section -->
+  <div class="row g-4 mb-5">
+    <!-- Doctors -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card stat-card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-icon bg-primary-subtle text-primary rounded-circle p-3 me-3">
+            <i class="fas fa-user-md fa-2x"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">{{ '::Doctors' | abpLocalization }}</h6>
+            <h3 class="mb-0 fw-bold">{{ totalDoctors }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Patients -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card stat-card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-icon bg-success-subtle text-success rounded-circle p-3 me-3">
+            <i class="fas fa-user-injured fa-2x"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">{{ '::Patients' | abpLocalization }}</h6>
+            <h3 class="mb-0 fw-bold">{{ totalPatients }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Rooms -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card stat-card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-icon bg-info-subtle text-info rounded-circle p-3 me-3">
+            <i class="fas fa-procedures fa-2x"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">{{ '::Rooms' | abpLocalization }}</h6>
+            <h3 class="mb-0 fw-bold">{{ totalRooms }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Occupancy Rate -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card stat-card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-icon bg-warning-subtle text-warning rounded-circle p-3 me-3">
+            <i class="fas fa-chart-pie fa-2x"></i>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1">{{ '::OccupancyRate' | abpLocalization }}</h6>
+            <h3 class="mb-0 fw-bold">{{ occupancyRate }}%</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="row g-4">
+    <!-- Patient Visits Chart -->
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="card-title mb-0 fw-bold text-secondary">
+            <i class="fas fa-chart-line me-2"></i>{{ '::PatientVisits' | abpLocalization }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div echarts [options]="visitsChartOption" class="chart-container"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Room Occupancy Chart -->
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="card-title mb-0 fw-bold text-secondary">
+            <i class="fas fa-bed me-2"></i>{{ '::RoomOccupancy' | abpLocalization }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div echarts [options]="roomsChartOption" class="chart-container"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
