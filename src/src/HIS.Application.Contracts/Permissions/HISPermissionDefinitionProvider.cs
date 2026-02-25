@@ -65,7 +65,13 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
         billing.AddChild(HISPermissions.Billing.Payments, L("Permission:Payments"));
         billing.AddChild(HISPermissions.Billing.DeferredPayments, L("Permission:DeferredPayments"));
-        billing.AddChild(HISPermissions.Billing.FinancialReports, L("Permission:FinancialReports"));
+        var financialReports = billing.AddChild(HISPermissions.Billing.FinancialReports, L("Permission:FinancialReports"));
+        financialReports.AddChild(HISPermissions.Billing.DailyReport, L("Permission:DailyReport"));
+        financialReports.AddChild(HISPermissions.Billing.CustomerDebtsReport, L("Permission:CustomerDebtsReport"));
+        financialReports.AddChild(HISPermissions.Billing.DiscountsReport, L("Permission:DiscountsReport"));
+        financialReports.AddChild(HISPermissions.Billing.IncomeStatement, L("Permission:IncomeStatement"));
+        financialReports.AddChild(HISPermissions.Billing.BalanceSheet, L("Permission:BalanceSheet"));
+        financialReports.AddChild(HISPermissions.Billing.AccountStatement, L("Permission:AccountStatement"));
         billing.AddChild(HISPermissions.Billing.ReceiptVouchers, L("Permission:ReceiptVouchers"));
         billing.AddChild(HISPermissions.Billing.PaymentVouchers, L("Permission:PaymentVouchers"));
         billing.AddChild(HISPermissions.Billing.BankTransactions, L("Permission:BankTransactions"));
@@ -128,7 +134,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         var operations = hisGroup.AddPermission(HISPermissions.Operations.Default, L("Permission:Operations"));
         operations.AddChild(HISPermissions.Operations.PrintTicket, L("Permission:PrintTicket"));
         operations.AddChild(HISPermissions.Operations.Manage, L("Permission:Manage"));
-        operations.AddChild(HISPermissions.Operations.Report, L("Permission:Report"));
+        operations.AddChild(HISPermissions.Operations.Report, L("Permission:OperationsReport"));
     }
 
     private static LocalizableString L(string name)

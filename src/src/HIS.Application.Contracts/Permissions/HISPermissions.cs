@@ -74,6 +74,12 @@ public static class HISPermissions
         public const string Payments = Default + ".Payments";
         public const string DeferredPayments = Default + ".DeferredPayments";
         public const string FinancialReports = Default + ".FinancialReports";
+        public const string DailyReport = FinancialReports + ".DailyReport";
+        public const string CustomerDebtsReport = FinancialReports + ".CustomerDebtsReport";
+        public const string DiscountsReport = FinancialReports + ".DiscountsReport";
+        public const string IncomeStatement = FinancialReports + ".IncomeStatement";
+        public const string BalanceSheet = FinancialReports + ".BalanceSheet";
+        public const string AccountStatement = FinancialReports + ".AccountStatement";
         public const string ReceiptVouchers = Default + ".ReceiptVouchers";
         public const string PaymentVouchers = Default + ".PaymentVouchers";
         public const string BankTransactions = Default + ".BankTransactions";

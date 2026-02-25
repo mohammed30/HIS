@@ -1,6 +1,7 @@
 ﻿using HIS.EntityFrameworkCore;
 using Volo.Abp.Autofac;
 using Volo.Abp.Modularity;
+using Volo.Abp.Uow;
 
 namespace HIS.DbMigrator;
 
@@ -11,4 +12,11 @@ namespace HIS.DbMigrator;
 )]
 public class HISDbMigratorModule : AbpModule
 {
+    public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        Configure<AbpUnitOfWorkDefaultOptions>(options =>
+        {
+            options.TransactionBehavior = UnitOfWorkTransactionBehavior.Disabled;
+        });
+    }
 }

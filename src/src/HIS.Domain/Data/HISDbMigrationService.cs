@@ -13,6 +13,7 @@ using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
 using HIS.MultiTenancy;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.Uow;
 
 namespace HIS.Data;
 
@@ -39,6 +40,7 @@ public class HISDbMigrationService : ITransientDependency
         Logger = NullLogger<HISDbMigrationService>.Instance;
     }
 
+    [UnitOfWork(IsDisabled = true)]
     public async Task MigrateAsync()
     {
         var initialMigrationAdded = AddInitialMigrationIfNotExist();

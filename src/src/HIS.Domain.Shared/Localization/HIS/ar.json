@@ -728,6 +728,26 @@
     "AccountStatement:NoData": "لا توجد حركات في الفترة المحددة",
     "Debit": "مدين",
     "Credit": "دائن",
-    "Operation": "العملية"
+    "Operation": "العملية",
+    "Permission:OperationsReport": "تقرير العمليات الجراحية",
+    "Permission:Manage": "إدارة العمليات",
+    "Permission:Dashboard": "لوحة المعلومات",
+    "Permission:Nursing": "التمريض",
+    "Permission:PatientList": "قائمة المرضى",
+    "Permission:VitalSigns": "العلامات الحيوية",
+    "Permission:MedicationAdministration": "إدارة الأدوية",
+    "Permission:CarePlans": "خطط الرعاية",
+    "Permission:Assessments": "التقييمات",
+    "Permission:FluidBalance": "توازن السوائل",
+    "Permission:ShiftHandover": "تسليم الورديات",
+    "Permission:PharmacyPOS": "نقطة بيع الصيدلية",
+    "Permission:DailyReport": "التقرير اليومي للحسابات",
+    "Permission:CustomerDebtsReport": "تقرير ديون العملاء",
+    "Permission:DiscountsReport": "تقرير الخصومات",
+    "Permission:IncomeStatement": "قائمة الدخل",
+    "Permission:BalanceSheet": "الميزانية العمومية",
+    "Permission:AccountStatement": "كشف الحساب",
+    "Menu:Reports": "التقارير",
+    "Menu:OperationsReport": "تقرير العمليات"
   }
 }

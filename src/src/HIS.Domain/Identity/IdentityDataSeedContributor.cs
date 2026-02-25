@@ -76,23 +76,48 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         });
 
         await GrantPermissionsAsync("AdminStaff", new[] { 
+            // Settings
+            "HIS.Settings",
+            // Patients
             "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
+            // Appointments
             "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs", "HIS.Pharmacy.POS",
+            // Reception
             "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets",
             "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
-            "HIS.Laboratory", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
-            "HIS.Billing", "HIS.Billing.FinancialReports", "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers",
-            "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims", "HIS.Billing.ManageInvoices", "HIS.Billing.JournalEntries",
+            // Laboratory
+            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults",
+            "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
+            // Emergency
+            "HIS.Emergency", "HIS.Emergency.Dashboard",
+            // Pharmacy
+            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock",
+            "HIS.Pharmacy.Drugs", "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete", "HIS.Pharmacy.POS",
+            // Billing & Accounting
+            "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries",
+            "HIS.Billing.Payments", "HIS.Billing.DeferredPayments",
+            "HIS.Billing.FinancialReports", "HIS.Billing.FinancialReports.DailyReport", "HIS.Billing.FinancialReports.CustomerDebtsReport",
+            "HIS.Billing.FinancialReports.DiscountsReport", "HIS.Billing.FinancialReports.IncomeStatement",
+            "HIS.Billing.FinancialReports.BalanceSheet", "HIS.Billing.FinancialReports.AccountStatement",
+            "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers", "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims",
+            // Definitions
             "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
             "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
             "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods",
+            // Inventory
+            "HIS.Inventory", "HIS.Inventory.Dashboard", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations",
+            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseRequisitions", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
+            // Nursing
+            "HIS.Nursing", "HIS.Nursing.PatientList", "HIS.Nursing.VitalSigns", "HIS.Nursing.MedicationAdministration",
+            "HIS.Nursing.CarePlans", "HIS.Nursing.Assessments", "HIS.Nursing.FluidBalance", "HIS.Nursing.ShiftHandover",
+            // Inpatient
             "HIS.Inpatient",
             "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
             "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
             "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
             "HIS.Inpatient.Dashboard",
-            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket"
+            // Operations
+            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report"
         });
         
         // Ensure Admin has EVERYTHING (Root + All Children)
@@ -107,10 +132,13 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Emergency", "HIS.Emergency.Dashboard",
             "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
             "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete", "HIS.Pharmacy.POS",
-            "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations", "HIS.Inventory.Dashboard", 
-            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
+            "HIS.Inventory", "HIS.Inventory.Dashboard", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations", 
+            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseRequisitions", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
             "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries", 
-            "HIS.Billing.Payments", "HIS.Billing.DeferredPayments", "HIS.Billing.FinancialReports",
+            "HIS.Billing.Payments", "HIS.Billing.DeferredPayments",
+            "HIS.Billing.FinancialReports", "HIS.Billing.FinancialReports.DailyReport", "HIS.Billing.FinancialReports.CustomerDebtsReport",
+            "HIS.Billing.FinancialReports.DiscountsReport", "HIS.Billing.FinancialReports.IncomeStatement",
+            "HIS.Billing.FinancialReports.BalanceSheet", "HIS.Billing.FinancialReports.AccountStatement",
             "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers", "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims",
             "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
             "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
@@ -121,7 +149,8 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
             "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
             "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
-            "HIS.Inpatient.Dashboard"
+            "HIS.Inpatient.Dashboard",
+            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report"
         });
         
         await SetAdminPasswordAsync();
