@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -263,6 +264,49 @@ const statusColors: { [key: number]: string } = {
           </div>
         </div>
       }
+
+      <!-- Payment Modal -->
+      @if (showPaymentModal && selectedInvoice) {
+        <div class="modal show d-block" style="background: rgba(0,0,0,0.5)">
+          <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                  <i class="fas fa-money-bill-wave me-2"></i>
+                  دفع فاتورة
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="showPaymentModal = false"></button>
+              </div>
+              <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                  <span class="text-muted d-block small mb-1">رقم الفاتورة</span>
+                  <code class="fs-5">{{ selectedInvoice.invoiceNumber }}</code>
+                </div>
+                
+                <div class="alert alert-info border-0 text-center mb-3">
+                  <small class="d-block text-muted mb-1">المبلغ المتبقي</small>
+                  <h4 class="mb-0">{{ selectedInvoice.dueAmount | number:'1.2-2' }} ج.م</h4>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold">أدخل المبلغ للإيداع</label>
+                  <div class="input-group input-group-lg">
+                    <input type="number" class="form-control text-center fw-bold" 
+                           [(ngModel)]="paymentAmount" [max]="selectedInvoice.dueAmount" min="1">
+                    <span class="input-group-text bg-light">ج.م</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer border-top-0 pt-0 pb-4 justify-content-center">
+                <button type="button" class="btn btn-light px-4" (click)="showPaymentModal = false">إلغاء</button>
+                <button type="button" class="btn btn-success px-4" (click)="confirmPayment()" [disabled]="!paymentAmount || paymentAmount <= 0">
+                  <i class="fas fa-check me-1"></i> تأكيد الدفع
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`.modal { z-index: 1050; }`]
@@ -270,6 +314,8 @@ const statusColors: { [key: number]: string } = {
 export class InvoicesComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/invoice';
+  private toaster = inject(ToasterService);
+  private confirmation = inject(ConfirmationService);
 
   items: Invoice[] = [];
   patients: { id: string; name: string }[] = [];
@@ -285,6 +331,11 @@ export class InvoicesComponent implements OnInit {
   summaryPaid = 0;
   summaryDue = 0;
   summaryInsurance = 0;
+
+  // Payment Modal
+  showPaymentModal = false;
+  selectedInvoice: Invoice | null = null;
+  paymentAmount = 0;
 
   page = 1;
   pageSize = 10;
@@ -354,39 +405,69 @@ export class InvoicesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error downloading PDF', err);
-        alert('حدث خطأ أثناء تحميل ملف الطباعة');
+        this.toaster.error('حدث خطأ أثناء تحميل ملف الطباعة', 'خطأ');
       }
     });
   }
 
   payInvoice(item: Invoice) {
-    const amount = prompt(`دفع فاتورة ${item.invoiceNumber}\nالمتبقي: ${item.dueAmount}\nأدخل المبلغ:`);
-    if (amount && parseFloat(amount) > 0) {
-      this.http.post(environment.apis.default.url + '/api/app/payment', {
-        invoiceId: item.id, patientId: item.patientId, amount: parseFloat(amount), paymentMethod: 0
-      }).subscribe({
-        next: () => { this.loadData(); alert('تم الدفع بنجاح!'); },
-        error: (err) => console.error(err)
-      });
-    }
+    this.selectedInvoice = item;
+    this.paymentAmount = item.dueAmount;
+    this.showPaymentModal = true;
   }
 
-  cancelInvoice(item: Invoice) {
-    if (confirm(`هل أنت متأكد من إلغاء الفاتورة رقم ${item.invoiceNumber}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`)) {
-      this.http.post(`${this.apiUrl}/${item.id}/cancel`, {}).subscribe({
-        next: () => { this.loadData(); alert('تم إلغاء الفاتورة بنجاح!'); },
+  confirmPayment() {
+    if (this.selectedInvoice && this.paymentAmount > 0) {
+      this.http.post(environment.apis.default.url + '/api/app/payment', {
+        invoiceId: this.selectedInvoice.id,
+        patientId: this.selectedInvoice.patientId,
+        amount: this.paymentAmount,
+        paymentMethod: 0
+      }).subscribe({
+        next: () => {
+          this.showPaymentModal = false;
+          this.loadData();
+          this.toaster.success('تم الدفع بنجاح!', 'نجاح');
+        },
         error: (err) => {
           console.error(err);
-          alert('حدث خطأ أثناء إلغاء الفاتورة');
+          this.toaster.error('حدث خطأ أثناء تنفيذ عملية الدفع', 'خطأ');
         }
       });
     }
   }
 
+  cancelInvoice(item: Invoice) {
+    this.confirmation.warn(
+      `هل أنت متأكد من إلغاء الفاتورة رقم ${item.invoiceNumber}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`,
+      'تأكيد الإلغاء'
+    ).subscribe((status: Confirmation.Status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.post(`${this.apiUrl}/${item.id}/cancel`, {}).subscribe({
+          next: () => {
+            this.loadData();
+            this.toaster.success('تم إلغاء الفاتورة بنجاح!', 'نجاح');
+          },
+          error: (err) => {
+            console.error(err);
+            this.toaster.error('حدث خطأ أثناء إلغاء الفاتورة', 'خطأ');
+          }
+        });
+      }
+    });
+  }
+
   save() {
     this.http.post(this.apiUrl, this.formData).subscribe({
-      next: () => { this.showForm = false; this.loadData(); alert('تم حفظ الفاتورة!'); },
-      error: (err) => console.error(err)
+      next: () => {
+        this.showForm = false;
+        this.loadData();
+        this.toaster.success('تم حفظ الفاتورة!', 'نجاح');
+      },
+      error: (err) => {
+        console.error(err);
+        this.toaster.error('حدث خطأ أثناء حفظ الفاتورة', 'خطأ');
+      }
     });
   }
 }

@@ -68,43 +68,37 @@ public class InvoiceDocument : IDocument
         container.Column(column =>
         {
             // Top header with blue background
-            column.Item().Background(PrimaryBlue).Padding(15).Row(row =>
+            column.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
                 // Logo on the right (RTL)
                 if (LogoBytes != null && LogoBytes.Length > 0)
-                {
-                    row.ConstantItem(80).AlignMiddle().Image(LogoBytes).FitArea();
-                }
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 else
-                {
-                    row.ConstantItem(80);
-                }
+                    row.ConstantItem(40);
 
                 // Hospital info in the center
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
-                    col.Item().Text("مستشفى آسيا")
-                        .FontSize(24)
-                        .Bold()
-                        .FontColor(TextLight);
-                    col.Item().Text("ASIA HOSPITAL")
-                        .FontSize(14)
-                        .FontColor(TextLight);
+                    col.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(TextLight);
+                        text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
+                    });
                     if (Tax > 0)
                     {
-                        col.Item().PaddingTop(5).Text("فاتورة ضريبية / TAX INVOICE")
-                            .FontSize(12)
+                        col.Item().PaddingTop(2).Text("فاتورة ضريبية / TAX INVOICE")
+                            .FontSize(10)
                             .FontColor(LightBlue);
                     }
                     else
                     {
-                        col.Item().PaddingTop(5).Text("فاتورة / INVOICE")
-                            .FontSize(12)
+                        col.Item().PaddingTop(2).Text("فاتورة / INVOICE")
+                            .FontSize(10)
                             .FontColor(LightBlue);
                     }
                 });
 
-                row.ConstantItem(80); // Spacer for balance
+                row.ConstantItem(40); // Spacer for balance
             });
 
             // Invoice Title Bar

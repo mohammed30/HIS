@@ -69,31 +69,25 @@ public class VoucherDocument : IDocument
         container.Column(column =>
         {
             // Top header with blue background
-            column.Item().Background(PrimaryBlue).Padding(10).Row(row =>
+            column.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
                 // Logo on the right (RTL)
                 if (LogoBytes != null && LogoBytes.Length > 0)
-                {
-                    row.ConstantItem(60).AlignMiddle().Image(LogoBytes).FitArea();
-                }
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 else
-                {
-                    row.ConstantItem(60);
-                }
+                    row.ConstantItem(40);
 
                 // Hospital info in the center
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
-                    col.Item().Text("مستشفى آسيا")
-                        .FontSize(20)
-                        .Bold()
-                        .FontColor(TextLight);
-                    col.Item().Text("ASIA HOSPITAL")
-                        .FontSize(12)
-                        .FontColor(TextLight);
+                    col.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(TextLight);
+                        text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
+                    });
                 });
 
-                row.ConstantItem(60); // Spacer for balance
+                row.ConstantItem(40); // Spacer for balance
             });
 
             // Voucher Title Bar

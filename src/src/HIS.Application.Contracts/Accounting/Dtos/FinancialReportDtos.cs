@@ -9,6 +9,7 @@ public class FinancialReportLineDto
     public string AccountCode { get; set; }
     public string AccountName { get; set; }
     public decimal Amount { get; set; }
+    public decimal PreviousAmount { get; set; }
 }
 
 public class IncomeStatementDto
@@ -46,6 +47,9 @@ public class BalanceSheetDto
     public decimal TotalLiabilities { get; set; }
     public decimal TotalEquity { get; set; }
     public decimal PreviousYearEquity { get; set; }
+    public decimal TotalPreviousAssets { get; set; }
+    public decimal TotalPreviousLiabilities { get; set; }
+    public decimal TotalPreviousEquity { get; set; }
 }
 
 public class CashFlowStatementDto

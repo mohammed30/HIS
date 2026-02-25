@@ -6,6 +6,7 @@ export interface SurgicalOperationDto extends FullAuditedEntityDto<string> {
     patientName?: string;
     doctorId?: string;
     doctorName?: string;
+    specialtyName?: string;
     operationTypeId?: string;
     operationName?: string;
     operationDate?: string;
@@ -39,6 +40,7 @@ export interface GetSurgicalOperationsInput extends PagedAndSortedResultRequestD
     searchText?: string;
     patientId?: string;
     doctorId?: string;
+    specialtyId?: string;
     status?: OperationStatus;
     fromDate?: string;
     toDate?: string;

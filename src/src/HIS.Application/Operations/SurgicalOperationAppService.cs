@@ -14,6 +14,7 @@ using System.IO;
 using HIS.Operations.Printing; // For TicketDocument
 using QuestPDF.Fluent; // For GeneratePdf
 using Microsoft.AspNetCore.Mvc;
+using HIS.Services; // For ServiceItem
 
 namespace HIS.Operations;
 
@@ -33,6 +34,8 @@ public class SurgicalOperationAppService : CrudAppService<
     private readonly IInvoiceAppService _invoiceAppService;
     private readonly AccountingManager _accountingManager;
     private readonly IRepository<Account, Guid> _accountRepository;
+    private readonly IRepository<Specialty, Guid> _specialtyRepository;
+    private readonly IRepository<ServiceItem, Guid> _serviceItemRepository;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
     public SurgicalOperationAppService(
@@ -42,6 +45,8 @@ public class SurgicalOperationAppService : CrudAppService<
         IInvoiceAppService invoiceAppService,
         AccountingManager accountingManager,
         IRepository<Account, Guid> accountRepository,
+        IRepository<Specialty, Guid> specialtyRepository,
+        IRepository<ServiceItem, Guid> serviceItemRepository,
         IWebHostEnvironment webHostEnvironment) : base(repository)
     {
         _patientRepository = patientRepository;
@@ -49,6 +54,8 @@ public class SurgicalOperationAppService : CrudAppService<
         _invoiceAppService = invoiceAppService;
         _accountingManager = accountingManager;
         _accountRepository = accountRepository;
+        _specialtyRepository = specialtyRepository;
+        _serviceItemRepository = serviceItemRepository;
         _webHostEnvironment = webHostEnvironment;
     }
 
@@ -142,6 +149,20 @@ public class SurgicalOperationAppService : CrudAppService<
     public async Task<SurgicalOperationDto> UpdateStatusAsync(Guid id, OperationStatus status)
     {
         var operation = await Repository.GetAsync(id);
+        
+        // If status changes to Cancelled, trigger Invoice Cancellation if exists
+        if (status == OperationStatus.Cancelled && operation.Status != OperationStatus.Cancelled && operation.InvoiceId.HasValue)
+        {
+            try
+            {
+                await _invoiceAppService.CancelAsync(operation.InvoiceId.Value);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle if invoice is already cancelled or other issues
+            }
+        }
+
         operation.Status = status;
         await Repository.UpdateAsync(operation);
 
@@ -186,9 +207,48 @@ public class SurgicalOperationAppService : CrudAppService<
         return new Volo.Abp.Content.RemoteStreamContent(ms, $"تذكرة_عملية_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", "application/pdf");
     }
 
+    [HttpGet]
+    [Route("api/app/surgical-operation/report-pdf")]
+    [Authorize(HISPermissions.Operations.Report)]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetOperationsReportPdfAsync(GetSurgicalOperationsInput input)
+    {
+        input.MaxResultCount = 1000; // Limit for report
+        var operations = await GetListAsync(input);
+        
+        // Logo
+        byte[] logoBytes = null;
+        var logoPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "logo", "Dark.png");
+        if (File.Exists(logoPath)) logoBytes = await File.ReadAllBytesAsync(logoPath);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+        var document = new OperationsReportDocument
+        {
+            FromDate = input.FromDate,
+            ToDate = input.ToDate,
+            Operations = operations.Items.ToList(),
+            LogoBytes = logoBytes,
+            UserName = CurrentUser.Name ?? "admin"
+        };
+        
+        var pdfBytes = document.GeneratePdf();
+        var ms = new MemoryStream(pdfBytes);
+        var printTime = Clock.Now;
+        return new Volo.Abp.Content.RemoteStreamContent(ms, $"تقرير_العمليات_{printTime:yyyy-MM-dd}.pdf", "application/pdf");
+    }
+
     protected override async Task<IQueryable<SurgicalOperation>> CreateFilteredQueryAsync(GetSurgicalOperationsInput input)
     {
         var queryable = await base.CreateFilteredQueryAsync(input);
+
+        if (input.SpecialtyId.HasValue)
+        {
+            var doctors = await _doctorRepository.GetQueryableAsync();
+            queryable = from op in queryable
+                        join dr in doctors on op.DoctorId equals dr.Id
+                        where dr.SpecialtyId == input.SpecialtyId.Value
+                        select op;
+        }
 
         return queryable
             .WhereIf(!string.IsNullOrWhiteSpace(input.SearchText),
@@ -212,6 +272,16 @@ public class SurgicalOperationAppService : CrudAppService<
         return dto;
     }
 
+    public override async Task<Volo.Abp.Application.Dtos.PagedResultDto<SurgicalOperationDto>> GetListAsync(GetSurgicalOperationsInput input)
+    {
+        var result = await base.GetListAsync(input);
+        foreach (var item in result.Items)
+        {
+            await EnrichOperationDtoAsync(item);
+        }
+        return result;
+    }
+
     private async Task EnrichOperationDtoAsync(SurgicalOperationDto dto)
     {
         var patient = await _patientRepository.FindAsync(dto.PatientId);
@@ -226,6 +296,20 @@ public class SurgicalOperationAppService : CrudAppService<
             if (doctor != null)
             {
                 dto.DoctorName = doctor.NameAr ?? doctor.NameEn;
+                var specialty = await _specialtyRepository.FindAsync(doctor.SpecialtyId);
+                if (specialty != null)
+                {
+                    dto.SpecialtyName = specialty.NameAr ?? specialty.NameEn;
+                }
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.OperationName) && dto.OperationTypeId.HasValue)
+        {
+            var serviceItem = await _serviceItemRepository.FindAsync(dto.OperationTypeId.Value);
+            if (serviceItem != null)
+            {
+                dto.OperationName = serviceItem.Name;
             }
         }
     }

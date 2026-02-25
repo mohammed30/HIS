@@ -310,7 +310,9 @@ This document outlines the product requirements for a Hospital Information Syste
         - (=) Comprehensive Income.
         - (=) Total Comprehensive Income for the Year.
 
-- [x] **Balance Sheet** (`الميزانية العمومية/المركز المالي`).
+- [x] **Balance Sheet** (`الميزانية العمومية/المركز المالي`):
+  - [x] Must be in vertical format (`يجب أن تكون في الوضع الرأسي`).
+  - [x] Includes a column for previous budget amounts (`وجود عمود يتضمن مبالغ الميزانية السابقة`).
 - [x] **Cash Flow Statement** (`التدفقات النقدية`).
 - [x] **Statement of Changes in Equity** (`التغير في حقوق الملكية`).
 

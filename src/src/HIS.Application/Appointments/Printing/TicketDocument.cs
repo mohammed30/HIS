@@ -56,16 +56,19 @@ public class TicketDocument : IDocument
             {
                 if (LogoBytes != null && LogoBytes.Length > 0)
                 {
-                    row.ConstantItem(50).AlignMiddle().Image(LogoBytes).FitArea();
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 }
 
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
-                    col.Item().Text("مستشفى آسيا").FontSize(16).Bold().FontColor(PrimaryBlue);
-                    col.Item().Text("ASIA HOSPITAL").FontSize(8).FontColor(PrimaryBlue);
+                    col.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(14).Bold().FontColor(PrimaryBlue);
+                        text.Span("ASIA HOSPITAL").FontSize(8).FontColor(PrimaryBlue);
+                    });
                 });
                 
-                row.ConstantItem(50);
+                row.ConstantItem(40);
             });
 
             column.Item().PaddingVertical(5).LineHorizontal(1).LineColor(BorderGray);

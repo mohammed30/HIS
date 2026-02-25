@@ -2,40 +2,40 @@
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title m-0">
             <i class="fa fa-file-text-o me-2"></i>
-            {{ id ? ('Order #' + (order?.orderNumber || '...')) : 'New Purchase Order' }}
+            {{ id ? (('::OrderNumber' | abpLocalization) + ' ' + (order?.orderNumber || '...')) : ('::NewPurchaseOrder'
+            | abpLocalization) }}
             <span *ngIf="order" class="badge ms-2" [ngClass]="{
         'bg-secondary': order?.status === PurchaseOrderStatus.Draft,
         'bg-primary': order?.status === PurchaseOrderStatus.Confirmed,
         'bg-success': order?.status === PurchaseOrderStatus.Received,
         'bg-danger': order?.status === PurchaseOrderStatus.Cancelled
       }">
-                {{ order?.status === 0 ? 'Draft' : order?.status === 1 ? 'Confirmed' : order?.status === 2 ? 'Received'
-                : 'Cancelled' }}
+                {{ '::Enum:PurchaseOrderStatus:' + (order?.status || 0) | abpLocalization }}
             </span>
         </h5>
         <div>
             <button class="btn btn-secondary me-1" routerLink="/inventory/purchase-orders">
-                <i class="fa fa-arrow-left me-1"></i> Back
+                <i class="fa fa-arrow-left me-1"></i> {{ '::Back' | abpLocalization }}
             </button>
 
             <ng-container *ngIf="order && order?.status === PurchaseOrderStatus.Confirmed">
                 <button class="btn btn-primary me-1" (click)="receiveOrder()">
-                    <i class="fa fa-truck me-1"></i> Receive Stock
+                    <i class="fa fa-truck me-1"></i> {{ '::ReceiveStock' | abpLocalization }}
                 </button>
             </ng-container>
 
             <ng-container *ngIf="order && order?.status === PurchaseOrderStatus.Draft">
                 <button class="btn btn-success me-1" (click)="confirmOrder()">
-                    <i class="fa fa-check me-1"></i> Confirm
+                    <i class="fa fa-check me-1"></i> {{ '::Confirm' | abpLocalization }}
                 </button>
                 <button class="btn btn-danger me-1" (click)="cancelOrder()">
-                    <i class="fa fa-ban me-1"></i> Cancel
+                    <i class="fa fa-ban me-1"></i> {{ '::Cancel' | abpLocalization }}
                 </button>
             </ng-container>
 
             <button *ngIf="!id || (order && order?.status === PurchaseOrderStatus.Draft)" class="btn btn-primary"
                 (click)="save()" [disabled]="form.invalid || isSaving">
-                <i class="fa fa-save me-1"></i> Save
+                <i class="fa fa-save me-1"></i> {{ '::Save' | abpLocalization }}
             </button>
         </div>
     </div>
@@ -43,39 +43,39 @@
         <form [formGroup]="form">
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Supplier *</label>
+                    <label class="form-label">{{ '::Supplier' | abpLocalization }} *</label>
                     <select class="form-select" formControlName="supplierId">
-                        <option [ngValue]="null">-- Select Supplier --</option>
+                        <option [ngValue]="null">{{ '::SelectSupplier' | abpLocalization }}</option>
                         <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Order Date *</label>
+                    <label class="form-label">{{ '::OrderDate' | abpLocalization }} *</label>
                     <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
                         (click)="d.toggle()" formControlName="orderDate">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Expected Delivery</label>
+                    <label class="form-label">{{ '::ExpectedDeliveryDate' | abpLocalization }}</label>
                     <input class="form-control" placeholder="yyyy-mm-dd" name="dp2" ngbDatepicker #d2="ngbDatepicker"
                         (click)="d2.toggle()" formControlName="expectedDeliveryDate">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Reference #</label>
+                    <label class="form-label">{{ '::ReferenceNumber' | abpLocalization }}</label>
                     <input type="text" class="form-control" formControlName="referenceNumber">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Notes</label>
+                    <label class="form-label">{{ '::Remarks' | abpLocalization }}</label>
                     <input type="text" class="form-control" formControlName="notes">
                 </div>
             </div>
 
             <hr>
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6>Order Lines</h6>
+                <h6>{{ '::OrderLines' | abpLocalization }}</h6>
                 <button *ngIf="!form.disabled" class="btn btn-sm btn-outline-primary" (click)="addLine()">
-                    <i class="fa fa-plus"></i> Add Item
+                    <i class="fa fa-plus"></i> {{ '::AddItem' | abpLocalization }}
                 </button>
             </div>
 
@@ -83,12 +83,12 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th width="30%">Product</th>
-                            <th width="15%">Description</th>
-                            <th width="10%">Qty</th>
-                            <th width="15%">Unit Price</th>
-                            <th width="10%">Discount</th>
-                            <th width="15%">Total</th>
+                            <th width="30%">{{ '::Product' | abpLocalization }}</th>
+                            <th width="15%">{{ '::Description' | abpLocalization }}</th>
+                            <th width="10%">{{ '::Quantity' | abpLocalization }}</th>
+                            <th width="15%">{{ '::UnitPrice' | abpLocalization }}</th>
+                            <th width="10%">{{ '::DiscountAmount' | abpLocalization }}</th>
+                            <th width="15%">{{ '::Amount' | abpLocalization }}</th>
                             <th width="5%" *ngIf="!form.disabled"></th>
                         </tr>
                     </thead>
@@ -97,9 +97,8 @@
                             <td>
                                 <div class="input-group input-group-sm">
                                     <select class="form-select" formControlName="productId">
-                                        <option [ngValue]="null">Select Product</option>
-                                        <option *ngFor="let p of products" [value]="p.id">{{ p.nameAr }} / {{ p.nameEn
-                                            }}</option>
+                                        <option [ngValue]="null">{{ '::SelectProduct' | abpLocalization }}</option>
+                                        <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
                                     </select>
                                     <button class="btn btn-outline-info" type="button" (click)="showPriceComparison(i)"
                                         [disabled]="!lines.at(i).get('productId')?.value">
@@ -131,8 +130,8 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5" class="text-end fw-bold">Grand Total:</td>
-                            <td class="text-end fw-bold">{{ calculateTotal() | currency }}</td>
+                            <td colspan="5" class="text-end fw-bold">{{ '::GrandTotal' | abpLocalization }}:</td>
+                            <td class="text-end fw-bold">{{ calculateTotal() | number:'1.2-2' }}</td>
                             <td *ngIf="!form.disabled"></td>
                         </tr>
                     </tfoot>

@@ -186,11 +186,17 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
     public async Task<BalanceSheetDto> GetBalanceSheetAsync(DateRangeDto input)
     {
         // Balance Sheet is "As Of". But using DateRange endDate.
+        var startDate = input.StartDate;
         var endDate = input.EndDate;
 
         var query = await _journalEntryRepository.GetQueryableAsync();
+        
         var lines = query
             .Where(x => x.Date <= endDate)
+            .SelectMany(x => x.Lines);
+            
+        var prevLines = query
+            .Where(x => x.Date < startDate)
             .SelectMany(x => x.Lines);
 
         var accountQuery = await Repository.GetQueryableAsync();
@@ -199,8 +205,14 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
                      join a in accountQuery on l.AccountId equals a.Id
                      where a.Code.StartsWith("1") || a.Code.StartsWith("2") || a.Code.StartsWith("3")
                      select new { l, a };
+                     
+        var prevJoined = from l in prevLines
+                         join a in accountQuery on l.AccountId equals a.Id
+                         where a.Code.StartsWith("1") || a.Code.StartsWith("2") || a.Code.StartsWith("3")
+                         select new { l, a };
 
         var result = await AsyncExecuter.ToListAsync(joined);
+        var prevResult = await AsyncExecuter.ToListAsync(prevJoined);
 
         var grouped = result
             .GroupBy(x => new { x.a.Code, x.a.Name, x.a.NameAr })
@@ -211,34 +223,54 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
                 Amount = g.Sum(x => x.l.Debit - x.l.Credit) // Assets are Debit Normal. Amount > 0 is Debit.
             })
             .ToList();
+            
+        var prevGrouped = prevResult
+            .GroupBy(x => new { x.a.Code, x.a.Name, x.a.NameAr })
+            .Select(g => new
+            {
+                g.Key.Code,
+                Name = !string.IsNullOrEmpty(g.Key.NameAr) ? g.Key.NameAr : g.Key.Name,
+                Amount = g.Sum(x => x.l.Debit - x.l.Credit) // Assets are Debit Normal. Amount > 0 is Debit.
+            })
+            .ToList();
 
         var dto = new BalanceSheetDto();
+        
+        var accountKeys = grouped.Select(x => x.Code).Union(prevGrouped.Select(x => x.Code)).Distinct().OrderBy(x => x).ToList();
 
-        foreach (var item in grouped)
+        foreach (var code in accountKeys)
         {
+            var currItem = grouped.FirstOrDefault(x => x.Code == code);
+            var prevItem = prevGrouped.FirstOrDefault(x => x.Code == code);
+            
+            var name = currItem?.Name ?? prevItem?.Name;
+            var currAmount = currItem?.Amount ?? 0;
+            var prevAmount = prevItem?.Amount ?? 0;
+
             var line = new FinancialReportLineDto
             {
-                AccountCode = item.Code,
-                AccountName = item.Name,
-                Amount = item.Amount
+                AccountCode = code,
+                AccountName = name,
+                Amount = currAmount,
+                PreviousAmount = prevAmount
             };
 
-            if (item.Code.StartsWith("1"))
+            if (code.StartsWith("1"))
             {
                 dto.AssetLines.Add(line); // Debit (Positive) is good.
             }
-            else if (item.Code.StartsWith("2"))
+            else if (code.StartsWith("2"))
             {
                 // Liability. Credit Normal.
-                // item.Amount = Debit - Credit. So Liability is usually Negative.
-                // We want to show positive Liability.
                 line.Amount = -line.Amount;
+                line.PreviousAmount = -line.PreviousAmount;
                 dto.LiabilityLines.Add(line);
             }
-            else if (item.Code.StartsWith("3"))
+            else if (code.StartsWith("3"))
             {
                 // Equity. Credit Normal.
                 line.Amount = -line.Amount;
+                line.PreviousAmount = -line.PreviousAmount;
                 dto.EquityLines.Add(line);
             }
         }
@@ -247,17 +279,12 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         dto.TotalLiabilities = dto.LiabilityLines.Sum(x => x.Amount);
         dto.TotalEquity = dto.EquityLines.Sum(x => x.Amount);
         
-        // Calculate Previous Year Equity (Start of period)
-        var previousYearLines = await _journalEntryRepository.GetQueryableAsync();
-        var prevLines = previousYearLines.Where(x => x.Date < input.StartDate).SelectMany(x => x.Lines);
-        
-        var prevEquity = await AsyncExecuter.SumAsync(
-            from l in prevLines
-            join a in accountQuery on l.AccountId equals a.Id
-            where a.Code.StartsWith("3")
-            select (decimal?)(l.Credit - l.Debit)
-        ) ?? 0;
-        
+        dto.TotalPreviousAssets = dto.AssetLines.Sum(x => x.PreviousAmount);
+        dto.TotalPreviousLiabilities = dto.LiabilityLines.Sum(x => x.PreviousAmount);
+        dto.TotalPreviousEquity = dto.EquityLines.Sum(x => x.PreviousAmount);
+
+        // PreviousYearEquity is retained for consistency if needed by other components, but we already have TotalPreviousEquity now.
+        var prevEquity = prevGrouped.Where(x => x.Code.StartsWith("3")).Sum(x => -x.Amount); // Credit normal
         dto.PreviousYearEquity = prevEquity;
         
         return dto;
@@ -293,23 +320,29 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
             {
                 AccountCode = l.AccountCode,
                 AccountName = l.AccountName,
-                Amount = l.Amount
+                Amount = l.Amount,
+                PreviousAmount = l.PreviousAmount
             }).ToList(),
             LiabilityLines = data.LiabilityLines.Select(l => new HIS.Accounting.Printing.BalanceSheetDocument.ReportLine
             {
                 AccountCode = l.AccountCode,
                 AccountName = l.AccountName,
-                Amount = l.Amount
+                Amount = l.Amount,
+                PreviousAmount = l.PreviousAmount
             }).ToList(),
             EquityLines = data.EquityLines.Select(l => new HIS.Accounting.Printing.BalanceSheetDocument.ReportLine
             {
                 AccountCode = l.AccountCode,
                 AccountName = l.AccountName,
-                Amount = l.Amount
+                Amount = l.Amount,
+                PreviousAmount = l.PreviousAmount
             }).ToList(),
             TotalAssets = data.TotalAssets,
             TotalLiabilities = data.TotalLiabilities,
-            TotalEquity = data.TotalEquity
+            TotalEquity = data.TotalEquity,
+            TotalPreviousAssets = data.TotalPreviousAssets,
+            TotalPreviousLiabilities = data.TotalPreviousLiabilities,
+            TotalPreviousEquity = data.TotalPreviousEquity
         };
 
         var pdf = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(doc);

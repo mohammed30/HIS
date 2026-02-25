@@ -28,15 +28,22 @@ public class BalanceSheetDocument : IDocument
     public decimal TotalAssets { get; set; }
     public decimal TotalLiabilities { get; set; }
     public decimal TotalEquity { get; set; }
+    
+    public decimal TotalPreviousAssets { get; set; }
+    public decimal TotalPreviousLiabilities { get; set; }
+    public decimal TotalPreviousEquity { get; set; }
 
     public decimal WorkingCapital => TotalAssets - TotalLiabilities;
+    public decimal WorkingCapitalPrevious => TotalPreviousAssets - TotalPreviousLiabilities;
     public decimal TotalLiabilitiesAndEquity => TotalLiabilities + TotalEquity;
+    public decimal TotalPreviousLiabilitiesAndEquity => TotalPreviousLiabilities + TotalPreviousEquity;
 
     public class ReportLine
     {
         public string AccountCode { get; set; }
         public string AccountName { get; set; }
         public decimal Amount { get; set; }
+        public decimal PreviousAmount { get; set; }
     }
 
     public DocumentMetadata GetMetadata() => new DocumentMetadata
@@ -49,7 +56,7 @@ public class BalanceSheetDocument : IDocument
     {
         container.Page(page =>
         {
-            page.Size(PageSizes.A4.Landscape());
+            page.Size(PageSizes.A4.Portrait());
             page.Margin(1.5f, Unit.Centimetre);
             page.PageColor(Colors.White);
             page.DefaultTextStyle(x => x.FontSize(9).FontColor(TextDark));
@@ -65,28 +72,31 @@ public class BalanceSheetDocument : IDocument
     {
         container.Column(column =>
         {
-            column.Item().Background(PrimaryBlue).Padding(12).Row(row =>
+            column.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
                 if (LogoBytes != null && LogoBytes.Length > 0)
-                    row.ConstantItem(70).AlignMiddle().Image(LogoBytes).FitArea();
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 else
-                    row.ConstantItem(70);
+                    row.ConstantItem(40);
 
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
-                    col.Item().Text("مستشفى آسيا").FontSize(22).Bold().FontColor(TextLight);
-                    col.Item().Text("ASIA HOSPITAL").FontSize(12).FontColor(TextLight);
-                    col.Item().PaddingTop(4).Text("القائمة العمومية / Balance Sheet")
-                        .FontSize(11).FontColor(LightBlue);
+                    col.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(TextLight);
+                        text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
+                    });
+                    col.Item().Text("القائمة العمومية / Balance Sheet")
+                        .FontSize(9).FontColor(LightBlue);
                 });
 
-                row.ConstantItem(70);
+                row.ConstantItem(40);
             });
 
-            column.Item().Background(LightBlue).Padding(8).AlignRight().Text(text =>
+            column.Item().Background(LightBlue).PaddingVertical(4).PaddingHorizontal(8).AlignRight().Text(text =>
             {
-                text.Span("في تاريخ: ").Bold().FontSize(10).FontColor(PrimaryBlue);
-                text.Span($"{AsOfDate:yyyy/MM/dd}").FontSize(10);
+                text.Span("في تاريخ: ").Bold().FontSize(9).FontColor(PrimaryBlue);
+                text.Span($"{AsOfDate:yyyy/MM/dd}").FontSize(9);
             });
         });
     }
@@ -95,106 +105,88 @@ public class BalanceSheetDocument : IDocument
     {
         container.PaddingVertical(10).Column(column =>
         {
-            // Side-by-side table
             column.Item().Table(table =>
             {
                 table.ColumnsDefinition(cols =>
                 {
-                    cols.RelativeColumn(4); // Asset Name
-                    cols.RelativeColumn(1); // Asset Code
-                    cols.RelativeColumn(2); // Asset Amount
-                    cols.RelativeColumn(4); // Liab/Equity Name
-                    cols.RelativeColumn(1); // Liab Code
-                    cols.RelativeColumn(2); // Liab Amount
+                    cols.RelativeColumn(5); // Description
+                    cols.RelativeColumn(2); // Account Code
+                    cols.RelativeColumn(3); // Current Amount
+                    cols.RelativeColumn(3); // Previous Amount
                 });
 
-                // Header
                 table.Header(header =>
                 {
-                    header.Cell().Element(HeaderCell).Text("الأصول / Assets").AlignRight();
-                    header.Cell().Element(HeaderCell).Text("رمز");
-                    header.Cell().Element(HeaderCell).Text("المبلغ");
-                    header.Cell().Element(HeaderCell).Text("الخصوم وحقوق الملكية / Liabilities & Equity").AlignRight();
-                    header.Cell().Element(HeaderCell).Text("رمز");
-                    header.Cell().Element(HeaderCell).Text("المبلغ");
+                    header.Cell().Element(HeaderCell).Text("البيان / Description").AlignRight();
+                    header.Cell().Element(HeaderCell).Text("الرمز / Code");
+                    header.Cell().Element(HeaderCell).Text("الرصيد الحالي").AlignRight();
+                    header.Cell().Element(HeaderCell).Text("الرصيد السابق").AlignRight();
                 });
 
-                // Build combined liab+equity list
-                var rightSide = new List<(string Name, string Code, decimal Amount, bool IsHeader)>();
-                rightSide.Add(("الخصوم / Liabilities", "", 0, true));
-                foreach (var l in LiabilityLines)
-                    rightSide.Add((l.AccountName, l.AccountCode ?? "", l.Amount, false));
-                rightSide.Add(("حقوق الملكية / Equity", "", 0, true));
-                foreach (var e in EquityLines)
-                    rightSide.Add((e.AccountName, e.AccountCode ?? "", e.Amount, false));
-
-                int rows = Math.Max(AssetLines.Count, rightSide.Count);
-
-                for (int i = 0; i < rows; i++)
+                // --- Assets Section ---
+                table.Cell().ColumnSpan(4).Background(PrimaryBlue).Padding(5).Text("الأصول / Assets").Bold().AlignRight().FontColor(TextLight).FontSize(10);
+                foreach (var line in AssetLines)
                 {
-                    // Asset
-                    if (i < AssetLines.Count)
-                    {
-                        table.Cell().Element(DataCellRight).Text(AssetLines[i].AccountName ?? "").AlignRight();
-                        table.Cell().Element(DataCellCenter).Text(AssetLines[i].AccountCode ?? "");
-                        table.Cell().Element(DataCellCenter).Text($"{AssetLines[i].Amount:N2}").FontColor(AccentGreen);
-                    }
-                    else
-                    {
-                        table.Cell().Element(DataCellRight).Text("");
-                        table.Cell().Element(DataCellCenter).Text("");
-                        table.Cell().Element(DataCellCenter).Text("");
-                    }
-
-                    // Liab/Equity
-                    if (i < rightSide.Count)
-                    {
-                        var (name, code, amt, isHeader) = rightSide[i];
-                        if (isHeader)
-                        {
-                            table.Cell().ColumnSpan(3).Background(LightBlue).Padding(5)
-                                .Text(name).Bold().AlignRight().FontColor(PrimaryBlue).FontSize(9);
-                        }
-                        else
-                        {
-                            table.Cell().Element(DataCellRight).Text(name).AlignRight();
-                            table.Cell().Element(DataCellCenter).Text(code);
-                            table.Cell().Element(DataCellCenter).Text($"{amt:N2}").FontColor(AccentRed);
-                        }
-                    }
-                    else
-                    {
-                        table.Cell().Element(DataCellRight).Text("");
-                        table.Cell().Element(DataCellCenter).Text("");
-                        table.Cell().Element(DataCellCenter).Text("");
-                    }
+                    table.Cell().Element(DataCellRight).Text(line.AccountName ?? "").AlignRight();
+                    table.Cell().Element(DataCellCenter).Text(line.AccountCode ?? "");
+                    table.Cell().Element(DataCellRight).Text($"{line.Amount:N2}").FontColor(AccentGreen).Bold();
+                    table.Cell().Element(DataCellRight).Text($"{line.PreviousAmount:N2}").FontColor(AccentGreen);
                 }
+                table.Cell().ColumnSpan(2).Background(LightBlue).Padding(6).AlignRight().Text("إجمالي الأصول").Bold();
+                table.Cell().Background(LightBlue).Padding(6).AlignRight().Text($"{TotalAssets:N2}").Bold().FontColor(AccentGreen);
+                table.Cell().Background(LightBlue).Padding(6).AlignRight().Text($"{TotalPreviousAssets:N2}").Bold().FontColor(AccentGreen);
 
-                // Totals row
-                table.Cell().Background(PrimaryBlue).Padding(7).Text("إجمالي الأصول")
-                    .Bold().AlignRight().FontColor(TextLight);
-                table.Cell().Background(PrimaryBlue).Padding(7).Text("");
-                table.Cell().Background(PrimaryBlue).Padding(7).Text($"{TotalAssets:N2}")
-                    .Bold().FontColor(Colors.Green.Lighten3);
-                table.Cell().Background(PrimaryBlue).Padding(7).Text("إجمالي الخصوم وحقوق الملكية")
-                    .Bold().AlignRight().FontColor(TextLight);
-                table.Cell().Background(PrimaryBlue).Padding(7).Text("");
-                table.Cell().Background(PrimaryBlue).Padding(7).Text($"{TotalLiabilitiesAndEquity:N2}")
-                    .Bold().FontColor(Colors.Yellow.Lighten3);
+                // --- Liabilities Section ---
+                table.Cell().ColumnSpan(4).Background(PrimaryBlue).Padding(5).Text("الخصوم / Liabilities").Bold().AlignRight().FontColor(TextLight).FontSize(10);
+                foreach (var line in LiabilityLines)
+                {
+                    table.Cell().Element(DataCellRight).Text(line.AccountName ?? "").AlignRight();
+                    table.Cell().Element(DataCellCenter).Text(line.AccountCode ?? "");
+                    table.Cell().Element(DataCellRight).Text($"{line.Amount:N2}").FontColor(AccentRed).Bold();
+                    table.Cell().Element(DataCellRight).Text($"{line.PreviousAmount:N2}").FontColor(AccentRed);
+                }
+                table.Cell().ColumnSpan(2).Background(LightBlue).Padding(6).AlignRight().Text("إجمالي الخصوم").Bold();
+                table.Cell().Background(LightBlue).Padding(6).AlignRight().Text($"{TotalLiabilities:N2}").Bold().FontColor(AccentRed);
+                table.Cell().Background(LightBlue).Padding(6).AlignRight().Text($"{TotalPreviousLiabilities:N2}").Bold().FontColor(AccentRed);
+
+                // --- Equity Section ---
+                table.Cell().ColumnSpan(4).Background(PrimaryBlue).Padding(5).Text("حقوق الملكية / Equity").Bold().AlignRight().FontColor(TextLight).FontSize(10);
+                foreach (var line in EquityLines)
+                {
+                    table.Cell().Element(DataCellRight).Text(line.AccountName ?? "").AlignRight();
+                    table.Cell().Element(DataCellCenter).Text(line.AccountCode ?? "");
+                    table.Cell().Element(DataCellRight).Text($"{line.Amount:N2}").FontColor(Colors.Orange.Medium).Bold();
+                    table.Cell().Element(DataCellRight).Text($"{line.PreviousAmount:N2}").FontColor(Colors.Orange.Medium);
+                }
+                table.Cell().ColumnSpan(2).Background(LightBlue).Padding(6).AlignRight().Text("إجمالي حقوق الملكية").Bold();
+                table.Cell().Background(LightBlue).Padding(6).AlignRight().Text($"{TotalEquity:N2}").Bold().FontColor(Colors.Orange.Medium);
+                table.Cell().Background(LightBlue).Padding(6).AlignRight().Text($"{TotalPreviousEquity:N2}").Bold().FontColor(Colors.Orange.Medium);
+
+                // --- Grand Totals ---
+                table.Cell().ColumnSpan(2).Background(PrimaryBlue).Padding(8).AlignRight().Text("إجمالي الخصوم وحقوق الملكية").Bold().FontColor(TextLight);
+                table.Cell().Background(PrimaryBlue).Padding(8).AlignRight().Text($"{TotalLiabilitiesAndEquity:N2}").Bold().FontColor(Colors.Yellow.Medium);
+                table.Cell().Background(PrimaryBlue).Padding(8).AlignRight().Text($"{TotalPreviousLiabilitiesAndEquity:N2}").Bold().FontColor(Colors.Yellow.Medium);
             });
 
             column.Item().Height(10);
 
             // Working Capital Highlight
-            column.Item().Background(WorkingCapital >= 0 ? "#E8F5E9" : "#FFEBEE")
-                .Border(2).BorderColor(WorkingCapital >= 0 ? AccentGreen : AccentRed)
-                .Padding(12).Row(row =>
+            column.Item().Border(1).BorderColor(PrimaryBlue).Padding(10).Row(row =>
             {
-                row.RelativeItem().AlignRight().Text("رأس المال العامل / Working Capital")
-                    .Bold().FontSize(13).FontColor(PrimaryBlue);
-                row.ConstantItem(200).AlignCenter().Text($"{WorkingCapital:N2} ج.م")
-                    .Bold().FontSize(15)
-                    .FontColor(WorkingCapital >= 0 ? AccentGreen : AccentRed);
+                row.RelativeItem().AlignRight().Column(c => {
+                    c.Item().Text("رأس المال العامل / Working Capital").Bold().FontSize(12).FontColor(PrimaryBlue);
+                    c.Item().Text("(أصول − خصوم)").FontSize(8).FontColor(Colors.Grey.Medium);
+                });
+                
+                row.RelativeItem().AlignCenter().Column(c => {
+                    c.Item().Text("الحالي").AlignCenter().FontSize(8).FontColor(PrimaryBlue);
+                    c.Item().Text($"{WorkingCapital:N2} ج.م").Bold().FontSize(13).FontColor(WorkingCapital >= 0 ? AccentGreen : AccentRed);
+                });
+
+                row.RelativeItem().AlignLeft().Column(c => {
+                    c.Item().Text("السابق").AlignCenter().FontSize(8).FontColor(PrimaryBlue);
+                    c.Item().Text($"{WorkingCapitalPrevious:N2} ج.م").Bold().FontSize(13).FontColor(WorkingCapitalPrevious >= 0 ? AccentGreen : AccentRed);
+                });
             });
         });
     }

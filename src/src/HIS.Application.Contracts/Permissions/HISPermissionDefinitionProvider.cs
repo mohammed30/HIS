@@ -54,6 +54,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         inventory.AddChild(HISPermissions.Inventory.StockOperations, L("Permission:StockOperations"));
         inventory.AddChild(HISPermissions.Inventory.Dashboard, L("Permission:Dashboard"));
         inventory.AddChild(HISPermissions.Inventory.Suppliers, L("Permission:Suppliers"));
+        inventory.AddChild(HISPermissions.Inventory.PurchaseRequisitions, L("Permission:PurchaseRequisitions"));
         inventory.AddChild(HISPermissions.Inventory.PurchaseOrders, L("Permission:PurchaseOrders"));
         inventory.AddChild(HISPermissions.Inventory.DepartmentalConsumption, L("Permission:DepartmentalConsumption"));
 
@@ -127,6 +128,7 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         var operations = hisGroup.AddPermission(HISPermissions.Operations.Default, L("Permission:Operations"));
         operations.AddChild(HISPermissions.Operations.PrintTicket, L("Permission:PrintTicket"));
         operations.AddChild(HISPermissions.Operations.Manage, L("Permission:Manage"));
+        operations.AddChild(HISPermissions.Operations.Report, L("Permission:Report"));
     }
 
     private static LocalizableString L(string name)

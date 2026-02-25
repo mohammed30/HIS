@@ -59,17 +59,24 @@ public class OperationTicketDocument : IDocument
         {
             if (LogoBytes != null && LogoBytes.Length > 0)
             {
-                row.ConstantItem(60).AlignMiddle().Image(LogoBytes).FitArea();
+                row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
+            }
+            else
+            {
+                row.ConstantItem(40);
             }
 
             row.RelativeItem().AlignCenter().Column(col =>
             {
-                col.Item().Text("مستشفى آسيا").FontSize(18).Bold().FontColor(PrimaryBlue);
-                col.Item().Text("ASIA HOSPITAL").FontSize(10).FontColor(PrimaryBlue);
+                col.Item().Text(text =>
+                {
+                    text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(PrimaryBlue);
+                    text.Span("ASIA HOSPITAL").FontSize(10).FontColor(PrimaryBlue);
+                });
                 col.Item().Text("تذكرة دخول عمليات / SURGERY TICKET").FontSize(12).Bold().Underline();
             });
             
-            row.ConstantItem(60).AlignMiddle().Column(col => 
+            row.ConstantItem(40).AlignMiddle().Column(col => 
             {
                 col.Item().Text(DateTime.Now.ToString("dd/MM/yyyy")).FontSize(8);
                 col.Item().Text(DateTime.Now.ToString("HH:mm")).FontSize(8);

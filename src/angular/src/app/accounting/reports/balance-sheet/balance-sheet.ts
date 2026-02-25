@@ -36,6 +36,9 @@ export class BalanceSheetComponent implements OnInit {
     totalLiabilities = 0;
     totalEquity = 0;
     previousYearEquity = 0;
+    totalPreviousAssets = 0;
+    totalPreviousLiabilities = 0;
+    totalPreviousEquity = 0;
 
     // Filtered lines
     get filteredAssetLines() { return this.filterLines(this.assetLines); }
@@ -75,6 +78,9 @@ export class BalanceSheetComponent implements OnInit {
                 this.totalLiabilities = data.totalLiabilities || 0;
                 this.totalEquity = data.totalEquity || 0;
                 this.previousYearEquity = data.previousYearEquity || 0;
+                this.totalPreviousAssets = data.totalPreviousAssets || 0;
+                this.totalPreviousLiabilities = data.totalPreviousLiabilities || 0;
+                this.totalPreviousEquity = data.totalPreviousEquity || 0;
                 this.loading = false;
             },
             error: (err) => {

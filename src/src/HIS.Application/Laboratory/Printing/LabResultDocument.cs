@@ -57,42 +57,33 @@ public class LabResultDocument : IDocument
         container.Column(column =>
         {
             // Top header with blue background
-            column.Item().Background(PrimaryBlue).Padding(15).Row(row =>
+            column.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
                 // Logo on the right (RTL)
                 if (LogoBytes != null && LogoBytes.Length > 0)
-                {
-                    row.ConstantItem(80).AlignMiddle().Image(LogoBytes).FitArea();
-                }
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 else
-                {
-                    row.ConstantItem(80);
-                }
+                    row.ConstantItem(40);
 
                 // Hospital info in the center
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
-                    col.Item().Text("مستشفى آسيا")
-                        .FontSize(24)
-                        .Bold()
-                        .FontColor(TextLight);
-                    col.Item().Text("ASIA HOSPITAL")
-                        .FontSize(14)
-                        .FontColor(TextLight);
-                    col.Item().PaddingTop(5).Text("نظام معلومات المستشفى")
-                        .FontSize(10)
-                        .FontColor(LightBlue);
+                    col.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(TextLight);
+                        text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
+                    });
+                    col.Item().PaddingTop(2).Text("نظام معلومات المستشفى")
+                        .FontSize(9).FontColor(LightBlue);
                 });
 
-                row.ConstantItem(80); // Spacer for balance
+                row.ConstantItem(40); // Spacer for balance
             });
 
             // Report title bar
-            column.Item().Background(AccentRed).Padding(8).AlignCenter()
+            column.Item().Background(AccentRed).Padding(4).AlignCenter()
                 .Text("تقرير نتائج التحليل المخبري")
-                .FontSize(16)
-                .Bold()
-                .FontColor(TextLight);
+                .FontSize(14).Bold().FontColor(TextLight);
         });
     }
 

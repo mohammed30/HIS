@@ -1447,4 +1447,44 @@
             </div>
         </div>
     </div>
+
+    <!-- Modals for Native Prompt Replacements -->
+
+    <!-- Update Admission Days Modal -->
+    <abp-modal [(visible)]="showAdmissionDaysModal">
+        <ng-template #abpHeader>
+            <h5 class="m-0">تعديل عدد أيام التنويم</h5>
+        </ng-template>
+        <ng-template #abpBody>
+            <div class="mb-3 p-3">
+                <label class="form-label fw-bold">أدخل عدد الأيام الجديد:</label>
+                <input type="number" class="form-control" [(ngModel)]="newAdmissionDays" name="newAdmissionDays"
+                    min="0">
+            </div>
+        </ng-template>
+        <ng-template #abpFooter>
+            <button type="button" class="btn btn-secondary" (click)="showAdmissionDaysModal = false">إلغاء</button>
+            <button type="button" class="btn btn-primary" (click)="confirmUpdateAdmissionDays()">تأكيد</button>
+        </ng-template>
+    </abp-modal>
+
+    <!-- Refund Payment Reason Modal -->
+    <abp-modal [(visible)]="showRefundModal">
+        <ng-template #abpHeader>
+            <h5 class="m-0">استرداد مبلغ سند</h5>
+        </ng-template>
+        <ng-template #abpBody>
+            <div class="mb-3 p-3" *ngIf="selectedRefundItem">
+                <p class="mb-2">استرداد مبلغ السند رقم: <span class="fw-bold text-primary">{{
+                        selectedRefundItem.reference }}</span></p>
+                <label class="form-label fw-bold">أدخل سبب الاسترداد:</label>
+                <textarea class="form-control" [(ngModel)]="refundReason" name="refundReason" rows="3"
+                    placeholder="اكتب سبب الاسترداد هنا..."></textarea>
+            </div>
+        </ng-template>
+        <ng-template #abpFooter>
+            <button type="button" class="btn btn-secondary" (click)="showRefundModal = false">إلغاء</button>
+            <button type="button" class="btn btn-warning" (click)="confirmRefundPayment()">تأكيد الاسترداد</button>
+        </ng-template>
+    </abp-modal>
 </div>

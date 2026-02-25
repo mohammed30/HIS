@@ -79,24 +79,25 @@ public class IncomeStatementDocument : IDocument
         container.Column(column =>
         {
             // Blue header bar with logo + hospital name
-            column.Item().Background(PrimaryBlue).Padding(12).Row(row =>
+            column.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
                 if (LogoBytes != null && LogoBytes.Length > 0)
-                    row.ConstantItem(70).AlignMiddle().Image(LogoBytes).FitArea();
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 else
-                    row.ConstantItem(70);
+                    row.ConstantItem(40);
 
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
-                    col.Item().Text("مستشفى آسيا")
-                        .FontSize(22).Bold().FontColor(TextLight);
-                    col.Item().Text("ASIA HOSPITAL")
-                        .FontSize(12).FontColor(TextLight);
-                    col.Item().PaddingTop(4).Text("قائمة الدخل / Income Statement")
-                        .FontSize(11).FontColor(LightBlue);
+                    col.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(TextLight);
+                        text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
+                    });
+                    col.Item().Text("قائمة الدخل / Income Statement")
+                        .FontSize(9).FontColor(LightBlue);
                 });
 
-                row.ConstantItem(70);
+                row.ConstantItem(40);
             });
 
             // Report period bar

@@ -12,6 +12,7 @@ public class SurgicalOperationDto : FullAuditedEntityDto<Guid>
     public string? DoctorName { get; set; }
     public Guid? OperationTypeId { get; set; }
     public string OperationName { get; set; } = string.Empty;
+    public string? SpecialtyName { get; set; }
     public DateTime OperationDate { get; set; }
     public string? Details { get; set; }
     public decimal TotalAmount { get; set; }
@@ -46,6 +47,7 @@ public class GetSurgicalOperationsInput : PagedAndSortedResultRequestDto
     public Guid? PatientId { get; set; }
     public Guid? DoctorId { get; set; }
     public OperationStatus? Status { get; set; }
+    public Guid? SpecialtyId { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
 }

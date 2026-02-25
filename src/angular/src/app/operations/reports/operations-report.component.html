@@ -1,0 +1,93 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="m-0">
+            <i class="fas fa-file-medical-alt me-2 text-primary"></i>
+            {{ '::Menu:OperationsReport' | abpLocalization }}
+        </h4>
+        <button class="btn btn-outline-primary" (click)="printPdf()" [disabled]="operations.length === 0">
+            <i class="fas fa-file-pdf me-1"></i> PDF
+        </button>
+    </div>
+
+    <div class="card-body bg-light border-bottom">
+        <form [formGroup]="filterForm" (ngSubmit)="fetchData()" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">{{ '::Specialty' | abpLocalization }}</label>
+                <select class="form-select" formControlName="specialtyId">
+                    <option [ngValue]="null">{{ '::SelectSpecialty' | abpLocalization }}</option>
+                    <option *ngFor="let s of specialties" [value]="s.id">{{ s.nameAr || s.nameEn }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">{{ '::Doctor' | abpLocalization }}</label>
+                <select class="form-select" formControlName="doctorId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.nameAr || d.nameEn }}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold">{{ '::FromDate' | abpLocalization }}</label>
+                <div class="input-group">
+                    <input class="form-control" formControlName="fromDate" ngbDatepicker #df="ngbDatepicker"
+                        (click)="df.toggle()" readonly />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold">{{ '::ToDate' | abpLocalization }}</label>
+                <div class="input-group">
+                    <input class="form-control" formControlName="toDate" ngbDatepicker #dt="ngbDatepicker"
+                        (click)="dt.toggle()" readonly />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+                    <i class="fas fa-search me-1"></i> {{ '::Filter' | abpLocalization }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>#</th>
+                        <th>{{ '::Date' | abpLocalization }}</th>
+                        <th>{{ '::Patient' | abpLocalization }}</th>
+                        <th>{{ '::Operation' | abpLocalization }}</th>
+                        <th>{{ '::Doctor' | abpLocalization }}</th>
+                        <th>{{ '::Specialty' | abpLocalization }}</th>
+                        <th class="text-end">{{ '::Amount' | abpLocalization }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let op of operations; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ op.operationDate | date:'yyyy/MM/dd HH:mm' }}</td>
+                        <td>{{ op.patientName }}</td>
+                        <td><span class="fw-bold">{{ op.operationName }}</span></td>
+                        <td>{{ op.doctorName }}</td>
+                        <td><span class="badge bg-info text-dark">{{ op.specialtyName }}</span></td>
+                        <td class="text-end fw-bold">{{ op.totalAmount | number:'1.2-2' }}</td>
+                    </tr>
+                    <tr *ngIf="operations.length === 0 && !loading">
+                        <td colspan="7" class="text-center py-5 text-muted italic">
+                            {{ '::NoDataAvailable' | abpLocalization }}
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot *ngIf="operations.length > 0" class="bg-light fw-bold border-top">
+                    <tr>
+                        <td colspan="6" class="text-end py-3">{{ '::Total' | abpLocalization }}</td>
+                        <td class="text-end text-primary fs-5 py-3">{{ totalAmount | number:'1.2-2' }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="overlay d-flex justify-content-center align-items-center">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+</div>

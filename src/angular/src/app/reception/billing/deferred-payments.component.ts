@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { ToasterService } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -220,6 +221,49 @@ const statusColors: { [key: number]: string } = {
           </div>
         </div>
       }
+
+      <!-- Payment Modal -->
+      @if (showPaymentModal && selectedDeferred) {
+        <div class="modal show d-block" style="background: rgba(0,0,0,0.5)">
+          <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                  <i class="fas fa-plus-circle me-2"></i>
+                  تسجيل دفعة مؤجل
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="showPaymentModal = false"></button>
+              </div>
+              <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                  <span class="text-muted d-block small mb-1">رقم المؤجل</span>
+                  <code class="fs-5">{{ selectedDeferred.deferredNumber }}</code>
+                </div>
+                
+                <div class="alert alert-warning border-0 text-center mb-3">
+                  <small class="d-block text-muted mb-1">المبلغ المتبقي</small>
+                  <h4 class="mb-0">{{ selectedDeferred.remainingAmount | number:'1.2-2' }} ج.م</h4>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold">أدخل مبلغ الدفعة</label>
+                  <div class="input-group input-group-lg">
+                    <input type="number" class="form-control text-center fw-bold" 
+                           [(ngModel)]="paymentAmount" [max]="selectedDeferred.remainingAmount" min="1">
+                    <span class="input-group-text bg-light">ج.م</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer border-top-0 pt-0 pb-4 justify-content-center">
+                <button type="button" class="btn btn-light px-4" (click)="showPaymentModal = false">إلغاء</button>
+                <button type="button" class="btn btn-success px-4" (click)="confirmPayment()" [disabled]="!paymentAmount || paymentAmount <= 0">
+                  <i class="fas fa-check me-1"></i> تحميل الدفعة
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`.modal { z-index: 1050; }`]
@@ -227,6 +271,7 @@ const statusColors: { [key: number]: string } = {
 export class DeferredPaymentsComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/deferred-payment';
+  private toaster = inject(ToasterService);
 
   items: DeferredPayment[] = [];
   patients: Lookup[] = [];
@@ -239,6 +284,11 @@ export class DeferredPaymentsComponent implements OnInit {
   totalDeferred = 0;
   totalPaid = 0;
   totalRemaining = 0;
+
+  // Payment Modal
+  showPaymentModal = false;
+  selectedDeferred: DeferredPayment | null = null;
+  paymentAmount = 0;
 
   page = 1;
   pageSize = 10;
@@ -301,23 +351,45 @@ export class DeferredPaymentsComponent implements OnInit {
   getStatusColor(status: number): string { return statusColors[status] || 'secondary'; }
 
   viewDetails(item: DeferredPayment) {
-    alert(`رقم المؤجل: ${item.deferredNumber}\nالمبلغ: ${item.totalAmount}\nالمتبقي: ${item.remainingAmount}\nالسبب: ${item.reason || 'لا يوجد'}`);
+    this.toaster.info(
+      `المبلغ: ${item.totalAmount} - المتبقي: ${item.remainingAmount}\nالسبب: ${item.reason || 'لا يوجد'}`,
+      `رقم المؤجل: ${item.deferredNumber}`
+    );
   }
 
   recordPayment(item: DeferredPayment) {
-    const amount = prompt(`تسجيل دفعة للمؤجل ${item.deferredNumber}\nالمتبقي: ${item.remainingAmount}\nأدخل المبلغ:`);
-    if (amount && parseFloat(amount) > 0) {
-      this.http.post(`${this.apiUrl}/${item.id}/record-payment?amount=${amount}`, {}).subscribe({
-        next: () => { this.loadData(); alert('تم تسجيل الدفعة بنجاح!'); },
-        error: (err) => console.error(err)
+    this.selectedDeferred = item;
+    this.paymentAmount = item.remainingAmount;
+    this.showPaymentModal = true;
+  }
+
+  confirmPayment() {
+    if (this.selectedDeferred && this.paymentAmount > 0) {
+      this.http.post(`${this.apiUrl}/${this.selectedDeferred.id}/record-payment?amount=${this.paymentAmount}`, {}).subscribe({
+        next: () => {
+          this.showPaymentModal = false;
+          this.loadData();
+          this.toaster.success('تم تسجيل الدفعة بنجاح!', 'نجاح');
+        },
+        error: (err) => {
+          console.error(err);
+          this.toaster.error('حدث خطأ أثناء تسجيل الدفعة', 'خطأ');
+        }
       });
     }
   }
 
   save() {
     this.http.post(this.apiUrl, this.formData).subscribe({
-      next: () => { this.showForm = false; this.loadData(); alert('تم تسجيل المؤجل بنجاح!'); },
-      error: (err) => console.error(err)
+      next: () => {
+        this.showForm = false;
+        this.loadData();
+        this.toaster.success('تم تسجيل المؤجل بنجاح!', 'نجاح');
+      },
+      error: (err) => {
+        console.error(err);
+        this.toaster.error('حدث خطأ أثناء تسجيل المؤجل', 'خطأ');
+      }
     });
   }
 }

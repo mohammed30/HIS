@@ -666,6 +666,22 @@ function configureRoutes() {
       layout: eLayoutType.application,
       // requiredPolicy removed - protection via permissionGuard in app.routes.ts
     },
+    // Reports
+    {
+      name: '::Menu:Reports',
+      iconClass: 'fas fa-chart-bar',
+      order: 400,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/operations/reports/surgical-operations',
+      name: '::Menu:OperationsReport',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-file-medical-alt',
+      order: 1,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Operations.Report',
+    },
     {
       path: '/setting-management',
       name: '::Menu:Settings',

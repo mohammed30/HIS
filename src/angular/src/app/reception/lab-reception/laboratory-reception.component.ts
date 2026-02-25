@@ -2,7 +2,7 @@ import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CoreModule, LocalizationService } from '@abp/ng.core';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { NationalityService } from '../../proxy/general/nationality.service';
@@ -57,6 +57,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     private roomService = inject(RoomService);
     private operationService = inject(SurgicalOperationService);
     private doctorService = inject(DoctorService);
+    private confirmation = inject(ConfirmationService);
 
     @ViewChild('testSearchInput') testSearchInput!: ElementRef;
 
@@ -249,6 +250,13 @@ export class LaboratoryReceptionComponent implements OnInit {
     selectedTests: any[] = [];
     testSearchText: string = '';
     ticketCount: number = 1;
+
+    // Modal State
+    showAdmissionDaysModal: boolean = false;
+    showRefundModal: boolean = false;
+    newAdmissionDays: number = 0;
+    refundReason: string = '';
+    selectedRefundItem: any = null;
 
     // Patient Search
     searchResults: any[] = [];
@@ -738,24 +746,25 @@ export class LaboratoryReceptionComponent implements OnInit {
             this.toaster.warn('يرجى اختيار التنويم من القائمة أولاً', 'تنبيه');
             return;
         }
+        this.newAdmissionDays = this.selectedAdmission.numberOfDays;
+        this.showAdmissionDaysModal = true;
+    }
 
-        const newDaysStr = prompt('أدخل عدد الأيام الجديد:', this.selectedAdmission.numberOfDays);
-        if (newDaysStr !== null && newDaysStr.trim() !== '') {
-            const newDays = parseInt(newDaysStr, 10);
-            if (!isNaN(newDays) && newDays >= 0) {
-                this.admissionService.updateDays(this.selectedAdmission.id, newDays).subscribe({
-                    next: () => {
-                        this.toaster.success('تم التعديل بنجاح', 'نجاح');
-                        this.loadInpatientList();
-                    },
-                    error: (err) => {
-                        console.error(err);
-                        this.toaster.error('فشل تعديل عدد الأيام', 'خطأ');
-                    }
-                });
-            } else {
-                this.toaster.warn('الرجاء إدخال رقم صحيح', 'تنبيه');
-            }
+    confirmUpdateAdmissionDays() {
+        if (this.newAdmissionDays >= 0) {
+            this.admissionService.updateDays(this.selectedAdmission.id, this.newAdmissionDays).subscribe({
+                next: () => {
+                    this.toaster.success('تم التعديل بنجاح', 'نجاح');
+                    this.showAdmissionDaysModal = false;
+                    this.loadInpatientList();
+                },
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('فشل تعديل عدد الأيام', 'خطأ');
+                }
+            });
+        } else {
+            this.toaster.warn('الرجاء إدخال رقم صحيح', 'تنبيه');
         }
     }
 
@@ -1172,33 +1181,46 @@ export class LaboratoryReceptionComponent implements OnInit {
     }
 
     cancelInvoice(item: any) {
-        if (confirm(`هل أنت متأكد من إلغاء الفاتورة رقم ${item.reference}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`)) {
-            this.http.post(`${environment.apis.default.url}/api/app/invoice/${item.id}/cancel`, {}).subscribe({
-                next: () => {
-                    this.toaster.success('تم إلغاء الفاتورة بنجاح');
-                    this.getPatientStatement();
-                },
-                error: (err) => {
-                    console.error(err);
-                    this.toaster.error('حدث خطأ أثناء إلغاء الفاتورة');
-                }
-            });
-        }
+        this.confirmation.warn(
+            `هل أنت متأكد من إلغاء الفاتورة رقم ${item.reference}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`,
+            'تأكيد الإلغاء'
+        ).subscribe((status) => {
+            if (status === Confirmation.Status.confirm) {
+                this.http.post(`${environment.apis.default.url}/api/app/invoice/${item.id}/cancel`, {}).subscribe({
+                    next: () => {
+                        this.toaster.success('تم إلغاء الفاتورة بنجاح');
+                        this.getPatientStatement();
+                    },
+                    error: (err) => {
+                        console.error(err);
+                        this.toaster.error('حدث خطأ أثناء إلغاء الفاتورة');
+                    }
+                });
+            }
+        });
     }
 
     refundPayment(item: any) {
-        const reason = prompt(`استرداد مبلغ السند ${item.reference}\nأدخل سبب الاسترداد:`);
-        if (reason !== null) {
-            this.http.post(`${environment.apis.default.url}/api/app/payment/${item.id}/refund?reason=${reason}`, {}).subscribe({
-                next: () => {
-                    this.toaster.success('تم استرداد المبلغ بنجاح');
-                    this.getPatientStatement();
-                },
-                error: (err) => {
-                    console.error(err);
-                    this.toaster.error('حدث خطأ أثناء استرداد المبلغ');
-                }
-            });
+        this.selectedRefundItem = item;
+        this.refundReason = '';
+        this.showRefundModal = true;
+    }
+
+    confirmRefundPayment() {
+        if (!this.refundReason.trim()) {
+            this.toaster.warn('يرجى إدخال سبب الاسترداد', 'تنبيه');
+            return;
         }
+        this.http.post(`${environment.apis.default.url}/api/app/payment/${this.selectedRefundItem.id}/refund?reason=${this.refundReason}`, {}).subscribe({
+            next: () => {
+                this.toaster.success('تم استرداد المبلغ بنجاح');
+                this.showRefundModal = false;
+                this.getPatientStatement();
+            },
+            error: (err) => {
+                console.error(err);
+                this.toaster.error('حدث خطأ أثناء استرداد المبلغ');
+            }
+        });
     }
 }

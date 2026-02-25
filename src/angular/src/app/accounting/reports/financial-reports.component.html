@@ -123,60 +123,68 @@
                 <a ngbNavLink>{{ '::BalanceSheet' | abpLocalization }}</a>
                 <ng-template ngbNavContent>
                     <div *ngIf="balanceSheet" class="mt-3">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6 class="fw-bold">{{ '::Assets' | abpLocalization }}</h6>
-                                <table class="table table-sm">
-                                    <tr *ngFor="let line of balanceSheet.assetLines">
-                                        <td>{{ line.accountCode }} - {{ line.accountName }}</td>
-                                        <td class="text-end">{{ line.amount | currency }}</td>
-                                    </tr>
-                                    <tr class="fw-bold bg-light">
-                                        <td>{{ '::TotalAssets' | abpLocalization }}</td>
-                                        <td class="text-end">{{ balanceSheet.totalAssets | currency }}</td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="fw-bold">{{ '::Liabilities' | abpLocalization }}</h6>
-                                <table class="table table-sm">
-                                    <tr *ngFor="let line of balanceSheet.liabilityLines">
-                                        <td>{{ line.accountCode }} - {{ line.accountName }}</td>
-                                        <td class="text-end">{{ line.amount | currency }}</td>
-                                    </tr>
-                                    <tr class="fw-bold bg-light">
-                                        <td>{{ '::TotalLiabilities' | abpLocalization }}</td>
-                                        <td class="text-end">{{ balanceSheet.totalLiabilities | currency }}</td>
-                                    </tr>
-                                </table>
-
-                                <h6 class="fw-bold mt-3">{{ '::Equity' | abpLocalization }}</h6>
-                                <table class="table table-sm">
-                                    <tr *ngFor="let line of balanceSheet.equityLines">
-                                        <td>{{ line.accountCode }} - {{ line.accountName }}</td>
-                                        <td class="text-end">{{ line.amount | currency }}</td>
-                                    </tr>
-                                    <tr class="fw-bold bg-light">
-                                        <td>{{ '::TotalEquity' | abpLocalization }}</td>
-                                        <td class="text-end">{{ balanceSheet.totalEquity | currency }}</td>
-                                    </tr>
-                                    <tr class="fw-bold mt-2">
-                                        <td colspan="2" class="border-0 pt-3">الوضع الرأسمالي للسنة الماضية
-                                        </td>
-                                    </tr>
-                                    <tr class="fw-bold text-muted bg-light border-bottom">
-                                        <td>رأس المال المدفوع للعام السابق</td>
-                                        <td class="text-end">{{ balanceSheet.previousYearEquity | currency }}</td>
-                                    </tr>
-                                </table>
-
-                                <div class="alert alert-secondary mt-2 fw-bold d-flex justify-content-between">
-                                    <span>{{ '::TotalLiabilitiesAndEquity' | abpLocalization }}</span>
-                                    <span>{{ (balanceSheet.totalLiabilities + balanceSheet.totalEquity) | currency
-                                        }}</span>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="table table-bordered table-striped mt-3">
+                            <thead class="table-dark text-center">
+                                <tr>
+                                    <th class="text-start">البيان</th>
+                                    <th>الرصيد الحالي</th>
+                                    <th>الرصيد السابق</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Assets -->
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="3">{{ '::Assets' | abpLocalization }}</td>
+                                </tr>
+                                <tr *ngFor="let line of balanceSheet.assetLines">
+                                    <td>{{ line.accountCode }} - {{ line.accountName }}</td>
+                                    <td class="text-end">{{ line.amount | currency }}</td>
+                                    <td class="text-end">{{ line.previousAmount | currency }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light">
+                                    <td>{{ '::TotalAssets' | abpLocalization }}</td>
+                                    <td class="text-end text-success">{{ balanceSheet.totalAssets | currency }}</td>
+                                    <td class="text-end text-success">{{ balanceSheet.totalPreviousAssets | currency }}</td>
+                                </tr>
+                        
+                                <!-- Liabilities -->
+                                <tr class="table-secondary fw-bold mt-2">
+                                    <td colspan="3">{{ '::Liabilities' | abpLocalization }}</td>
+                                </tr>
+                                <tr *ngFor="let line of balanceSheet.liabilityLines">
+                                    <td>{{ line.accountCode }} - {{ line.accountName }}</td>
+                                    <td class="text-end">{{ line.amount | currency }}</td>
+                                    <td class="text-end">{{ line.previousAmount | currency }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light">
+                                    <td>{{ '::TotalLiabilities' | abpLocalization }}</td>
+                                    <td class="text-end text-danger">{{ balanceSheet.totalLiabilities | currency }}</td>
+                                    <td class="text-end text-danger">{{ balanceSheet.totalPreviousLiabilities | currency }}</td>
+                                </tr>
+                        
+                                <!-- Equity -->
+                                <tr class="table-secondary fw-bold mt-2">
+                                    <td colspan="3">{{ '::Equity' | abpLocalization }}</td>
+                                </tr>
+                                <tr *ngFor="let line of balanceSheet.equityLines">
+                                    <td>{{ line.accountCode }} - {{ line.accountName }}</td>
+                                    <td class="text-end">{{ line.amount | currency }}</td>
+                                    <td class="text-end">{{ line.previousAmount | currency }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light">
+                                    <td>{{ '::TotalEquity' | abpLocalization }}</td>
+                                    <td class="text-end text-primary">{{ balanceSheet.totalEquity | currency }}</td>
+                                    <td class="text-end text-primary">{{ balanceSheet.totalPreviousEquity | currency }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-dark fw-bold">
+                                <tr>
+                                    <td>{{ '::TotalLiabilitiesAndEquity' | abpLocalization }}</td>
+                                    <td class="text-end">{{ (balanceSheet.totalLiabilities + balanceSheet.totalEquity) | currency }}</td>
+                                    <td class="text-end">{{ (balanceSheet.totalPreviousLiabilities + balanceSheet.totalPreviousEquity) | currency }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </ng-template>
             </li>

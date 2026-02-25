@@ -37,7 +37,7 @@ export class SurgicalOperationService {
         this.restService.request<any, PagedResultDto<SurgicalOperationDto>>({
             method: 'GET',
             url: '/api/app/surgical-operation',
-            params: { searchText: input.searchText, patientId: input.patientId, doctorId: input.doctorId, status: input.status, fromDate: input.fromDate, toDate: input.toDate, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+            params: { searchText: input.searchText, patientId: input.patientId, doctorId: input.doctorId, specialtyId: input.specialtyId, status: input.status, fromDate: input.fromDate, toDate: input.toDate, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
         },
             { apiName: this.apiName, ...config });
 
@@ -62,6 +62,15 @@ export class SurgicalOperationService {
             method: 'GET',
             responseType: 'blob',
             url: `/api/app/surgical-operation/ticket-pdf/${id}`,
+        },
+            { apiName: this.apiName, ...config });
+
+    getOperationsReportPdf = (input: GetSurgicalOperationsInput, config?: Partial<Rest.Config>) =>
+        this.restService.request<any, Blob>({
+            method: 'GET',
+            responseType: 'blob',
+            url: '/api/app/surgical-operation/report-pdf',
+            params: { searchText: input.searchText, patientId: input.patientId, doctorId: input.doctorId, specialtyId: input.specialtyId, status: input.status, fromDate: input.fromDate, toDate: input.toDate },
         },
             { apiName: this.apiName, ...config });
 }

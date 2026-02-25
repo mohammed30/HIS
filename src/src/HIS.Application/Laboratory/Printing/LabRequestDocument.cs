@@ -44,15 +44,24 @@ public class LabRequestDocument : IDocument
     {
         container.Column(col =>
         {
-            col.Item().Background(PrimaryBlue).Padding(10).Row(row =>
+            col.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
-                if (LogoBytes != null) row.ConstantItem(60).Image(LogoBytes).FitArea();
+                if (LogoBytes != null && LogoBytes.Length > 0)
+                    row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
+                else
+                    row.ConstantItem(40);
                 
                 row.RelativeItem().AlignCenter().Column(c =>
                 {
-                    c.Item().Text("مستشفى آسيا").FontSize(18).Bold().FontColor(TextLight);
-                    c.Item().Text("طلب تحليل مخبري / Lab Order").FontSize(12).FontColor(LightBlue);
+                    c.Item().Text(text =>
+                    {
+                        text.Span("مستشفى آسيا  ").FontSize(16).Bold().FontColor(TextLight);
+                        text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
+                    });
+                    c.Item().Text("طلب تحليل مخبري / Lab Order").FontSize(10).FontColor(LightBlue);
                 });
+
+                row.ConstantItem(40);
             });
         });
     }

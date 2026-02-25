@@ -326,7 +326,10 @@ export class PaymentsComponent implements OnInit {
   getStatusColor(status: number): string { return statusColors[status] || 'secondary'; }
 
   viewDetails(item: Payment) {
-    alert(`رقم الدفعة: ${item.paymentNumber}\nالمبلغ: ${item.amount}\nالملاحظات: ${item.notes || 'لا يوجد'}`);
+    this.toaster.info(
+      `المبلغ: ${item.amount}\nالملاحظات: ${item.notes || 'لا يوجد'}`,
+      `تفاصيل الدفعة رقم: ${item.paymentNumber}`
+    );
   }
 
   promptRefund(item: Payment) {
@@ -408,8 +411,15 @@ export class PaymentsComponent implements OnInit {
 
   save() {
     this.http.post(this.apiUrl, this.formData).subscribe({
-      next: () => { this.showForm = false; this.loadData(); alert('تم تسجيل الدفعة بنجاح!'); },
-      error: (err) => console.error(err)
+      next: () => {
+        this.showForm = false;
+        this.loadData();
+        this.toaster.success('تم تسجيل الدفعة بنجاح!', 'نجاح');
+      },
+      error: (err) => {
+        console.error(err);
+        this.toaster.error('حدث خطأ أثناء تسجيل الدفعة', 'خطأ');
+      }
     });
   }
 }

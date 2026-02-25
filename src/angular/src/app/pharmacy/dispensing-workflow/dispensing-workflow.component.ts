@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PharmacyService } from '../pharmacy.service';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -87,7 +87,8 @@ export class DispensingWorkflowComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private pharmacyService: PharmacyService,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private confirmation: ConfirmationService
   ) { }
 
   ngOnInit(): void {
@@ -106,11 +107,18 @@ export class DispensingWorkflowComponent implements OnInit {
   }
 
   confirmDispense() {
-    if (this.warnings.length > 0 && !confirm('There are drug interactions. Are you sure you want to proceed?')) {
+    if (this.warnings.length > 0) {
+      this.confirmation.warn('There are drug interactions. Are you sure you want to proceed?', 'Interaction Warning').subscribe(status => {
+        if (status === Confirmation.Status.confirm) {
+          this.executeDispense();
+        }
+      });
       return;
     }
+    this.executeDispense();
+  }
 
-    this.processing = true;
+  private executeDispense() {
     const input = {
       medicalOrderId: this.orderId,
       counselingNotes: this.counselingNotes

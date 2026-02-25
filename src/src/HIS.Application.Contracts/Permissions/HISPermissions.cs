@@ -60,6 +60,7 @@ public static class HISPermissions
         public const string StockOperations = Default + ".StockOperations";
         public const string Dashboard = Default + ".Dashboard";
         public const string Suppliers = Default + ".Suppliers";
+        public const string PurchaseRequisitions = Default + ".PurchaseRequisitions";
         public const string PurchaseOrders = Default + ".PurchaseOrders";
         public const string DepartmentalConsumption = Default + ".DepartmentalConsumption";
     }
@@ -141,6 +142,7 @@ public static class HISPermissions
         public const string Default = GroupName + ".Operations";
         public const string PrintTicket = Default + ".PrintTicket";
         public const string Manage = Default + ".Manage";
+        public const string Report = Default + ".Report";
     }
 }
 

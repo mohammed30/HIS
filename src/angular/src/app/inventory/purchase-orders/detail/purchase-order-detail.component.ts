@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule, ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { NgbDateStruct, NgbDateAdapter, NgbDateNativeAdapter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -16,7 +17,7 @@ import { ServiceItemDto } from '../../../proxy/services/models';
 @Component({
     selector: 'app-purchase-order-detail',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, ThemeSharedModule, NgbDatepickerModule],
+    imports: [CoreModule, CommonModule, ReactiveFormsModule, RouterModule, ThemeSharedModule, NgbDatepickerModule],
     providers: [{ provide: NgbDateAdapter, useClass: NgbDateNativeAdapter }],
     templateUrl: './purchase-order-detail.component.html'
 })
@@ -208,23 +209,23 @@ export class PurchaseOrderDetailComponent implements OnInit {
         // Simplified: Alerting the feature for now as modal needs more boilerplate
         this.service.getPriceComparison(productId).subscribe(res => {
             if (res.length === 0) {
-                this.toaster.info('No historical price data found for this product.', 'Price Analysis');
+                this.toaster.info('::NoPriceHistoryFound', '::PriceAnalysis');
             } else {
                 const history = res.map(x => `${x.supplierName}: ${x.unitPrice} (${new Date(x.orderDate).toLocaleDateString()})`).join('\n');
-                alert('Last 5 Purchase Prices:\n' + history);
+                this.toaster.info(history, 'Last 5 Purchase Prices');
             }
         });
     }
 
     receiveOrder() {
         if (!this.id) return;
-        this.confirmation.warn('This will update stock levels. Proceed?', 'Receive Order').subscribe(status => {
+        this.confirmation.warn('::ReceiveOrderConfirm', '::ReceiveOrder').subscribe(status => {
             if (status === Confirmation.Status.confirm) {
                 this.inventoryService.getWarehouseList({ maxResultCount: 1 }).subscribe(whs => {
                     const whId = whs.items[0]?.id;
                     if (whId) {
                         this.service.receiveOrder(this.id!, whId).subscribe(() => {
-                            this.toaster.success('Order received and stock updated', 'Success');
+                            this.toaster.success('::OrderReceivedSuccess', '::Success');
                             this.loadOrder(this.id!);
                         });
                     } else {

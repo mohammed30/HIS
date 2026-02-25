@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ThemeSharedModule, ConfirmationService, Confirmation, ToasterService } from '@abp/ng.theme.shared';
 
 interface AccountDto {
     id: string;
@@ -34,6 +34,7 @@ export class ChartOfAccountsComponent implements OnInit {
     private http = inject(HttpClient);
     private apiUrl = environment.apis.default.url + '/api/app/account';
     private confirmation = inject(ConfirmationService);
+    private toaster = inject(ToasterService);
 
     accounts: AccountDto[] = [];
     tree: AccountDto[] = [];
@@ -139,7 +140,10 @@ export class ChartOfAccountsComponent implements OnInit {
                     this.showForm = false;
                     this.loadData();
                 },
-                error: (err) => alert('Error updating account')
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('Error updating account', 'Error');
+                }
             });
         } else {
             this.http.post(this.apiUrl, this.formData).subscribe({
@@ -147,7 +151,10 @@ export class ChartOfAccountsComponent implements OnInit {
                     this.showForm = false;
                     this.loadData();
                 },
-                error: (err) => alert('Error creating account')
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('Error creating account', 'Error');
+                }
             });
         }
     }
@@ -159,7 +166,10 @@ export class ChartOfAccountsComponent implements OnInit {
             if (status === Confirmation.Status.confirm) {
                 this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({
                     next: () => this.loadData(),
-                    error: (err) => alert('Cannot delete account. Note: Parent accounts cannot be deleted if they have children.')
+                    error: (err) => {
+                        console.error(err);
+                        this.toaster.error('Cannot delete account. Note: Parent accounts cannot be deleted if they have children.', 'Delete Error');
+                    }
                 });
             }
         });

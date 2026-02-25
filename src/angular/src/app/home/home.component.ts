@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService, LocalizationModule, LocalizationService } from '@abp/ng.core';
+import { AuthService, LocalizationModule, LocalizationService, RestService } from '@abp/ng.core';
 import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
 
 @Component({
@@ -17,28 +17,49 @@ import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
   private localizationService = inject(LocalizationService);
+  private restService = inject(RestService);
 
   get hasLoggedIn(): boolean {
     return this.authService.isAuthenticated;
   }
 
   // Dashboard Summary Data
-  totalDoctors = 45;
-  totalPatients = 1250;
-  totalRooms = 120;
-  occupancyRate = 75;
+  totalDoctors = 0;
+  totalPatients = 0;
+  totalRooms = 0;
+  occupancyRate = 0;
 
   visitsChartOption: any;
   roomsChartOption: any;
 
   constructor() {
-    this.initCharts();
+    this.initEmptyCharts();
   }
 
-  private initCharts() {
+  ngOnInit() {
+    if (this.hasLoggedIn) {
+      this.loadDashboardData();
+    }
+  }
+
+  private loadDashboardData() {
+    this.restService.request<any, any>({
+      method: 'GET',
+      url: '/api/app/dashboard/summary'
+    }).subscribe((data: any) => {
+      this.totalDoctors = data.totalDoctors;
+      this.totalPatients = data.totalPatients;
+      this.totalRooms = data.totalRooms;
+      this.occupancyRate = data.occupancyRate;
+
+      this.updateCharts(data);
+    });
+  }
+
+  private initEmptyCharts() {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -46,19 +67,16 @@ export class HomeComponent {
 
     this.visitsChartOption = {
       tooltip: { trigger: 'axis' },
-      xAxis: {
-        type: 'category',
-        data: months,
-      },
+      xAxis: { type: 'category', data: months },
       yAxis: { type: 'value' },
       series: [
         {
-          data: [120, 150, 180, 130, 210, 250, 230, 190, 260, 290, 220, 310],
+          data: [],
           type: 'bar',
           itemStyle: { color: '#0d6efd' },
           name: this.localizationService.instant('::Visits')
-        },
-      ],
+        }
+      ]
     };
 
     this.roomsChartOption = {
@@ -80,13 +98,34 @@ export class HomeComponent {
             label: { show: true, fontSize: 20, fontWeight: 'bold' }
           },
           labelLine: { show: false },
-          data: [
-            { value: 90, name: this.localizationService.instant('::Occupied'), itemStyle: { color: '#dc3545' } },
-            { value: 25, name: this.localizationService.instant('::Available'), itemStyle: { color: '#198754' } },
-            { value: 5, name: this.localizationService.instant('::Maintenance'), itemStyle: { color: '#ffc107' } }
-          ]
+          data: []
         }
       ]
+    };
+  }
+
+  private updateCharts(data: any) {
+    // Process monthly visits
+    const visitCounts = data.monthlyVisits.map((x: any) => x.count);
+    this.visitsChartOption = {
+      ...this.visitsChartOption,
+      series: [{
+        ...this.visitsChartOption.series[0],
+        data: visitCounts
+      }]
+    };
+
+    // Process room status
+    this.roomsChartOption = {
+      ...this.roomsChartOption,
+      series: [{
+        ...this.roomsChartOption.series[0],
+        data: [
+          { value: data.roomStatus.occupied, name: this.localizationService.instant('::Occupied'), itemStyle: { color: '#dc3545' } },
+          { value: data.roomStatus.available, name: this.localizationService.instant('::Available'), itemStyle: { color: '#198754' } },
+          { value: data.roomStatus.maintenance, name: this.localizationService.instant('::Maintenance'), itemStyle: { color: '#ffc107' } }
+        ]
+      }]
     };
   }
 
@@ -94,4 +133,3 @@ export class HomeComponent {
     this.authService.navigateToLogin();
   }
 }
-

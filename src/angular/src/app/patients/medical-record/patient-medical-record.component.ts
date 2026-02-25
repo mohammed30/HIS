@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { PageModule } from '@abp/ng.components/page';
 import { RestService, CoreModule } from '@abp/ng.core';
-import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ToasterService } from '@abp/ng.theme.shared';
 import { MedicalOrderService } from '../../proxy/clinical/medical-order.service';
 import { ServiceItemService } from '../../proxy/services/service-item.service';
 import { OrderType } from '../../proxy/clinical/order-type.enum';
@@ -849,6 +849,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
 export class PatientMedicalRecordComponent implements OnInit {
   private rest = inject(RestService);
   private route = inject(ActivatedRoute);
+  private toaster = inject(ToasterService);
 
   patientId!: string;
   activeTab = 'vitals';
@@ -1025,7 +1026,7 @@ export class PatientMedicalRecordComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error saving vital sign:', err);
-          alert('حدث خطأ أثناء الحفظ');
+          this.toaster.error('حدث خطأ أثناء الحفظ', 'خطأ');
         }
       });
   }
@@ -1045,7 +1046,7 @@ export class PatientMedicalRecordComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error saving diagnosis:', err);
-          alert('حدث خطأ أثناء الحفظ');
+          this.toaster.error('حدث خطأ أثناء الحفظ', 'خطأ');
         }
       });
   }
@@ -1065,7 +1066,7 @@ export class PatientMedicalRecordComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error saving allergy:', err);
-          alert('حدث خطأ أثناء الحفظ');
+          this.toaster.error('حدث خطأ أثناء الحفظ', 'خطأ');
         }
       });
   }
@@ -1085,7 +1086,7 @@ export class PatientMedicalRecordComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error saving history:', err);
-          alert('حدث خطأ أثناء الحفظ');
+          this.toaster.error('حدث خطأ أثناء الحفظ', 'خطأ');
         }
       });
   }
@@ -1104,7 +1105,7 @@ export class PatientMedicalRecordComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error saving note:', err);
-          alert('حدث خطأ أثناء الحفظ');
+          this.toaster.error('حدث خطأ أثناء الحفظ', 'خطأ');
         }
       });
   }

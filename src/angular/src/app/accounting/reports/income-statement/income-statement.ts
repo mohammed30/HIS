@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoreModule } from '@abp/ng.core';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
 import { FormsModule } from '@angular/forms';
 import * as xlsx from 'xlsx';
 import { AccountService } from '../../../proxy/accounting/account.service';
@@ -18,6 +18,7 @@ import { environment } from '../../../../environments/environment';
 export class IncomeStatementComponent implements OnInit {
     private accountService = inject(AccountService);
     private http = inject(HttpClient);
+    private toaster = inject(ToasterService) as ToasterService;
 
     startDate = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
     endDate = new Date().toISOString().split('T')[0];
@@ -104,7 +105,7 @@ export class IncomeStatementComponent implements OnInit {
             },
             error: (err) => {
                 console.error('Error generating PDF:', err);
-                alert('حدث خطأ أثناء توليد ملف الطباعة');
+                this.toaster.error('حدث خطأ أثناء توليد ملف الطباعة', 'خطأ');
             }
         });
     }

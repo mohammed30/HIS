@@ -64,110 +64,125 @@
                     style="--bs-table-bg: transparent; --bs-table-striped-bg: transparent;">
                     <thead style="background-color: #003366; color: #ffffff;">
                         <tr>
-                            <th class="ps-4 py-3 text-end" style="color:#fff;">الأصول</th>
-                            <th class="text-center py-3" style="color:#fff; width:80px;">رمز</th>
-                            <th class="text-end pe-4 py-3" style="color:#fff; width:140px;">المبلغ</th>
-                            <th class="ps-4 py-3 text-end border-start border-2" style="color:#fff;">الخصوم وحقوق
-                                الملكية</th>
-                            <th class="text-center py-3" style="color:#fff; width:80px;">رمز</th>
-                            <th class="text-end pe-4 py-3" style="color:#fff; width:140px;">المبلغ</th>
+                            <th class="ps-4 py-3" style="color:#fff;">البيان</th>
+                            <th class="text-center py-3" style="color:#fff; width:120px;">رمز الحساب</th>
+                            <th class="text-end py-3" style="color:#fff; width:180px;">الرصيد الحالي</th>
+                            <th class="text-end pe-4 py-3" style="color:#fff; width:180px;">الرصيد السابق</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- NORMAL MODE: side-by-side -->
+                        <!-- NORMAL MODE: Vertical -->
                         <ng-container *ngIf="!hasSearchFilter">
-                            <tr *ngFor="let i of [].constructor(maxRows()); let idx = index">
-                                <!-- ASSET SIDE -->
-                                <ng-container *ngIf="assetLines[idx] as asset; else emptyAsset">
-                                    <td class="ps-4 text-end fw-semibold" style="font-size:0.95rem;">{{
-                                        asset.accountName }}</td>
-                                    <td class="text-center text-muted small">{{ asset.accountCode }}</td>
-                                    <td class="text-end pe-4 fw-bold" [class.text-success]="asset.amount >= 0"
-                                        [class.text-danger]="asset.amount < 0">
-                                        {{ asset.amount | number:'1.2-2' }}
-                                    </td>
-                                </ng-container>
-                                <ng-template #emptyAsset>
-                                    <td colspan="3"></td>
-                                </ng-template>
+                            <!-- Assets -->
+                            <tr>
+                                <td colspan="4" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                    الأصول</td>
+                            </tr>
+                            <tr *ngFor="let line of assetLines">
+                                <td class="ps-4 text-start fw-semibold">{{ line.accountName }}</td>
+                                <td class="text-center text-muted small">{{ line.accountCode }}</td>
+                                <td class="text-end fw-bold text-success">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 fw-bold text-success">{{ line.previousAmount | number:'1.2-2'
+                                    }}</td>
+                            </tr>
+                            <tr class="fw-bold" style="background-color: #f8f9fa;">
+                                <td colspan="2" class="ps-4 text-end">إجمالي الأصول</td>
+                                <td class="text-end text-success">{{ totalAssets | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 text-success">{{ totalPreviousAssets | number:'1.2-2' }}</td>
+                            </tr>
 
-                                <!-- LIABILITY/EQUITY SIDE -->
-                                <ng-container *ngIf="liabilityLine(idx) as item; else emptyLiab">
-                                    <ng-container *ngIf="item.isSectionHeader; else normalCell">
-                                        <td colspan="3" class="ps-4 fw-bold text-white py-2 border-start border-2"
-                                            style="background-color:#003366; font-size:0.9rem;">
-                                            <i class="fas fa-users me-1"></i> {{ item.accountName }}
-                                        </td>
-                                    </ng-container>
-                                    <ng-template #normalCell>
-                                        <td class="ps-4 text-end fw-semibold border-start border-2"
-                                            style="font-size:0.95rem;">{{ item.accountName }}</td>
-                                        <td class="text-center text-muted small">{{ item.accountCode }}</td>
-                                        <td class="text-end pe-4 fw-bold text-danger">{{ item.amount | number:'1.2-2' }}
-                                        </td>
-                                    </ng-template>
-                                </ng-container>
-                                <ng-template #emptyLiab>
-                                    <td colspan="3" class="border-start border-2"></td>
-                                </ng-template>
+                            <!-- Liabilities -->
+                            <tr>
+                                <td colspan="4" class="ps-4 fw-bold text-white py-2 mt-2"
+                                    style="background-color:#003366;">الخصوم</td>
+                            </tr>
+                            <tr *ngFor="let line of liabilityLines">
+                                <td class="ps-4 text-start fw-semibold">{{ line.accountName }}</td>
+                                <td class="text-center text-muted small">{{ line.accountCode }}</td>
+                                <td class="text-end fw-bold text-danger">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 fw-bold text-danger">{{ line.previousAmount | number:'1.2-2' }}
+                                </td>
+                            </tr>
+                            <tr class="fw-bold" style="background-color: #f8f9fa;">
+                                <td colspan="2" class="ps-4 text-end">إجمالي الخصوم</td>
+                                <td class="text-end text-danger">{{ totalLiabilities | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 text-danger">{{ totalPreviousLiabilities | number:'1.2-2' }}
+                                </td>
+                            </tr>
+
+                            <!-- Equity -->
+                            <tr>
+                                <td colspan="4" class="ps-4 fw-bold text-white py-2 mt-2"
+                                    style="background-color:#003366;">حقوق الملكية</td>
+                            </tr>
+                            <tr *ngFor="let line of equityLines">
+                                <td class="ps-4 text-start fw-semibold">{{ line.accountName }}</td>
+                                <td class="text-center text-muted small">{{ line.accountCode }}</td>
+                                <td class="text-end fw-bold text-warning">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 fw-bold text-warning">{{ line.previousAmount | number:'1.2-2'
+                                    }}</td>
+                            </tr>
+                            <tr class="fw-bold" style="background-color: #f8f9fa;">
+                                <td colspan="2" class="ps-4 text-end">إجمالي حقوق الملكية</td>
+                                <td class="text-end text-warning">{{ totalEquity | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 text-warning">{{ totalPreviousEquity | number:'1.2-2' }}</td>
+                            </tr>
+
+                            <!-- Totals Row -->
+                            <tr style="background-color:#003366; color:#fff;">
+                                <td colspan="2" class="ps-4 py-3 text-end fw-bold fs-6">إجمالي الخصوم وحقوق الملكية</td>
+                                <td class="text-end py-3 fw-bold fs-6" style="color:#ffcc44;">{{ (totalLiabilities +
+                                    totalEquity) | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 py-3 fw-bold fs-6" style="color:#ffcc44;">{{
+                                    (totalPreviousLiabilities + totalPreviousEquity) | number:'1.2-2' }}</td>
                             </tr>
                         </ng-container>
 
                         <!-- SEARCH MODE -->
                         <ng-container *ngIf="hasSearchFilter">
                             <tr *ngIf="filteredAssetLines.length > 0">
-                                <td colspan="6" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                <td colspan="4" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
                                     الأصول</td>
                             </tr>
                             <tr *ngFor="let line of filteredAssetLines">
-                                <td class="ps-4 text-end fw-semibold">{{ line.accountName }}</td>
+                                <td class="ps-4 text-start fw-semibold">{{ line.accountName }}</td>
                                 <td class="text-center text-muted small">{{ line.accountCode }}</td>
-                                <td class="text-end pe-4 fw-bold text-success">{{ line.amount | number:'1.2-2' }}</td>
-                                <td colspan="3"></td>
+                                <td class="text-end fw-bold text-success">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 fw-bold text-success">{{ line.previousAmount | number:'1.2-2'
+                                    }}</td>
                             </tr>
+
                             <tr *ngIf="filteredLiabilityLines.length > 0">
-                                <td colspan="6" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                <td colspan="4" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
                                     الخصوم</td>
                             </tr>
                             <tr *ngFor="let line of filteredLiabilityLines">
-                                <td colspan="3"></td>
-                                <td class="ps-4 text-end fw-semibold">{{ line.accountName }}</td>
+                                <td class="ps-4 text-start fw-semibold">{{ line.accountName }}</td>
                                 <td class="text-center text-muted small">{{ line.accountCode }}</td>
-                                <td class="text-end pe-4 fw-bold text-danger">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end fw-bold text-danger">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 fw-bold text-danger">{{ line.previousAmount | number:'1.2-2' }}
+                                </td>
                             </tr>
+
                             <tr *ngIf="filteredEquityLines.length > 0">
-                                <td colspan="6" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
+                                <td colspan="4" class="ps-4 fw-bold text-white py-2" style="background-color:#003366;">
                                     حقوق الملكية</td>
                             </tr>
                             <tr *ngFor="let line of filteredEquityLines">
-                                <td colspan="3"></td>
-                                <td class="ps-4 text-end fw-semibold">{{ line.accountName }}</td>
+                                <td class="ps-4 text-start fw-semibold">{{ line.accountName }}</td>
                                 <td class="text-center text-muted small">{{ line.accountCode }}</td>
-                                <td class="text-end pe-4 fw-bold text-warning">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end fw-bold text-warning">{{ line.amount | number:'1.2-2' }}</td>
+                                <td class="text-end pe-4 fw-bold text-warning">{{ line.previousAmount | number:'1.2-2'
+                                    }}</td>
                             </tr>
+
                             <tr
                                 *ngIf="filteredAssetLines.length === 0 && filteredLiabilityLines.length === 0 && filteredEquityLines.length === 0">
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="4" class="text-center text-muted py-4">
                                     <i class="fas fa-search me-2 text-primary"></i> لا توجد نتائج لـ "{{ searchText }}"
                                 </td>
                             </tr>
                         </ng-container>
-
-                        <!-- TOTALS ROW -->
-                        <tr *ngIf="!hasSearchFilter" style="background-color:#003366; color:#fff;">
-                            <td class="ps-4 py-3 text-end fw-bold fs-6">إجمالي الأصول</td>
-                            <td></td>
-                            <td class="text-end pe-4 py-3 fw-bold fs-6 text-success-emphasis"
-                                style="color:#6fff99 !important;">
-                                {{ totalAssets | number:'1.2-2' }}
-                            </td>
-                            <td class="ps-4 py-3 text-end fw-bold fs-6 border-start border-2">إجمالي الخصوم وحقوق
-                                الملكية</td>
-                            <td></td>
-                            <td class="text-end pe-4 py-3 fw-bold fs-6" style="color:#ffcc44;">
-                                {{ totalLiabilitiesAndEquity | number:'1.2-2' }}
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
