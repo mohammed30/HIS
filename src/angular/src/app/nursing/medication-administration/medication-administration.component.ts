@@ -39,10 +39,10 @@ export class MedicationAdministrationComponent implements OnInit {
     administer(medication: DueMedicationDto) {
         const input: CreateMedicationAdministrationDto = {
             patientId: this.patientId,
-            medicalOrderId: medication.medicationOrderId,
+            medicalOrderId: medication.id,
             administrationTime: new Date().toISOString(),
             status: AdministrationStatus.Given,
-            dosage: medication.dose,
+            dosage: medication.dosage,
             notes: ''
         };
 
@@ -56,10 +56,10 @@ export class MedicationAdministrationComponent implements OnInit {
         // Handling Refused/Skipped/Late - showing minimal implementation here, ideally a modal for notes
         const input: CreateMedicationAdministrationDto = {
             patientId: this.patientId,
-            medicalOrderId: medication.medicationOrderId,
+            medicalOrderId: medication.id,
             administrationTime: new Date().toISOString(),
             status: status,
-            dosage: medication.dose,
+            dosage: medication.dosage,
             notes: status === AdministrationStatus.Refused ? 'Patient refused' : ''
         };
 

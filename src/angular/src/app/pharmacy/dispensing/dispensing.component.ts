@@ -6,7 +6,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { NgbModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { PharmacyService } from '../../proxy/pharmacy/pharmacy.service';
 import { DispensingService } from '../../proxy/pharmacy/dispensing.service';
-import { VerifyPrescriptionDto, PendingPrescriptionDto } from '../../proxy/pharmacy/models';
+import { PendingPrescriptionDto } from '../../proxy/pharmacy/models';
+import { VerifyPrescriptionDto } from '../../proxy/pharmacy/dtos/models';
 import { FormsModule } from '@angular/forms';
 
 @Component({

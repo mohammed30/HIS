@@ -1,52 +1,55 @@
-import { RestService } from '@abp/ng.core';
-import { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { SupplierDto, CreateUpdateSupplierDto } from './dtos';
+import type { CreateUpdateSupplierDto, SupplierDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class SupplierService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  create = (input: CreateUpdateSupplierDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SupplierDto>({
+      method: 'POST',
+      url: '/api/app/supplier',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    create = (input: CreateUpdateSupplierDto) =>
-        this.restService.request<any, SupplierDto>({
-            method: 'POST',
-            url: '/api/app/supplier',
-            body: input,
-        },
-            { apiName: this.apiName });
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/supplier/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    update = (id: string, input: CreateUpdateSupplierDto) =>
-        this.restService.request<any, SupplierDto>({
-            method: 'PUT',
-            url: `/api/app/supplier/${id}`,
-            body: input,
-        },
-            { apiName: this.apiName });
+  get = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SupplierDto>({
+      method: 'GET',
+      url: `/api/app/supplier/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    delete = (id: string) =>
-        this.restService.request<any, void>({
-            method: 'DELETE',
-            url: `/api/app/supplier/${id}`,
-        },
-            { apiName: this.apiName });
+  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<SupplierDto>>({
+      method: 'GET',
+      url: '/api/app/supplier',
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    get = (id: string) =>
-        this.restService.request<any, SupplierDto>({
-            method: 'GET',
-            url: `/api/app/supplier/${id}`,
-        },
-            { apiName: this.apiName });
-
-    getList = (input: PagedAndSortedResultRequestDto) =>
-        this.restService.request<any, PagedResultDto<SupplierDto>>({
-            method: 'GET',
-            url: '/api/app/supplier',
-            params: input,
-        },
-            { apiName: this.apiName });
+  update = (id: string, input: CreateUpdateSupplierDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SupplierDto>({
+      method: 'PUT',
+      url: `/api/app/supplier/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

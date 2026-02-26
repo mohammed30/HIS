@@ -1,44 +1,48 @@
-import { RestService, PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { CreateStockTransferDto, StockTransferDto, InventoryItemDto } from './models';
+import type { CreateStockTransferDto, StockTransferDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
+import type { InventoryItemDto } from '../inventory/dtos/models';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class InventoryService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  createTransfer = (input: CreateStockTransferDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StockTransferDto>({
+      method: 'POST',
+      url: '/api/app/inventory/transfer',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getTransfers(input: PagedAndSortedResultRequestDto): Observable<PagedResultDto<StockTransferDto>> {
-        return this.restService.request({
-            url: `/api/app/inventory/transfers`,
-            method: 'GET',
-            params: input,
-        }, { apiName: this.apiName });
-    }
+  getLowStockReport = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<InventoryItemDto>>({
+      method: 'GET',
+      url: '/api/app/inventory/low-stock-report',
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    createTransfer(input: CreateStockTransferDto): Observable<StockTransferDto> {
-        return this.restService.request({
-            url: `/api/app/inventory/transfer`,
-            method: 'POST',
-            body: input,
-        }, { apiName: this.apiName });
-    }
+  getTransfers = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<StockTransferDto>>({
+      method: 'GET',
+      url: '/api/app/inventory/transfers',
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    processTransfer(id: string): Observable<void> {
-        return this.restService.request({
-            url: `/api/app/inventory/${id}/process`,
-            method: 'POST',
-        }, { apiName: this.apiName });
-    }
-
-    getLowStockReport(input: PagedAndSortedResultRequestDto): Observable<PagedResultDto<InventoryItemDto>> {
-        return this.restService.request({
-            url: `/api/app/inventory/low-stock-report`,
-            method: 'GET',
-            params: input,
-        }, { apiName: this.apiName });
-    }
+  processTransfer = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/inventory/${id}/process-transfer`,
+    },
+    { apiName: this.apiName,...config });
 }

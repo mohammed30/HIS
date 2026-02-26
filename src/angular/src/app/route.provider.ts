@@ -669,7 +669,31 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Inpatient.Reservations',
     },
-    // Reports
+    {
+      path: '/inpatient/admissions',
+      name: '::Menu:Admissions',
+      parentName: '::Menu:Inpatient',
+      iconClass: 'fas fa-clipboard-list',
+      order: 4,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inpatient.Admissions',
+    },
+    {
+      name: '::Menu:Operations',
+      iconClass: 'fas fa-procedures',
+      order: 80,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Operations',
+    },
+    {
+      path: '/operations/surgical-operations',
+      name: '::Menu:SurgicalOperations',
+      parentName: '::Menu:Operations',
+      iconClass: 'fas fa-scalpel',
+      order: 1,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Operations',
+    },
     {
       name: '::Menu:Reports',
       iconClass: 'fas fa-chart-bar',

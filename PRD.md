@@ -126,7 +126,7 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Drug database integration
 - [x] Drug-drug interaction alerts
 - [x] Prescription history
-- [ ] Consumables ordering
+- [x] Consumables ordering
 
 ---
 
@@ -189,9 +189,9 @@ This document outlines the product requirements for a Hospital Information Syste
 
 #### 3.5.3 Reservation System (تنظيم الحجز)
 - [x] Advance room booking (Calendar View)
-- [ ] Room upgrade/downgrade
-- [ ] Patient transfer between rooms
-- [ ] Discharge planning
+- [x] Room upgrade/downgrade (Dynamic Pricing)
+- [x] Patient transfer between rooms (Patient Transfer History)
+- [x] Discharge planning (Medical Discharge & final billing)
 
 ---
 
@@ -250,7 +250,7 @@ This document outlines the product requirements for a Hospital Information Syste
 
 ### 3.8 Financial & Inventory Module (النظام المحاسبي والمخزون)
 
-> **Status: 🟡 PARTIALLY COMPLETED**
+> **Status: ✅ COMPLETED (Core Features Ready)**
 > **Priority: HIGH (Per Client Request)**
 
 #### 3.8.1 Inventory & Purchasing (المخزون والمشتريات)
@@ -272,6 +272,11 @@ This document outlines the product requirements for a Hospital Information Syste
   - [x] **Payment Vouchers**: Manage payments to suppliers and expenses.
   - [x] **Receipt Vouchers**: Manage payments from patients/insurance.
   - [x] **Bank Transactions**: Track bank deposits and withdrawals.
+  - [x] **Advance Payments (Deposits)**: Collect deposits against inpatient admissions (Implemented in Admission modal).
+  - [ ] **Consolidated Final Invoice**: Automatic aggregation of room charges, medications, lab tests, and operations upon discharge.
+- [x] **Operations & Doctor Fees** (أجور العمليات والأطباء):
+  - [x] **Surgery Pricing**: Add cost of operation and consumables to inpatient bill.
+  - [x] **Doctor Entitlements**: Calculate and allocate surgeon/anesthesiologist fees (percentage or flat rate).
 - [x] **Claims Management** (المطالبات):
   - [x] **Contract Claims**: Manage insurance claims and contract billing.
 - [ ] **Advanced Reporting**:
@@ -549,6 +554,6 @@ ng serve
 
 ---
 
-**Document Version:** 1.0  
-**Created:** January 25, 2026  
-**Status:** Draft - Pending Approval
+**Document Version:** 1.1  
+**Last Updated:** February 26, 2026  
+**Status:** In Progress - Core Modules Ready

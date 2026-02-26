@@ -706,6 +706,18 @@
     "Specialty": "Specialty",
     "SelectSpecialty": "Select Specialty",
     "Filter": "Filter",
-    "Operation": "Operation"
+    "Operation": "Operation",
+    "OrderConsumables": "Order Consumables",
+    "OrderConsumablesDescription": "Select the consumables needed for the patient and specify the quantity",
+    "SelectConsumable": "Select Consumable",
+    "SearchConsumable": "Search Consumable",
+    "SearchByNameOrCode": "Search by name or code",
+    "ConfirmOrder": "Confirm Order",
+    "Enum:OrderType.0": "Lab",
+    "Enum:OrderType.1": "Radiology",
+    "Enum:OrderType.2": "Medication",
+    "Enum:OrderType.3": "Procedure",
+    "Enum:OrderType.4": "Consumable",
+    "Enum:ServiceCategory.7": "Consumable"
   }
 }

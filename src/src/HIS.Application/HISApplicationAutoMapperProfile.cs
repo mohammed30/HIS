@@ -114,6 +114,10 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Billing.DeferredPayment, Billing.DeferredPaymentDto>();
         CreateMap<Billing.CreateDeferredPaymentDto, Billing.DeferredPayment>();
 
+        CreateMap<Billing.InpatientDeposit, Billing.InpatientDepositDto>()
+             .ForMember(x => x.PatientName, opt => opt.Ignore());
+        CreateMap<Billing.CreateInpatientDepositDto, Billing.InpatientDeposit>();
+
         // Medical Records
         CreateMap<MedicalRecords.MedicalHistory, MedicalRecords.MedicalHistoryDto>();
         CreateMap<MedicalRecords.CreateUpdateMedicalHistoryDto, MedicalRecords.MedicalHistory>();

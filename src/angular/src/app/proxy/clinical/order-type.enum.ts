@@ -5,6 +5,7 @@ export enum OrderType {
   Radiology = 1,
   Medication = 2,
   Procedure = 3,
+  Consumable = 4,
 }
 
 export const orderTypeOptions = mapEnumToOptions(OrderType);

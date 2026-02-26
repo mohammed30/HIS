@@ -111,6 +111,16 @@ public class Admission : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public Guid? InvoiceId { get; set; }
 
+    /// <summary>
+    /// إجمالي رسوم الغرف السابقة المتراكمة
+    /// </summary>
+    public decimal AccumulatedRoomCharges { get; set; }
+
+    /// <summary>
+    /// تاريخ آخر نقل للسرير أو الغرفة
+    /// </summary>
+    public DateTime LastTransferDate { get; set; }
+
     protected Admission() { }
 
     public Admission(Guid id, Guid? tenantId, Guid patientId, Guid roomId, Guid bedId)
@@ -121,6 +131,7 @@ public class Admission : FullAuditedAggregateRoot<Guid>, IMultiTenant
         RoomId = roomId;
         BedId = bedId;
         AdmissionDate = DateTime.Now;
+        LastTransferDate = DateTime.Now;
         Status = AdmissionStatus.Active;
     }
 }

@@ -4,7 +4,8 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
 import { ThemeSharedModule, ConfirmationService, Confirmation, ToasterService } from '@abp/ng.theme.shared';
 import { PurchaseOrderService } from '../../../proxy/inventory/purchase-order.service';
-import { PurchaseOrderDto, PurchaseOrderStatus } from '../../../proxy/inventory/dtos/purchase-order-dto';
+import { PurchaseOrderDto } from '../../../proxy/inventory/dtos/models';
+import { PurchaseOrderStatus } from '../../../proxy/inventory/purchase-order-status.enum';
 
 @Component({
     selector: 'app-purchase-order-list',

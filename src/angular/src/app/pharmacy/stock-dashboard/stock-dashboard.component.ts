@@ -4,7 +4,8 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CoreModule, ListService, PagedResultDto } from '@abp/ng.core';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { InventoryService } from '../../proxy/pharmacy/inventory.service';
-import { StockTransferDto, InventoryItemDto } from '../../proxy/pharmacy/models';
+import { StockTransferDto } from '../../proxy/pharmacy/dtos/models';
+import { InventoryItemDto } from '../../proxy/inventory/dtos/models';
 
 @Component({
     selector: 'app-stock-dashboard',

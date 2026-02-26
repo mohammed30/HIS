@@ -78,6 +78,7 @@ public class HISDbContext :
     public DbSet<HIS.Billing.InvoiceItem> InvoiceItems { get; set; }
     public DbSet<HIS.Billing.Payment> Payments { get; set; }
     public DbSet<HIS.Billing.DeferredPayment> DeferredPayments { get; set; }
+    public DbSet<HIS.Billing.InpatientDeposit> InpatientDeposits { get; set; }
 
     // Medical Records
     public DbSet<HIS.MedicalRecords.MedicalHistory> MedicalHistories { get; set; }
@@ -131,6 +132,7 @@ public class HISDbContext :
     public DbSet<HIS.Inpatient.Admission> Admissions { get; set; }
     public DbSet<HIS.Rooms.Bed> Beds { get; set; }
     public DbSet<HIS.Inpatient.Reservation> Reservations { get; set; }
+    public DbSet<HIS.Inpatient.PatientTransfer> PatientTransfers { get; set; }
 
     // Operations (Surgery)
     public DbSet<HIS.Operations.SurgicalOperation> SurgicalOperations { get; set; }
@@ -632,6 +634,23 @@ public class HISDbContext :
             b.HasIndex(x => x.DueDate);
         });
 
+        // Inpatient Deposit
+        builder.Entity<HIS.Billing.InpatientDeposit>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InpatientDeposits", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.ReceiptNumber).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Amount).HasPrecision(18, 2);
+            b.Property(x => x.ReferenceNumber).HasMaxLength(64);
+            b.Property(x => x.ReceivedBy).HasMaxLength(128);
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            
+            b.HasIndex(x => x.ReceiptNumber).IsUnique();
+            b.HasIndex(x => x.AdmissionId);
+            b.HasIndex(x => x.PatientId);
+        });
+
         // Medical History
         builder.Entity<HIS.MedicalRecords.MedicalHistory>(b =>
         {
@@ -1039,6 +1058,15 @@ public class HISDbContext :
             b.HasIndex(x => x.BedId);
             b.HasIndex(x => x.StartDate);
             b.HasIndex(x => x.Status);
+        });
+        // Patient Transfer
+        builder.Entity<HIS.Inpatient.PatientTransfer>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "PatientTransfers", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.HasIndex(x => x.AdmissionId);
+            b.HasIndex(x => x.FromRoomId);
+            b.HasIndex(x => x.ToRoomId);
         });
 
         // Surgical Operations

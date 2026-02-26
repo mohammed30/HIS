@@ -2,6 +2,7 @@ import type { PaymentMethod } from './payment-method.enum';
 import type { ServiceType } from './service-type.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { DeferredPaymentStatus } from './deferred-payment-status.enum';
+import type { DepositStatus } from './deposit-status.enum';
 import type { InvoiceStatus } from './invoice-status.enum';
 import type { PaymentStatus } from './payment-status.enum';
 
@@ -13,6 +14,15 @@ export interface CreateDeferredPaymentDto {
   numberOfInstallments?: number;
   reason?: string;
   contactPhone?: string;
+  notes?: string;
+}
+
+export interface CreateInpatientDepositDto {
+  patientId?: string;
+  admissionId?: string;
+  amount?: number;
+  paymentMethod?: PaymentMethod;
+  referenceNumber?: string;
   notes?: string;
 }
 
@@ -72,6 +82,12 @@ export interface GetDeferredPaymentsInput extends PagedAndSortedResultRequestDto
   status?: DeferredPaymentStatus;
 }
 
+export interface GetInpatientDepositsInput extends PagedAndSortedResultRequestDto {
+  patientId?: string;
+  admissionId?: string;
+  status?: DepositStatus;
+}
+
 export interface GetInvoicesInput extends PagedAndSortedResultRequestDto {
   searchText?: string;
   patientId?: string;
@@ -87,6 +103,21 @@ export interface GetPaymentsInput extends PagedAndSortedResultRequestDto {
   paymentMethod?: PaymentMethod;
   fromDate?: string;
   toDate?: string;
+}
+
+export interface InpatientDepositDto extends FullAuditedEntityDto<string> {
+  patientId?: string;
+  patientName?: string;
+  admissionId?: string;
+  receiptNumber?: string;
+  depositDate?: string;
+  amount?: number;
+  paymentMethod?: PaymentMethod;
+  referenceNumber?: string;
+  journalEntryId?: string;
+  receivedBy?: string;
+  notes?: string;
+  status?: DepositStatus;
 }
 
 export interface InvoiceDto extends FullAuditedEntityDto<string> {

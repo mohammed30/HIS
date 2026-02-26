@@ -1,51 +1,55 @@
-import { RestService } from '@abp/ng.core';
-import { PagedResultDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import { JobTitleDto, CreateUpdateJobTitleDto } from './dtos/job-title-dto';
+import type { CreateUpdateJobTitleDto, JobTitleDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class JobTitleService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    create = (input: CreateUpdateJobTitleDto) =>
-        this.restService.request<any, JobTitleDto>({
-            method: 'POST',
-            url: '/api/app/job-title',
-            body: input,
-        },
-            { apiName: this.apiName });
+  create = (input: CreateUpdateJobTitleDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, JobTitleDto>({
+      method: 'POST',
+      url: '/api/app/job-title',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    delete = (id: string) =>
-        this.restService.request<any, void>({
-            method: 'DELETE',
-            url: `/api/app/job-title/${id}`,
-        },
-            { apiName: this.apiName });
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/job-title/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    get = (id: string) =>
-        this.restService.request<any, JobTitleDto>({
-            method: 'GET',
-            url: `/api/app/job-title/${id}`,
-        },
-            { apiName: this.apiName });
+  get = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, JobTitleDto>({
+      method: 'GET',
+      url: `/api/app/job-title/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getList = (input: PagedAndSortedResultRequestDto) =>
-        this.restService.request<any, PagedResultDto<JobTitleDto>>({
-            method: 'GET',
-            url: '/api/app/job-title',
-            params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
-        },
-            { apiName: this.apiName });
+  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<JobTitleDto>>({
+      method: 'GET',
+      url: '/api/app/job-title',
+      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    update = (id: string, input: CreateUpdateJobTitleDto) =>
-        this.restService.request<any, JobTitleDto>({
-            method: 'PUT',
-            url: `/api/app/job-title/${id}`,
-            body: input,
-        },
-            { apiName: this.apiName });
-
-    constructor(private restService: RestService) { }
+  update = (id: string, input: CreateUpdateJobTitleDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, JobTitleDto>({
+      method: 'PUT',
+      url: `/api/app/job-title/${id}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

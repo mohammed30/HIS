@@ -5,5 +5,6 @@ public enum OrderType
     Lab = 0,
     Radiology = 1,
     Medication = 2,
-    Procedure = 3
+    Procedure = 3,
+    Consumable = 4
 }

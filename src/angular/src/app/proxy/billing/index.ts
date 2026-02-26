@@ -1,5 +1,7 @@
 export * from './deferred-payment-status.enum';
 export * from './deferred-payment.service';
+export * from './deposit-status.enum';
+export * from './inpatient-deposit.service';
 export * from './invoice-status.enum';
 export * from './invoice.service';
 export * from './models';

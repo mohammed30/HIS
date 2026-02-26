@@ -6,6 +6,7 @@ export interface CreateUpdateMedicalOrderDto {
   patientId: string;
   serviceItemId: string;
   type?: OrderType;
+  quantity?: number;
   clinicalNotes?: string;
   details?: string;
 }

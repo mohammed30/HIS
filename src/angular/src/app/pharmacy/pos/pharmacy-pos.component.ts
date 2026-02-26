@@ -4,7 +4,7 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CoreModule } from '@abp/ng.core';
 import { FormsModule } from '@angular/forms';
 import { PosService } from '../../proxy/pharmacy/pos.service';
-import { PosSaleDto, PosSaleItemDto, PosProductDto } from '../../proxy/pharmacy/models';
+import { PosSaleDto, PosSaleItemDto, PosProductDto } from '../../proxy/pharmacy/dtos/models';
 import { ToasterService } from '@abp/ng.theme.shared';
 
 @Component({

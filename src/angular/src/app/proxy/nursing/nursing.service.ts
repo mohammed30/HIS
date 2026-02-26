@@ -1,64 +1,70 @@
-import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import { CarePlanDto, CreateCarePlanDto, CreateMedicationAdministrationDto, MedicationAdministrationDto, DueMedicationDto } from './models';
+import type { CarePlanDto, CreateCarePlanDto, CreateMedicationAdministrationDto, DueMedicationDto, MedicationAdministrationDto } from './models';
+import { RestService, Rest } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class NursingService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  createCarePlan = (input: CreateCarePlanDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CarePlanDto>({
+      method: 'POST',
+      url: '/api/app/nursing/care-plan',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    createMedicationAdministration = (input: CreateMedicationAdministrationDto) =>
-        this.restService.request<any, MedicationAdministrationDto>({
-            method: 'POST',
-            url: '/api/app/nursing/medication-administration',
-            body: input,
-        },
-            { apiName: this.apiName });
+  createMedicationAdministration = (input: CreateMedicationAdministrationDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, MedicationAdministrationDto>({
+      method: 'POST',
+      url: '/api/app/nursing/medication-administration',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getMedicationAdministrations = (patientId: string) =>
-        this.restService.request<any, MedicationAdministrationDto[]>({
-            method: 'GET',
-            url: `/api/app/nursing/medication-administrations?patientId=${patientId}`,
-        },
-            { apiName: this.apiName });
+  deleteCarePlan = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/nursing/${id}/care-plan`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getDueMedications = (patientId: string) =>
-        this.restService.request<any, DueMedicationDto[]>({
-            method: 'GET',
-            url: `/api/app/nursing/due-medications?patientId=${patientId}`,
-        },
-            { apiName: this.apiName });
+  getCarePlans = (patientId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CarePlanDto[]>({
+      method: 'GET',
+      url: `/api/app/nursing/care-plans/${patientId}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    createCarePlan = (input: CreateCarePlanDto) =>
-        this.restService.request<any, CarePlanDto>({
-            method: 'POST',
-            url: '/api/app/nursing/care-plan',
-            body: input,
-        },
-            { apiName: this.apiName });
+  getDueMedications = (patientId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DueMedicationDto[]>({
+      method: 'GET',
+      url: `/api/app/nursing/due-medications/${patientId}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getCarePlans = (patientId: string) =>
-        this.restService.request<any, CarePlanDto[]>({
-            method: 'GET',
-            url: `/api/app/nursing/care-plans?patientId=${patientId}`,
-        },
-            { apiName: this.apiName });
+  getMedicationAdministrations = (patientId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, MedicationAdministrationDto[]>({
+      method: 'GET',
+      url: `/api/app/nursing/medication-administrations/${patientId}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    updateCarePlan = (id: string, input: CreateCarePlanDto) =>
-        this.restService.request<any, CarePlanDto>({
-            method: 'PUT',
-            url: `/api/app/nursing/care-plan/${id}`,
-            body: input,
-        },
-            { apiName: this.apiName });
-
-    deleteCarePlan = (id: string) =>
-        this.restService.request<void, void>({
-            method: 'DELETE',
-            url: `/api/app/nursing/care-plan/${id}`,
-        },
-            { apiName: this.apiName });
+  updateCarePlan = (id: string, input: CreateCarePlanDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CarePlanDto>({
+      method: 'PUT',
+      url: `/api/app/nursing/${id}/care-plan`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

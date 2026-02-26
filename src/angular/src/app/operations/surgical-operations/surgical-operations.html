@@ -1,0 +1,122 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3>{{ '::SurgicalOperations' | abpLocalization }}</h3>
+        <button class="btn btn-primary btn-sm" (click)="createOperation(operationModal)">
+            <i class="fa fa-plus me-1"></i> {{ '::NewOperation' | abpLocalization }}
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered table-striped">
+                <thead class="bg-light">
+                    <tr>
+                        <th>{{ '::Patient' | abpLocalization }}</th>
+                        <th>{{ '::OperationName' | abpLocalization }}</th>
+                        <th>{{ '::Doctor' | abpLocalization }}</th>
+                        <th>{{ '::Date' | abpLocalization }}</th>
+                        <th>{{ '::TotalAmount' | abpLocalization }}</th>
+                        <th>{{ '::Status' | abpLocalization }}</th>
+                        <th class="text-center">{{ '::Actions' | abpLocalization }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of operations">
+                        <td>{{ row.patientName }}</td>
+                        <td>{{ row.operationName }}</td>
+                        <td>{{ row.doctorName }}</td>
+                        <td>{{ row.operationDate | date:'short' }}</td>
+                        <td>{{ row.totalAmount | currency }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ '::Enum:OperationStatus.' + row.status | abpLocalization
+                                }}</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-primary btn-sm" (click)="editOperation(row.id, operationModal)">
+                                    <i class="fa fa-edit me-1"></i> {{ '::Edit' | abpLocalization }}
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" (click)="deleteOperation(row.id)">
+                                    <i class="fa fa-trash me-1"></i> {{ '::Delete' | abpLocalization }}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<ng-template #operationModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">{{ (selectedTask.id ? '::Edit' : '::NewOperation') | abpLocalization }}</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="form">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label required">{{ '::Patient' | abpLocalization }}</label>
+                <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization"
+                        (input)="filterPatients($event.target.value)">
+                </div>
+                <select class="form-select" formControlName="patientId">
+                    <option [ngValue]="null">{{ '::SelectPatient' | abpLocalization }}</option>
+                    <option *ngFor="let p of filteredPatients" [ngValue]="p.id">
+                        {{ p.fullNameAr }} <small class="text-muted" *ngIf="p.mrn">({{ p.mrn }})</small>
+                    </option>
+                </select>
+                <div class="form-text" *ngIf="patientSearchTerm && filteredPatients.length === 0">
+                    {{ '::NoDataFound' | abpLocalization }}
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label required">{{ '::Doctor' | abpLocalization }}</label>
+                <select class="form-select" formControlName="doctorId">
+                    <option [ngValue]="null">{{ '::SelectDoctor' | abpLocalization }}</option>
+                    <option *ngFor="let d of doctors" [ngValue]="d.id">{{ d.nameAr }}</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label required">{{ '::OperationName' | abpLocalization }}</label>
+                <input type="text" class="form-control" formControlName="operationName" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label required">{{ '::OperationDate' | abpLocalization }}</label>
+                <input type="datetime-local" class="form-control" formControlName="operationDate" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label required">{{ '::Status' | abpLocalization }}</label>
+                <select class="form-select" formControlName="status">
+                    <option *ngFor="let s of operationStatusOptions" [ngValue]="s.value">
+                        {{ s.key | abpLocalization }}
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label required">{{ '::TotalAmount' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="totalAmount" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ '::SurgeonFeePercentage' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="surgeonFeePercentage" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ '::AnesthesiologistFeePercentage' | abpLocalization }}</label>
+                <input type="number" class="form-control" formControlName="anesthesiologistFeePercentage" />
+            </div>
+            <div class="col-md-12 mb-3">
+                <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+                <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="save(modal)" [disabled]="form.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::Save' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>

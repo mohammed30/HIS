@@ -58,7 +58,7 @@ export class PatientService {
     this.restService.request<any, PagedResultDto<PatientDto>>({
       method: 'GET',
       url: '/api/app/patient',
-      params: { searchText: input.searchText, mrn: input.mrn, identityNumber: input.identityNumber, mobileNumber: input.mobileNumber, gender: input.gender, patientCategoryId: input.patientCategoryId, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { searchText: input.searchText, mrn: input.mrn, identityNumber: input.identityNumber, mobileNumber: input.mobileNumber, gender: input.gender, paymentMethodId: input.paymentMethodId, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

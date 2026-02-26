@@ -1025,6 +1025,108 @@ namespace HIS.Migrations
                     b.ToTable("AppDeferredPayments", (string)null);
                 });
 
+            modelBuilder.Entity("HIS.Billing.InpatientDeposit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<DateTime>("DepositDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ReceivedBy")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdmissionId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ReceiptNumber")
+                        .IsUnique();
+
+                    b.ToTable("AppInpatientDeposits", (string)null);
+                });
+
             modelBuilder.Entity("HIS.Billing.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1973,6 +2075,9 @@ namespace HIS.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("AccumulatedRoomCharges")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("AdmissionDate")
                         .HasColumnType("datetime2");
 
@@ -2048,6 +2153,9 @@ namespace HIS.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<DateTime>("LastTransferDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -2090,6 +2198,86 @@ namespace HIS.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("AppAdmissions", (string)null);
+                });
+
+            modelBuilder.Entity("HIS.Inpatient.PatientTransfer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<int>("DaysInPreviousRoom")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<Guid?>("FromBedId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FromRoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<decimal>("PreviousRoomDailyRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PreviousRoomTotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<Guid?>("ToBedId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ToRoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("TransferDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdmissionId");
+
+                    b.HasIndex("FromRoomId");
+
+                    b.HasIndex("ToRoomId");
+
+                    b.ToTable("AppPatientTransfers", (string)null);
                 });
 
             modelBuilder.Entity("HIS.Inpatient.Reservation", b =>
@@ -4228,6 +4416,15 @@ namespace HIS.Migrations
                     b.Property<Guid?>("AdmissionId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("AnesthesiologistFeeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AnesthesiologistFeePercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("AnesthesiologistId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("CompanyShare")
                         .HasColumnType("decimal(18,2)");
 
@@ -4265,6 +4462,9 @@ namespace HIS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
+
+                    b.Property<decimal>("HospitalShareAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("InsuranceTotal")
                         .HasColumnType("decimal(18,2)");
@@ -4309,6 +4509,12 @@ namespace HIS.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("SurgeonFeeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SurgeonFeePercentage")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier")

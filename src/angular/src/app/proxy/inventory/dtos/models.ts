@@ -1,10 +1,72 @@
-import type { AuditedEntityDto, EntityDto } from '@abp/ng.core';
+import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { PurchaseRequisitionStatus } from '../purchase-requisition-status.enum';
 import type { InventoryItemType } from '../inventory-item-type.enum';
 import type { TransactionType } from '../transaction-type.enum';
+import type { PurchaseOrderStatus } from '../purchase-order-status.enum';
+
+export interface CreateUpdatePurchaseOrderDto {
+  supplierId?: string;
+  orderDate?: string;
+  expectedDeliveryDate?: string;
+  referenceNumber?: string;
+  notes?: string;
+  purchaseOrderLines?: CreateUpdatePurchaseOrderLineDto[];
+}
+
+export interface CreateUpdatePurchaseOrderLineDto {
+  productId?: string;
+  quantity?: number;
+  unitPrice?: number;
+  discount?: number;
+  description?: string;
+}
+
+export interface CreateUpdatePurchaseRequisitionDto {
+  departmentId?: string;
+  requiredDate?: string;
+  notes?: string;
+  lines?: CreateUpdatePurchaseRequisitionLineDto[];
+}
+
+export interface CreateUpdatePurchaseRequisitionLineDto {
+  productId?: string;
+  quantity?: number;
+  description?: string;
+}
+
+export interface CreateUpdateSupplierDto {
+  name: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  taxId?: string;
+}
 
 export interface CreateUpdateWarehouseDto {
   name?: string;
   location?: string;
+}
+
+export interface DepartmentConsumptionReportDto {
+  departmentId?: string;
+  departmentName?: string;
+  productId?: string;
+  productName?: string;
+  quantity?: number;
+  totalCost?: number;
+}
+
+export interface GetConsumptionReportInput {
+  startDate?: string;
+  endDate?: string;
+  departmentId?: string;
+}
+
+export interface GetPurchaseRequisitionsInput extends PagedAndSortedResultRequestDto {
+  filter?: string;
+  status?: PurchaseRequisitionStatus;
+  departmentId?: string;
 }
 
 export interface InventoryItemDto extends EntityDto<string> {
@@ -13,10 +75,10 @@ export interface InventoryItemDto extends EntityDto<string> {
   productId?: string;
   productName?: string;
   type?: InventoryItemType;
-  quantity: number;
-  averageCost: number;
-  minStockLevel: number;
-  reorderLevel: number;
+  quantity?: number;
+  averageCost?: number;
+  minStockLevel?: number;
+  reorderLevel?: number;
 }
 
 export interface InventoryTransactionDto extends EntityDto<string> {
@@ -27,6 +89,7 @@ export interface InventoryTransactionDto extends EntityDto<string> {
   totalValue?: number;
   transactionDate?: string;
   referenceNumber?: string;
+  departmentId?: string;
 }
 
 export interface IssueStockDto {
@@ -35,6 +98,57 @@ export interface IssueStockDto {
   quantity: number;
   departmentId?: string;
   referenceNumber?: string;
+}
+
+export interface PriceComparisonDto {
+  supplierId?: string;
+  supplierName?: string;
+  unitPrice?: number;
+  orderDate?: string;
+  orderNumber?: string;
+}
+
+export interface PurchaseOrderDto extends AuditedEntityDto<string> {
+  orderNumber?: string;
+  supplierId?: string;
+  supplierName?: string;
+  orderDate?: string;
+  expectedDeliveryDate?: string;
+  status?: PurchaseOrderStatus;
+  referenceNumber?: string;
+  notes?: string;
+  totalAmount?: number;
+  purchaseOrderLines?: PurchaseOrderLineDto[];
+}
+
+export interface PurchaseOrderLineDto extends EntityDto<string> {
+  purchaseOrderId?: string;
+  productId?: string;
+  productName?: string;
+  quantity?: number;
+  unitPrice?: number;
+  discount?: number;
+  totalAmount?: number;
+  description?: string;
+}
+
+export interface PurchaseRequisitionDto extends FullAuditedEntityDto<string> {
+  requisitionNumber?: string;
+  requestorId?: string;
+  requestorName?: string;
+  departmentId?: string;
+  departmentName?: string;
+  requiredDate?: string;
+  status?: PurchaseRequisitionStatus;
+  notes?: string;
+  lines?: PurchaseRequisitionLineDto[];
+}
+
+export interface PurchaseRequisitionLineDto extends EntityDto<string> {
+  productId?: string;
+  productName?: string;
+  quantity?: number;
+  description?: string;
 }
 
 export interface ReceiveStockDto {
@@ -46,6 +160,20 @@ export interface ReceiveStockDto {
   unitCost: number;
   supplierId?: string;
   referenceNumber?: string;
+}
+
+export interface SupplierDto extends AuditedEntityDto<string> {
+  name?: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  taxId?: string;
+}
+
+export interface UpdateStockLevelsDto {
+  minStockLevel?: number;
+  reorderLevel?: number;
 }
 
 export interface WarehouseDto extends AuditedEntityDto<string> {

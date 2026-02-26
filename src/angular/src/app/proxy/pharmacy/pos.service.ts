@@ -1,36 +1,37 @@
-import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { PosProductDto, PosSaleDto } from './models';
+import type { PosProductDto, PosSaleDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class PosService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  getProductByBarcode = (barcode: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PosProductDto>({
+      method: 'GET',
+      url: '/api/app/pos/product-by-barcode',
+      params: { barcode },
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getProductByBarcode(barcode: string): Observable<PosProductDto> {
-        return this.restService.request({
-            url: `/api/app/pos/product-by-barcode`,
-            method: 'GET',
-            params: { barcode },
-        }, { apiName: this.apiName });
-    }
+  getProductById = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PosProductDto>({
+      method: 'GET',
+      url: `/api/app/pos/${id}/product-by-id`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getProductById(id: string): Observable<PosProductDto> {
-        return this.restService.request({
-            url: `/api/app/pos/product/${id}`,
-            method: 'GET',
-        }, { apiName: this.apiName });
-    }
-
-    processSale(input: PosSaleDto): Observable<void> {
-        return this.restService.request({
-            url: `/api/app/pos/process-sale`,
-            method: 'POST',
-            body: input,
-        }, { apiName: this.apiName });
-    }
+  processSale = (input: PosSaleDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/pos/process-sale',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

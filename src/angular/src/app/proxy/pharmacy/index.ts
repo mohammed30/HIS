@@ -5,4 +5,6 @@ export * from './inventory.service';
 export * from './models';
 export * from './pharmacy.service';
 export * from './pos.service';
+export * from './transfer-status.enum';
+export * from './verification-status.enum';
 export { Dtos };

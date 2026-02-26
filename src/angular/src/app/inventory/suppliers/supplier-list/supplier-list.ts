@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupplierService } from '../../../proxy/inventory/supplier.service';
-import { SupplierDto } from '../../../proxy/inventory/dtos/supplier-dto';
+import { SupplierDto } from '../../../proxy/inventory/dtos/models';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { SupplierDetailComponent } from '../supplier-detail/supplier-detail';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';

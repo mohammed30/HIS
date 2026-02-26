@@ -22,6 +22,12 @@ public class SurgicalOperationDto : FullAuditedEntityDto<Guid>
     public OperationStatus Status { get; set; }
     public Guid? InvoiceId { get; set; }
     public Guid? AdmissionId { get; set; }
+    public decimal SurgeonFeePercentage { get; set; }
+    public decimal SurgeonFeeAmount { get; set; }
+    public Guid? AnesthesiologistId { get; set; }
+    public decimal AnesthesiologistFeePercentage { get; set; }
+    public decimal AnesthesiologistFeeAmount { get; set; }
+    public decimal HospitalShareAmount { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -38,6 +44,12 @@ public class CreateUpdateSurgicalOperationDto
     public decimal PatientShare { get; set; }
     public OperationStatus Status { get; set; } = OperationStatus.Scheduled;
     public Guid? AdmissionId { get; set; }
+    public decimal SurgeonFeePercentage { get; set; }
+    public decimal SurgeonFeeAmount { get; set; }
+    public Guid? AnesthesiologistId { get; set; }
+    public decimal AnesthesiologistFeePercentage { get; set; }
+    public decimal AnesthesiologistFeeAmount { get; set; }
+    public decimal HospitalShareAmount { get; set; }
     public string? Notes { get; set; }
 }
 

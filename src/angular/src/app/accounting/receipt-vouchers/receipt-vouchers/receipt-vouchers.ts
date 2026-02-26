@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { AccountService } from '../../../proxy/accounting/account.service';
 import { PaymentMethodService } from '../../../proxy/general/payment-method.service';
 import { AccountDto } from '../../../proxy/accounting/dtos/models';
-import { PaymentMethodDto } from '../../../proxy/general/models';
+import { PaymentMethodDto } from '../../../proxy/general/dtos/models';
 
 @Component({
   selector: 'app-receipt-vouchers',

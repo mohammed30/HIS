@@ -17,6 +17,20 @@ export interface AppointmentDto extends AuditedEntityDto<string> {
   notes?: string;
 }
 
+export interface BookClinicAppointmentDto {
+  patientId?: string;
+  clinicId?: string;
+  doctorId?: string;
+  serviceItemId?: string;
+  appointmentDate?: string;
+  type?: AppointmentType;
+  isWalkIn?: boolean;
+  createInvoice?: boolean;
+  paymentMethod?: string;
+  paidAmount?: number;
+  discount?: number;
+}
+
 export interface CreateAppointmentDto {
   patientId?: string;
   doctorId?: string;
@@ -25,19 +39,6 @@ export interface CreateAppointmentDto {
   type?: AppointmentType;
   isWalkIn?: boolean;
   notes?: string;
-}
-
-export interface BookClinicAppointmentDto {
-  patientId?: string;
-  clinicId?: string;
-  doctorId?: string;
-  serviceItemId?: string;
-  appointmentDate?: string;
-  type?: AppointmentType;
-  createInvoice?: boolean;
-  paymentMethod?: string;
-  paidAmount?: number;
-  discount?: number;
 }
 
 export interface CreateUpdateWaitingListDto {

@@ -6,10 +6,10 @@ import { PurchaseRequisitionService, Dtos } from '../../../proxy/inventory';
 type PurchaseRequisitionDto = Dtos.PurchaseRequisitionDto;
 
 @Component({
-    selector: 'app-purchase-requisition-list',
-    standalone: true,
-    imports: [CommonModule, RouterModule, ThemeSharedModule],
-    template: `
+  selector: 'app-purchase-requisition-list',
+  standalone: true,
+  imports: [CommonModule, RouterModule, ThemeSharedModule],
+  template: `
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="m-0"><i class="fas fa-file-invoice me-2"></i>Purchase Requisitions</h5>
@@ -61,16 +61,16 @@ type PurchaseRequisitionDto = Dtos.PurchaseRequisitionDto;
   `
 })
 export class PurchaseRequisitionListComponent implements OnInit {
-    private service = inject(PurchaseRequisitionService);
-    requisitions: PurchaseRequisitionDto[] = [];
+  private service = inject(PurchaseRequisitionService);
+  requisitions: PurchaseRequisitionDto[] = [];
 
-    ngOnInit() {
-        this.loadList();
-    }
+  ngOnInit() {
+    this.loadList();
+  }
 
-    loadList() {
-        this.service.getList({}).subscribe(res => {
-            this.requisitions = res.items;
-        });
-    }
+  loadList() {
+    this.service.getList({ maxResultCount: 1000 }).subscribe(res => {
+      this.requisitions = res.items;
+    });
+  }
 }

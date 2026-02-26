@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 
 namespace HIS.Inpatient;
@@ -57,6 +58,13 @@ public class DischargeAdmissionDto
     public string? Notes { get; set; }
 }
 
+public class CreatePatientTransferDto
+{
+    public Guid ToRoomId { get; set; }
+    public Guid? ToBedId { get; set; }
+    public string? Reason { get; set; }
+}
+
 public class GetAdmissionsInput : PagedAndSortedResultRequestDto
 {
     public string? SearchText { get; set; }
@@ -70,7 +78,10 @@ public class GetAdmissionsInput : PagedAndSortedResultRequestDto
 #endregion
 
 #region Interface
-public interface IAdmissionAppService
+public interface IAdmissionAppService : Volo.Abp.Application.Services.ICrudAppService<AdmissionDto, Guid, GetAdmissionsInput, CreateUpdateAdmissionDto>
 {
+    Task<AdmissionDto> DischargeAsync(Guid id, DischargeAdmissionDto input);
+    Task<AdmissionDto> UpdateDaysAsync(Guid id, int numberOfDays);
+    Task<AdmissionDto> TransferPatientAsync(Guid id, CreatePatientTransferDto input);
 }
 #endregion

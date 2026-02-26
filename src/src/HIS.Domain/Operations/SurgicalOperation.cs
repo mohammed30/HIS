@@ -62,6 +62,36 @@ public class SurgicalOperation : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public decimal InsuranceTotal { get; set; }
 
     /// <summary>
+    /// نسبة أجر الجراح المئوية
+    /// </summary>
+    public decimal SurgeonFeePercentage { get; set; }
+
+    /// <summary>
+    /// مبلغ أجر الجراح الصافي
+    /// </summary>
+    public decimal SurgeonFeeAmount { get; set; }
+
+    /// <summary>
+    /// طبيب التخدير
+    /// </summary>
+    public Guid? AnesthesiologistId { get; set; }
+
+    /// <summary>
+    /// نسبة أجر طبيب التخدير
+    /// </summary>
+    public decimal AnesthesiologistFeePercentage { get; set; }
+
+    /// <summary>
+    /// مبلغ أجر طبيب التخدير المقطوع
+    /// </summary>
+    public decimal AnesthesiologistFeeAmount { get; set; }
+
+    /// <summary>
+    /// نصيب المستشفى من العملية
+    /// </summary>
+    public decimal HospitalShareAmount { get; set; }
+
+    /// <summary>
     /// حالة العملية
     /// </summary>
     public OperationStatus Status { get; set; } = OperationStatus.Scheduled;

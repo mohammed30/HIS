@@ -4,7 +4,7 @@ import type { IdentityType } from './identity-type.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface CreateUpdatePatientDto {
-  fullNameAr?: string;
+  fullNameAr: string;
   fullNameEn?: string;
   firstNameAr?: string;
   middleNameAr?: string;
@@ -18,7 +18,7 @@ export interface CreateUpdatePatientDto {
   nationalityId?: string;
   professionId?: string;
   contractId?: string;
-  patientCategoryId?: string;
+  paymentMethodId: string;
   referralSourceId?: string;
   identityType?: IdentityType;
   identityNumber?: string;
@@ -33,7 +33,7 @@ export interface CreateUpdatePatientDto {
   visaIssueDate?: string;
   visaIssuePlace?: string;
   visaExpiryDate?: string;
-  mobileNumber?: string;
+  mobileNumber: string;
   phoneNumber?: string;
   email?: string;
   address?: string;
@@ -58,7 +58,7 @@ export interface GetPatientsInput extends PagedAndSortedResultRequestDto {
   identityNumber?: string;
   mobileNumber?: string;
   gender?: Gender;
-  patientCategoryId?: string;
+  paymentMethodId?: string;
   isActive?: boolean;
 }
 
@@ -82,8 +82,8 @@ export interface PatientDto extends FullAuditedEntityDto<string> {
   professionName?: string;
   contractId?: string;
   contractName?: string;
-  patientCategoryId?: string;
-  patientCategoryName?: string;
+  paymentMethodId?: string;
+  paymentMethodName?: string;
   referralSourceId?: string;
   referralSourceName?: string;
   identityType?: IdentityType;

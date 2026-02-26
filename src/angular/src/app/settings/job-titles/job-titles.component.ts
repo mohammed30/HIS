@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { JobTitleService } from '../../proxy/settings/job-title.service';
-import { JobTitleDto, CreateUpdateJobTitleDto } from '../../proxy/settings/dtos/job-title-dto';
 import { DepartmentService } from '../../proxy/settings/department.service';
 import { LookupDto } from '../../proxy/settings/models';
+import { JobTitleDto, CreateUpdateJobTitleDto } from '../../proxy/settings/dtos/models';
 
 @Component({
     selector: 'app-job-titles',

@@ -8,6 +8,7 @@ export enum ServiceType {
   Procedure = 4,
   Inpatient = 5,
   Consumables = 6,
+  Surgery = 7,
   Other = 99,
 }
 

@@ -12,6 +12,14 @@ export class InvoiceService {
   apiName = 'Default';
   
 
+  cancel = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InvoiceDto>({
+      method: 'POST',
+      url: `/api/app/invoice/${id}/cancel`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   create = (input: CreateUpdateInvoiceDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, InvoiceDto>({
       method: 'POST',

@@ -1,3 +1,4 @@
+import type { DispensingLabelDto } from './dtos/models';
 import type { DispenseDto, PendingPrescriptionDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -25,6 +26,14 @@ export class PharmacyService {
       method: 'POST',
       url: '/api/app/pharmacy/dispense-medication',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getLabel = (dispensingId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DispensingLabelDto>({
+      method: 'GET',
+      url: `/api/app/pharmacy/label/${dispensingId}`,
     },
     { apiName: this.apiName,...config });
   

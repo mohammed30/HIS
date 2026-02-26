@@ -1,4 +1,4 @@
-import type { CreateUpdateWarehouseDto, InventoryItemDto, InventoryTransactionDto, IssueStockDto, ReceiveStockDto, WarehouseDto } from './dtos/models';
+import type { CreateUpdateWarehouseDto, DepartmentConsumptionReportDto, GetConsumptionReportInput, InventoryItemDto, InventoryTransactionDto, IssueStockDto, ReceiveStockDto, UpdateStockLevelsDto, WarehouseDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -24,6 +24,15 @@ export class InventoryService {
     this.restService.request<any, void>({
       method: 'DELETE',
       url: `/api/app/inventory/warehouse/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getConsumptionReport = (input: GetConsumptionReportInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DepartmentConsumptionReportDto[]>({
+      method: 'GET',
+      url: '/api/app/inventory/consumption-report',
+      params: { startDate: input.startDate, endDate: input.endDate, departmentId: input.departmentId },
     },
     { apiName: this.apiName,...config });
   
@@ -75,6 +84,15 @@ export class InventoryService {
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/inventory/receive-stock',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateStockLevels = (id: string, input: UpdateStockLevelsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: `/api/app/inventory/stock-levels/${id}`,
       body: input,
     },
     { apiName: this.apiName,...config });

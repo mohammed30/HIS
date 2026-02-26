@@ -10,8 +10,8 @@ import { PurchaseOrderService } from '../../../proxy/inventory/purchase-order.se
 import { SupplierService } from '../../../proxy/inventory/supplier.service';
 import { ServiceItemService } from '../../../proxy/services/service-item.service';
 import { InventoryService } from '../../../proxy/inventory/inventory.service';
-import { PurchaseOrderDto, PurchaseOrderStatus } from '../../../proxy/inventory/dtos/purchase-order-dto';
-import { SupplierDto } from '../../../proxy/inventory/dtos/supplier-dto';
+import { PurchaseOrderDto, PurchaseOrderLineDto, SupplierDto } from '../../../proxy/inventory/dtos/models';
+import { PurchaseOrderStatus } from '../../../proxy/inventory/purchase-order-status.enum';
 import { ServiceItemDto } from '../../../proxy/services/models';
 
 @Component({

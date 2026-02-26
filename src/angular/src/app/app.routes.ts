@@ -416,6 +416,12 @@ export const APP_ROUTES: Routes = [
     data: { requiredPolicy: 'HIS.Nursing' }
   },
   {
+    path: 'operations/surgical-operations',
+    loadComponent: () => import('./operations/surgical-operations/surgical-operations').then(c => c.SurgicalOperations),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Operations' }
+  },
+  {
     path: 'operations/reports/surgical-operations',
     loadComponent: () => import('./operations/reports/operations-report.component').then(c => c.OperationsReportComponent),
     canActivate: [authGuard, permissionGuard],

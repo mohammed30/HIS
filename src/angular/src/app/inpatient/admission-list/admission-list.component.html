@@ -3,10 +3,11 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="m-0 text-primary">{{ '::Menu:Admissions' | abpLocalization }}</h3>
         <div class="d-flex gap-2">
-            <button class="btn btn-info text-white" disabled>
+            <button class="btn btn-info text-white" [routerLink]="['/operations/surgical-operations']">
                 <i class="fa fa-procedures me-1"></i> {{ '::Operations' | abpLocalization }}
             </button>
-            <button class="btn btn-primary" *abpPermission="'HIS.Inpatient.Admissions.Create'">
+            <button class="btn btn-primary" *abpPermission="'HIS.Inpatient.Admissions.Create'"
+                (click)="openNewAdmissionModal(newAdmissionModal)">
                 {{ '::NewAdmission' | abpLocalization }}
             </button>
         </div>
@@ -66,13 +67,6 @@
                                     <td class="fw-bold">{{ row.patientName }}</td>
                                     <td><small class="text-muted">{{ row.patientFileNumber }}</small></td>
                                     <td>{{ '::Enum:RoomType.' + row.roomTypeName | abpLocalization }}</td>
-                                    <!-- Assuming roomTypeName is int value from backend, wait, it's string name. Need to fix or map -->
-                                    <!-- Backend sends string name, but locally I can't loc easily unless I map back or send int. 
-                                         Let's assume backend sends string 'Private', 'Ward'. Localization might fail. 
-                                         I should update backend to send Enum value or handle it. 
-                                         Actually backend sends `room.Type.ToString()`. 
-                                         I will just display it for now or check if I can map. -->
-                                    <td>{{ row.roomTypeName }}</td>
                                     <td><span class="badge bg-light text-dark border">{{ row.roomNumber }}</span></td>
                                     <td>{{ row.admissionDate | date:'shortDate' }}</td>
                                     <td>
@@ -150,8 +144,31 @@
                             <!-- Actions -->
                             <div class="d-grid gap-2">
                                 <button class="btn btn-success btn-sm" (click)="saveDetails()"
-                                    [disabled]="detailForm.invalid || detailForm.pristine">
+                                    [disabled]="detailForm.invalid || detailForm.pristine"
+                                    *ngIf="selectedAdmission.status !== 2">
                                     <i class="fa fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+                                </button>
+
+                                <button class="btn btn-primary btn-sm" (click)="openDepositModal(depositModal)"
+                                    *ngIf="selectedAdmission.status !== 2">
+                                    <i class="fa fa-money-bill-wave me-1"></i> {{ '::AdvancePayment' | abpLocalization
+                                    }}
+                                </button>
+
+                                <button class="btn btn-warning btn-sm" (click)="openTransferModal(transferModal)"
+                                    *ngIf="selectedAdmission.status !== 2">
+                                    <i class="fa fa-exchange-alt me-1"></i> {{ '::TransferPatient' | abpLocalization }}
+                                </button>
+
+                                <button class="btn btn-info btn-sm text-white"
+                                    (click)="openConsumableModal(consumableModal)"
+                                    *ngIf="selectedAdmission.status !== 2">
+                                    <i class="fa fa-boxes me-1"></i> {{ '::OrderConsumables' | abpLocalization }}
+                                </button>
+
+                                <button class="btn btn-danger btn-sm" (click)="openDischargeModal(dischargeModal)"
+                                    *ngIf="selectedAdmission.status !== 2" [disabled]="selectedAdmission.status === 2">
+                                    <i class="fa fa-sign-out-alt me-1"></i> {{ '::MedicalDischarge' | abpLocalization }}
                                 </button>
 
                                 <div class="d-flex gap-2">
@@ -180,3 +197,306 @@
         </div>
     </div>
 </div>
+
+<!-- Discharge Modal -->
+<ng-template #dischargeModal let-modal>
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="fa fa-sign-out-alt me-2"></i>{{ '::MedicalDischarge' | abpLocalization }}</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="dischargeForm">
+        <p class="text-muted small mb-3">{{ '::DischargeWarningMsg' | abpLocalization: selectedAdmission?.patientName }}
+        </p>
+
+        <div class="mb-3">
+            <label class="form-label required">{{ '::DischargeDate' | abpLocalization }}</label>
+            <input type="datetime-local" class="form-control" formControlName="dischargeDate" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::DischargeNotes' | abpLocalization }}</label>
+            <textarea class="form-control" rows="3" formControlName="notes"
+                placeholder="{{ '::EnterNotesOptionally' | abpLocalization }}"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDischarge()" [disabled]="dischargeForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::ConfirmDischarge' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- Deposit Modal -->
+<ng-template #depositModal let-modal>
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fa fa-money-bill-wave me-2"></i>{{ '::AdvancePayment' | abpLocalization }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="depositForm">
+        <div class="mb-3">
+            <label class="form-label required">{{ '::Amount' | abpLocalization }}</label>
+            <input type="number" class="form-control" formControlName="amount" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label required">{{ '::PaymentMethod' | abpLocalization }}</label>
+            <select class="form-select" formControlName="paymentMethod" required>
+                <option *ngFor="let method of paymentMethods" [ngValue]="method.value">
+                    {{ '::Enum:PaymentMethod.' + method.value | abpLocalization }}
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::ReferenceNumber' | abpLocalization }}</label>
+            <input type="text" class="form-control" formControlName="referenceNumber"
+                placeholder="{{ '::Optional' | abpLocalization }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+            <textarea class="form-control" rows="2" formControlName="notes"
+                placeholder="{{ '::EnterNotesOptionally' | abpLocalization }}"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="confirmDeposit()" [disabled]="depositForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::ConfirmDeposit' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- Transfer Modal -->
+<ng-template #transferModal let-modal>
+    <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title"><i class="fa fa-exchange-alt me-2"></i>{{ '::TransferPatient' | abpLocalization }}</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="transferForm">
+        <div class="mb-3">
+            <label class="form-label required">{{ '::NewRoomType' | abpLocalization }}</label>
+            <select class="form-select" formControlName="toRoomTypeId" (change)="onTransferRoomTypeChange()" required>
+                <option [ngValue]="null">-- {{ '::SelectRoomType' | abpLocalization }} --</option>
+                <option *ngFor="let type of roomTypes" [ngValue]="type.value">
+                    {{ '::Enum:RoomType.' + type.value | abpLocalization }}
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3" *ngIf="transferForm.get('toRoomTypeId').value !== null">
+            <label class="form-label required">{{ '::NewRoom' | abpLocalization }}</label>
+            <select class="form-select" formControlName="toRoomId" (change)="onTransferRoomChange()" required>
+                <option [ngValue]="null">-- {{ '::SelectRoom' | abpLocalization }} --</option>
+                <option *ngFor="let room of transferRooms" [ngValue]="room.id">
+                    {{ room.roomNumber }} - {{ room.name || '' }} ({{ room.dailyRate | currency }})
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3" *ngIf="transferForm.get('toRoomId').value !== null">
+            <label class="form-label required">{{ '::NewBed' | abpLocalization }}</label>
+            <select class="form-select" formControlName="toBedId" required>
+                <option [ngValue]="null">-- {{ '::SelectBed' | abpLocalization }} --</option>
+                <option *ngFor="let bed of transferBeds" [ngValue]="bed.id">
+                    {{ bed.bedNumber }} - {{ '::Enum:BedType.' + bed.type | abpLocalization }}
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::TransferReason' | abpLocalization }}</label>
+            <textarea class="form-control" rows="2" formControlName="reason"
+                placeholder="{{ '::EnterNotesOptionally' | abpLocalization }}"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-warning" (click)="confirmTransfer()" [disabled]="transferForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::ConfirmTransfer' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- New Admission Modal -->
+<ng-template #newAdmissionModal let-modal>
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fa fa-plus-circle me-2"></i>{{ '::NewAdmission' | abpLocalization }}</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="newAdmissionForm" style="max-height: 80vh; overflow-y: auto;">
+        <!-- Patient Search and Selection -->
+        <div class="mb-3">
+            <label class="form-label required">{{ '::Patient' | abpLocalization }}</label>
+            <div class="dropdown" ngbDropdown>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-search"></i></span>
+                    <input type="text" class="form-control" [placeholder]="'::SearchPatient' | abpLocalization"
+                        [(ngModel)]="patientSearchTerm" [ngModelOptions]="{standalone: true}" (input)="filterPatients()"
+                        ngbDropdownAnchor>
+                </div>
+                <div class="dropdown-menu w-100 shadow" ngbDropdownMenu style="max-height: 300px; overflow-y: auto;">
+                    <button type="button" *ngFor="let p of filteredPatients"
+                        class="dropdown-item d-flex justify-content-between"
+                        (click)="newAdmissionForm.get('patientId')?.setValue(p.id); patientSearchTerm = p.fullNameAr || ''">
+                        <span>{{ p.fullNameAr }}</span>
+                        <small class="text-muted">{{ p.mrn }}</small>
+                    </button>
+                    <div *ngIf="filteredPatients.length === 0" class="dropdown-item text-muted">
+                        {{ '::NoDataFound' | abpLocalization }}
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" formControlName="patientId" required>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label required">{{ '::RoomType' | abpLocalization }}</label>
+                <select class="form-select" formControlName="roomTypeId" (change)="onNewAdmissionRoomTypeChange()"
+                    required>
+                    <option [ngValue]="null">-- {{ '::SelectRoomType' | abpLocalization }} --</option>
+                    <option *ngFor="let type of roomTypes" [ngValue]="type.value">
+                        {{ '::Enum:RoomType.' + type.value | abpLocalization }}
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label required">{{ '::Room' | abpLocalization }}</label>
+                <select class="form-select" formControlName="roomId" (change)="onNewAdmissionRoomChange()" required>
+                    <option [ngValue]="null">-- {{ '::SelectRoom' | abpLocalization }} --</option>
+                    <option *ngFor="let room of availableRooms" [ngValue]="room.id">
+                        {{ room.roomNumber }} - {{ room.name || '' }}
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label required">{{ '::Bed' | abpLocalization }}</label>
+                <select class="form-select" formControlName="bedId" required>
+                    <option [ngValue]="null">-- {{ '::SelectBed' | abpLocalization }} --</option>
+                    <option *ngFor="let bed of availableBedsList" [ngValue]="bed.id">
+                        {{ bed.bedNumber }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card mb-3 shadow-sm border-0 bg-light">
+            <div class="card-body p-3">
+                <h6 class="border-bottom pb-2 mb-3"><i class="fa fa-info-circle me-2"></i>{{ '::AdmissionDetails' |
+                    abpLocalization }}</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ '::CompanionName' | abpLocalization }}</label>
+                        <input type="text" class="form-control" formControlName="companionName">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ '::CompanionPhone' | abpLocalization }}</label>
+                        <input type="text" class="form-control" formControlName="companionPhone">
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">{{ '::CompanionAddress' | abpLocalization }}</label>
+                        <input type="text" class="form-control" formControlName="companionAddress">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ '::Purpose' | abpLocalization }}</label>
+                        <input type="text" class="form-control" formControlName="purpose">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ '::InsuranceCeiling' | abpLocalization }}</label>
+                        <input type="number" class="form-control" formControlName="insuranceCeiling">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ '::PharmacyPercentage' | abpLocalization }}</label>
+                        <input type="number" class="form-control" formControlName="pharmacyPercentage">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ '::ExpectedDays' | abpLocalization }}</label>
+                        <input type="number" class="form-control" formControlName="numberOfDays">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ '::AdvancePayment' | abpLocalization }}</label>
+                        <input type="number" class="form-control" formControlName="paidAmount">
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" formControlName="isServicesStopped">
+                            <label class="form-check-label">{{ '::StopServices' | abpLocalization }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+                    <textarea class="form-control" rows="2" formControlName="notes"
+                        [placeholder]="'::Optional' | abpLocalization"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="confirmNewAdmission()"
+            [disabled]="newAdmissionForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::Save' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- Consumable Order Modal -->
+<ng-template #consumableModal let-modal>
+    <div class="modal-header bg-info text-white">
+        <h5 class="modal-title"><i class="fa fa-boxes me-2"></i>{{ '::OrderConsumables' | abpLocalization }}</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="consumableForm">
+        <p class="text-muted small mb-3">{{ '::OrderConsumablesDescription' | abpLocalization }}</p>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::SearchConsumable' | abpLocalization }}</label>
+            <input type="text" class="form-control" [(ngModel)]="consumableSearchTerm"
+                [ngModelOptions]="{standalone: true}" (input)="filterConsumables()"
+                [placeholder]="'::SearchByNameOrCode' | abpLocalization">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label required">{{ '::SelectConsumable' | abpLocalization }}</label>
+            <select class="form-select" formControlName="serviceItemId" required>
+                <option [ngValue]="null">-- {{ '::SelectConsumable' | abpLocalization }} --</option>
+                <option *ngFor="let item of filteredConsumableItems" [ngValue]="item.id">
+                    {{ item.name }} ({{ item.price | currency }})
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label required">{{ '::Quantity' | abpLocalization }}</label>
+            <input type="number" class="form-control" formControlName="quantity" min="1" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+            <textarea class="form-control" rows="2" formControlName="clinicalNotes"
+                [placeholder]="'::EnterNotesOptionally' | abpLocalization"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-info text-white" (click)="confirmConsumableOrder()"
+            [disabled]="consumableForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::ConfirmOrder' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>

@@ -1,28 +1,45 @@
-import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { VerifyPrescriptionDto, DispensingVerificationDto } from './models';
+import type { CreateDispensingDto, DispensingLabelDto, DispensingVerificationDto, VerifyPrescriptionDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class DispensingService {
-    apiName = 'Default';
+  private restService = inject(RestService);
+  apiName = 'Default';
+  
 
-    constructor(private restService: RestService) { }
+  dispense = (input: CreateDispensingDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/dispensing/dispense',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    verifyPrescription(input: VerifyPrescriptionDto): Observable<void> {
-        return this.restService.request({
-            url: `/api/app/dispensing/verify-prescription`,
-            method: 'POST',
-            body: input,
-        }, { apiName: this.apiName });
-    }
+  getLabel = (dispensingId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DispensingLabelDto>({
+      method: 'GET',
+      url: `/api/app/dispensing/label/${dispensingId}`,
+    },
+    { apiName: this.apiName,...config });
+  
 
-    getVerification(medicalOrderId: string): Observable<DispensingVerificationDto> {
-        return this.restService.request({
-            url: `/api/app/dispensing/verification/${medicalOrderId}`,
-            method: 'GET',
-        }, { apiName: this.apiName });
-    }
+  getVerification = (medicalOrderId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, DispensingVerificationDto>({
+      method: 'GET',
+      url: `/api/app/dispensing/verification/${medicalOrderId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  verifyPrescription = (input: VerifyPrescriptionDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/dispensing/verify-prescription',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
 }

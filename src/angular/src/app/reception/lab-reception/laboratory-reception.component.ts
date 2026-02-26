@@ -11,7 +11,8 @@ import { ContractService } from '../../proxy/general/contract.service';
 import { PaymentMethodService } from '../../proxy/general/payment-method.service';
 import { PaymentService } from '../../proxy/billing/payment.service';
 import { ReferralSourceService } from '../../proxy/general/referral-source.service';
-import { NationalityDto, ProfessionDto, ContractDto, PaymentMethodDto, ReferralSourceDto } from '../../proxy/general/models';
+import { NationalityDto, ProfessionDto, ContractDto, ReferralSourceDto } from '../../proxy/general/models';
+import { PaymentMethodDto } from '../../proxy/general/dtos/models';
 
 import { DoctorService } from '../../proxy/settings/doctor.service';
 import { PatientService } from '../../proxy/patients/patient.service';

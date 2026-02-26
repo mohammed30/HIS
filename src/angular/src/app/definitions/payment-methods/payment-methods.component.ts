@@ -5,13 +5,13 @@ import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { PaymentMethodService } from '../../proxy/general/payment-method.service';
-import { PaymentMethodDto } from '../../proxy/general/models';
+import { PaymentMethodDto } from '../../proxy/general/dtos/models';
 
 @Component({
-    selector: 'app-payment-methods',
-    standalone: true,
-    imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule, CoreModule],
-    template: `
+  selector: 'app-payment-methods',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule, CoreModule],
+  template: `
     <div class="container-fluid py-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center bg-info text-white">
@@ -153,7 +153,7 @@ import { PaymentMethodDto } from '../../proxy/general/models';
       }
     </div>
   `,
-    styles: [`
+  styles: [`
     .table th { font-weight: 600; }
     .card { border: none; border-radius: 12px; overflow: hidden; }
     .card-header { border-bottom: none; }
@@ -162,103 +162,103 @@ import { PaymentMethodDto } from '../../proxy/general/models';
   `]
 })
 export class PaymentMethodsComponent implements OnInit {
-    private service = inject(PaymentMethodService);
-    private confirmation = inject(ConfirmationService);
+  private service = inject(PaymentMethodService);
+  private confirmation = inject(ConfirmationService);
 
-    items: PaymentMethodDto[] = [];
-    searchText = '';
-    showForm = false;
-    editingItem: PaymentMethodDto | null = null;
-    formData: any = this.getEmptyForm();
-    loading = false;
+  items: PaymentMethodDto[] = [];
+  searchText = '';
+  showForm = false;
+  editingItem: PaymentMethodDto | null = null;
+  formData: any = this.getEmptyForm();
+  loading = false;
 
-    // Pagination
-    page = 1;
-    pageSize = 10;
-    totalCount = 0;
+  // Pagination
+  page = 1;
+  pageSize = 10;
+  totalCount = 0;
 
-    ngOnInit() {
-        this.loadData();
-    }
+  ngOnInit() {
+    this.loadData();
+  }
 
-    getEmptyForm() {
-        return { nameAr: '', nameEn: '', code: '', isActive: true, isDefault: false };
-    }
+  getEmptyForm() {
+    return { nameAr: '', nameEn: '', code: '', isActive: true, isDefault: false };
+  }
 
-    resetForm() {
-        this.formData = this.getEmptyForm();
-    }
+  resetForm() {
+    this.formData = this.getEmptyForm();
+  }
 
-    loadData() {
-        const skipCount = (this.page - 1) * this.pageSize;
-        this.service.getList({
-            filter: this.searchText,
-            sorting: '',
-            skipCount,
-            maxResultCount: this.pageSize
-        } as any).subscribe({
-            next: (res) => {
-                this.items = res.items || [];
-                this.totalCount = res.totalCount || 0;
-            },
-            error: (err) => console.error(err)
-        });
-    }
+  loadData() {
+    const skipCount = (this.page - 1) * this.pageSize;
+    this.service.getList({
+      filter: this.searchText,
+      sorting: '',
+      skipCount,
+      maxResultCount: this.pageSize
+    } as any).subscribe({
+      next: (res) => {
+        this.items = res.items || [];
+        this.totalCount = res.totalCount || 0;
+      },
+      error: (err) => console.error(err)
+    });
+  }
 
-    onPageChange(page: number) {
-        this.page = page;
-        this.loadData();
-    }
+  onPageChange(page: number) {
+    this.page = page;
+    this.loadData();
+  }
 
-    search() {
-        this.page = 1;
-        this.loadData();
-    }
+  search() {
+    this.page = 1;
+    this.loadData();
+  }
 
-    edit(item: PaymentMethodDto) {
-        this.editingItem = item;
-        // Create a copy of the item for the form
-        this.formData = { ...item };
-        this.showForm = true;
-    }
+  edit(item: PaymentMethodDto) {
+    this.editingItem = item;
+    // Create a copy of the item for the form
+    this.formData = { ...item };
+    this.showForm = true;
+  }
 
-    save() {
-        this.loading = true;
-        if (this.editingItem) {
-            this.service.update(this.editingItem.id, this.formData).subscribe({
-                next: () => {
-                    this.loading = false;
-                    this.showForm = false;
-                    this.loadData();
-                },
-                error: (err) => {
-                    this.loading = false;
-                    console.error(err);
-                }
-            });
-        } else {
-            this.service.create(this.formData).subscribe({
-                next: () => {
-                    this.loading = false;
-                    this.showForm = false;
-                    this.loadData();
-                },
-                error: (err) => {
-                    this.loading = false;
-                    console.error(err);
-                }
-            });
+  save() {
+    this.loading = true;
+    if (this.editingItem) {
+      this.service.update(this.editingItem.id, this.formData).subscribe({
+        next: () => {
+          this.loading = false;
+          this.showForm = false;
+          this.loadData();
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error(err);
         }
+      });
+    } else {
+      this.service.create(this.formData).subscribe({
+        next: () => {
+          this.loading = false;
+          this.showForm = false;
+          this.loadData();
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error(err);
+        }
+      });
     }
+  }
 
-    delete(item: PaymentMethodDto) {
-        this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
-            if (status === Confirmation.Status.confirm) {
-                this.service.delete(item.id).subscribe({
-                    next: () => this.loadData(),
-                    error: (err) => console.error(err)
-                });
-            }
+  delete(item: PaymentMethodDto) {
+    this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.service.delete(item.id).subscribe({
+          next: () => this.loadData(),
+          error: (err) => console.error(err)
         });
-    }
+      }
+    });
+  }
 }

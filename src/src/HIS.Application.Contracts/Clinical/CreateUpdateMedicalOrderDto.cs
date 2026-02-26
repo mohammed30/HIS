@@ -14,6 +14,8 @@ public class CreateUpdateMedicalOrderDto
     public OrderType Type { get; set; }
     
     public string ClinicalNotes { get; set; }
+
+    public decimal Quantity { get; set; } = 1;
     
     // Optional overrides
     public string Details { get; set; }
