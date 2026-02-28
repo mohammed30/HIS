@@ -125,3 +125,25 @@ export interface PatientLookupDto {
   fullNameAr?: string;
   mobileNumber?: string;
 }
+
+export interface PatientServiceItemDto {
+  date?: string;
+  invoiceNumber?: string;
+  serviceDescription?: string;
+  quantity?: number;
+  unitPrice?: number;
+  totalPrice?: number;
+  status?: string;
+  isPaid?: boolean;
+}
+
+export interface PatientServicesReportDto {
+  patientId?: string;
+  patientName?: string;
+  mrn?: string;
+  reportDate?: string;
+  services?: PatientServiceItemDto[];
+  totalAmountInvoiced?: number;
+  totalAmountPaid?: number;
+  totalAmountDue?: number;
+}

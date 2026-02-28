@@ -1,0 +1,159 @@
+<div class="card" *ngIf="!patientId">
+    <div class="card-header">
+        <div class="card-title mb-0">
+            <h4>{{ '::PatientServicesReport' | abpLocalization }}</h4>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <div class="input-group">
+                <input type="text" class="form-control" [(ngModel)]="searchQuery" (keyup.enter)="searchPatients()"
+                    [placeholder]="'::Search' | abpLocalization">
+                <button class="btn btn-primary" (click)="searchPatients()" [disabled]="isSearching">
+                    <i class="fas fa-search me-1"></i> {{ '::Search' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="isSearching" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div *ngIf="!isSearching && hasSearched && searchResults.length === 0" class="alert alert-info">
+            No patients found.
+        </div>
+
+        <div class="list-group" *ngIf="!isSearching && searchResults.length > 0">
+            <button type="button"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                *ngFor="let patient of searchResults" (click)="selectPatient(patient.id!)">
+                <div>
+                    <h6 class="mb-1">{{ patient.fullNameAr || patient.mrn }}</h6>
+                    <small class="text-muted">{{ '::MRN' | abpLocalization }}: {{ patient.mrn }} <span
+                            *ngIf="patient.mobileNumber">| الهاتف: {{ patient.mobileNumber }}</span></small>
+                </div>
+                <i class="fas fa-chevron-left text-muted"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card" *ngIf="patientId">
+    <div class="card-header d-flex justify-content-between align-items-center mb-0 print-hidden">
+        <div class="card-title mb-0">
+            <h4>{{ '::PatientServicesReport' | abpLocalization }}</h4>
+        </div>
+        <div class="d-flex align-items-center no-print flex-wrap gap-3">
+            <div class="form-check form-switch mb-0" style="margin-top: 5px;">
+                <input class="form-check-input" type="checkbox" id="unpaidOnlyToggle" [(ngModel)]="showUnpaidOnly"
+                    (change)="onToggleUnpaid()">
+                <label class="form-check-label mb-0" for="unpaidOnlyToggle" style="font-weight: 600;">{{
+                    '::ShowUnpaidOnly' | abpLocalization }}</label>
+            </div>
+            <div>
+                <button class="btn btn-secondary me-2" routerLink="/patients">
+                    <i class="fa fa-arrow-left me-1"></i> {{ '::Back' | abpLocalization }}
+                </button>
+                <button class="btn btn-primary" (click)="print()">
+                    <i class="fa fa-print me-1"></i> {{ '::Print' | abpLocalization }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body" id="printable-section">
+        <!-- Header info for print -->
+        <div class="row mb-4 report-header">
+            <div class="col-6">
+                <h3 class="mb-1 text-primary" style="font-weight: 700;">{{ '::PatientServicesReport' | abpLocalization
+                    }}</h3>
+                <p class="mb-0 text-muted">{{ '::Date' | abpLocalization }}: {{ reportData?.reportDate |
+                    date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <div class="col-6 text-end">
+                <div class="p-3 bg-light rounded border">
+                    <h5 class="mb-2">{{ reportData?.patientName }}</h5>
+                    <p class="mb-0"><strong>{{ '::MRN' | abpLocalization }}:</strong> {{ reportData?.mrn }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4 summary-cards">
+            <div class="col-md-4">
+                <div class="card border-primary mb-3">
+                    <div class="card-body text-center shadow-sm" style="background-color: #f8faff;">
+                        <p class="card-title text-muted mb-1" style="font-size: 1.1rem; font-weight: 600;">{{
+                            '::TotalBilled' | abpLocalization }}</p>
+                        <h3 class="text-primary mb-0" style="font-weight: 700;">{{ reportData?.totalAmountInvoiced |
+                            number:'1.2-2' }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-success mb-3">
+                    <div class="card-body text-center shadow-sm" style="background-color: #f4fdf8;">
+                        <p class="card-title text-muted mb-1" style="font-size: 1.1rem; font-weight: 600;">{{
+                            '::TotalPaid' | abpLocalization }}</p>
+                        <h3 class="text-success mb-0" style="font-weight: 700;">{{ reportData?.totalAmountPaid |
+                            number:'1.2-2' }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-danger mb-3">
+                    <div class="card-body text-center shadow-sm" style="background-color: #fff5f5;">
+                        <p class="card-title text-muted mb-1" style="font-size: 1.1rem; font-weight: 600;">{{
+                            '::TotalDue' | abpLocalization }}</p>
+                        <h3 class="text-danger mb-0" style="font-weight: 700;">{{ reportData?.totalAmountDue |
+                            number:'1.2-2' }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="isLoading" class="text-center py-5 no-print">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Services Table -->
+        <div class="table-responsive" *ngIf="!isLoading">
+            <table class="table table-striped table-hover table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 15%">{{ '::Date' | abpLocalization }}</th>
+                        <th style="width: 15%">{{ '::InvoiceNumber' | abpLocalization }}</th>
+                        <th style="width: 35%">{{ '::ServiceOrOperation' | abpLocalization }}</th>
+                        <th style="width: 10%" class="text-center">{{ '::Quantity' | abpLocalization }}</th>
+                        <th style="width: 10%" class="text-end">{{ '::Price' | abpLocalization }}</th>
+                        <th style="width: 15%" class="text-center">{{ '::Status' | abpLocalization }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let service of reportData?.services">
+                        <td>{{ service.date | date:'dd/MM/yyyy' }}</td>
+                        <td class="font-monospace">{{ service.invoiceNumber }}</td>
+                        <td>{{ service.serviceDescription }}</td>
+                        <td class="text-center">{{ service.quantity }}</td>
+                        <td class="text-end fw-bold">{{ service.totalPrice | number:'1.2-2' }}</td>
+                        <td class="text-center">
+                            <span class="badge" [ngClass]="service.isPaid ? 'bg-success' : 'bg-danger'"
+                                style="font-size: 0.9em;">
+                                {{ service.isPaid ? ('::Paid' | abpLocalization) : ('::Unpaid' | abpLocalization) }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="reportData?.services?.length === 0">
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            {{ '::NoServicesFound' | abpLocalization }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

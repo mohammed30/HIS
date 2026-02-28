@@ -602,11 +602,29 @@ function configureRoutes() {
     {
       path: '/inventory/reports/department-consumption',
       name: '::Menu:DepartmentalConsumption',
-      parentName: '::Menu:Inventory',
-      iconClass: 'fas fa-chart-pie',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-chart-line',
       order: 40,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.DepartmentalConsumption',
+      requiredPolicy: 'HIS.Inventory.StockOperations', // Use an existing generic permission for now
+    },
+    {
+      path: '/inventory/reports/low-stock',
+      name: '::Menu:LowStockReport',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-exclamation-triangle',
+      order: 41,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.StockOperations',
+    },
+    {
+      path: '/inventory/reports/stagnant-stock',
+      name: '::Menu:StagnantStockReport',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-box-open',
+      order: 42,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.StockOperations',
     },
     // Nursing
     {
@@ -699,7 +717,6 @@ function configureRoutes() {
       iconClass: 'fas fa-chart-bar',
       order: 400,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Operations.Report',
     },
     {
       path: '/operations/reports/surgical-operations',
@@ -709,6 +726,15 @@ function configureRoutes() {
       order: 1,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Operations.Report',
+    },
+    {
+      path: '/patients/services-report',
+      name: '::PatientServicesReport',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-file-invoice-dollar',
+      order: 2,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Patients',
     },
     {
       path: '/setting-management',

@@ -13221,6 +13221,40 @@
                     "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.DepartmentConsumptionReportDto>",
                     "typeSimple": "[HIS.Inventory.Dtos.DepartmentConsumptionReportDto]"
                   }
+                },
+                {
+                  "name": "GetLowStockReportAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Inventory.Dtos.GetLowStockReportInput, HIS.Application.Contracts",
+                      "type": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                      "typeSimple": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.LowStockReportDto>",
+                    "typeSimple": "[HIS.Inventory.Dtos.LowStockReportDto]"
+                  }
+                },
+                {
+                  "name": "GetStagnantStockReportAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Inventory.Dtos.GetStagnantStockReportInput, HIS.Application.Contracts",
+                      "type": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                      "typeSimple": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.StagnantStockReportDto>",
+                    "typeSimple": "[HIS.Inventory.Dtos.StagnantStockReportDto]"
+                  }
                 }
               ]
             }
@@ -13717,6 +13751,92 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.DepartmentConsumptionReportDto>",
                 "typeSimple": "[HIS.Inventory.Dtos.DepartmentConsumptionReportDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Inventory.IInventoryAppService"
+            },
+            "GetLowStockReportAsyncByInput": {
+              "uniqueName": "GetLowStockReportAsyncByInput",
+              "name": "GetLowStockReportAsync",
+              "httpMethod": "GET",
+              "url": "api/app/inventory/reports/low-stock",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Inventory.Dtos.GetLowStockReportInput, HIS.Application.Contracts",
+                  "type": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                  "typeSimple": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "WarehouseId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.LowStockReportDto>",
+                "typeSimple": "[HIS.Inventory.Dtos.LowStockReportDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Inventory.IInventoryAppService"
+            },
+            "GetStagnantStockReportAsyncByInput": {
+              "uniqueName": "GetStagnantStockReportAsyncByInput",
+              "name": "GetStagnantStockReportAsync",
+              "httpMethod": "GET",
+              "url": "api/app/inventory/reports/stagnant-stock",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Inventory.Dtos.GetStagnantStockReportInput, HIS.Application.Contracts",
+                  "type": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                  "typeSimple": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "WarehouseId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "ThresholdDays",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.StagnantStockReportDto>",
+                "typeSimple": "[HIS.Inventory.Dtos.StagnantStockReportDto]"
               },
               "allowAnonymous": false,
               "implementFrom": "HIS.Inventory.IInventoryAppService"
@@ -20993,6 +21113,56 @@
                     "type": "HIS.Patients.PatientDto",
                     "typeSimple": "HIS.Patients.PatientDto"
                   }
+                },
+                {
+                  "name": "GetPatientServicesReportAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "patientId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "showUnpaidOnly",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
+                      "isOptional": true,
+                      "defaultValue": false
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "HIS.Patients.PatientServicesReportDto",
+                    "typeSimple": "HIS.Patients.PatientServicesReportDto"
+                  }
+                },
+                {
+                  "name": "GetPatientServicesReportPdfAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "patientId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "showUnpaidOnly",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
+                      "isOptional": true,
+                      "defaultValue": false
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Content.IRemoteStreamContent",
+                    "typeSimple": "Volo.Abp.Content.IRemoteStreamContent"
+                  }
                 }
               ]
             }
@@ -21418,6 +21588,120 @@
               "returnValue": {
                 "type": "HIS.Patients.PatientDto",
                 "typeSimple": "HIS.Patients.PatientDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Patients.IPatientAppService"
+            },
+            "GetPatientServicesReportAsyncByPatientIdAndShowUnpaidOnly": {
+              "uniqueName": "GetPatientServicesReportAsyncByPatientIdAndShowUnpaidOnly",
+              "name": "GetPatientServicesReportAsync",
+              "httpMethod": "GET",
+              "url": "api/app/patient/patient-services-report/{patientId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "patientId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "showUnpaidOnly",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": true,
+                  "defaultValue": false
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "patientId",
+                  "name": "patientId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "showUnpaidOnly",
+                  "name": "showUnpaidOnly",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "HIS.Patients.PatientServicesReportDto",
+                "typeSimple": "HIS.Patients.PatientServicesReportDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Patients.IPatientAppService"
+            },
+            "GetPatientServicesReportPdfAsyncByPatientIdAndShowUnpaidOnly": {
+              "uniqueName": "GetPatientServicesReportPdfAsyncByPatientIdAndShowUnpaidOnly",
+              "name": "GetPatientServicesReportPdfAsync",
+              "httpMethod": "GET",
+              "url": "api/app/patient/patient-services-report-pdf/{patientId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "patientId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "showUnpaidOnly",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": true,
+                  "defaultValue": false
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "patientId",
+                  "name": "patientId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "showUnpaidOnly",
+                  "name": "showUnpaidOnly",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Content.IRemoteStreamContent",
+                "typeSimple": "Volo.Abp.Content.IRemoteStreamContent"
               },
               "allowAnonymous": false,
               "implementFrom": "HIS.Patients.IPatientAppService"
@@ -35751,6 +36035,18 @@
           "regex": null
         },
         {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "Details",
           "jsonName": null,
           "type": "System.String",
@@ -35908,13 +36204,15 @@
         "Lab",
         "Radiology",
         "Medication",
-        "Procedure"
+        "Procedure",
+        "Consumable"
       ],
       "enumValues": [
         0,
         1,
         2,
-        3
+        3,
+        4
       ],
       "genericArguments": null,
       "properties": null
@@ -39860,6 +40158,27 @@
         }
       ]
     },
+    "HIS.Inventory.Dtos.GetLowStockReportInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "WarehouseId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "HIS.Inventory.Dtos.GetPurchaseRequisitionsInput": {
       "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
       "isEnum": false,
@@ -39896,6 +40215,39 @@
           "jsonName": null,
           "type": "System.Guid?",
           "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "HIS.Inventory.Dtos.GetStagnantStockReportInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "WarehouseId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ThresholdDays",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -40187,6 +40539,87 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "HIS.Inventory.Dtos.LowStockReportDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ProductId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProductName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WarehouseName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CurrentQuantity",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MinStockLevel",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Deficit",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -40769,6 +41202,87 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "HIS.Inventory.Dtos.StagnantStockReportDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ProductId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProductName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WarehouseName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CurrentQuantity",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastTransactionDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DaysStagnant",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -46911,6 +47425,216 @@
         }
       ]
     },
+    "HIS.Patients.PatientServiceItemDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Date",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "InvoiceNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ServiceDescription",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UnitPrice",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalPrice",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsPaid",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "HIS.Patients.PatientServicesReportDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PatientId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PatientName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MRN",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ReportDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Services",
+          "jsonName": null,
+          "type": "[HIS.Patients.PatientServiceItemDto]",
+          "typeSimple": "[HIS.Patients.PatientServiceItemDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalAmountInvoiced",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalAmountPaid",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalAmountDue",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "HIS.Pharmacy.DispenseDto": {
       "baseType": null,
       "isEnum": false,
@@ -49243,7 +49967,8 @@
         "Radiology",
         "Surgery",
         "Other",
-        "Pharmacy"
+        "Pharmacy",
+        "Consumable"
       ],
       "enumValues": [
         0,
@@ -49252,7 +49977,8 @@
         3,
         4,
         5,
-        6
+        6,
+        7
       ],
       "genericArguments": null,
       "properties": null

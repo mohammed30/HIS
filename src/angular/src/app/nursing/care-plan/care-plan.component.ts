@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { NursingService } from '../../proxy/nursing/nursing.service';
-import { CarePlanDto, CreateCarePlanDto, CarePlanStatus } from '../../proxy/nursing/models';
+import { CarePlanDto, CreateCarePlanDto } from '../../proxy/nursing/models';
+import { CarePlanStatus } from '../../proxy/nursing';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Confirmation, ConfirmationService } from '@abp/ng.theme.shared';
 

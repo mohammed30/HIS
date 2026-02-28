@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NursingService } from '../../proxy/nursing/nursing.service';
-import { DueMedicationDto, MedicationAdministrationDto, CreateMedicationAdministrationDto, AdministrationStatus } from '../../proxy/nursing/models';
+import { DueMedicationDto, MedicationAdministrationDto, CreateMedicationAdministrationDto } from '../../proxy/nursing/models';
+import { AdministrationStatus } from '../../proxy/nursing';
 import { ToasterService } from '@abp/ng.theme.shared';
 
 @Component({

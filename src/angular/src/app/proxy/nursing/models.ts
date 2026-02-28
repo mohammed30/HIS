@@ -1,14 +1,12 @@
 import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto } from '@abp/ng.core';
-import { CarePlanStatus } from './care-plan-status.enum';
-import { FluidType } from './fluid-type.enum';
-import { FluidMetric } from './fluid-metric.enum';
-import { AdministrationStatus } from './administration-status.enum';
-import { PainLocation } from './pain-location.enum';
-import { ShiftType } from './shift-type.enum';
-import { WoundStage } from './wound-stage.enum';
-import { RiskLevel } from './risk-level.enum';
-
-export { CarePlanStatus, FluidType, FluidMetric, AdministrationStatus, PainLocation, ShiftType, WoundStage, RiskLevel };
+import type { CarePlanStatus } from './care-plan-status.enum';
+import type { FluidType } from './fluid-type.enum';
+import type { FluidMetric } from './fluid-metric.enum';
+import type { AdministrationStatus } from './administration-status.enum';
+import type { PainLocation } from './pain-location.enum';
+import type { ShiftType } from './shift-type.enum';
+import type { WoundStage } from './wound-stage.enum';
+import type { RiskLevel } from './risk-level.enum';
 
 export interface CarePlanDto extends AuditedEntityDto<string> {
   patientId?: string;

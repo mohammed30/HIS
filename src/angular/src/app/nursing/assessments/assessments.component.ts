@@ -2,9 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { PatientCareService } from '../../proxy/nursing/patient-care.service';
 import {
-    PainAssessmentDto, CreatePainAssessmentDto, PainLocation,
-    FallRiskAssessmentDto, CreateFallRiskAssessmentDto, RiskLevel
+    PainAssessmentDto, CreatePainAssessmentDto,
+    FallRiskAssessmentDto, CreateFallRiskAssessmentDto
 } from '../../proxy/nursing/models';
+import { PainLocation, RiskLevel } from '../../proxy/nursing';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService } from '@abp/ng.theme.shared';
 

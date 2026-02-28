@@ -13,6 +13,7 @@ using Volo.Abp.MultiTenancy;
 using Microsoft.AspNetCore.Authorization;
 using HIS.General;
 using HIS.Permissions;
+using HIS.Billing;
 
 namespace HIS.Patients;
 
@@ -26,25 +27,28 @@ public class PatientAppService : ApplicationService, IPatientAppService
     private readonly IRepository<Nationality, Guid> _nationalityRepository;
     private readonly IRepository<Profession, Guid> _professionRepository;
     private readonly IRepository<Contract, Guid> _contractRepository;
-    private readonly IRepository<PaymentMethod, Guid> _paymentMethodRepository;
+    private readonly IRepository<HIS.General.PaymentMethod, Guid> _paymentMethodRepository;
     private readonly IRepository<ReferralSource, Guid> _referralSourceRepository;
+    private readonly IRepository<Invoice, Guid> _invoiceRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     private readonly ActivityLogManager _activityLogManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
-
+    private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env;
 
     public PatientAppService(
         IRepository<Patient, Guid> patientRepository,
         IRepository<Nationality, Guid> nationalityRepository,
         IRepository<Profession, Guid> professionRepository,
         IRepository<Contract, Guid> contractRepository,
-        IRepository<PaymentMethod, Guid> paymentMethodRepository,
+        IRepository<HIS.General.PaymentMethod, Guid> paymentMethodRepository,
         IRepository<ReferralSource, Guid> referralSourceRepository,
+        IRepository<Invoice, Guid> invoiceRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
         ActivityLogManager activityLogManager,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
     {
         _patientRepository = patientRepository;
         _nationalityRepository = nationalityRepository;
@@ -52,10 +56,12 @@ public class PatientAppService : ApplicationService, IPatientAppService
         _contractRepository = contractRepository;
         _paymentMethodRepository = paymentMethodRepository;
         _referralSourceRepository = referralSourceRepository;
+        _invoiceRepository = invoiceRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         _activityLogManager = activityLogManager;
         _httpContextAccessor = httpContextAccessor;
+        _env = env;
     }
 
     public async Task<PagedResultDto<PatientDto>> GetListAsync(GetPatientsInput input)
@@ -548,5 +554,99 @@ public class PatientAppService : ApplicationService, IPatientAppService
             patient.MiddleNameEn = input.MiddleNameEn;
             patient.LastNameEn = input.LastNameEn;
         }
+    }
+
+    public async Task<PatientServicesReportDto> GetPatientServicesReportAsync(Guid patientId, bool showUnpaidOnly = false)
+    {
+        var patient = await _patientRepository.GetAsync(patientId);
+        
+        var queryable = await _invoiceRepository.WithDetailsAsync(x => x.Items);
+        var invoicesQuery = queryable.Where(x => x.PatientId == patientId && x.Status != InvoiceStatus.Draft && x.Status != InvoiceStatus.Cancelled);
+        
+        var invoices = await AsyncExecuter.ToListAsync(invoicesQuery);
+
+        var report = new PatientServicesReportDto
+        {
+            PatientId = patient.Id,
+            MRN = patient.MRN,
+            PatientName = patient.FullNameAr,
+            ReportDate = DateTime.Now,
+            Services = new List<PatientServiceItemDto>(),
+            TotalAmountInvoiced = 0,
+            TotalAmountPaid = 0,
+            TotalAmountDue = 0
+        };
+
+        foreach (var invoice in invoices.OrderBy(x => x.InvoiceDate))
+        {
+            if (showUnpaidOnly && invoice.DueAmount <= 0)
+            {
+                continue;
+            }
+
+            report.TotalAmountInvoiced += invoice.NetAmount;
+            report.TotalAmountPaid += invoice.PaidAmount;
+            report.TotalAmountDue += invoice.DueAmount;
+
+            bool isPaid = invoice.DueAmount <= 0;
+            string statusStr = isPaid ? "مدفوعة" : "غير مدفوعة";
+
+            foreach (var item in invoice.Items)
+            {
+                var serviceDto = new PatientServiceItemDto
+                {
+                    Date = invoice.InvoiceDate,
+                    InvoiceNumber = invoice.InvoiceNumber,
+                    ServiceDescription = !string.IsNullOrWhiteSpace(item.Description) 
+                        ? item.Description 
+                        : (!string.IsNullOrWhiteSpace(item.Notes) 
+                            ? item.Notes 
+                            : (!string.IsNullOrWhiteSpace(item.ServiceCode) 
+                                ? $"{item.ServiceType} - {item.ServiceCode}" 
+                                : item.ServiceType.ToString())),
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    TotalPrice = item.TotalPrice,
+                    Status = statusStr,
+                    IsPaid = isPaid
+                };
+                
+                report.Services.Add(serviceDto);
+            }
+        }
+
+        return report;
+    }
+
+    [Microsoft.AspNetCore.Mvc.HttpGet]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/patient/patient-services-report-pdf/{patientId}")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetPatientServicesReportPdfAsync(Guid patientId, bool showUnpaidOnly = false)
+    {
+        var data = await GetPatientServicesReportAsync(patientId, showUnpaidOnly);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+
+        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        var document = new HIS.Patients.Printing.PatientServicesReportDocument
+        {
+            ReportData = data,
+            LogoBytes = logoBytes
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        var printTime = Clock.Now;
+        var fileName = $"تقرير_الخدمات_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf";
+        return new Volo.Abp.Content.RemoteStreamContent(stream, fileName, "application/pdf");
     }
 }

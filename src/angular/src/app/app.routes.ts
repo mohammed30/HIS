@@ -32,6 +32,18 @@ export const APP_ROUTES: Routes = [
     data: { requiredPolicy: 'HIS.Patients' }
   },
   {
+    path: 'patients/services-report',
+    loadComponent: () => import('./patients/patient-services-report/patient-services-report').then(c => c.PatientServicesReport),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Patients' }
+  },
+  {
+    path: 'patients/:id/services-report',
+    loadComponent: () => import('./patients/patient-services-report/patient-services-report').then(c => c.PatientServicesReport),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Patients' }
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(c => c.createRoutes()),
   },
@@ -382,6 +394,18 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./inventory/reports/department-consumption-report.component').then(c => c.DepartmentConsumptionReportComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Inventory.DepartmentalConsumption' }
+      },
+      {
+        path: 'reports/low-stock',
+        loadComponent: () => import('./inventory/reports/low-stock-report.component').then(c => c.LowStockReportComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
+      },
+      {
+        path: 'reports/stagnant-stock',
+        loadComponent: () => import('./inventory/reports/stagnant-stock-report.component').then(c => c.StagnantStockReportComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       }
     ]
   },

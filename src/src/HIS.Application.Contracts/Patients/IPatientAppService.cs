@@ -50,4 +50,14 @@ public interface IPatientAppService : IApplicationService
     /// البحث برقم الهوية
     /// </summary>
     Task<PatientDto?> GetByIdentityNumberAsync(string identityNumber);
+
+    /// <summary>
+    /// الحصول على تقرير خدمات المريض
+    /// </summary>
+    Task<PatientServicesReportDto> GetPatientServicesReportAsync(Guid patientId, bool showUnpaidOnly = false);
+
+    /// <summary>
+    /// الحصول على تقرير خدمات المريض كملف PDF
+    /// </summary>
+    Task<Volo.Abp.Content.IRemoteStreamContent> GetPatientServicesReportPdfAsync(Guid patientId, bool showUnpaidOnly = false);
 }

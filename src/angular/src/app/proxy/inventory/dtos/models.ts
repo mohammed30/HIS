@@ -63,10 +63,19 @@ export interface GetConsumptionReportInput {
   departmentId?: string;
 }
 
+export interface GetLowStockReportInput {
+  warehouseId?: string;
+}
+
 export interface GetPurchaseRequisitionsInput extends PagedAndSortedResultRequestDto {
   filter?: string;
   status?: PurchaseRequisitionStatus;
   departmentId?: string;
+}
+
+export interface GetStagnantStockReportInput {
+  warehouseId?: string;
+  thresholdDays?: number;
 }
 
 export interface InventoryItemDto extends EntityDto<string> {
@@ -98,6 +107,15 @@ export interface IssueStockDto {
   quantity: number;
   departmentId?: string;
   referenceNumber?: string;
+}
+
+export interface LowStockReportDto {
+  productId?: string;
+  productName?: string;
+  warehouseName?: string;
+  currentQuantity?: number;
+  minStockLevel?: number;
+  deficit?: number;
 }
 
 export interface PriceComparisonDto {
@@ -160,6 +178,15 @@ export interface ReceiveStockDto {
   unitCost: number;
   supplierId?: string;
   referenceNumber?: string;
+}
+
+export interface StagnantStockReportDto {
+  productId?: string;
+  productName?: string;
+  warehouseName?: string;
+  currentQuantity?: number;
+  lastTransactionDate?: string;
+  daysStagnant?: number;
 }
 
 export interface SupplierDto extends AuditedEntityDto<string> {

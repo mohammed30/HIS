@@ -2,9 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ListService, PagedResultDto } from '@abp/ng.core';
 import { FluidBalanceService } from '../../proxy/nursing/fluid-balance.service';
 import {
-    FluidBalanceDto, CreateFluidBalanceDto, FluidBalanceSummaryDto,
-    FluidType, FluidMetric
+    FluidBalanceDto, CreateFluidBalanceDto, FluidBalanceSummaryDto
 } from '../../proxy/nursing/models';
+import { FluidType, FluidMetric } from '../../proxy/nursing';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService } from '@abp/ng.theme.shared';
 

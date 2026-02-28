@@ -93,6 +93,9 @@ interface Patient {
               <a class="btn btn-sm btn-outline-success me-1" [href]="'/patients/' + row.id + '/medical-record'" [title]="'::MedicalRecord' | abpLocalization">
                 <i class="fas fa-vials"></i>
               </a>
+              <a class="btn btn-sm btn-outline-info me-1" [href]="'/patients/' + row.id + '/services-report'" [title]="'::PatientServicesReport' | abpLocalization">
+                <i class="fas fa-file-invoice"></i>
+              </a>
               <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(row)">
                 <i class="fas fa-pencil-alt"></i>
               </button>

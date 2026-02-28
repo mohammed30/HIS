@@ -1,4 +1,4 @@
-import type { CreateUpdatePatientDto, GetPatientsInput, PatientDto, PatientLookupDto } from './models';
+import type { CreateUpdatePatientDto, GetPatientsInput, PatientDto, PatientLookupDto, PatientServicesReportDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -59,6 +59,25 @@ export class PatientService {
       method: 'GET',
       url: '/api/app/patient',
       params: { searchText: input.searchText, mrn: input.mrn, identityNumber: input.identityNumber, mobileNumber: input.mobileNumber, gender: input.gender, paymentMethodId: input.paymentMethodId, isActive: input.isActive, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPatientServicesReport = (patientId: string, showUnpaidOnly?: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PatientServicesReportDto>({
+      method: 'GET',
+      url: `/api/app/patient/patient-services-report/${patientId}`,
+      params: { showUnpaidOnly },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPatientServicesReportPdf = (patientId: string, showUnpaidOnly?: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: `/api/app/patient/patient-services-report-pdf/${patientId}`,
+      params: { showUnpaidOnly },
     },
     { apiName: this.apiName,...config });
   

@@ -208,4 +208,84 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         
         return grouped;
     }
+
+    [HttpGet("reports/low-stock")]
+    public async Task<List<LowStockReportDto>> GetLowStockReportAsync(GetLowStockReportInput input)
+    {
+        var itemQuery = await _inventoryItemRepository.GetQueryableAsync();
+        var warehouseQuery = await _warehouseRepository.GetQueryableAsync();
+
+        var query = from item in itemQuery
+                    join warehouse in warehouseQuery on item.WarehouseId equals warehouse.Id
+                    where item.Quantity <= item.MinStockLevel 
+                          && item.MinStockLevel > 0 // Only show items that actually have a min stock set
+                          && (input.WarehouseId == null || item.WarehouseId == input.WarehouseId)
+                    select new LowStockReportDto
+                    {
+                        ProductId = item.ProductId,
+                        ProductName = item.ProductName,
+                        WarehouseName = warehouse.Name,
+                        CurrentQuantity = item.Quantity,
+                        MinStockLevel = item.MinStockLevel
+                    };
+
+        var result = await AsyncExecuter.ToListAsync(query);
+        return result.OrderByDescending(x => x.Deficit).ToList();
+    }
+
+    [HttpGet("reports/stagnant-stock")]
+    public async Task<List<StagnantStockReportDto>> GetStagnantStockReportAsync(GetStagnantStockReportInput input)
+    {
+        var thresholdDate = DateTime.Now.AddDays(-input.ThresholdDays);
+        
+        var itemQuery = await _inventoryItemRepository.GetQueryableAsync();
+        var warehouseQuery = await _warehouseRepository.GetQueryableAsync();
+        var transactionQuery = await _inventoryTransactionRepository.GetQueryableAsync();
+
+        // Items with positive quantity
+        var availableItems = itemQuery.Where(x => x.Quantity > 0 && (input.WarehouseId == null || x.WarehouseId == input.WarehouseId));
+
+        var list = new List<StagnantStockReportDto>();
+
+        var items = await AsyncExecuter.ToListAsync(
+            from item in availableItems
+            join warehouse in warehouseQuery on item.WarehouseId equals warehouse.Id
+            select new { item, warehouseName = warehouse.Name }
+        );
+
+        foreach (var i in items)
+        {
+            var lastTxDate = await AsyncExecuter.MaxAsync(
+                transactionQuery.Where(tx => tx.InventoryItemId == i.item.Id && (tx.TransactionType == TransactionType.Dispensing || tx.TransactionType == TransactionType.Issue)),
+                tx => (DateTime?)tx.TransactionDate
+            );
+
+            // If no outbound transactions ever, consider the creation date or beginning of time.
+            // For simplicity, we could say if lastTxDate is null, it's stagnant since it was received.
+            // Let's get the latest Receive date:
+            if (lastTxDate == null) 
+            {
+               lastTxDate = await AsyncExecuter.MaxAsync(
+                   transactionQuery.Where(tx => tx.InventoryItemId == i.item.Id && tx.TransactionType == TransactionType.Receipt),
+                   tx => (DateTime?)tx.TransactionDate
+               );
+            }
+
+            if (lastTxDate == null || lastTxDate < thresholdDate)
+            {
+                var days = lastTxDate.HasValue ? (int)(DateTime.Now - lastTxDate.Value).TotalDays : input.ThresholdDays; // Default to threshold if absolutely no transactions
+                list.Add(new StagnantStockReportDto
+                {
+                    ProductId = i.item.ProductId,
+                    ProductName = i.item.ProductName,
+                    WarehouseName = i.warehouseName,
+                    CurrentQuantity = i.item.Quantity,
+                    LastTransactionDate = lastTxDate,
+                    DaysStagnant = days
+                });
+            }
+        }
+
+        return list.OrderByDescending(x => x.DaysStagnant).ToList();
+    }
 }

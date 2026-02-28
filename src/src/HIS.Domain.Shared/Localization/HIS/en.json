@@ -162,6 +162,8 @@
     "Menu:PurchaseRequisitions": "Purchase Requisitions",
     "Menu:PurchaseOrders": "Purchase Orders",
     "Menu:DepartmentalConsumption": "Departmental Consumption",
+    "Menu:LowStockReport": "Low Stock Report",
+    "Menu:StagnantStockReport": "Stagnant Stock Report",
     "Menu:WarehouseManagement": "Warehouse Management",
     "NewWarehouse": "New Warehouse",
     "WarehouseManagement": "Warehouse Management",
@@ -718,6 +720,14 @@
     "Enum:OrderType.2": "Medication",
     "Enum:OrderType.3": "Procedure",
     "Enum:OrderType.4": "Consumable",
-    "Enum:ServiceCategory.7": "Consumable"
+    "Enum:ServiceCategory.7": "Consumable",
+    "PatientServicesReport": "Patient Services Report",
+    "ShowUnpaidOnly": "Show Unpaid Only",
+    "ServiceOrOperation": "Service/Operation",
+    "TotalBilled": "Total Billed",
+    "TotalDue": "Total Due",
+    "NoServicesFound": "No services found.",
+    "Paid": "Paid",
+    "Unpaid": "Unpaid"
   }
 }

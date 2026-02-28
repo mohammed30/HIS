@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ListService, PagedResultDto, RestService } from '@abp/ng.core';
 import { PatientCareService } from '../../proxy/nursing/patient-care.service';
 import {
-    ShiftHandoverDto, CreateShiftHandoverDto, ShiftType
+    ShiftHandoverDto, CreateShiftHandoverDto
 } from '../../proxy/nursing/models';
+import { ShiftType } from '../../proxy/nursing';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ConfirmationService } from '@abp/ng.theme.shared';
 

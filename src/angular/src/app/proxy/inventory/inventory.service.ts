@@ -1,4 +1,4 @@
-import type { CreateUpdateWarehouseDto, DepartmentConsumptionReportDto, GetConsumptionReportInput, InventoryItemDto, InventoryTransactionDto, IssueStockDto, ReceiveStockDto, UpdateStockLevelsDto, WarehouseDto } from './dtos/models';
+import type { CreateUpdateWarehouseDto, DepartmentConsumptionReportDto, GetConsumptionReportInput, GetLowStockReportInput, GetStagnantStockReportInput, InventoryItemDto, InventoryTransactionDto, IssueStockDto, LowStockReportDto, ReceiveStockDto, StagnantStockReportDto, UpdateStockLevelsDto, WarehouseDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -49,6 +49,24 @@ export class InventoryService {
     this.restService.request<any, InventoryTransactionDto[]>({
       method: 'GET',
       url: `/api/app/inventory/item-transactions/${inventoryItemId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getLowStockReport = (input: GetLowStockReportInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, LowStockReportDto[]>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/low-stock',
+      params: { warehouseId: input.warehouseId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getStagnantStockReport = (input: GetStagnantStockReportInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StagnantStockReportDto[]>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/stagnant-stock',
+      params: { warehouseId: input.warehouseId, thresholdDays: input.thresholdDays },
     },
     { apiName: this.apiName,...config });
   
