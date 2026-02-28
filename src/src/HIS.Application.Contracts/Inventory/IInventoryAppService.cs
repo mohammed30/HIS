@@ -20,8 +20,12 @@ public interface IInventoryAppService : IApplicationService
     Task ReceiveStockAsync(ReceiveStockDto input);
     Task IssueStockAsync(IssueStockDto input);
     Task<List<DepartmentConsumptionReportDto>> GetConsumptionReportAsync(GetConsumptionReportInput input);
+    Task<byte[]> GetConsumptionReportPdfAsync(GetConsumptionReportInput input);
     
     // Reports
     Task<List<LowStockReportDto>> GetLowStockReportAsync(GetLowStockReportInput input);
+    Task<byte[]> GetLowStockReportPdfAsync(GetLowStockReportInput input);
+
     Task<List<StagnantStockReportDto>> GetStagnantStockReportAsync(GetStagnantStockReportInput input);
+    Task<byte[]> GetStagnantStockReportPdfAsync(GetStagnantStockReportInput input);
 }

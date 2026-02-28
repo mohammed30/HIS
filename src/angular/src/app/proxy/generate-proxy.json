@@ -13223,6 +13223,23 @@
                   }
                 },
                 {
+                  "name": "GetConsumptionReportPdfAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Inventory.Dtos.GetConsumptionReportInput, HIS.Application.Contracts",
+                      "type": "HIS.Inventory.Dtos.GetConsumptionReportInput",
+                      "typeSimple": "HIS.Inventory.Dtos.GetConsumptionReportInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Byte[]",
+                    "typeSimple": "[number]"
+                  }
+                },
+                {
                   "name": "GetLowStockReportAsync",
                   "parametersOnMethod": [
                     {
@@ -13240,6 +13257,23 @@
                   }
                 },
                 {
+                  "name": "GetLowStockReportPdfAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Inventory.Dtos.GetLowStockReportInput, HIS.Application.Contracts",
+                      "type": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                      "typeSimple": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Byte[]",
+                    "typeSimple": "[number]"
+                  }
+                },
+                {
                   "name": "GetStagnantStockReportAsync",
                   "parametersOnMethod": [
                     {
@@ -13254,6 +13288,23 @@
                   "returnValue": {
                     "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.StagnantStockReportDto>",
                     "typeSimple": "[HIS.Inventory.Dtos.StagnantStockReportDto]"
+                  }
+                },
+                {
+                  "name": "GetStagnantStockReportPdfAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Inventory.Dtos.GetStagnantStockReportInput, HIS.Application.Contracts",
+                      "type": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                      "typeSimple": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Byte[]",
+                    "typeSimple": "[number]"
                   }
                 }
               ]
@@ -13698,7 +13749,7 @@
               "uniqueName": "GetConsumptionReportAsyncByInput",
               "name": "GetConsumptionReportAsync",
               "httpMethod": "GET",
-              "url": "api/app/inventory/consumption-report",
+              "url": "api/app/inventory/reports/consumption",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -13715,8 +13766,8 @@
                   "nameOnMethod": "input",
                   "name": "StartDate",
                   "jsonName": null,
-                  "type": "System.DateTime",
-                  "typeSimple": "string",
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -13727,8 +13778,8 @@
                   "nameOnMethod": "input",
                   "name": "EndDate",
                   "jsonName": null,
-                  "type": "System.DateTime",
-                  "typeSimple": "string",
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -13751,6 +13802,67 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.DepartmentConsumptionReportDto>",
                 "typeSimple": "[HIS.Inventory.Dtos.DepartmentConsumptionReportDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Inventory.IInventoryAppService"
+            },
+            "GetConsumptionReportPdfAsyncByInput": {
+              "uniqueName": "GetConsumptionReportPdfAsyncByInput",
+              "name": "GetConsumptionReportPdfAsync",
+              "httpMethod": "GET",
+              "url": "api/app/inventory/reports/consumption/pdf",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Inventory.Dtos.GetConsumptionReportInput, HIS.Application.Contracts",
+                  "type": "HIS.Inventory.Dtos.GetConsumptionReportInput",
+                  "typeSimple": "HIS.Inventory.Dtos.GetConsumptionReportInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "StartDate",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "EndDate",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "DepartmentId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Byte[]",
+                "typeSimple": "[number]"
               },
               "allowAnonymous": false,
               "implementFrom": "HIS.Inventory.IInventoryAppService"
@@ -13788,6 +13900,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.LowStockReportDto>",
                 "typeSimple": "[HIS.Inventory.Dtos.LowStockReportDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Inventory.IInventoryAppService"
+            },
+            "GetLowStockReportPdfAsyncByInput": {
+              "uniqueName": "GetLowStockReportPdfAsyncByInput",
+              "name": "GetLowStockReportPdfAsync",
+              "httpMethod": "GET",
+              "url": "api/app/inventory/reports/low-stock/pdf",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Inventory.Dtos.GetLowStockReportInput, HIS.Application.Contracts",
+                  "type": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                  "typeSimple": "HIS.Inventory.Dtos.GetLowStockReportInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "WarehouseId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Byte[]",
+                "typeSimple": "[number]"
               },
               "allowAnonymous": false,
               "implementFrom": "HIS.Inventory.IInventoryAppService"
@@ -13837,6 +13986,55 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.StagnantStockReportDto>",
                 "typeSimple": "[HIS.Inventory.Dtos.StagnantStockReportDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Inventory.IInventoryAppService"
+            },
+            "GetStagnantStockReportPdfAsyncByInput": {
+              "uniqueName": "GetStagnantStockReportPdfAsyncByInput",
+              "name": "GetStagnantStockReportPdfAsync",
+              "httpMethod": "GET",
+              "url": "api/app/inventory/reports/stagnant-stock/pdf",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Inventory.Dtos.GetStagnantStockReportInput, HIS.Application.Contracts",
+                  "type": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                  "typeSimple": "HIS.Inventory.Dtos.GetStagnantStockReportInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "WarehouseId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "ThresholdDays",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Byte[]",
+                "typeSimple": "[number]"
               },
               "allowAnonymous": false,
               "implementFrom": "HIS.Inventory.IInventoryAppService"
@@ -40123,8 +40321,8 @@
         {
           "name": "StartDate",
           "jsonName": null,
-          "type": "System.DateTime",
-          "typeSimple": "string",
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -40135,8 +40333,8 @@
         {
           "name": "EndDate",
           "jsonName": null,
-          "type": "System.DateTime",
-          "typeSimple": "string",
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

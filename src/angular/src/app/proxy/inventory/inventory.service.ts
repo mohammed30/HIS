@@ -31,7 +31,16 @@ export class InventoryService {
   getConsumptionReport = (input: GetConsumptionReportInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, DepartmentConsumptionReportDto[]>({
       method: 'GET',
-      url: '/api/app/inventory/consumption-report',
+      url: '/api/app/inventory/reports/consumption',
+      params: { startDate: input.startDate, endDate: input.endDate, departmentId: input.departmentId },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getConsumptionReportPdf = (input: GetConsumptionReportInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/consumption/pdf',
       params: { startDate: input.startDate, endDate: input.endDate, departmentId: input.departmentId },
     },
     { apiName: this.apiName,...config });
@@ -62,10 +71,28 @@ export class InventoryService {
     { apiName: this.apiName,...config });
   
 
+  getLowStockReportPdf = (input: GetLowStockReportInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/low-stock/pdf',
+      params: { warehouseId: input.warehouseId },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getStagnantStockReport = (input: GetStagnantStockReportInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, StagnantStockReportDto[]>({
       method: 'GET',
       url: '/api/app/inventory/reports/stagnant-stock',
+      params: { warehouseId: input.warehouseId, thresholdDays: input.thresholdDays },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getStagnantStockReportPdf = (input: GetStagnantStockReportInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/stagnant-stock/pdf',
       params: { warehouseId: input.warehouseId, thresholdDays: input.thresholdDays },
     },
     { apiName: this.apiName,...config });

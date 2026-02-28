@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { InventoryService } from '@proxy/inventory';
+import { RestService } from '@abp/ng.core';
 import { StagnantStockReportDto, WarehouseDto } from '@proxy/inventory/dtos/models';
 
 @Component({
@@ -70,6 +71,7 @@ import { StagnantStockReportDto, WarehouseDto } from '@proxy/inventory/dtos/mode
 })
 export class StagnantStockReportComponent implements OnInit {
   inventoryService = inject(InventoryService);
+  restService = inject(RestService);
 
   warehouses: WarehouseDto[] = [];
   warehouseId: string | null = null;
@@ -103,6 +105,26 @@ export class StagnantStockReportComponent implements OnInit {
   }
 
   print() {
-    window.print();
+    this.isLoading = true;
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/stagnant-stock/pdf',
+      params: {
+        warehouseId: this.warehouseId,
+        thresholdDays: this.thresholdDays
+      },
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Stagnant_Stock_Report_${new Date().getTime()}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isLoading = false;
+      },
+      error: () => this.isLoading = false
+    });
   }
 }

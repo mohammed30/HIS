@@ -12,6 +12,8 @@ using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
+using QuestPDF.Fluent;
+using HIS.Inventory.Printing;
 
 namespace HIS.Inventory;
 
@@ -155,17 +157,20 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         var item = await _inventoryItemRepository.GetAsync(id);
         return ObjectMapper.Map<InventoryItem, InventoryItemDto>(item);
     }
-    [HttpGet("consumption-report")]
+    [HttpGet("reports/consumption")]
     public async Task<List<DepartmentConsumptionReportDto>> GetConsumptionReportAsync(GetConsumptionReportInput input)
     {
+        var startDate = input.StartDate ?? DateTime.Now.AddMonths(-1);
+        var endDate = input.EndDate ?? DateTime.Now;
+
         var query = await _inventoryTransactionRepository.GetQueryableAsync();
         var itemQuery = await _inventoryItemRepository.GetQueryableAsync();
         
         // Filter transactions
         var transactions = query.Where(x => 
             x.TransactionType == TransactionType.Issue &&
-            x.TransactionDate >= input.StartDate &&
-            x.TransactionDate <= input.EndDate &&
+            x.TransactionDate >= startDate &&
+            x.TransactionDate <= endDate &&
             (input.DepartmentId == null || x.DepartmentId == input.DepartmentId)
         );
 
@@ -209,6 +214,19 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         return grouped;
     }
 
+    [HttpGet("reports/consumption/pdf")]
+    public async Task<byte[]> GetConsumptionReportPdfAsync(GetConsumptionReportInput input)
+    {
+        var data = await GetConsumptionReportAsync(input);
+        var document = new ConsumptionReportDocument
+        {
+            Items = data,
+            StartDate = input.StartDate ?? DateTime.Now.AddMonths(-1),
+            EndDate = input.EndDate ?? DateTime.Now
+        };
+        return document.GeneratePdf();
+    }
+
     [HttpGet("reports/low-stock")]
     public async Task<List<LowStockReportDto>> GetLowStockReportAsync(GetLowStockReportInput input)
     {
@@ -231,6 +249,25 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
 
         var result = await AsyncExecuter.ToListAsync(query);
         return result.OrderByDescending(x => x.Deficit).ToList();
+    }
+
+    [HttpGet("reports/low-stock/pdf")]
+    public async Task<byte[]> GetLowStockReportPdfAsync(GetLowStockReportInput input)
+    {
+        var data = await GetLowStockReportAsync(input);
+        string warehouseName = "الكل";
+        if (input.WarehouseId.HasValue)
+        {
+            var warehouse = await _warehouseRepository.FindAsync(input.WarehouseId.Value);
+            warehouseName = warehouse?.Name ?? "غير معروف";
+        }
+
+        var document = new LowStockReportDocument
+        {
+            Items = data,
+            WarehouseName = warehouseName
+        };
+        return document.GeneratePdf();
     }
 
     [HttpGet("reports/stagnant-stock")]
@@ -287,5 +324,25 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         }
 
         return list.OrderByDescending(x => x.DaysStagnant).ToList();
+    }
+
+    [HttpGet("reports/stagnant-stock/pdf")]
+    public async Task<byte[]> GetStagnantStockReportPdfAsync(GetStagnantStockReportInput input)
+    {
+        var data = await GetStagnantStockReportAsync(input);
+        string warehouseName = "الكل";
+        if (input.WarehouseId.HasValue)
+        {
+            var warehouse = await _warehouseRepository.FindAsync(input.WarehouseId.Value);
+            warehouseName = warehouse?.Name ?? "غير معروف";
+        }
+
+        var document = new StagnantStockReportDocument
+        {
+            Items = data,
+            WarehouseName = warehouseName,
+            ThresholdDays = input.ThresholdDays
+        };
+        return document.GeneratePdf();
     }
 }

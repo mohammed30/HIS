@@ -14,7 +14,7 @@ public class DepartmentConsumptionReportDto
 
 public class GetConsumptionReportInput 
 {
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public Guid? DepartmentId { get; set; }
 }

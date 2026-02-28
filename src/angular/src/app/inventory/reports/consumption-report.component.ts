@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { InventoryService } from '@proxy/inventory';
+import { RestService } from '@abp/ng.core';
 import { DepartmentConsumptionReportDto } from '@proxy/inventory/dtos/models';
 
 @Component({
@@ -75,6 +76,7 @@ import { DepartmentConsumptionReportDto } from '@proxy/inventory/dtos/models';
 })
 export class ConsumptionReportComponent implements OnInit {
   inventoryService = inject(InventoryService);
+  restService = inject(RestService);
 
   reportData: DepartmentConsumptionReportDto[] = [];
   isLoading = false;
@@ -111,10 +113,30 @@ export class ConsumptionReportComponent implements OnInit {
   }
 
   getTotalCost(): number {
-    return this.reportData.reduce((sum, item) => sum + (item.totalCost || 0), 0);
+    return this.reportData.reduce((sum, item) => sum + (Number(item.totalCost) || 0), 0);
   }
 
   print() {
-    window.print();
+    this.isLoading = true;
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      url: '/api/app/inventory/reports/consumption/pdf',
+      params: {
+        startDate: this.startDate,
+        endDate: this.endDate
+      },
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Consumption_Report_${new Date().getTime()}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isLoading = false;
+      },
+      error: () => this.isLoading = false
+    });
   }
 }
