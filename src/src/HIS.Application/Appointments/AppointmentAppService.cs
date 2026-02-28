@@ -180,8 +180,6 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
             }
         }
 
-        QuestPDF.Settings.License = LicenseType.Community;
-
         var document = new TicketDocument
         {
             TicketNumber = appt.Id.ToString().Substring(0, 8).ToUpper(),

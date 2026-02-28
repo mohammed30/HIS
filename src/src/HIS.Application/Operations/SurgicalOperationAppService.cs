@@ -222,8 +222,6 @@ public class SurgicalOperationAppService : CrudAppService<
         var logoPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "logo", "Dark.png");
         if (File.Exists(logoPath)) logoBytes = await File.ReadAllBytesAsync(logoPath);
 
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
-
         var document = new OperationTicketDocument
         {
             TicketNumber = operation.Id.ToString().Substring(0, 8).ToUpper(), // Or use a sequence
@@ -256,8 +254,6 @@ public class SurgicalOperationAppService : CrudAppService<
         byte[] logoBytes = null;
         var logoPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "logo", "Dark.png");
         if (File.Exists(logoPath)) logoBytes = await File.ReadAllBytesAsync(logoPath);
-
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
         var document = new OperationsReportDocument
         {

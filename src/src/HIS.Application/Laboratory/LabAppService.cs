@@ -210,8 +210,6 @@ public class LabAppService : ApplicationService, ILabAppService
         var doctor = await _doctorRepository.GetAsync(request.DoctorId);
         // Fetch from LabTests as we switched to it
         var test = await _testRepository.GetAsync(request.ServiceItemId);
-
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
         // Try to load logo from wwwroot
         byte[] logoBytes = null;
@@ -261,8 +259,6 @@ public class LabAppService : ApplicationService, ILabAppService
         var patient = await _patientRepository.GetAsync(request.PatientId);
         var doctor = await _doctorRepository.GetAsync(request.DoctorId);
         var test = await _testRepository.GetAsync(request.ServiceItemId);
-
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
         byte[] logoBytes = null;
         var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");

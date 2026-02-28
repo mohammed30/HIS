@@ -242,7 +242,6 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         var itemsQueryable = await _itemRepository.GetQueryableAsync();
         var items = await AsyncExecuter.ToListAsync(itemsQueryable.Where(x => x.InvoiceId == id));
         
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
         byte[] logoBytes = null;
         var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");

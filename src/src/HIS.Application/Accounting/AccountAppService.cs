@@ -308,7 +308,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
         if (System.IO.File.Exists(logoPath))
             logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
 
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
 
         var doc = new HIS.Accounting.Printing.BalanceSheetDocument
         {

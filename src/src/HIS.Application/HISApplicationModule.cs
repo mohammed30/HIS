@@ -26,6 +26,8 @@ public class HISApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
         Configure<AbpAutoMapperOptions>(options =>
         {
             options.AddMaps<HISApplicationModule>();

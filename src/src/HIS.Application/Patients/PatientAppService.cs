@@ -624,8 +624,6 @@ public class PatientAppService : ApplicationService, IPatientAppService
     {
         var data = await GetPatientServicesReportAsync(patientId, showUnpaidOnly);
 
-        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
-
         byte[] logoBytes = null;
         var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
         

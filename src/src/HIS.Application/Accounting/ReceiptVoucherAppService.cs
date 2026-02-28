@@ -182,7 +182,6 @@ namespace HIS.Accounting
             
             document.LogoBytes = logoBytes;
 
-            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
             var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
             var stream = new System.IO.MemoryStream(pdfBytes);
             var printTime = Clock.Now;
