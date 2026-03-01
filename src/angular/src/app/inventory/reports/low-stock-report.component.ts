@@ -31,7 +31,7 @@ import { LowStockReportDto, WarehouseDto } from '@proxy/inventory/dtos/models';
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-bordered table-striped">
-            <thead class="bg-light">
+            <thead>
               <tr>
                 <th>{{ '::ProductName' | abpLocalization }}</th>
                 <th>{{ '::Warehouse' | abpLocalization }}</th>

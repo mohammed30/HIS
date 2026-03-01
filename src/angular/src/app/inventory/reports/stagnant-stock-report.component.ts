@@ -35,7 +35,7 @@ import { StagnantStockReportDto, WarehouseDto } from '@proxy/inventory/dtos/mode
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-bordered table-striped">
-            <thead class="bg-light">
+            <thead>
               <tr>
                 <th>{{ '::ProductName' | abpLocalization }}</th>
                 <th>{{ '::Warehouse' | abpLocalization }}</th>

@@ -35,7 +35,7 @@ import { DepartmentConsumptionReportDto } from '@proxy/inventory/dtos/models';
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-bordered table-striped">
-            <thead class="bg-light">
+            <thead>
               <tr>
                 <th>القسم / الإدارة</th>
                 <th>{{ '::ProductName' | abpLocalization }}</th>
@@ -62,7 +62,7 @@ import { DepartmentConsumptionReportDto } from '@proxy/inventory/dtos/models';
               </tr>
               <!-- Subtotals per department could be added conceptually here -->
             </tbody>
-            <tfoot class="bg-light fw-bold" *ngIf="reportData.length > 0">
+            <tfoot class="fw-bold" *ngIf="reportData.length > 0">
                 <tr>
                     <td colspan="3" class="text-end">الإجمالي العام:</td>
                     <td class="text-primary">{{ getTotalCost() | number:'1.2-2' }}</td>

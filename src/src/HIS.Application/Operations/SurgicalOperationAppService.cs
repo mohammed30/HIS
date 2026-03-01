@@ -290,7 +290,7 @@ public class SurgicalOperationAppService : CrudAppService<
             .WhereIf(input.DoctorId.HasValue, x => x.DoctorId == input.DoctorId!.Value)
             .WhereIf(input.Status.HasValue, x => x.Status == input.Status!.Value)
             .WhereIf(input.FromDate.HasValue, x => x.OperationDate >= input.FromDate!.Value)
-            .WhereIf(input.ToDate.HasValue, x => x.OperationDate <= input.ToDate!.Value);
+            .WhereIf(input.ToDate.HasValue, x => x.OperationDate < input.ToDate!.Value.Date.AddDays(1));
     }
 
     protected override IQueryable<SurgicalOperation> ApplyDefaultSorting(IQueryable<SurgicalOperation> query)

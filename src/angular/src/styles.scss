@@ -122,6 +122,76 @@ body {
   --theme-input-bg: #323846;
   --theme-table-stripe: rgba(255, 255, 255, 0.04);
   --theme-hover-bg: rgba(255, 255, 255, 0.1);
+
+  /* Override Bootstrap 5 core CSS variables for dark mode */
+  --bs-body-color: #ffffff;
+  --bs-body-color-rgb: 255, 255, 255;
+  --bs-emphasis-color: #ffffff;
+  --bs-emphasis-color-rgb: 255, 255, 255;
+  --bs-secondary-color: rgba(255, 255, 255, 0.75);
+  --bs-secondary-color-rgb: 255, 255, 255;
+  --bs-tertiary-color: rgba(255, 255, 255, 0.5);
+  --bs-tertiary-color-rgb: 255, 255, 255;
+  --bs-body-bg: #1b1e24;
+  --bs-body-bg-rgb: 27, 30, 36;
+  --bs-border-color: #3c4252;
+  --bs-link-color: #6ea8fe;
+  --bs-link-hover-color: #8bb9fe;
+  --bs-code-color: #e685b5;
+
+  /* Force brightness for muted text in dark mode */
+  --bs-text-muted: #d0d0d0 !important;
+}
+
+/* Force dark mode for light utility classes */
+[data-theme="dark"] .bg-light,
+[data-theme="dark"] .bg-white {
+  background-color: var(--theme-bg-card) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+[data-theme="dark"] {
+  color: #ffffff !important;
+
+  .text-dark {
+    color: #f8f9fa !important;
+  }
+
+  .text-muted,
+  .text-secondary {
+    color: #ced4da !important;
+  }
+
+  .font-monospace,
+  code {
+    color: #a5d8ff !important;
+  }
+
+  .badge.bg-light {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* Aggressive table cell override */
+  table td,
+  table th,
+  .table td,
+  .table th {
+    color: #ffffff !important;
+  }
+
+  .table-striped>tbody>tr:nth-of-type(odd)>* {
+    color: #ffffff !important;
+  }
+}
+
+[data-theme="dark"] .border,
+[data-theme="dark"] .border-top,
+[data-theme="dark"] .border-bottom,
+[data-theme="dark"] .border-start,
+[data-theme="dark"] .border-end {
+  border-color: var(--theme-border-color) !important;
 }
 
 /* Apply theme variables */
@@ -153,6 +223,16 @@ body {
   --bs-table-hover-bg: var(--theme-hover-bg);
 }
 
+[data-theme="dark"] .table {
+  color: #ffffff !important;
+  --bs-table-color: #ffffff;
+  --bs-table-color-type: #ffffff;
+  --bs-table-color-state: #ffffff;
+  --bs-table-striped-color: #ffffff;
+  --bs-table-active-color: #ffffff;
+  --bs-table-hover-color: #ffffff;
+}
+
 .table-dark {
   background-color: var(--theme-bg-secondary) !important;
 }
@@ -164,6 +244,42 @@ body {
 
 .table-striped>tbody>tr:nth-of-type(odd)>* {
   background-color: var(--theme-table-stripe) !important;
+  color: inherit !important;
+}
+
+[data-theme="dark"] .table thead th {
+  background-color: var(--theme-bg-secondary) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid var(--theme-border-color) !important;
+}
+
+/* Force white text on ALL table cells in dark mode - override Bootstrap 5's internal cascade */
+[data-theme="dark"] .table> :not(caption)>*>* {
+  color: #ffffff !important;
+  --bs-table-color-type: #ffffff;
+  --bs-table-color-state: #ffffff;
+}
+
+[data-theme="dark"] .table-striped>tbody>tr>* {
+  --bs-table-color-type: #ffffff;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .table-hover>tbody>tr:hover>* {
+  --bs-table-color-state: #ffffff;
+  color: #ffffff !important;
+}
+
+/* Override ABP Bootstrap theme's hardcoded #686b6e on striped/bordered table cells */
+[data-theme="dark"] .table.table-striped>tbody>tr:nth-of-type(odd)>td,
+[data-theme="dark"] .table.table-striped>tbody>tr:nth-of-type(odd)>th,
+[data-theme="dark"] .table.table-bordered>tbody>tr:nth-of-type(odd)>td,
+[data-theme="dark"] .table.table-bordered>tbody>tr:nth-of-type(odd)>th,
+[data-theme="dark"] .table.table-striped>tbody>tr>td,
+[data-theme="dark"] .table.table-striped>tbody>tr>th,
+[data-theme="dark"] .table.table-bordered>tbody>tr>td,
+[data-theme="dark"] .table.table-bordered>tbody>tr>th {
+  color: #ffffff !important;
 }
 
 /* Forms */

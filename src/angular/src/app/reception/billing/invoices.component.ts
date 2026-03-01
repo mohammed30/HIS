@@ -283,7 +283,7 @@ const statusColors: { [key: number]: string } = {
                   <code class="fs-5">{{ selectedInvoice.invoiceNumber }}</code>
                 </div>
                 
-                <div class="alert alert-info border-0 text-center mb-3">
+          <div class="alert border-0 text-center mb-3">
                   <small class="d-block text-muted mb-1">المبلغ المتبقي</small>
                   <h4 class="mb-0">{{ selectedInvoice.dueAmount | number:'1.2-2' }} ج.م</h4>
                 </div>

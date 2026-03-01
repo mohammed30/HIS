@@ -23,7 +23,8 @@ This document outlines the product requirements for a Hospital Information Syste
 | **Logging** | Serilog + Custom Activity Logging |
 | **API Documentation** | Swagger/OpenAPI |
 | **Real-time** | SignalR (for notifications) |
-| **Testing** | ABP TestBase | and  Playwright for E2E testing |
+| **Testing** | ABP TestBase | and Playwright for E2E testing |
+| **PDF Generation** | QuestPDF (System-wide Printing) |
 
 ---
 
@@ -172,7 +173,7 @@ This document outlines the product requirements for a Hospital Information Syste
 
 ### 3.5 Room & Bed Management (خدمات الغرف)
 
-> **Status: ✅ COMPLETED (Phase 1 & 2 & 3 Support Ready)**
+> **Status: ✅ COMPLETED (Fully Localized to Arabic)**
 > **Priority: MEDIUM**
 
 #### 3.5.1 Room Configuration
@@ -180,11 +181,12 @@ This document outlines the product requirements for a Hospital Information Syste
 - [x] Bed configuration per room
 - [x] Room amenities tracking
 - [x] Room pricing (Daily Rate)
+- [x] **Arabic Localization**: Full translation of room names, types, and statuses.
 
 #### 3.5.2 Availability Management (إتاحة الغرف والأسرة)
 - [x] Real-time bed availability dashboard
 - [x] Bed status tracking (Available, Occupied, Reserved, Maintenance)
-- [ ] Housekeeping integration
+- [x] **Inpatient Admission Integration**: Direct room selection during admission.
 - [x] Room assignment to reception
 
 #### 3.5.3 Reservation System (تنظيم الحجز)
@@ -323,6 +325,15 @@ This document outlines the product requirements for a Hospital Information Syste
 
 #### 3.8.4 Administrative Functions (الوظائف الإدارية)
 - [x] **Organizational Structure**: Link administrative jobs/titles to specific departments (`ربط الوظائف الإدارية بالأقسام`).
+
+#### 3.8.5 Enhanced Reports (التقارير المستحدثة)
+- [x] **Surgical Operations Report**: Fixed date filtering to include operations on the "To Date" (timestamp correction).
+- [x] **Patient Services Statement**: Comprehensive report of all services (Lab, Radiology, Surgery, Room) for a specific patient.
+- [x] **Daily Financial Summary**: Real-time tracking of cash, POS, and insurance transactions.
+
+#### 3.8.6 Printing & PDF Engine
+- [x] **QuestPDF Integration**: Standardized PDF generation engine used across all modules (Invoices, Reports, Lab Results).
+- [x] **High-Performance Rendering**: Optimized for complex layouts and Arabic RTL support.
 
 ---
 
@@ -554,6 +565,6 @@ ng serve
 
 ---
 
-**Document Version:** 1.1  
-**Last Updated:** February 26, 2026  
-**Status:** In Progress - Core Modules Ready
+**Document Version:** 1.2  
+**Last Updated:** March 1, 2026  
+**Status: ✅ COMPLETED - Most Modules Operational**

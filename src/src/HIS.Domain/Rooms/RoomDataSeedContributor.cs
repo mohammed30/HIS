@@ -34,56 +34,56 @@ public class RoomDataSeedContributor : IDataSeedContributor, ITransientDependenc
         // 1. Standard Room (Male Ward) - 4 Beds
         await CreateRoomAsync(
             "101",
-            "Male Ward A",
+            "جناح الرجال (أ)",
             RoomType.Standard,
             500,
             4,
-            "1st Floor",
-            "General Ward for Male Patients"
+            "الدور الأول",
+            "جناح عام للمرضى الرجال"
         );
 
         // 2. Standard Room (Female Ward) - 4 Beds
         await CreateRoomAsync(
             "102",
-            "Female Ward A",
+            "جناح النساء (أ)",
             RoomType.Standard,
             500,
             4,
-            "1st Floor",
-            "General Ward for Female Patients"
+            "الدور الأول",
+            "جناح عام للمريضات النساء"
         );
 
         // 3. Private Room - 1 Bed
         await CreateRoomAsync(
             "201",
-            "Private Room 201",
+            "غرفة خاصة 201",
             RoomType.Private,
             1200,
             1,
-            "2nd Floor",
-            "Private Room with TV and Fridge"
+            "الدور الثاني",
+            "غرفة خاصة مع تلفاز وثلاجة"
         );
 
         // 4. Suite - 1 Bed
         await CreateRoomAsync(
             "301",
-            "Royal Suite",
+            "جناح ملكي",
             RoomType.Suite,
             2500,
             1,
-            "3rd Floor",
-            "Luxury Suite with Guest Area"
+            "الدور الثالث",
+            "جناح فاخر مع منطقة ضيوف"
         );
 
         // 5. ICU - 1 Bed
         await CreateRoomAsync(
             "ICU-01",
-            "ICU Bed 1",
+            "سرير عناية مركزة 1",
             RoomType.ICU,
             3000,
             1,
-            "ICU",
-            "Intensive Care Unit"
+            "العناية المركزة",
+            "وحدة العناية المركزة"
         );
     }
 

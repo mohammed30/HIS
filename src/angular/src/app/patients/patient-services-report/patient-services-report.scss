@@ -2,24 +2,32 @@
   body * {
     visibility: hidden;
   }
-  #printable-section, #printable-section * {
+
+  #printable-section,
+  #printable-section * {
     visibility: visible;
   }
+
   #printable-section {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
   }
-  .no-print, .print-hidden {
+
+  .no-print,
+  .print-hidden {
     display: none !important;
   }
+
   .card {
     border: none !important;
   }
+
   .shadow-sm {
     box-shadow: none !important;
   }
+
   .badge {
     border: 1px solid #ccc;
     color: #000 !important;
@@ -30,4 +38,33 @@
 .report-header {
   border-bottom: 2px solid #eee;
   padding-bottom: 1rem;
+}
+
+[data-theme="dark"] {
+  .report-header {
+    border-bottom-color: var(--theme-border-color);
+  }
+
+  .summary-cards .card-body {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+  }
+
+  .table {
+    color: #ffffff !important;
+
+    td,
+    th {
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+
+    .font-monospace {
+      color: #74c0fc !important;
+      opacity: 1 !important;
+    }
+  }
+
+  .text-muted {
+    color: #adb5bd !important;
+  }
 }

@@ -129,14 +129,14 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
           </div>
         </div>
         <ng-template #noVitals>
-          <div class="alert alert-light text-center border-0 shadow-sm mb-4">
+          <div class="alert text-center border-0 shadow-sm mb-4">
              <i class="fas fa-info-circle me-2"></i> لا توجد علامات حيوية مسجلة بعد.
           </div>
         </ng-template>
 
         <!-- Tabs & Content -->
         <div class="card shadow-sm border-0 rounded-3">
-          <div class="card-header bg-white border-bottom-0 pb-0">
+          <div class="card-header border-bottom-0 pb-0">
             <ul class="nav nav-tabs card-header-tabs" role="tablist">
               <li class="nav-item">
                 <button class="nav-link" [class.active]="activeTab === 'vitals'" (click)="activeTab = 'vitals'">
@@ -171,7 +171,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
             </ul>
           </div>
           
-          <div class="card-body p-4 bg-white rounded-bottom-3">
+          <div class="card-body p-4 rounded-bottom-3">
              
              <!-- Vital Signs Table -->
              <div *ngIf="activeTab === 'vitals'">
@@ -182,7 +182,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                </div>
                <div class="table-responsive">
                  <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                    <thead>
                       <tr>
                         <th>التاريخ</th>
                         <th><i class="fas fa-tachometer-alt text-muted me-1"></i> ضغط الدم</th>
@@ -197,7 +197,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                     <tbody>
                       <tr *ngFor="let v of vitalSigns">
                         <td>{{ v.recordedAt | date:'yyyy-MM-dd HH:mm' }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ v.bloodPressureSystolic }}/{{ v.bloodPressureDiastolic }}</span></td>
+                        <td><span class="badge bg-light text-white border">{{ v.bloodPressureSystolic }}/{{ v.bloodPressureDiastolic }}</span></td>
                         <td>{{ v.heartRate }}</td>
                         <td>{{ v.temperature }}</td>
                         <td>{{ v.oxygenSaturation }}%</td>
@@ -265,14 +265,14 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                              <i class="fas fa-exclamation-circle text-danger me-2" *ngIf="a.severity >= 2"></i>
                              {{ a.allergenNameAr }}
                            </h6>
-                           <span class="badge rounded-pill" [ngClass]="{'bg-success': a.severity === 0, 'bg-warning text-dark': a.severity === 1, 'bg-danger': a.severity >= 2}">
+                           <span class="badge rounded-pill" [ngClass]="{'bg-success': a.severity === 0, 'bg-warning text-white': a.severity === 1, 'bg-danger': a.severity >= 2}">
                               {{ getSeverityLabel(a.severity) }}
                            </span>
                          </div>
                          <div class="small text-muted mb-2">
                            <i class="fas fa-tag me-1"></i> {{ getAllergenTypeLabel(a.allergenType) }}
                          </div>
-                         <p class="small mb-2 bg-light p-2 rounded" *ngIf="a.reaction">
+                         <p class="small mb-2 p-2 rounded" *ngIf="a.reaction">
                            <strong>رد الفعل:</strong> {{ a.reaction }}
                          </p>
                          <div class="text-end">
@@ -294,7 +294,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                   </button>
                 </div>
                 <table class="table table-hover">
-                   <thead class="table-light">
+                   <thead>
                      <tr>
                         <th>الحالة</th>
                         <th>ICD-10</th>
@@ -328,7 +328,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                 </div>
                 <div class="row">
                    <div class="col-12 mb-3" *ngFor="let n of patientNotes">
-                      <div class="card border-0 shadow-sm bg-light">
+                      <div class="card border-0 shadow-sm">
                          <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                <h6 class="fw-bold text-primary mb-0">
@@ -353,7 +353,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>التاريخ</th>
                                 <th>النوع</th>
@@ -719,7 +719,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
       border: none;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      background: var(--theme-bg-card);
       overflow: hidden;
       margin-bottom: 1.5rem;
     }
@@ -727,7 +727,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
     .patient-avatar {
       width: 80px;
       height: 80px;
-      background: #e9ecef;
+      background: var(--theme-input-bg);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -762,7 +762,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       border-right: 5px solid transparent; 
       border-top: 1px solid rgba(0,0,0,0.05);
-      color: #212529;
+      color: var(--theme-text-primary);
       height: 100%;
       position: relative;
       overflow: hidden;
@@ -778,8 +778,8 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
       margin-bottom: 0.5rem;
       opacity: 0.9;
     }
-    .vital-value { font-size: 1.6rem; font-weight: 800; color: #343a40; }
-    .vital-label { color: #6c757d; font-size: 0.9rem; font-weight: 500; }
+    .vital-value { font-size: 1.6rem; font-weight: 800; color: var(--theme-text-primary); }
+    .vital-label { color: var(--theme-text-secondary); font-size: 0.9rem; font-weight: 500; }
 
     /* Custom Tabs */
     .nav-tabs { border-bottom: 2px solid #dee2e6; gap: 0.5rem; }
@@ -792,7 +792,7 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
       border-radius: 8px 8px 0 0;
       transition: all 0.2s;
     }
-    .nav-link:hover { color: var(--lpx-theme-primary); background: #f8f9fa; }
+    .nav-link:hover { color: var(--lpx-theme-primary); background: var(--theme-hover-bg); }
     .nav-link.active {
       color: var(--lpx-theme-primary) !important;
       border-bottom-color: var(--lpx-theme-primary);

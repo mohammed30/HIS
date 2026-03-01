@@ -32,8 +32,7 @@
         </ng-template>
       </ngx-datatable-column>
       <ngx-datatable-column [name]="'::RoomNumber' | abpLocalization" prop="roomNumber"></ngx-datatable-column>
-      <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="name"></ngx-datatable-column>
-      <ngx-datatable-column [name]="'::Type' | abpLocalization" prop="type">
+      <ngx-datatable-column [name]="'::Enum:RoomType' | abpLocalization" prop="type">
         <ng-template let-row="row" ngx-datatable-cell-template>
           {{ '::Enum:RoomType:' + row.type | abpLocalization }}
         </ng-template>
@@ -45,7 +44,7 @@
           {{ row.dailyRate | currency }}
         </ng-template>
       </ngx-datatable-column>
-      <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+      <ngx-datatable-column [name]="'::Enum:RoomStatus' | abpLocalization" prop="status">
         <ng-template let-row="row" ngx-datatable-cell-template>
           <span class="badge" [ngClass]="{
             'bg-success': row.status === 0,

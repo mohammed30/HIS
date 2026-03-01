@@ -71,7 +71,7 @@
                     date:'dd/MM/yyyy HH:mm' }}</p>
             </div>
             <div class="col-6 text-end">
-                <div class="p-3 bg-light rounded border">
+                <div class="p-3 rounded border">
                     <h5 class="mb-2">{{ reportData?.patientName }}</h5>
                     <p class="mb-0"><strong>{{ '::MRN' | abpLocalization }}:</strong> {{ reportData?.mrn }}</p>
                 </div>
@@ -82,7 +82,7 @@
         <div class="row mb-4 summary-cards">
             <div class="col-md-4">
                 <div class="card border-primary mb-3">
-                    <div class="card-body text-center shadow-sm" style="background-color: #f8faff;">
+                    <div class="card-body text-center shadow-sm">
                         <p class="card-title text-muted mb-1" style="font-size: 1.1rem; font-weight: 600;">{{
                             '::TotalBilled' | abpLocalization }}</p>
                         <h3 class="text-primary mb-0" style="font-weight: 700;">{{ reportData?.totalAmountInvoiced |
@@ -92,7 +92,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card border-success mb-3">
-                    <div class="card-body text-center shadow-sm" style="background-color: #f4fdf8;">
+                    <div class="card-body text-center shadow-sm">
                         <p class="card-title text-muted mb-1" style="font-size: 1.1rem; font-weight: 600;">{{
                             '::TotalPaid' | abpLocalization }}</p>
                         <h3 class="text-success mb-0" style="font-weight: 700;">{{ reportData?.totalAmountPaid |
@@ -102,7 +102,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card border-danger mb-3">
-                    <div class="card-body text-center shadow-sm" style="background-color: #fff5f5;">
+                    <div class="card-body text-center shadow-sm">
                         <p class="card-title text-muted mb-1" style="font-size: 1.1rem; font-weight: 600;">{{
                             '::TotalDue' | abpLocalization }}</p>
                         <h3 class="text-danger mb-0" style="font-weight: 700;">{{ reportData?.totalAmountDue |
@@ -122,7 +122,7 @@
         <!-- Services Table -->
         <div class="table-responsive" *ngIf="!isLoading">
             <table class="table table-striped table-hover table-bordered align-middle">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th style="width: 15%">{{ '::Date' | abpLocalization }}</th>
                         <th style="width: 15%">{{ '::InvoiceNumber' | abpLocalization }}</th>
