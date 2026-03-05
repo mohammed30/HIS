@@ -135,6 +135,23 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         operations.AddChild(HISPermissions.Operations.PrintTicket, L("Permission:PrintTicket"));
         operations.AddChild(HISPermissions.Operations.Manage, L("Permission:Manage"));
         operations.AddChild(HISPermissions.Operations.Report, L("Permission:OperationsReport"));
+
+        // HR (شؤون العاملين)
+        var hr = hisGroup.AddPermission(HISPermissions.HR.Default, L("Permission:HR"));
+        var hrEmployees = hr.AddChild(HISPermissions.HR.Employees, L("Permission:HREmployees"));
+        hrEmployees.AddChild(HISPermissions.HR.EmployeesCreate, L("Permission:Create"));
+        hrEmployees.AddChild(HISPermissions.HR.EmployeesEdit, L("Permission:Edit"));
+        hrEmployees.AddChild(HISPermissions.HR.EmployeesDelete, L("Permission:Delete"));
+        hr.AddChild(HISPermissions.HR.CompensationItems, L("Permission:HRCompensationItems"));
+        hr.AddChild(HISPermissions.HR.LeaveTypes, L("Permission:HRLeaveTypes"));
+        hr.AddChild(HISPermissions.HR.EmployeeLeaves, L("Permission:HREmployeeLeaves"));
+        hr.AddChild(HISPermissions.HR.Loans, L("Permission:HRLoans"));
+        var hrPayroll = hr.AddChild(HISPermissions.HR.Payroll, L("Permission:HRPayroll"));
+        hrPayroll.AddChild(HISPermissions.HR.PayrollProcess, L("Permission:HRPayrollProcess"));
+        hr.AddChild(HISPermissions.HR.Penalties, L("Permission:HRPenalties"));
+        hr.AddChild(HISPermissions.HR.Attendance, L("Permission:HRAttendance"));
+        hr.AddChild(HISPermissions.HR.Reports, L("Permission:HRReports"));
+        hr.AddChild(HISPermissions.HR.PaySlip, L("Permission:HRPaySlip"));
     }
 
     private static LocalizableString L(string name)

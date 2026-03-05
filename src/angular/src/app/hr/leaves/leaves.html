@@ -1,0 +1,196 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::Menu:EmployeeLeaves' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col col-md-6">
+                <div class="text-lg-end pt-2">
+                    <button *ngIf="activeTab === 1" id="create-leave" class="btn btn-primary" type="button"
+                        (click)="createLeaveRequest()">
+                        <i class="fa fa-plus me-1"></i>
+                        <span>{{ '::HR:NewLeave' | abpLocalization }}</span>
+                    </button>
+                    <button *ngIf="activeTab === 2" id="create-type" class="btn btn-primary" type="button"
+                        (click)="createType()">
+                        <i class="fa fa-plus me-1"></i>
+                        <span>{{ '::HR:NewLeaveType' | abpLocalization }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+            <li [ngbNavItem]="1">
+                <button ngbNavLink>{{ '::Menu:EmployeeLeaves' | abpLocalization }}</button>
+                <ng-template ngbNavContent>
+                    <ngx-datatable [rows]="employeeLeaves.items" [count]="employeeLeaves.totalCount" [list]="list"
+                        default>
+                        <ngx-datatable-column [name]="'::Name' | abpLocalization"
+                            prop="employeeName"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Type' | abpLocalization"
+                            prop="leaveTypeName"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::StartDate' | abpLocalization" prop="startDate">
+                            <ng-template let-row="row" ngx-datatable-cell-template>{{ row.startDate | date
+                                }}</ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::EndDate' | abpLocalization" prop="endDate">
+                            <ng-template let-row="row" ngx-datatable-cell-template>{{ row.endDate | date
+                                }}</ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Duration' | abpLocalization"
+                            prop="duration"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::HR:Balance' | abpLocalization"
+                            prop="balance"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150"
+                            [sortable]="false">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <button class="btn btn-outline-danger btn-sm" (click)="deleteLeaveRequest(row.id)"
+                                    [title]="'::Delete' | abpLocalization">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </ng-template>
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="2">
+                <button ngbNavLink>{{ '::HR:LeaveTypes' | abpLocalization }}</button>
+                <ng-template ngbNavContent>
+                    <ngx-datatable [rows]="leaveTypes" default>
+                        <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="nameAr"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Duration' | abpLocalization"
+                            prop="duration"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::HR:AffectsSalary' | abpLocalization" prop="affectsSalary">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <i class="fa fa-check text-success" *ngIf="row.affectsSalary"></i>
+                                <i class="fa fa-times text-danger" *ngIf="!row.affectsSalary"></i>
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <span *ngIf="row.isActive" class="badge bg-success">{{ '::Available' | abpLocalization
+                                    }}</span>
+                                <span *ngIf="!row.isActive" class="badge bg-danger">{{ '::ClosedHours' | abpLocalization
+                                    }}</span>
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150"
+                            [sortable]="false">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-outline-primary btn-sm me-2" (click)="editType(row.id)"
+                                        [title]="'::Edit' | abpLocalization">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" (click)="deleteType(row.id)"
+                                        [title]="'::Delete' | abpLocalization">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </ng-template>
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </li>
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+</div>
+
+<!-- Leave Type Modal -->
+<abp-modal [(visible)]="isTypeModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ (selectedType.id ? '::Edit' : '::HR:NewLeaveType') | abpLocalization }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="typeForm" (ngSubmit)="saveType()" validateOnSubmit>
+            <div class="mt-2">
+                <label for="type-name">{{ '::Name' | abpLocalization }} *</label>
+                <input type="text" id="type-name" class="form-control" formControlName="nameAr" autofocus />
+            </div>
+            <div class="mt-2">
+                <label for="type-duration">{{ '::Duration' | abpLocalization }} (Days) *</label>
+                <input type="number" id="type-duration" class="form-control" formControlName="duration" />
+            </div>
+            <div class="mt-4 custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="affectsSalary"
+                    formControlName="affectsSalary" />
+                <label class="custom-control-label" for="affectsSalary">{{ '::HR:AffectsSalary' | abpLocalization
+                    }}</label>
+            </div>
+            <div class="mt-2 custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="isBalance" formControlName="isBalance" />
+                <label class="custom-control-label" for="isBalance">{{ '::HR:IsBalance' | abpLocalization }}</label>
+            </div>
+            <div class="mt-2 custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="type-isActive" formControlName="isActive" />
+                <label class="custom-control-label" for="type-isActive">{{ '::Status' | abpLocalization }}</label>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button class="btn btn-primary" (click)="saveType()" [disabled]="typeForm.invalid">
+            <i class="fa fa-check mr-1"></i>{{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>
+
+<!-- Leave Request Modal -->
+<abp-modal [(visible)]="isLeaveModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ '::HR:NewLeave' | abpLocalization }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="leaveForm" (ngSubmit)="saveLeaveRequest()" validateOnSubmit>
+            <div class="mt-2">
+                <label for="leave-emp">{{ '::Employee' | abpLocalization }} *</label>
+                <select class="form-control" id="leave-emp" formControlName="employeeId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let emp of employeeLookup" [ngValue]="emp.id">{{ emp.nameAr }} ({{
+                        emp.employeeNumber }})</option>
+                </select>
+            </div>
+            <div class="mt-2">
+                <label for="leave-type">{{ '::Type' | abpLocalization }} *</label>
+                <select class="form-control" id="leave-type" formControlName="leaveTypeId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let lt of leaveTypes" [ngValue]="lt.id">{{ lt.nameAr }} ({{ lt.duration }} Days)
+                    </option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mt-2">
+                        <label for="leave-start">{{ '::StartDate' | abpLocalization }} *</label>
+                        <input type="date" id="leave-start" class="form-control" formControlName="startDate" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mt-2">
+                        <label for="leave-end">{{ '::EndDate' | abpLocalization }} *</label>
+                        <input type="date" id="leave-end" class="form-control" formControlName="endDate" />
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <label for="leave-duration">{{ '::Duration' | abpLocalization }} (Days) *</label>
+                <input type="number" id="leave-duration" class="form-control" formControlName="duration" />
+            </div>
+            <div class="mt-2">
+                <label for="leave-notes">{{ '::Notes' | abpLocalization }}</label>
+                <textarea id="leave-notes" class="form-control" formControlName="notes"></textarea>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button class="btn btn-primary" (click)="saveLeaveRequest()" [disabled]="leaveForm.invalid">
+            <i class="fa fa-check mr-1"></i>{{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>

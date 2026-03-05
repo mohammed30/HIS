@@ -190,3 +190,18 @@ export interface SpecialtyDto extends FullAuditedEntityDto<string> {
   isActive?: boolean;
   sortOrder?: number;
 }
+
+export interface JobTitleDto extends FullAuditedEntityDto<string> {
+  nameAr?: string;
+  nameEn?: string;
+  description?: string;
+  departmentId?: string;
+  departmentName?: string;
+}
+
+export interface CreateUpdateJobTitleDto {
+  nameAr?: string;
+  nameEn?: string;
+  description?: string;
+  departmentId?: string;
+}

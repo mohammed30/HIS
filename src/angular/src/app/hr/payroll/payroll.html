@@ -1,0 +1,193 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::Menu:Payroll' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col col-md-6">
+                <div class="text-lg-end pt-2">
+                    <button *ngIf="activeTab === 1" id="process-payroll" class="btn btn-primary" type="button"
+                        (click)="createProcess()">
+                        <i class="fa fa-cogs me-1"></i>
+                        <span>{{ '::HR:ProcessPayroll' | abpLocalization }}</span>
+                    </button>
+                    <button *ngIf="activeTab === 2" id="create-setup" class="btn btn-primary" type="button"
+                        (click)="createSetup()">
+                        <i class="fa fa-plus me-1"></i>
+                        <span>{{ '::HR:NewSalarySetup' | abpLocalization }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (activeIdChange)="onTabChange()" class="nav-tabs">
+            <li [ngbNavItem]="1">
+                <button ngbNavLink>{{ '::HR:ProcessPayroll' | abpLocalization }}</button>
+                <ng-template ngbNavContent>
+                    <ngx-datatable [rows]="runs.items" [count]="runs.totalCount" [list]="list" default>
+                        <ngx-datatable-column [name]="'::StartDate' | abpLocalization" prop="periodStart">
+                            <ng-template let-row="row" ngx-datatable-cell-template>{{ row.periodStart | date
+                                }}</ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::EndDate' | abpLocalization" prop="periodEnd">
+                            <ng-template let-row="row" ngx-datatable-cell-template>{{ row.periodEnd | date
+                                }}</ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::HR:Earnings' | abpLocalization"
+                            prop="totalEarnings"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::HR:Deductions' | abpLocalization"
+                            prop="totalDeductions"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Total' | abpLocalization"
+                            prop="netSalary"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <span *ngIf="row.status === 2" class="badge bg-success">{{ '::Enum:PayrollRunStatus:2' |
+                                    abpLocalization }}</span>
+                                <span *ngIf="row.status === 3" class="badge bg-primary">{{ '::Enum:PayrollRunStatus:3' |
+                                    abpLocalization }}</span>
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150"
+                            [sortable]="false">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <button class="btn btn-outline-info btn-sm" (click)="viewPaySlip(row.id)"
+                                    [title]="'::HR:PaySlip' | abpLocalization">
+                                    <i class="fa fa-file-text"></i>
+                                </button>
+                            </ng-template>
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </li>
+            <li [ngbNavItem]="2">
+                <button ngbNavLink>{{ '::HR:SalarySetup' | abpLocalization }}</button>
+                <ng-template ngbNavContent>
+                    <ngx-datatable [rows]="setups.items" [count]="setups.totalCount" [list]="list" default>
+                        <ngx-datatable-column [name]="'::Name' | abpLocalization"
+                            prop="employeeName"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Type' | abpLocalization"
+                            prop="compensationItemName"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Amount' | abpLocalization"
+                            prop="amount"></ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::StartDate' | abpLocalization" prop="startDate">
+                            <ng-template let-row="row" ngx-datatable-cell-template>{{ row.startDate | date
+                                }}</ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <i class="fa fa-check text-success" *ngIf="row.isActive"></i>
+                                <i class="fa fa-times text-danger" *ngIf="!row.isActive"></i>
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150"
+                            [sortable]="false">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-outline-primary btn-sm me-2" (click)="editSetup(row.id)"
+                                        [title]="'::Edit' | abpLocalization">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" (click)="deleteSetup(row.id)"
+                                        [title]="'::Delete' | abpLocalization">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </ng-template>
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </li>
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+</div>
+
+<!-- Salary Setup Modal -->
+<abp-modal [(visible)]="isSetupModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ (selectedSetup.id ? '::Edit' : '::HR:NewSalarySetup') | abpLocalization }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="setupForm" (ngSubmit)="saveSetup()" validateOnSubmit>
+            <div class="mt-2">
+                <label for="setup-emp">{{ '::Employee' | abpLocalization }} *</label>
+                <select class="form-control" id="setup-emp" formControlName="employeeId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let emp of employeeLookup" [ngValue]="emp.id">{{ emp.nameAr }} ({{
+                        emp.employeeNumber }})</option>
+                </select>
+            </div>
+            <div class="mt-2">
+                <label for="setup-item">{{ '::Type' | abpLocalization }} *</label>
+                <select class="form-control" id="setup-item" formControlName="compensationItemId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let ci of compensationItems" [ngValue]="ci.id">{{ ci.nameAr }}</option>
+                </select>
+            </div>
+            <div class="mt-2">
+                <label for="setup-amount">{{ '::Amount' | abpLocalization }} *</label>
+                <input type="number" id="setup-amount" class="form-control" formControlName="amount" />
+            </div>
+            <div class="mt-2">
+                <label for="setup-date">{{ '::StartDate' | abpLocalization }} *</label>
+                <input type="date" id="setup-date" class="form-control" formControlName="startDate" />
+            </div>
+            <div class="mt-4 custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="isRecurring" formControlName="isRecurring" />
+                <label class="custom-control-label" for="isRecurring">{{ '::Recurring' | abpLocalization }}</label>
+            </div>
+            <div class="mt-2 custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="setup-isActive" formControlName="isActive" />
+                <label class="custom-control-label" for="setup-isActive">{{ '::Status' | abpLocalization }}</label>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button class="btn btn-primary" (click)="saveSetup()" [disabled]="setupForm.invalid">
+            <i class="fa fa-check mr-1"></i>{{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>
+
+<!-- Payroll Process Modal -->
+<abp-modal [(visible)]="isProcessModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ '::HR:ProcessPayroll' | abpLocalization }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="processForm" (ngSubmit)="runProcess()" validateOnSubmit>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mt-2">
+                        <label for="p-start">{{ '::StartDate' | abpLocalization }} *</label>
+                        <input type="date" id="p-start" class="form-control" formControlName="periodStart" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mt-2">
+                        <label for="p-end">{{ '::EndDate' | abpLocalization }} *</label>
+                        <input type="date" id="p-end" class="form-control" formControlName="periodEnd" />
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <label for="p-grade">{{ '::HR:EmployeeClass' | abpLocalization }} ({{ '::Optional' | abpLocalization
+                    }})</label>
+                <select class="form-control" id="p-grade" formControlName="jobGradeId">
+                    <option [ngValue]="null">{{ '::All' | abpLocalization }}</option>
+                    <option *ngFor="let g of jobGrades" [ngValue]="g.id">{{ g.nameAr }}</option>
+                </select>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button class="btn btn-primary" (click)="runProcess()" [disabled]="processForm.invalid">
+            <i class="fa fa-cogs mr-1"></i>{{ '::Process' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>

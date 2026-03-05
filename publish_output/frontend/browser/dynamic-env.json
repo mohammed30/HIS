@@ -1,20 +1,20 @@
 {
     "production": true,
     "oAuthConfig": {
-        "issuer": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
-        "redirectUri": "https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net",
+        "issuer": "http://strategicmoves-001-site1.jtempurl.com",
+        "redirectUri": "http://asiahospitalhis-001-site1.qtempurl.com",
         "clientId": "HIS_App",
         "responseType": "code",
         "scope": "offline_access HIS",
-        "requireHttps": true
+        "requireHttps": false
     },
     "apis": {
         "default": {
-            "url": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
+            "url": "http://strategicmoves-001-site1.jtempurl.com",
             "rootNamespace": "HIS"
         },
         "AbpAccountPublic": {
-            "url": "https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net/",
+            "url": "http://strategicmoves-001-site1.jtempurl.com",
             "rootNamespace": "AbpAccountPublic"
         }
     }

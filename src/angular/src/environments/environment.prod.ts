@@ -1,14 +1,13 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'https://asiahospitalfront-dkbhcbftfcg5g4f7.westeurope-01.azurewebsites.net';
-
+const baseUrl = 'http://asiahospitalhis-001-site1.qtempurl.com';
 const oAuthConfig = {
-  issuer: 'https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net',
+  issuer: 'http://strategicmoves-001-site1.jtempurl.com/',
   redirectUri: baseUrl,
   clientId: 'HIS_App',
   responseType: 'code',
   scope: 'offline_access HIS',
-  requireHttps: true,
+  requireHttps: false,
 };
 
 export const environment = {
@@ -21,7 +20,7 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'https://asiahospitalback-ffdkapgqauaherbd.westeurope-01.azurewebsites.net',
+      url: 'http://strategicmoves-001-site1.jtempurl.com/',
       rootNamespace: 'HIS',
     },
     AbpAccountPublic: {

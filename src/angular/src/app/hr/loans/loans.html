@@ -1,0 +1,104 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    {{ '::Menu:Loans' | abpLocalization }}
+                </h5>
+            </div>
+            <div class="text-end col col-md-6">
+                <div class="text-lg-end pt-2">
+                    <button id="create-loan" class="btn btn-primary" type="button" (click)="createLoan()">
+                        <i class="fa fa-plus me-1"></i>
+                        <span>{{ '::HR:NewLoan' | abpLocalization }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <ngx-datatable [rows]="loans.items" [count]="loans.totalCount" [list]="list" default>
+            <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="employeeName"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::HR:Deduction' | abpLocalization"
+                prop="compensationItemName"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::HR:LoanAmount' | abpLocalization" prop="amount"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::HR:Installments' | abpLocalization"
+                prop="installments"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::HR:PaidAmount' | abpLocalization" prop="paidAmount"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::HR:RemainingAmount' | abpLocalization"
+                prop="remainingAmount"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span *ngIf="row.status === 1" class="badge bg-primary">{{ '::Enum:LoanStatus:1' | abpLocalization
+                        }}</span>
+                    <span *ngIf="row.status === 2" class="badge bg-success">{{ '::Enum:LoanStatus:2' | abpLocalization
+                        }}</span>
+                    <span *ngIf="row.status === 3" class="badge bg-secondary">{{ '::Enum:LoanStatus:3' | abpLocalization
+                        }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="150" [sortable]="false">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <button class="btn btn-outline-danger btn-sm" (click)="delete(row.id)"
+                        [title]="'::Delete' | abpLocalization">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </ng-template>
+            </ngx-datatable-column>
+        </ngx-datatable>
+    </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ '::HR:NewLoan' | abpLocalization }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()" validateOnSubmit>
+            <div class="mt-2">
+                <label for="loan-emp">{{ '::Employee' | abpLocalization }} *</label>
+                <select class="form-control" id="loan-emp" formControlName="employeeId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let emp of employeeLookup" [ngValue]="emp.id">{{ emp.nameAr }} ({{
+                        emp.employeeNumber }})</option>
+                </select>
+            </div>
+            <div class="mt-2">
+                <label for="loan-item">{{ '::HR:Deduction' | abpLocalization }} *</label>
+                <select class="form-control" id="loan-item" formControlName="compensationItemId">
+                    <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
+                    <option *ngFor="let ci of deductionItems" [ngValue]="ci.id">{{ ci.nameAr }}</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mt-2">
+                        <label for="loan-amount">{{ '::HR:LoanAmount' | abpLocalization }} *</label>
+                        <input type="number" id="loan-amount" class="form-control" formControlName="amount" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mt-2">
+                        <label for="loan-installments">{{ '::HR:Installments' | abpLocalization }} *</label>
+                        <input type="number" id="loan-installments" class="form-control"
+                            formControlName="installments" />
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <label for="loan-start">{{ '::StartDate' | abpLocalization }} *</label>
+                <input type="date" id="loan-start" class="form-control" formControlName="startDate" />
+            </div>
+            <div class="mt-2">
+                <label for="loan-notes">{{ '::Notes' | abpLocalization }}</label>
+                <textarea id="loan-notes" class="form-control" formControlName="notes"></textarea>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
+            <i class="fa fa-check mr-1"></i>{{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>

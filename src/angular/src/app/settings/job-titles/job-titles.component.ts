@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { JobTitleService } from '../../proxy/settings/job-title.service';
 import { DepartmentService } from '../../proxy/settings/department.service';
@@ -11,7 +12,7 @@ import { JobTitleDto, CreateUpdateJobTitleDto } from '../../proxy/settings/dtos/
 @Component({
     selector: 'app-job-titles',
     standalone: true,
-    imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
+    imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule, CoreModule],
     templateUrl: './job-titles.component.html'
 })
 export class JobTitlesComponent implements OnInit {

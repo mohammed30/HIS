@@ -440,6 +440,12 @@ export const APP_ROUTES: Routes = [
     data: { requiredPolicy: 'HIS.Nursing' }
   },
   {
+    path: 'hr',
+    loadChildren: () => import('./hr/hr-module').then(m => m.HrModule),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.HR' }
+  },
+  {
     path: 'operations/surgical-operations',
     loadComponent: () => import('./operations/surgical-operations/surgical-operations').then(c => c.SurgicalOperations),
     canActivate: [authGuard, permissionGuard],

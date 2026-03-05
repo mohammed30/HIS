@@ -1,5 +1,6 @@
 using HIS.General;
 using HIS.Nursing;
+using HIS.HR;
 using HIS.ActivityLogs;
 using HIS.Patients;
 using HIS.Settings;
@@ -148,6 +149,19 @@ public class HISDbContext :
     public DbSet<WoundCare> WoundCares { get; set; }
     public DbSet<FluidBalance> FluidBalances { get; set; }
     public DbSet<ShiftHandover> ShiftHandovers { get; set; }
+
+    // HR (شؤون العاملين)
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<JobGrade> JobGrades { get; set; }
+    public DbSet<CompensationItem> CompensationItems { get; set; }
+    public DbSet<LeaveType> LeaveTypes { get; set; }
+    public DbSet<EmployeeLeave> EmployeeLeaves { get; set; }
+    public DbSet<EmployeeLoan> EmployeeLoans { get; set; }
+    public DbSet<SalarySetup> SalarySetups { get; set; }
+    public DbSet<PayrollRun> PayrollRuns { get; set; }
+    public DbSet<PayrollLine> PayrollLines { get; set; }
+    public DbSet<Penalty> Penalties { get; set; }
+    public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
 
     #region Entities from the modules
 
@@ -1024,6 +1038,7 @@ public class HISDbContext :
             b.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
             b.Property(x => x.InsuranceAmount).HasColumnType("decimal(18,2)");
             b.Property(x => x.PharmacyPercentage).HasColumnType("decimal(5,2)");
+            b.Property(x => x.AccumulatedRoomCharges).HasColumnType("decimal(18,2)");
             
             b.Ignore(x => x.DueAmount);
             
@@ -1064,6 +1079,10 @@ public class HISDbContext :
         {
             b.ToTable(HISConsts.DbTablePrefix + "PatientTransfers", HISConsts.DbSchema);
             b.ConfigureByConvention();
+            
+            b.Property(x => x.PreviousRoomDailyRate).HasColumnType("decimal(18,2)");
+            b.Property(x => x.PreviousRoomTotalAmount).HasColumnType("decimal(18,2)");
+            
             b.HasIndex(x => x.AdmissionId);
             b.HasIndex(x => x.FromRoomId);
             b.HasIndex(x => x.ToRoomId);
@@ -1082,6 +1101,11 @@ public class HISDbContext :
             b.Property(x => x.CompanyShare).HasColumnType("decimal(18,2)");
             b.Property(x => x.PatientShare).HasColumnType("decimal(18,2)");
             b.Property(x => x.InsuranceTotal).HasColumnType("decimal(18,2)");
+            b.Property(x => x.AnesthesiologistFeeAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.AnesthesiologistFeePercentage).HasColumnType("decimal(5,2)");
+            b.Property(x => x.HospitalShareAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.SurgeonFeeAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.SurgeonFeePercentage).HasColumnType("decimal(5,2)");
             
             b.HasIndex(x => x.DoctorId);
             b.HasIndex(x => x.Status);
@@ -1169,6 +1193,131 @@ public class HISDbContext :
                 b.ConfigureByConvention();
                 b.Property(x => x.Notes).HasMaxLength(4096);
                 b.HasIndex(x => x.HandoverTime);
+            });
+
+            // ===== HR (شؤون العاملين) =====
+
+            builder.Entity<JobGrade>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "JobGrades", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+                b.Property(x => x.NameAr).HasMaxLength(256).IsRequired();
+                b.Property(x => x.NameEn).HasMaxLength(256);
+                b.Property(x => x.BaseSalary).HasColumnType("decimal(18,2)");
+                b.HasIndex(x => x.Code);
+            });
+
+            builder.Entity<Employee>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "Employees", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.EmployeeNumber).HasMaxLength(64).IsRequired();
+                b.Property(x => x.NameAr).HasMaxLength(256).IsRequired();
+                b.Property(x => x.NameEn).HasMaxLength(256);
+                b.Property(x => x.Address).HasMaxLength(512);
+                b.Property(x => x.Phone).HasMaxLength(64);
+                b.Property(x => x.Qualification).HasMaxLength(256);
+                b.Property(x => x.IdentityNumber).HasMaxLength(128);
+                b.Property(x => x.InsuranceNumber).HasMaxLength(128);
+                b.Property(x => x.BankName).HasMaxLength(256);
+                b.Property(x => x.BankAccountNumber).HasMaxLength(128);
+                b.Property(x => x.SectionName).HasMaxLength(256);
+                b.Property(x => x.JobTitle).HasMaxLength(256);
+                b.Property(x => x.EmploymentClassification).HasMaxLength(128);
+                b.Property(x => x.PhotoUrl).HasMaxLength(1024);
+                b.HasIndex(x => x.EmployeeNumber);
+                b.HasIndex(x => x.DepartmentId);
+                b.HasIndex(x => x.JobGradeId);
+            });
+
+            builder.Entity<CompensationItem>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "CompensationItems", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.NameAr).HasMaxLength(256).IsRequired();
+                b.Property(x => x.DisplayName).HasMaxLength(256);
+                b.Property(x => x.FormulaExpression).HasMaxLength(2048);
+                b.HasIndex(x => x.AccountId);
+            });
+
+            builder.Entity<LeaveType>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "LeaveTypes", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.NameAr).HasMaxLength(256).IsRequired();
+                b.Property(x => x.EmployeeClass).HasMaxLength(128);
+            });
+
+            builder.Entity<EmployeeLeave>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "EmployeeLeaves", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Notes).HasMaxLength(1024);
+                b.HasIndex(x => x.EmployeeId);
+                b.HasIndex(x => x.LeaveTypeId);
+            });
+
+            builder.Entity<EmployeeLoan>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "EmployeeLoans", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+                b.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
+                b.Property(x => x.Notes).HasMaxLength(1024);
+                b.HasIndex(x => x.EmployeeId);
+            });
+
+            builder.Entity<SalarySetup>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "SalarySetups", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+                b.HasIndex(x => x.EmployeeId);
+                b.HasIndex(x => x.CompensationItemId);
+            });
+
+            builder.Entity<PayrollRun>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PayrollRuns", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.TotalEarnings).HasColumnType("decimal(18,2)");
+                b.Property(x => x.TotalDeductions).HasColumnType("decimal(18,2)");
+                b.Property(x => x.NetSalary).HasColumnType("decimal(18,2)");
+                b.HasMany(x => x.Lines).WithOne().HasForeignKey(x => x.PayrollRunId);
+                b.HasIndex(x => x.DepartmentId);
+                b.HasIndex(x => x.JournalEntryId);
+            });
+
+            builder.Entity<PayrollLine>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PayrollLines", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+                b.HasIndex(x => x.PayrollRunId);
+                b.HasIndex(x => x.EmployeeId);
+            });
+
+            builder.Entity<Penalty>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "Penalties", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Description).HasMaxLength(1024);
+                b.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+                b.Property(x => x.Notes).HasMaxLength(1024);
+                b.HasIndex(x => x.EmployeeId);
+                b.HasIndex(x => x.Date);
+            });
+
+            builder.Entity<AttendanceRecord>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "AttendanceRecords", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.PermitType).HasMaxLength(128);
+                b.Property(x => x.Reason).HasMaxLength(1024);
+                b.Property(x => x.Notes).HasMaxLength(1024);
+                b.HasIndex(x => x.EmployeeId);
+                b.HasIndex(x => x.Date);
             });
     }
 }

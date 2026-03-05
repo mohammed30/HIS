@@ -272,6 +272,29 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Clinical.MedicalOrder, Nursing.DueMedicationDto>()
              .ForMember(x => x.DrugName, map => map.MapFrom(s => s.ServiceName))
              .ForMember(x => x.OrderDate, map => map.MapFrom(s => s.CreationTime));
+
+        // HR (شؤون العاملين)
+        CreateMap<HR.Employee, HR.EmployeeDto>();
+        CreateMap<HR.CreateUpdateEmployeeDto, HR.Employee>();
+        CreateMap<HR.JobGrade, HR.JobGradeDto>();
+        CreateMap<HR.CreateUpdateJobGradeDto, HR.JobGrade>();
+        CreateMap<HR.CompensationItem, HR.CompensationItemDto>();
+        CreateMap<HR.CreateUpdateCompensationItemDto, HR.CompensationItem>();
+        CreateMap<HR.LeaveType, HR.LeaveTypeDto>();
+        CreateMap<HR.CreateUpdateLeaveTypeDto, HR.LeaveType>();
+        CreateMap<HR.EmployeeLeave, HR.EmployeeLeaveDto>();
+        CreateMap<HR.CreateUpdateEmployeeLeaveDto, HR.EmployeeLeave>();
+        CreateMap<HR.EmployeeLoan, HR.EmployeeLoanDto>();
+        CreateMap<HR.CreateUpdateEmployeeLoanDto, HR.EmployeeLoan>();
+        CreateMap<HR.SalarySetup, HR.SalarySetupDto>();
+        CreateMap<HR.CreateUpdateSalarySetupDto, HR.SalarySetup>();
+        CreateMap<HR.PayrollRun, HR.PayrollRunDto>();
+        CreateMap<HR.PayrollLine, HR.PaySlipLineDto>()
+             .ForMember(x => x.ItemName, opt => opt.Ignore());
+        CreateMap<HR.Penalty, HR.PenaltyDto>();
+        CreateMap<HR.CreateUpdatePenaltyDto, HR.Penalty>();
+        CreateMap<HR.AttendanceRecord, HR.AttendanceRecordDto>();
+        CreateMap<HR.CreateUpdateAttendanceRecordDto, HR.AttendanceRecord>();
     }
 }
 

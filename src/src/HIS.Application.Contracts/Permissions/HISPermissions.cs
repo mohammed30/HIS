@@ -150,5 +150,24 @@ public static class HISPermissions
         public const string Manage = Default + ".Manage";
         public const string Report = Default + ".Report";
     }
+
+    public static class HR
+    {
+        public const string Default = GroupName + ".HR";
+        public const string Employees = Default + ".Employees";
+        public const string EmployeesCreate = Employees + ".Create";
+        public const string EmployeesEdit = Employees + ".Edit";
+        public const string EmployeesDelete = Employees + ".Delete";
+        public const string CompensationItems = Default + ".CompensationItems";
+        public const string LeaveTypes = Default + ".LeaveTypes";
+        public const string EmployeeLeaves = Default + ".EmployeeLeaves";
+        public const string Loans = Default + ".Loans";
+        public const string Payroll = Default + ".Payroll";
+        public const string PayrollProcess = Payroll + ".Process";
+        public const string Penalties = Default + ".Penalties";
+        public const string Attendance = Default + ".Attendance";
+        public const string Reports = Default + ".Reports";
+        public const string PaySlip = Default + ".PaySlip";
+    }
 }
 
