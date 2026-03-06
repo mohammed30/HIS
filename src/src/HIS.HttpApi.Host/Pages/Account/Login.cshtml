@@ -35,7 +35,7 @@
         :root {
             --primary-color: #0891b2; /* Cyan 600 */
             --primary-hover: #0e7490; /* Cyan 700 */
-            --bg-overlay: rgba(15, 23, 42, 0.2); /* Reduced opacity for clearer image */
+            --lpx-content-bg: #f8f9fa;
         }
         
         html, body {
@@ -51,281 +51,286 @@
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            position: relative;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            background-color: var(--lpx-content-bg);
         }
 
-        /* Dedicated Full Screen Background Container */
-        .bg-full-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            background: url('/images/login-bg.png') no-repeat center center;
-            background-color: #115e59; /* Teal-800 fallback to hide black bars */
-            background-size: cover !important; /* Force cover */
-            background-attachment: fixed;
-        }
-
-        /* Dark overlay for better text readability */
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: var(--bg-overlay);
-            z-index: 0;
-            pointer-events: none;
-            /* Ensure overlay also covers everything */
-            min-height: 100%; 
-            min-width: 100%;
+        .login-wrapper {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
         .login-card {
             width: 100%;
-            max-width: 440px;
-            /* Glassmorphism Effect */
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 3rem 2.5rem;
+            max-width: 450px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px;
             position: relative;
-            z-index: 1;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            margin: 1rem;
+        }
+
+        [data-theme="dark"] .login-card {
+            background: #2d3238;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
         }
 
         .logo-container {
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-        
-        .logo-container img {
-            max-width: 140px;
-            height: auto;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-            transition: transform 0.3s ease;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
         }
 
-        .logo-container img:hover {
-            transform: scale(1.05);
+        .logo-container svg {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
         .hospital-name {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #1e293b;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #212529;
             margin-bottom: 0.25rem;
             letter-spacing: -0.5px;
         }
 
         .hospital-subtitle {
-            color: #64748b;
-            font-size: 0.9rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .login-body h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 1rem;
         }
 
         .form-label {
-            font-weight: 600;
-            color: #475569;
-            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.95rem;
             margin-bottom: 0.5rem;
         }
 
         .form-control {
-            padding: 0.8rem 1rem;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            background-color: #f8fafc;
-            transition: all 0.2s ease;
-            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
-        /* Custom directional rounding for 12px radius */
-        .rounded-start-custom { border-radius: 12px 0 0 12px; }
-        .rounded-end-custom { border-radius: 0 12px 12px 0; }
-        
-        /* RTL Overrides for custom rounding */
-        [dir="rtl"] .rounded-start-custom { border-radius: 0 12px 12px 0; }
-        [dir="rtl"] .rounded-end-custom { border-radius: 12px 0 0 12px; }
-
         .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.1);
-            background-color: #fff;
-            z-index: 3;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .input-group-text {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            background-color: transparent;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-            border: none;
-            padding: 0.9rem;
-            border-radius: 12px;
-            font-weight: 700;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
             letter-spacing: 0.5px;
-            margin-top: 1rem;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(8, 145, 178, 0.4);
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
         }
 
         .form-check-input {
-            border-radius: 6px;
-            width: 1.2em;
-            height: 1.2em;
-            margin-top: 0.15em;
-            border: 2px solid #cbd5e1;
-        }
-        
-        .form-check-input:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            width: 1.1em;
+            height: 1.1em;
+            margin-top: 0.2em;
         }
 
         .login-footer {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(0,0,0,0.05);
+            border-top: 1px solid #e9ecef;
         }
 
-        .language-switch a {
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
-        
-        .language-switch a:hover {
-            background: rgba(0,0,0,0.05);
+        [data-theme="dark"] .login-footer {
+            border-color: #495057;
         }
 
-        /* RTL specific adjustments */
-        [dir="rtl"] .form-check-input {
-            float: right;
-            margin-left: 0.5em;
+        /* RTL overrides */
+        [dir="rtl"] .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
         }
-        
-        /* Ensure input group text matches input styling */
-        .input-group-text {
-            border: 2px solid #e2e8f0;
-            background-color: #f8fafc;
+
+        [dir="rtl"] .input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating), 
+        [dir="rtl"] .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3), 
+        [dir="rtl"] .input-group.has-validation > :nth-last-child(n+3):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating), 
+        [dir="rtl"] .input-group.has-validation > .dropdown-toggle:nth-last-child(n+4) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Fixed Background Elements -->
-    <div class="bg-full-screen"></div>
-    <div class="bg-overlay"></div>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <!-- Logo & Header -->
+            <div class="login-header text-center mb-4">
+                <div class="logo-container mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 500 500" fill="none">
+                        <circle cx="250" cy="250" r="240" fill="#4dabf7" fill-opacity="0.2"/>
+                        <path d="M250 100 C 250 100 300 180 350 180 C 400 180 400 250 350 250 C 300 250 250 330 250 330 C 250 330 200 250 150 250 C 100 250 100 180 150 180 C 200 180 250 100 250 100 Z" fill="#228be6"/>
+                    </svg>
+                </div>
+                <h3 class="hospital-name fw-bold">مستشفى آسيا</h3>
+                <p class="hospital-subtitle text-muted">Asia Hospital</p>
+            </div>
 
-    <div class="login-card">
-        <!-- Logo & Header -->
-        <div class="logo-container">
-             <img src="/images/logo/Dark.png" alt="Asia Hospital Logo" />
-             <div class="mt-3">
-                 <h1 class="hospital-name">مستشفى آسيا</h1>
-                 <div class="hospital-subtitle">Asia Hospital</div>
-             </div>
-        </div>
+            <div class="login-body">
+                <h4 class="mb-3 text-center">@L["Login"]</h4>
+                <p class="text-center text-muted mb-4">@L["NewUser"] <a href="#" class="text-decoration-none">@L["Register"]</a></p>
 
-        <div class="login-body">
-            <form method="post">
-                @if (Model.EnableLocalLogin)
-                {
-                    <div class="mb-4">
-                        <label asp-for="LoginInput.UserNameOrEmailAddress" class="form-label">@L["UserNameOrEmailAddress"]</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-2 border-end-0 rounded-start-custom text-muted"><i class="fas fa-user"></i></span>
-                            <input asp-for="LoginInput.UserNameOrEmailAddress" class="form-control border-start-0 rounded-end-custom ps-2" placeholder="username@domain.com" />
-                        </div>
-                        <span asp-validation-for="LoginInput.UserNameOrEmailAddress" class="text-danger small mt-1 d-block"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="LoginInput.Password" class="form-label">@L["Password"]</label>
-                        <div class="input-group">
-                             <span class="input-group-text bg-light border-2 border-end-0 rounded-start-custom text-muted"><i class="fas fa-lock"></i></span>
-                            <input asp-for="LoginInput.Password" type="password" class="form-control border-start-0 rounded-end-custom ps-2" placeholder="••••••••" />
-                        </div>
-                        <span asp-validation-for="LoginInput.Password" class="text-danger small mt-1 d-block"></span>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check">
-                            <input asp-for="LoginInput.RememberMe" class="form-check-input" />
-                            <label asp-for="LoginInput.RememberMe" class="form-check-label text-secondary small">@L["RememberMe"]</label>
-                        </div>
-                        <a href="@Url.Page("/Account/ForgotPassword")" class="text-decoration-none small text-primary fw-semibold">@L["ForgotPassword"]</a>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100 mb-3">
-                        <i class="fas fa-sign-in-alt me-2"></i> @L["Login"]
-                    </button>
-                    
-                    <!-- External Providers (Hidden if unused) -->
-                    @if (Model.VisibleExternalProviders.Any())
+                <form method="post">
+                    @if (Model.EnableLocalLogin)
                     {
-                        <div class="text-center mt-3">
-                             <p class="text-muted small mb-2">@L["OrLoginWith"]</p>
-                             @foreach (var provider in Model.VisibleExternalProviders)
-                             {
-                                 <button type="submit" 
-                                         class="btn btn-outline-light text-dark border shadow-sm btn-sm m-1" 
-                                         name="provider" 
-                                         value="@provider.AuthenticationScheme">
-                                     @provider.DisplayName
-                                 </button>
-                             }
+                        <div class="mb-3">
+                            <label asp-for="LoginInput.UserNameOrEmailAddress" class="form-label">@L["UserNameOrEmailAddress"]</label>
+                            <input asp-for="LoginInput.UserNameOrEmailAddress" class="form-control" />
+                            <span asp-validation-for="LoginInput.UserNameOrEmailAddress" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LoginInput.Password" class="form-label">@L["Password"]</label>
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary border-end-0" type="button" onclick="togglePasswordVisibility()">
+                                    <i class="fas fa-eye" id="password-eye-icon"></i>
+                                </button>
+                                <input asp-for="LoginInput.Password" type="password" class="form-control border-start-0" id="password-input" />
+                            </div>
+                            <span asp-validation-for="LoginInput.Password" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input asp-for="LoginInput.RememberMe" class="form-check-input" />
+                                <label asp-for="LoginInput.RememberMe" class="form-check-label text-secondary small">@L["RememberMe"]</label>
+                            </div>
+                            <a href="@Url.Page("/Account/ForgotPassword")" class="text-decoration-none small">@L["ForgotPassword"]</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                            @L["Login"]
+                        </button>
+                        
+                        <!-- External Providers -->
+                        @if (Model.VisibleExternalProviders.Any())
+                        {
+                            <div class="text-center mt-3">
+                                 <p class="text-muted small mb-2">@L["OrLoginWith"]</p>
+                                 @foreach (var provider in Model.VisibleExternalProviders)
+                                 {
+                                     <button type="submit" 
+                                             class="btn btn-outline-secondary btn-sm m-1" 
+                                             name="provider" 
+                                             value="@provider.AuthenticationScheme">
+                                         @provider.DisplayName
+                                     </button>
+                                 }
+                            </div>
+                        }
+                    }
+
+                    @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
+                    {
+                        <div class="alert alert-warning shadow-sm border-0">
+                            @L["NoAllowedProvider"]
                         </div>
                     }
-                }
-
-                @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
-                {
-                    <div class="alert alert-warning shadow-sm border-0">
-                        @L["NoAllowedProvider"]
-                    </div>
-                }
-            </form>
-        </div>
-
-        <!-- Footer / Language Switch -->
-        <div class="login-footer text-center">
-             <vc:abp-application-configuration-script />
-             <vc:abp-include-application-layout-script />
-             
-             <!-- Client Side Validation Scripts -->
-             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
-
-             <!-- Language Switch -->
-             <div class="d-flex justify-content-center align-items-center gap-3 language-switch">
-                <a href="/Abp/Languages/Switch?culture=ar&uiCulture=ar&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))" class="text-decoration-none fw-bold small @(System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("ar") ? "text-primary bg-primary bg-opacity-10" : "text-muted")">
-                    <img src="https://flagcdn.com/w20/sa.png" width="20" class="me-1 rounded-1 shadow-sm" alt="Arabic"> العربية
-                </a>
-                <span class="text-muted opacity-25">|</span>
-                <a href="/Abp/Languages/Switch?culture=en&uiCulture=en&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))" class="text-decoration-none fw-bold small @(System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("en") ? "text-primary bg-primary bg-opacity-10" : "text-muted")">
-                    <img src="https://flagcdn.com/w20/us.png" width="20" class="me-1 rounded-1 shadow-sm" alt="English"> English
-                </a>
+                </form>
             </div>
-            <div class="mt-3 text-muted opacity-50 small">
-                &copy; @DateTime.Now.Year Asia Hospital. All rights reserved.
+
+            <!-- Footer / Language Switch -->
+            <div class="login-footer mt-4 pt-3 text-center">
+                 <vc:abp-application-configuration-script />
+                 <vc:abp-include-application-layout-script />
+                 
+                 <!-- Client Side Validation Scripts -->
+                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+                 <!-- Password Visibility Toggle -->
+                 <script>
+                     function togglePasswordVisibility() {
+                         const input = document.getElementById('password-input');
+                         const icon = document.getElementById('password-eye-icon');
+                         if (input.type === 'password') {
+                             input.type = 'text';
+                             icon.classList.remove('fa-eye');
+                             icon.classList.add('fa-eye-slash');
+                         } else {
+                             input.type = 'password';
+                             icon.classList.remove('fa-eye-slash');
+                             icon.classList.add('fa-eye');
+                         }
+                     }
+                 </script>
+
+                 <!-- Language Switch -->
+                 <div class="d-flex justify-content-center align-items-center gap-2">
+                    <i class="fas fa-globe text-muted"></i>
+                    <select class="form-select form-select-sm w-auto border-0 bg-transparent text-muted fw-bold" 
+                            onchange="window.location.href=this.value">
+                        @if (System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("ar"))
+                        {
+                            <option value="/Abp/Languages/Switch?culture=ar&uiCulture=ar&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))" selected>
+                                العربية
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="/Abp/Languages/Switch?culture=ar&uiCulture=ar&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))">
+                                العربية
+                            </option>
+                        }
+
+                        @if (System.Globalization.CultureInfo.CurrentCulture.Name.StartsWith("en"))
+                        {
+                            <option value="/Abp/Languages/Switch?culture=en&uiCulture=en&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))" selected>
+                                English
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="/Abp/Languages/Switch?culture=en&uiCulture=en&returnUrl=@(System.Net.WebUtility.UrlEncode(Model.ReturnUrl))">
+                                English
+                            </option>
+                        }
+                    </select>
+                </div>
             </div>
         </div>
     </div>
-
 </body>
 </html>

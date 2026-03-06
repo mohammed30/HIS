@@ -25,10 +25,6 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     // Register custom components after app is initialized
     this.replaceableComponents.add({
-      component: CustomLoginComponent,
-      key: eAccountComponents.Login,
-    });
-    this.replaceableComponents.add({
       component: AppLogoComponent,
       key: 'Logo',
     });
