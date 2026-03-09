@@ -249,6 +249,15 @@ export class HRService {
       { apiName: this.apiName, ...config });
 
 
+  getPayrollRunEmployees = (payrollRunId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EmployeeLookupDto[]>({
+      method: 'GET',
+      url: `/api/app/h-r/payroll-run-employees`,
+      params: { payrollRunId },
+    },
+      { apiName: this.apiName, ...config });
+
+
   getPayrollRuns = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<PayrollRunDto>>({
       method: 'GET',
@@ -359,6 +368,14 @@ export class HRService {
     this.restService.request<any, void>({
       method: 'DELETE',
       url: `/api/app/h-r/${id}/daily-attendance`,
+    },
+      { apiName: this.apiName, ...config });
+
+  downloadPaySlipPdf = (payrollRunId: string, employeeId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: `/api/app/h-r/pay-slip-pdf/${payrollRunId}/${employeeId}`,
     },
       { apiName: this.apiName, ...config });
 }

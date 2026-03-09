@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using HIS.HR.Enums;
 using HIS.Permissions;
 using Microsoft.AspNetCore.Authorization;
+using HIS.HR.Printing;
+using Microsoft.AspNetCore.Hosting;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -33,6 +35,7 @@ public class HRAppService : ApplicationService
     private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
     private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
     private readonly IGuidGenerator _guidGenerator;
+    private readonly IWebHostEnvironment _env;
 
     public HRAppService(
         IRepository<Employee, Guid> employeeRepository,
@@ -51,7 +54,8 @@ public class HRAppService : ApplicationService
         IRepository<HIS.Settings.Department, Guid> departmentRepository,
         IRepository<HIS.Accounting.Account, Guid> accountRepository,
         IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
-        IGuidGenerator guidGenerator)
+        IGuidGenerator guidGenerator,
+        IWebHostEnvironment env)
     {
         _employeeRepository = employeeRepository;
         _jobGradeRepository = jobGradeRepository;
@@ -70,6 +74,7 @@ public class HRAppService : ApplicationService
         _accountRepository = accountRepository;
         _journalEntryRepository = journalEntryRepository;
         _guidGenerator = guidGenerator;
+        _env = env;
     }
 
     // ===== EMPLOYEES =====
@@ -441,6 +446,15 @@ public class HRAppService : ApplicationService
         return new PagedResultDto<PayrollRunDto>(runs.Count, ObjectMapper.Map<List<PayrollRun>, List<PayrollRunDto>>(items));
     }
 
+    [Authorize(HISPermissions.HR.Payroll)]
+    public async Task<List<EmployeeLookupDto>> GetPayrollRunEmployeesAsync(Guid payrollRunId)
+    {
+        var lines = await _payrollLineRepository.GetListAsync(l => l.PayrollRunId == payrollRunId);
+        var employeeIds = lines.Select(l => l.EmployeeId).Distinct().ToList();
+        var employees = await _employeeRepository.GetListAsync(e => employeeIds.Contains(e.Id));
+        return employees.Select(e => new EmployeeLookupDto { Id = e.Id, EmployeeNumber = e.EmployeeNumber, NameAr = e.NameAr }).ToList();
+    }
+
     // ===== PAY SLIP =====
 
     [Authorize(HISPermissions.HR.PaySlip)]
@@ -484,6 +498,36 @@ public class HRAppService : ApplicationService
         paySlip.NetSalary = paySlip.TotalEarnings - paySlip.TotalDeductions;
 
         return paySlip;
+    }
+
+    [Authorize(HISPermissions.HR.PaySlip)]
+    [Microsoft.AspNetCore.Mvc.HttpGet]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/h-r/pay-slip-pdf/{payrollRunId}/{employeeId}")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetPaySlipPdfAsync(Guid payrollRunId, Guid employeeId)
+    {
+        var paySlip = await GetPaySlipAsync(payrollRunId, employeeId);
+        
+        byte[] logoBytes = null;
+        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
+        
+        if (!System.IO.File.Exists(logoPath))
+        {
+            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
+            if (System.IO.File.Exists(devPath)) logoPath = devPath;
+        }
+
+        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
+
+        var document = new PaySlipDocument
+        {
+            Data = paySlip,
+            LogoBytes = logoBytes
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        var fileName = $"قسيمة_راتب_{paySlip.EmployeeNumber}_{DateTime.Now:yyyyMMdd}.pdf";
+        return new Volo.Abp.Content.RemoteStreamContent(stream, fileName, "application/pdf");
     }
 
     // ===== PENALTIES =====

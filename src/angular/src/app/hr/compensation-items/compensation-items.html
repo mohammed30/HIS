@@ -17,7 +17,7 @@
         </div>
     </div>
     <div class="card-body">
-        <ngx-datatable [rows]="items" [list]="list" default>
+        <ngx-datatable [rows]="items.items" default>
             <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="nameAr"></ngx-datatable-column>
             <ngx-datatable-column [name]="'::Description' | abpLocalization" prop="displayName"></ngx-datatable-column>
             <ngx-datatable-column [name]="'::Type' | abpLocalization" prop="nature">
@@ -67,7 +67,7 @@
             </div>
 
             <div class="mt-2">
-                <label for="item-nature">{{ '::Type' | abpLocalization }} *</label>
+                <label for="item-nature">{{ '::HR:Nature' | abpLocalization }} *</label>
                 <select class="form-control" id="item-nature" formControlName="nature">
                     <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
                     <option *ngFor="let option of natureOptions" [ngValue]="option.value">

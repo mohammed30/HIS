@@ -28,6 +28,11 @@ export class Payroll implements OnInit {
   isProcessModalOpen = false;
   processForm: FormGroup;
 
+  // Pay Slip Modal
+  isPaySlipModalOpen = false;
+  runEmployees: EmployeeLookupDto[] = [];
+  selectedRunId = '';
+
   // Lookups
   employeeLookup: EmployeeLookupDto[] = [];
   compensationItems: CompensationItemDto[] = [];
@@ -155,5 +160,26 @@ export class Payroll implements OnInit {
 
   onTabChange() {
     this.refreshList();
+  }
+
+  viewPaySlip(runId: string) {
+    this.selectedRunId = runId;
+    this.hrService.getPayrollRunEmployees(runId).subscribe((res) => {
+      this.runEmployees = res;
+      this.isPaySlipModalOpen = true;
+    });
+  }
+
+  printPaySlip(employeeId: string) {
+    this.hrService.downloadPaySlipPdf(this.selectedRunId, employeeId).subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PaySlip_${employeeId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    });
   }
 }

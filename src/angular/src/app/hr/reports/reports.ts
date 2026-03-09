@@ -55,6 +55,18 @@ export class Reports implements OnInit {
   }
 
   printPaySlip() {
-    window.print();
+    if (this.searchForm.invalid) return;
+
+    const { payrollRunId, employeeId } = this.searchForm.value;
+    this.hrService.downloadPaySlipPdf(payrollRunId, employeeId).subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PaySlip_${employeeId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    });
   }
 }

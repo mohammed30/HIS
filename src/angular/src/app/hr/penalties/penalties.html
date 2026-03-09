@@ -19,7 +19,7 @@
     <div class="card-body">
         <ngx-datatable [rows]="penalties.items" [count]="penalties.totalCount" [list]="list" default>
             <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="employeeName"></ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Type' | abpLocalization" prop="penaltyType">
+            <ngx-datatable-column [name]="'::HR:PenaltyType' | abpLocalization" prop="penaltyType">
                 <ng-template let-row="row" ngx-datatable-cell-template>
                     {{ '::Enum:PenaltyType:' + row.penaltyType | abpLocalization }}
                 </ng-template>
@@ -57,10 +57,12 @@
                 </select>
             </div>
             <div class="mt-2">
-                <label for="p-type">{{ '::Type' | abpLocalization }} *</label>
+                <label for="p-type">{{ '::HR:PenaltyType' | abpLocalization }} *</label>
                 <select class="form-control" id="p-type" formControlName="penaltyType">
                     <option [ngValue]="null">{{ '::Select' | abpLocalization }}</option>
-                    <option *ngFor="let opt of typeOptions" [ngValue]="opt.value">{{ opt.key }}</option>
+                    <option *ngFor="let opt of typeOptions" [ngValue]="opt.value">
+                        {{ '::Enum:PenaltyType:' + opt.value | abpLocalization }}
+                    </option>
                 </select>
             </div>
             <div class="row">

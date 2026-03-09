@@ -20,7 +20,7 @@ import { map } from 'rxjs/operators';
   providers: [ListService],
 })
 export class CompensationItems implements OnInit {
-  items: CompensationItemDto[] = [];
+  items: PagedResultDto<CompensationItemDto> = { items: [], totalCount: 0 };
   selectedItem = {} as CompensationItemDto;
   isModalOpen = false;
   form: FormGroup;
@@ -37,15 +37,15 @@ export class CompensationItems implements OnInit {
   ) { }
 
   ngOnInit() {
-    const streamCreator = (query) => this.hrService.getCompensationItems().pipe(
-      map(items => ({
-        items,
-        totalCount: items.length
-      } as PagedResultDto<CompensationItemDto>))
-    );
+    this.loadData();
+  }
 
-    this.list.hookToQuery(streamCreator).subscribe((response) => {
-      this.items = response.items;
+  loadData() {
+    this.hrService.getCompensationItems().subscribe((items) => {
+      this.items = {
+        items: items,
+        totalCount: items.length
+      };
     });
   }
 
@@ -56,7 +56,7 @@ export class CompensationItems implements OnInit {
   }
 
   editItem(id: string) {
-    const item = this.items.find((x) => x.id === id);
+    const item = this.items.items.find((x) => x.id === id);
     if (item) {
       this.selectedItem = { ...item };
       this.buildForm();
@@ -89,14 +89,14 @@ export class CompensationItems implements OnInit {
     request.subscribe(() => {
       this.isModalOpen = false;
       this.form.reset();
-      this.list.get();
+      this.loadData();
     });
   }
 
   delete(id: string) {
     this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
       if (status === Confirmation.Status.confirm) {
-        this.hrService.deleteCompensationItem(id).subscribe(() => this.list.get());
+        this.hrService.deleteCompensationItem(id).subscribe(() => this.loadData());
       }
     });
   }

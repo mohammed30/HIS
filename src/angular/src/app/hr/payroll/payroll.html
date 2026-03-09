@@ -153,6 +153,31 @@
     </ng-template>
 </abp-modal>
 
+<!-- Pay Slip Selection Modal -->
+<abp-modal [(visible)]="isPaySlipModalOpen">
+    <ng-template #abpHeader>
+        <h3>{{ '::HR:PaySlip' | abpLocalization }}</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <div class="list-group">
+            <div *ngFor="let emp of runEmployees"
+                class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ emp.nameAr }} ({{ emp.employeeNumber }})</span>
+                <button class="btn btn-primary btn-sm" (click)="printPaySlip(emp.id)">
+                    <i class="fa fa-print me-1"></i>
+                    <span>{{ '::Print' | abpLocalization }}</span>
+                </button>
+            </div>
+            <div *ngIf="runEmployees.length === 0" class="text-center p-3">
+                {{ '::NoDataFound' | abpLocalization }}
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+    </ng-template>
+</abp-modal>
+
 <!-- Payroll Process Modal -->
 <abp-modal [(visible)]="isProcessModalOpen">
     <ng-template #abpHeader>
