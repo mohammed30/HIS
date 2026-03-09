@@ -92,3 +92,12 @@ public enum LoanStatus
     PaidOff = 2,
     Cancelled = 3
 }
+
+public enum AttendanceStatus
+{
+    Present = 0,
+    Absent = 1,
+    Late = 2,
+    EarlyLeave = 3,
+    OnLeave = 4
+}

@@ -296,3 +296,25 @@ export interface SalarySetupDto extends AuditedEntityDto<string> {
   startDate?: string;
   isActive?: boolean;
 }
+
+export interface DailyAttendanceDto extends AuditedEntityDto<string> {
+  employeeId?: string;
+  employeeName?: string;
+  employeeNumber?: string;
+  departmentName?: string;
+  date?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status?: number;
+  workedHours?: number;
+  notes?: string;
+}
+
+export interface CreateUpdateDailyAttendanceDto {
+  employeeId?: string;
+  date?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status?: number;
+  notes?: string;
+}

@@ -1,0 +1,135 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col col-md-6">
+                <h5 class="card-title">
+                    <i class="fas fa-fingerprint me-1"></i>
+                    الحضور والانصراف اليومي
+                </h5>
+            </div>
+            <div class="col col-md-6 text-end">
+                <button id="create-daily-attendance" class="btn btn-primary btn-sm" type="button" (click)="create()">
+                    <i class="fa fa-plus me-1"></i>
+                    تسجيل حضور
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم الموظف</th>
+                        <th>اسم الموظف</th>
+                        <th>الإدارة</th>
+                        <th>التاريخ</th>
+                        <th>وقت الحضور</th>
+                        <th>وقت الانصراف</th>
+                        <th>ساعات العمل</th>
+                        <th>الحالة</th>
+                        <th>ملاحظات</th>
+                        <th class="text-center">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let record of records.items">
+                        <td>{{ record.employeeNumber }}</td>
+                        <td>{{ record.employeeName }}</td>
+                        <td>{{ record.departmentName || '---' }}</td>
+                        <td>{{ record.date | date:'yyyy/MM/dd' }}</td>
+                        <td>{{ formatTime(record.checkInTime) }}</td>
+                        <td>{{ formatTime(record.checkOutTime) }}</td>
+                        <td>{{ record.workedHours | number:'1.1-2' }}</td>
+                        <td>
+                            <span [class]="getStatusClass(record.status)">
+                                {{ getStatusLabel(record.status) }}
+                            </span>
+                        </td>
+                        <td>{{ record.notes || '' }}</td>
+                        <td class="text-center">
+                            <div ngbDropdown container="body" class="d-inline-block">
+                                <button class="btn btn-sm btn-outline-primary" ngbDropdownToggle>
+                                    <i class="fa fa-cog"></i>
+                                </button>
+                                <div ngbDropdownMenu>
+                                    <button ngbDropdownItem (click)="edit(record)">
+                                        <i class="fa fa-pencil-alt me-1"></i> تعديل
+                                    </button>
+                                    <button ngbDropdownItem (click)="delete(record.id)">
+                                        <i class="fa fa-trash me-1 text-danger"></i> حذف
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="records.items?.length === 0">
+                        <td colspan="10" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            لا توجد سجلات حضور
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<abp-modal [(visible)]="isModalOpen" [busy]="false">
+    <ng-template #abpHeader>
+        <h3>{{ isEditing ? 'تعديل سجل الحضور' : 'تسجيل حضور جديد' }}</h3>
+    </ng-template>
+
+    <ng-template #abpBody>
+        <form [formGroup]="form" (ngSubmit)="save()" id="daily-attendance-form">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">الموظف <span class="text-danger">*</span></label>
+                    <select class="form-select" formControlName="employeeId">
+                        <option [ngValue]="null">-- اختر الموظف --</option>
+                        <option *ngFor="let emp of employeeLookup" [ngValue]="emp.id">
+                            {{ emp.employeeNumber }} - {{ emp.nameAr }}
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">التاريخ <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" formControlName="date" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">وقت الحضور</label>
+                    <input type="time" class="form-control" formControlName="checkInTime" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">وقت الانصراف</label>
+                    <input type="time" class="form-control" formControlName="checkOutTime" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">الحالة <span class="text-danger">*</span></label>
+                    <select class="form-select" formControlName="status">
+                        <option *ngFor="let s of statusOptions" [ngValue]="s.value">{{ s.label }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">ملاحظات</label>
+                    <input type="text" class="form-control" formControlName="notes" />
+                </div>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>إلغاء</button>
+        <abp-button iconClass="fa fa-check" (click)="save()" [disabled]="form?.invalid">
+            حفظ
+        </abp-button>
+    </ng-template>
+</abp-modal>

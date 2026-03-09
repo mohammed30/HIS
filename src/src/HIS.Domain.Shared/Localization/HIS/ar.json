@@ -866,6 +866,7 @@
     "Menu:HR": "شؤون العاملين",
     "Menu:HRReports": "تقارير شؤون العاملين",
     "Menu:Attendance": "الغياب والأذونات",
+    "Menu:DailyAttendance": "الحضور والانصراف",
     "Menu:EmployeeLeaves": "إجازات الموظفين",
     "Menu:Loans": "السلفيات",
     "Menu:Penalties": "العقوبات والإنذارات",

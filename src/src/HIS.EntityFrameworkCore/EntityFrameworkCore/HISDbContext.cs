@@ -162,6 +162,7 @@ public class HISDbContext :
     public DbSet<PayrollLine> PayrollLines { get; set; }
     public DbSet<Penalty> Penalties { get; set; }
     public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+    public DbSet<DailyAttendance> DailyAttendances { get; set; }
 
     #region Entities from the modules
 

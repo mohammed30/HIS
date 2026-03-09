@@ -295,6 +295,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<HR.CreateUpdatePenaltyDto, HR.Penalty>();
         CreateMap<HR.AttendanceRecord, HR.AttendanceRecordDto>();
         CreateMap<HR.CreateUpdateAttendanceRecordDto, HR.AttendanceRecord>();
+        CreateMap<HR.DailyAttendance, HR.DailyAttendanceDto>();
+        CreateMap<HR.CreateUpdateDailyAttendanceDto, HR.DailyAttendance>();
     }
 }
 

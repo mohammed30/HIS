@@ -723,6 +723,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.HR.Attendance',
     },
     {
+      path: '/hr/daily-attendance',
+      name: '::Menu:DailyAttendance',
+      parentName: '::Menu:HR',
+      iconClass: 'fas fa-fingerprint',
+      order: 3,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.HR.Attendance',
+    },
+    {
       path: '/hr/leaves',
       name: '::Menu:EmployeeLeaves',
       parentName: '::Menu:HR',

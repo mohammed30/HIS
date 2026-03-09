@@ -117,7 +117,12 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
             "HIS.Inpatient.Dashboard",
             // Operations
-            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report"
+            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report",
+            // HR (Personnel Affairs / شئون العاملين)
+            "HIS.HR", "HIS.HR.Employees", "HIS.HR.Employees.Create", "HIS.HR.Employees.Edit", "HIS.HR.Employees.Delete",
+            "HIS.HR.CompensationItems", "HIS.HR.LeaveTypes", "HIS.HR.EmployeeLeaves", "HIS.HR.Loans",
+            "HIS.HR.Payroll", "HIS.HR.Payroll.Process", "HIS.HR.Penalties", "HIS.HR.Attendance",
+            "HIS.HR.Reports", "HIS.HR.PaySlip"
         });
         
         // Ensure Admin has EVERYTHING (Root + All Children)

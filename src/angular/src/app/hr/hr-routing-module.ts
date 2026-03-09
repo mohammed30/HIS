@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { Attendance } from './attendance/attendance';
+import { DailyAttendanceComponent } from './daily-attendance/daily-attendance';
 import { CompensationItems } from './compensation-items/compensation-items';
 import { Employees } from './employees/employees';
 import { Leaves } from './leaves/leaves';
@@ -13,6 +14,7 @@ import { Reports } from './reports/reports';
 const routes: Routes = [
   { path: 'employees', component: Employees },
   { path: 'attendance', component: Attendance },
+  { path: 'daily-attendance', component: DailyAttendanceComponent },
   { path: 'compensation-items', component: CompensationItems },
   { path: 'leaves', component: Leaves },
   { path: 'loans', component: Loans },

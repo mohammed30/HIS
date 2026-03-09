@@ -28,6 +28,7 @@ public class HRAppService : ApplicationService
     private readonly IRepository<PayrollLine, Guid> _payrollLineRepository;
     private readonly IRepository<Penalty, Guid> _penaltyRepository;
     private readonly IRepository<AttendanceRecord, Guid> _attendanceRecordRepository;
+    private readonly IRepository<DailyAttendance, Guid> _dailyAttendanceRepository;
     private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
     private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
     private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
@@ -46,6 +47,7 @@ public class HRAppService : ApplicationService
         IRepository<PayrollLine, Guid> payrollLineRepository,
         IRepository<Penalty, Guid> penaltyRepository,
         IRepository<AttendanceRecord, Guid> attendanceRecordRepository,
+        IRepository<DailyAttendance, Guid> dailyAttendanceRepository,
         IRepository<HIS.Settings.Department, Guid> departmentRepository,
         IRepository<HIS.Accounting.Account, Guid> accountRepository,
         IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
@@ -63,6 +65,7 @@ public class HRAppService : ApplicationService
         _payrollLineRepository = payrollLineRepository;
         _penaltyRepository = penaltyRepository;
         _attendanceRecordRepository = attendanceRecordRepository;
+        _dailyAttendanceRepository = dailyAttendanceRepository;
         _departmentRepository = departmentRepository;
         _accountRepository = accountRepository;
         _journalEntryRepository = journalEntryRepository;
@@ -554,4 +557,64 @@ public class HRAppService : ApplicationService
 
     [Authorize(HISPermissions.HR.Attendance)]
     public async Task DeleteAttendanceRecordAsync(Guid id) => await _attendanceRecordRepository.DeleteAsync(id);
+
+    // ===== DAILY ATTENDANCE (حضور وانصراف) =====
+
+    [Authorize(HISPermissions.HR.Attendance)]
+    public async Task<PagedResultDto<DailyAttendanceDto>> GetDailyAttendanceAsync(PagedAndSortedResultRequestDto input)
+    {
+        var records = await _dailyAttendanceRepository.GetListAsync();
+        var employees = await _employeeRepository.GetListAsync();
+        var departments = await _departmentRepository.GetListAsync();
+
+        var empLookup = employees.ToDictionary(e => e.Id);
+        var deptLookup = departments.ToDictionary(d => d.Id, d => d.NameAr);
+
+        var items = records
+            .OrderByDescending(x => x.Date).ThenByDescending(x => x.CheckInTime)
+            .Skip(input.SkipCount).Take(input.MaxResultCount)
+            .Select(a =>
+            {
+                var dto = ObjectMapper.Map<DailyAttendance, DailyAttendanceDto>(a);
+                if (empLookup.TryGetValue(a.EmployeeId, out var emp))
+                {
+                    dto.EmployeeName = emp.NameAr;
+                    dto.EmployeeNumber = emp.EmployeeNumber;
+                    dto.DepartmentName = emp.DepartmentId.HasValue && deptLookup.ContainsKey(emp.DepartmentId.Value)
+                        ? deptLookup[emp.DepartmentId.Value] : null;
+                }
+                return dto;
+            }).ToList();
+
+        return new PagedResultDto<DailyAttendanceDto>(records.Count, items);
+    }
+
+    [Authorize(HISPermissions.HR.Attendance)]
+    public async Task<DailyAttendanceDto> CreateDailyAttendanceAsync(CreateUpdateDailyAttendanceDto input)
+    {
+        var entity = new DailyAttendance(_guidGenerator.Create(), CurrentTenant.Id, input.EmployeeId, input.Date);
+        entity.CheckInTime = input.CheckInTime;
+        entity.CheckOutTime = input.CheckOutTime;
+        entity.Status = input.Status;
+        entity.Notes = input.Notes;
+        entity.CalculateWorkedHours();
+        await _dailyAttendanceRepository.InsertAsync(entity);
+        return ObjectMapper.Map<DailyAttendance, DailyAttendanceDto>(entity);
+    }
+
+    [Authorize(HISPermissions.HR.Attendance)]
+    public async Task<DailyAttendanceDto> UpdateDailyAttendanceAsync(Guid id, CreateUpdateDailyAttendanceDto input)
+    {
+        var entity = await _dailyAttendanceRepository.GetAsync(id);
+        entity.CheckInTime = input.CheckInTime;
+        entity.CheckOutTime = input.CheckOutTime;
+        entity.Status = input.Status;
+        entity.Notes = input.Notes;
+        entity.CalculateWorkedHours();
+        await _dailyAttendanceRepository.UpdateAsync(entity);
+        return ObjectMapper.Map<DailyAttendance, DailyAttendanceDto>(entity);
+    }
+
+    [Authorize(HISPermissions.HR.Attendance)]
+    public async Task DeleteDailyAttendanceAsync(Guid id) => await _dailyAttendanceRepository.DeleteAsync(id);
 }

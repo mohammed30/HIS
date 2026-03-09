@@ -296,6 +296,31 @@ public class CreateUpdateAttendanceRecordDto
     public string? Notes { get; set; }
 }
 
+// ===== DailyAttendance (حضور وانصراف) =====
+public class DailyAttendanceDto : AuditedEntityDto<Guid>
+{
+    public Guid EmployeeId { get; set; }
+    public string? EmployeeName { get; set; }
+    public string? EmployeeNumber { get; set; }
+    public string? DepartmentName { get; set; }
+    public DateTime Date { get; set; }
+    public DateTime? CheckInTime { get; set; }
+    public DateTime? CheckOutTime { get; set; }
+    public Enums.AttendanceStatus Status { get; set; }
+    public decimal WorkedHours { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class CreateUpdateDailyAttendanceDto
+{
+    public Guid EmployeeId { get; set; }
+    public DateTime Date { get; set; }
+    public DateTime? CheckInTime { get; set; }
+    public DateTime? CheckOutTime { get; set; }
+    public Enums.AttendanceStatus Status { get; set; }
+    public string? Notes { get; set; }
+}
+
 // ===== PaySlip =====
 public class PaySlipDto
 {
