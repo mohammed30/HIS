@@ -16,7 +16,9 @@ public enum InvoiceStatus
     /// <summary>ملغية</summary>
     Cancelled = 4,
     /// <summary>مؤجلة</summary>
-    Deferred = 5
+    Deferred = 5,
+    /// <summary>مستردة</summary>
+    Refunded = 6
 }
 
 /// <summary>

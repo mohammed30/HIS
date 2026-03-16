@@ -233,7 +233,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
     }
 
     [Microsoft.AspNetCore.Mvc.HttpGet]
-    [Microsoft.AspNetCore.Mvc.Route("api/app/billing/invoice-pdf/{id}")]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/billing/generate-doc/{id}")]
     public async Task<Volo.Abp.Content.IRemoteStreamContent> GetInvoicePdfAsync(Guid id)
     {
         var invoice = await Repository.GetAsync(id);
@@ -304,7 +304,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             queryable = queryable.Where(x => x.InvoiceDate >= input.FromDate);
 
         if (input.ToDate.HasValue)
-            queryable = queryable.Where(x => x.InvoiceDate <= input.ToDate);
+            queryable = queryable.Where(x => x.InvoiceDate < input.ToDate.Value.Date.AddDays(1));
 
         return queryable;
     }
@@ -450,7 +450,7 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
 
         var queryable = await Repository.GetQueryableAsync();
         var payments = await AsyncExecuter.ToListAsync(
-            queryable.Where(x => x.PaymentDate >= from && x.PaymentDate <= to && x.Status == PaymentStatus.Completed));
+            queryable.Where(x => x.PaymentDate >= from && x.PaymentDate < to.Date.AddDays(1) && x.Status == PaymentStatus.Completed));
         return payments.Sum(x => x.Amount);
     }
 
@@ -476,7 +476,7 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
             queryable = queryable.Where(x => x.PaymentDate >= input.FromDate);
 
         if (input.ToDate.HasValue)
-            queryable = queryable.Where(x => x.PaymentDate <= input.ToDate);
+            queryable = queryable.Where(x => x.PaymentDate < input.ToDate.Value.Date.AddDays(1));
 
         return queryable;
     }

@@ -1,4 +1,4 @@
-﻿using Volo.Abp.Settings;
+using Volo.Abp.Settings;
 
 namespace HIS.Settings;
 
@@ -12,7 +12,8 @@ public class HISSettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition(HISSettings.HospitalPhone, ""),
             new SettingDefinition(HISSettings.HospitalEmail, ""),
             new SettingDefinition(HISSettings.HospitalLogo, ""),
-            new SettingDefinition(HISSettings.HospitalTaxNumber, "")
+            new SettingDefinition(HISSettings.HospitalTaxNumber, ""),
+            new SettingDefinition(HISSettings.Pharmacy.AllowNegativeStock, "false")
         );
     }
 }

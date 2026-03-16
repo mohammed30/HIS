@@ -1,0 +1,77 @@
+<div class="container-fluid">
+  <div class="card shadow-sm border-0 mb-4 text-right" dir="rtl">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-row-reverse">
+      <h5 class="m-0 font-weight-bold text-success">
+        <i class="fas fa-pills mr-2 ml-2"></i> {{ '::PharmacySales' | abpLocalization }}
+      </h5>
+      <button class="btn btn-outline-success btn-sm shadow-sm" (click)="exportPdf()">
+        <i class="fas fa-file-pdf mr-1 ml-1"></i>تصدير PDF
+      </button>
+    </div>
+    <div class="card-body bg-light">
+      <div class="row align-items-end flex-row-reverse">
+        <div class="col-md-4">
+          <label class="small font-weight-bold">{{ '::StartDate' | abpLocalization }}</label>
+          <input type="date" class="form-control form-control-sm border-0 shadow-sm" [(ngModel)]="filters.fromDate" (change)="loadData()">
+        </div>
+        <div class="col-md-4">
+          <label class="small font-weight-bold">{{ '::EndDate' | abpLocalization }}</label>
+          <input type="date" class="form-control form-control-sm border-0 shadow-sm" [(ngModel)]="filters.toDate" (change)="loadData()">
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-success btn-block btn-sm shadow-sm" (click)="loadData()">
+            <i class="fas fa-search mr-1 ml-1"></i>{{ '::Search' | abpLocalization }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 text-right" dir="rtl">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0 text-center">
+        <thead class="bg-success text-white">
+          <tr>
+            <th>{{ '::Patient' | abpLocalization }}</th>
+            <th>{{ '::ProductName' | abpLocalization }}</th>
+            <th>{{ '::Quantity' | abpLocalization }}</th>
+            <th>{{ '::UnitPrice' | abpLocalization }}</th>
+            <th>{{ '::TotalAmount' | abpLocalization }}</th>
+            <th>{{ '::WithdrawalType' | abpLocalization }}</th>
+            <th>{{ '::User' | abpLocalization }}</th>
+            <th>{{ '::DispensingTime' | abpLocalization }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of data.items">
+            <td class="font-weight-bold">{{ item.patientName }}</td>
+            <td class="text-primary">{{ item.productName }}</td>
+            <td><span class="badge badge-light border">{{ item.quantity }}</span></td>
+            <td>{{ item.unitPrice | number:'1.2-2' }}</td>
+            <td [class.text-danger]="item.totalAmount < 0" class="font-weight-bold">{{ item.totalAmount | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge badge-pill border shadow-sm" [ngClass]="item.withdrawalType.includes('Refund') || item.withdrawalType.includes('مرتجع') ? 'border-danger text-danger' : 'border-success text-success'">
+                {{ item.withdrawalType }}
+              </span>
+            </td>
+            <td>{{ item.createdByUser }}</td>
+            <td class="text-muted">{{ item.dispensingTime | date:'short' }}</td>
+          </tr>
+          <tr *ngIf="data.items.length === 0">
+            <td colspan="8" class="py-5 text-muted">لا يوجد مبيعات للصيدلية / No sales available</td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="data.items.length > 0">
+          <tr class="bg-light font-weight-bold">
+            <td colspan="4" class="text-left py-3">الإجمالي الكلي / Grand Total</td>
+            <td [class.text-danger]="totalSum < 0" class="py-3 text-success h5 mb-0">{{ totalSum | number:'1.2-2' }}</td>
+            <td colspan="3"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="card-footer bg-white border-0 py-3">
+      <ngb-pagination [collectionSize]="data.totalCount" [(page)]="page" [pageSize]="filters.maxResultCount" (pageChange)="loadData()"></ngb-pagination>
+    </div>
+  </div>
+</div>

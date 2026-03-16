@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CoreModule, LocalizationService } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { NationalityService } from '../../proxy/general/nationality.service';
 import { ProfessionService } from '../../proxy/general/profession.service';
@@ -1130,54 +1131,59 @@ export class LaboratoryReceptionComponent implements OnInit {
             maxResultCount: 1000
         } as any);
 
-        import('rxjs').then(({ forkJoin }) => {
-            forkJoin([invoices$, payments$]).subscribe({
-                next: ([invRes, payRes]) => {
-                    const invoices = (invRes.items || []).map(i => ({
-                        id: i.id,
-                        date: i.invoiceDate,
-                        type: 'Invoice / فاتورة',
-                        reference: i.invoiceNumber,
-                        debit: i.totalAmount || 0,
-                        credit: 0,
-                        balance: 0,
-                        status: i.status,
-                        notes: i.items?.map(x => x.serviceCode).join(', ')
-                    }));
+        console.log('Fetching Patient Statement:', { patientId: this.patientInfo.id, from, to });
 
-                    const payments = (payRes.items || []).map(p => ({
-                        id: p.id,
-                        date: p.paymentDate,
-                        type: 'Payment / سند قبض',
-                        reference: p.paymentNumber,
-                        debit: 0,
-                        credit: p.amount || 0,
-                        balance: 0,
-                        status: p.status,
-                        notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : '')
-                    }));
+        forkJoin([invoices$, payments$]).subscribe({
+            next: ([invRes, payRes]) => {
+                console.log('Statement Results:', { invoices: invRes.items?.length, payments: payRes.items?.length });
+                const invoices = (invRes.items || []).map(i => ({
+                    id: i.id,
+                    date: i.invoiceDate,
+                    type: 'Invoice / فاتورة',
+                    reference: i.invoiceNumber,
+                    debit: i.totalAmount || 0,
+                    credit: 0,
+                    balance: 0,
+                    status: i.status,
+                    notes: i.items?.map(x => x.serviceCode).join(', ')
+                }));
 
-                    // Merge and Sort
-                    let runningBalance = 0;
-                    this.patientStatement = [];
-                    const combined = [...invoices, ...payments].sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+                const payments = (payRes.items || []).map(p => ({
+                    id: p.id,
+                    date: p.paymentDate,
+                    type: 'Payment / سند قبض',
+                    reference: p.paymentNumber,
+                    debit: 0,
+                    credit: p.amount || 0,
+                    balance: 0,
+                    status: p.status,
+                    notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : '')
+                }));
 
-                    combined.forEach(item => {
-                        runningBalance += (item.debit - item.credit);
-                        item.balance = runningBalance;
-                        this.patientStatement.push(item);
-                    });
+                // Merge and Sort
+                let runningBalance = 0;
+                this.patientStatement = [];
+                const combined = [...invoices, ...payments].sort((a, b) => {
+                    const dateA = a.date ? new Date(a.date).getTime() : 0;
+                    const dateB = b.date ? new Date(b.date).getTime() : 0;
+                    return dateA - dateB;
+                });
 
-                    // Calculate Summary
-                    this.statementSummary.totalDebit = this.patientStatement.reduce((sum, item) => sum + item.debit, 0);
-                    this.statementSummary.totalCredit = this.patientStatement.reduce((sum, item) => sum + item.credit, 0);
-                    this.statementSummary.balance = this.statementSummary.totalDebit - this.statementSummary.totalCredit;
-                },
-                error: (err) => {
-                    console.error(err);
-                    this.toaster.error('حدث خطأ أثناء تحميل كشف الحساب', 'خطأ');
-                }
-            });
+                combined.forEach(item => {
+                    runningBalance += (item.debit - item.credit);
+                    item.balance = runningBalance;
+                    this.patientStatement.push(item);
+                });
+
+                // Calculate Summary
+                this.statementSummary.totalDebit = this.patientStatement.reduce((sum, item) => sum + item.debit, 0);
+                this.statementSummary.totalCredit = this.patientStatement.reduce((sum, item) => sum + item.credit, 0);
+                this.statementSummary.balance = this.statementSummary.totalDebit - this.statementSummary.totalCredit;
+            },
+            error: (err) => {
+                console.error('Error fetching statement:', err);
+                this.toaster.error('حدث خطأ أثناء تحميل كشف الحساب', 'خطأ');
+            }
         });
     }
 

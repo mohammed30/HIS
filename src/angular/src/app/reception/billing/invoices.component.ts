@@ -397,7 +397,7 @@ export class InvoicesComponent implements OnInit {
 
 
   printInvoice(item: Invoice) {
-    const url = `${environment.apis.default.url}/api/app/billing/invoice-pdf/${item.id}`;
+    const url = `${environment.apis.default.url}/api/app/billing/generate-doc/${item.id}`;
     this.http.get(url, { responseType: 'blob' }).subscribe({
       next: (blob) => {
         const fileURL = URL.createObjectURL(blob);

@@ -104,6 +104,12 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./settings/job-titles/job-titles.component').then(c => c.JobTitlesComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Settings' }
+      },
+      {
+        path: 'pharmacy',
+        loadComponent: () => import('./settings/pharmacy/pharmacy-settings.component').then(c => c.PharmacySettingsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       }
     ]
   },
@@ -454,6 +460,12 @@ export const APP_ROUTES: Routes = [
   {
     path: 'operations/reports/surgical-operations',
     loadComponent: () => import('./operations/reports/operations-report.component').then(c => c.OperationsReportComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Operations.Report' }
+  },
+  {
+    path: 'reports',
+    loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule),
     canActivate: [authGuard, permissionGuard],
     data: { requiredPolicy: 'HIS.Operations.Report' }
   },

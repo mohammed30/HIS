@@ -3,20 +3,14 @@ import { test, expect } from '@playwright/test';
 test.describe('Laboratory Reception E2E Tests', () => {
 
     test.beforeEach(async ({ page }) => {
-        // Login
-        await page.goto('/account/login');
-        if (page.url().includes('/account/login')) {
-            await page.fill('input[name="userNameOrEmailAddress"]', 'admin');
-            await page.fill('input[name="password"]', '1q2w3E*');
-            await page.click('button[type="submit"]');
-            await page.waitForURL('/', { timeout: 15000 });
-        }
-
-        // Navigate to Lab Reception (assuming it's a route)
-        // Based on previous research, it might be /reception/lab-reception
-        // Let's check the route provider if possible, but usually it's under receptionist menu.
         await page.goto('/reception/lab-reception');
-        await page.waitForLoadState('networkidle');
+        if (page.url().toLowerCase().includes('/account/login')) {
+            await page.waitForSelector('input[name*="UserNameOrEmailAddress"]', { timeout: 15000 });
+            await page.fill('input[name*="UserNameOrEmailAddress"]', 'admin');
+            await page.fill('input[name*="Password"]', '1q2w3E*');
+            await page.click('button[type="submit"]');
+            await page.waitForURL('**/reception/lab-reception', { timeout: 30000 });
+        }
     });
 
     test('should prevent saving when mandatory fields are missing', async ({ page }) => {

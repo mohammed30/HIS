@@ -111,7 +111,7 @@ public class InventoryAppService : HISAppService, IInventoryAppService
         
         // Get Inventory for these items (in Pharmacy/Main Warehouse)
         // Let's check Pharmacy only for now
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy");
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
         if (pharmacy == null) return new PagedResultDto<InventoryItemDto>();
 
         var inventoryItems = await _inventoryItemRepository.GetListAsync(x => x.WarehouseId == pharmacy.Id && serviceItemIds.Contains(x.ProductId));

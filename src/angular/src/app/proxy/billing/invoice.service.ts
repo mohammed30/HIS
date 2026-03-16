@@ -49,7 +49,7 @@ export class InvoiceService {
     this.restService.request<any, Blob>({
       method: 'GET',
       responseType: 'blob',
-      url: `/api/app/billing/invoice-pdf/${id}`,
+      url: `/api/app/billing/generate-doc/${id}`,
     },
     { apiName: this.apiName,...config });
   

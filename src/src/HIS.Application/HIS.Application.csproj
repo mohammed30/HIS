@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\common.props" />
 
@@ -14,15 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="QuestPDF" Version="2025.12.3" />
-    <PackageReference Include="Volo.Abp.AutoMapper" Version="10.0.2" />
-    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.Account.Application" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.Identity.Application" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.SettingManagement.Domain" Version="10.0.0" />
+    <PackageReference Include="QuestPDF" Version="2026.2.3" />
+    <PackageReference Include="Volo.Abp.AutoMapper" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.Account.Application" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.Identity.Application" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Domain" Version="10.1.1" />
   </ItemGroup>
 
   <ItemGroup>

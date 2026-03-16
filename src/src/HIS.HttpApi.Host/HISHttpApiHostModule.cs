@@ -1,4 +1,4 @@
-﻿using HIS.EntityFrameworkCore;
+using HIS.EntityFrameworkCore;
 using HIS.HealthChecks;
 using HIS.MultiTenancy;
 using Microsoft.AspNetCore.Authentication;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;

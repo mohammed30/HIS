@@ -1320,5 +1320,15 @@ public class HISDbContext :
                 b.HasIndex(x => x.EmployeeId);
                 b.HasIndex(x => x.Date);
             });
+
+            builder.Entity<DailyAttendance>(b =>
+            {
+                b.ToTable("DailyAttendances", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.WorkedHours).HasColumnType("decimal(18,2)");
+                b.Property(x => x.Notes).HasMaxLength(1024);
+                b.HasIndex(x => x.EmployeeId);
+                b.HasIndex(x => x.Date);
+            });
     }
 }

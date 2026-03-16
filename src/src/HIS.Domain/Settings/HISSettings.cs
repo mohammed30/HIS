@@ -1,4 +1,4 @@
-﻿namespace HIS.Settings;
+namespace HIS.Settings;
 
 public static class HISSettings
 {
@@ -10,4 +10,9 @@ public static class HISSettings
     public const string HospitalEmail = Prefix + ".HospitalEmail";
     public const string HospitalLogo = Prefix + ".HospitalLogo";
     public const string HospitalTaxNumber = Prefix + ".HospitalTaxNumber";
+
+    public static class Pharmacy
+    {
+        public const string AllowNegativeStock = Prefix + ".Pharmacy.AllowNegativeStock";
+    }
 }

@@ -5,6 +5,7 @@ using Volo.Abp.Domain.Repositories;
 using HIS.Accounting;
 using HIS.Settings;
 using System.Linq;
+using Volo.Abp.Settings;
 
 namespace HIS.Inventory;
 
@@ -16,6 +17,7 @@ public class InventoryManager : DomainService
     private readonly IRepository<Account, Guid> _accountRepository;
     private readonly IRepository<Department, Guid> _departmentRepository;
     private readonly AccountingManager _accountingManager;
+    protected ISettingProvider SettingProvider { get; }
 
     public InventoryManager(
         IRepository<InventoryItem, Guid> inventoryItemRepository,
@@ -23,7 +25,8 @@ public class InventoryManager : DomainService
         IRepository<InventoryBatch, Guid> batchRepository,
         IRepository<Account, Guid> accountRepository,
         IRepository<Department, Guid> departmentRepository,
-        AccountingManager accountingManager)
+        AccountingManager accountingManager,
+        ISettingProvider settingProvider)
     {
         _inventoryItemRepository = inventoryItemRepository;
         _transactionRepository = transactionRepository;
@@ -31,6 +34,7 @@ public class InventoryManager : DomainService
         _accountRepository = accountRepository;
         _departmentRepository = departmentRepository;
         _accountingManager = accountingManager;
+        SettingProvider = settingProvider;
     }
 
     public async Task ReceiveStockAsync(Guid warehouseId, Guid productId, string productName, InventoryItemType type, decimal quantity, decimal unitCost, string reference)
@@ -182,9 +186,22 @@ public class InventoryManager : DomainService
     public async Task<System.Collections.Generic.List<(Guid BatchId, decimal Quantity, decimal UnitCost, string BatchNumber)>> DispenseStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference)
     {
         var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
+        
+        bool allowNegativeStock = await SettingProvider.GetAsync<bool>(HISSettings.Pharmacy.AllowNegativeStock);
+
         if (item == null || item.Quantity < quantity)
         {
-            throw new Volo.Abp.BusinessException("Inventory:InsufficientStock");
+            if (!allowNegativeStock)
+            {
+                throw new Volo.Abp.BusinessException("Inventory:InsufficientStock");
+            }
+        }
+
+        // If item doesn't exist, create it (happens only if allowNegativeStock is true or we already moved past throw)
+        if (item == null)
+        {
+            item = new InventoryItem(GuidGenerator.Create(), warehouseId, productId, "POS Product", InventoryItemType.Medication, 0, 0);
+            await _inventoryItemRepository.InsertAsync(item);
         }
 
         decimal remainingQtyToIssue = quantity;
@@ -212,10 +229,8 @@ public class InventoryManager : DomainService
 
         if (remainingQtyToIssue > 0)
         {
-             // If we're here, it means batched quantity < item quantity (inconsistency).
-             // We adjust item quantity effectively, or assume we found some un-batched stock?
-             // For strict tracking, we should probably fail, but to keep system running we flow through.
-             // We use AverageCost for the remainder cost estimation.
+             // If we have remaining quantity but no more batches (or no batches at all), 
+             // we allow it to proceed (Negative Stock)
              totalCostOfIssue += (remainingQtyToIssue * item.AverageCost);
         }
 
@@ -246,5 +261,47 @@ public class InventoryManager : DomainService
         }
 
         return dispensedDetails;
+    }
+
+    public async Task ReturnStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference)
+    {
+        var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
+        if (item == null)
+        {
+            throw new Volo.Abp.BusinessException("Inventory:ProductNotFoundInWarehouse");
+        }
+
+        // Increase quantity
+        item.Quantity += quantity;
+        await _inventoryItemRepository.UpdateAsync(item);
+
+        // Record transaction
+        var transaction = new InventoryTransaction(
+            GuidGenerator.Create(),
+            item.Id,
+            TransactionType.Receipt, // Or add a Return type
+            quantity,
+            item.AverageCost,
+            DateTime.Now,
+            "Return: " + reference
+        );
+        await _transactionRepository.InsertAsync(transaction);
+
+        // Reverse Accounting: Dr Inventory, Cr Expense
+        var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
+        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");
+
+        if (inventoryAccount != null && expenseAccount != null)
+        {
+            var totalAmount = quantity * item.AverageCost;
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"مرتجع علاج: {item.ProductName}");
+            
+            // Debit Inventory
+            entry.AddLine(GuidGenerator, inventoryAccount.Id, totalAmount, 0);
+            // Credit Expense
+            entry.AddLine(GuidGenerator, expenseAccount.Id, 0, totalAmount);
+
+            await _accountingManager.PostEntryAsync(entry);
+        }
     }
 }

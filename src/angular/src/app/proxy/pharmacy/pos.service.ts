@@ -28,10 +28,33 @@ export class PosService {
   
 
   processSale = (input: PosSaleDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
+    this.restService.request<any, string>({
       method: 'POST',
       url: '/api/app/pos/process-sale',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+
+  searchProducts = (query: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PosProductDto[]>({
+      method: 'GET',
+      url: '/api/app/pos/search-products',
+      params: { query },
+    },
+    { apiName: this.apiName,...config });
+
+  refundSale = (invoiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/pos/refund-sale/${invoiceId}`,
+    },
+    { apiName: this.apiName,...config });
+
+  getInvoicePdf = (invoiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      url: `/api/app/pos/generate-doc/${invoiceId}`,
+      responseType: 'blob'
     },
     { apiName: this.apiName,...config });
 }

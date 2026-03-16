@@ -205,3 +205,7 @@ export interface CreateUpdateJobTitleDto {
   description?: string;
   departmentId?: string;
 }
+
+export interface PharmacySettingsDto {
+  allowNegativeStock: boolean;
+}

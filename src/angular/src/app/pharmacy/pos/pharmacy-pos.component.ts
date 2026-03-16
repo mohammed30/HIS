@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { PosService } from '../../proxy/pharmacy/pos.service';
 import { PosSaleDto, PosSaleItemDto, PosProductDto } from '../../proxy/pharmacy/dtos/models';
 import { ToasterService } from '@abp/ng.theme.shared';
+import { PharmacySettingsService } from '../../proxy/settings/pharmacy-settings.service';
 
 @Component({
     selector: 'app-pharmacy-pos',
@@ -34,6 +35,7 @@ import { ToasterService } from '@abp/ng.theme.shared';
                         <thead>
                             <tr>
                                 <th>{{ '::Product' | abpLocalization }}</th>
+                                <th width="120">{{ '::AvailableStock' | abpLocalization }}</th>
                                 <th width="120">{{ '::Price' | abpLocalization }}</th>
                                 <th width="120">{{ '::Qty' | abpLocalization }}</th>
                                 <th width="120">{{ '::Total' | abpLocalization }}</th>
@@ -46,6 +48,11 @@ import { ToasterService } from '@abp/ng.theme.shared';
                                     <strong>{{ item.name }}</strong><br>
                                     <small class="text-muted">{{ item.barcode }}</small>
                                 </td>
+                                <td class="text-center">
+                                    <span class="badge" [ngClass]="item.currentStock > 0 ? 'bg-success' : 'bg-danger'">
+                                        {{ item.currentStock || 0 }}
+                                    </span>
+                                </td>
                                 <td>{{ item.price | currency }}</td>
                                 <td>
                                     <input type="number" class="form-control form-control-sm" [(ngModel)]="item.quantity" (change)="updateTotal()" min="1">
@@ -56,7 +63,7 @@ import { ToasterService } from '@abp/ng.theme.shared';
                                 </td>
                             </tr>
                             <tr *ngIf="cartItems.length === 0">
-                                <td colspan="5" class="text-center py-4 text-muted">{{ '::CartIsEmpty' | abpLocalization }}</td>
+                                <td colspan="6" class="text-center py-4 text-muted">{{ '::CartIsEmpty' | abpLocalization }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -99,10 +106,22 @@ import { ToasterService } from '@abp/ng.theme.shared';
                          <strong>{{ (paidAmount - totalAmount) | currency }}</strong>
                     </div>
 
-                    <div class="d-grid">
+                    <div class="d-grid gap-2">
                         <button class="btn btn-success btn-lg" (click)="checkout()" [disabled]="cartItems.length === 0">
                             <i class="fas fa-cash-register me-2"></i> {{ '::Checkout' | abpLocalization }}
                         </button>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="mt-3">
+                        <label class="form-label text-muted small">{{ '::ReturnSaleByInvoiceId' | abpLocalization }}</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" [(ngModel)]="returnInvoiceId" placeholder="Invoice ID">
+                            <button class="btn btn-outline-warning" (click)="refundSale()" [disabled]="!returnInvoiceId">
+                                <i class="fas fa-undo me-1"></i> {{ '::Refund' | abpLocalization }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -117,19 +136,35 @@ export class PharmacyPosComponent implements OnInit {
     paidAmount = 0;
     paymentMethod = 1;
     patientId = null; // Should be Guid or null
+    allowNegativeStock = false;
+    returnInvoiceId = '';
 
     constructor(
         private posService: PosService,
+        private settingsService: PharmacySettingsService,
         private toaster: ToasterService
     ) { }
 
-    ngOnInit() { }
+    ngOnInit() { 
+        this.loadSettings();
+    }
+
+    loadSettings() {
+        this.settingsService.get().subscribe(settings => {
+            this.allowNegativeStock = settings.allowNegativeStock;
+        });
+    }
 
     scanBarcode() {
         if (!this.barcodeInput) return;
 
         this.posService.getProductByBarcode(this.barcodeInput).subscribe({
             next: (product) => {
+                if (product.currentStock <= 0 && !this.allowNegativeStock) {
+                    this.toaster.error('::InsufficientStock', '::Error');
+                    this.barcodeInput = '';
+                    return;
+                }
                 this.addToCart(product);
                 this.barcodeInput = '';
             },
@@ -140,6 +175,11 @@ export class PharmacyPosComponent implements OnInit {
     }
 
     addToCart(product: PosProductDto) {
+        if (product.currentStock <= 0 && !this.allowNegativeStock) {
+            this.toaster.error('::InsufficientStock', '::Error');
+            return;
+        }
+
         const existing = this.cartItems.find(x => x.id === product.id);
         if (existing) {
             existing.quantity++;
@@ -182,11 +222,39 @@ export class PharmacyPosComponent implements OnInit {
             }))
         };
 
-        this.posService.processSale(sale).subscribe(() => {
+        this.posService.processSale(sale).subscribe((invoiceId) => {
             this.toaster.success('::SaleCompleted', '::Success');
+            this.printInvoice(invoiceId);
             this.cartItems = [];
             this.totalAmount = 0;
             this.paidAmount = 0;
+        });
+    }
+
+    refundSale() {
+        if (!this.returnInvoiceId) return;
+
+        const invoiceId = this.returnInvoiceId;
+        this.posService.refundSale(invoiceId).subscribe({
+            next: () => {
+                this.toaster.success('::RefundCompleted', '::Success');
+                this.printInvoice(invoiceId);
+                this.returnInvoiceId = '';
+            },
+            error: (err) => {
+                this.toaster.error(err.message || '::RefundFailed', '::Error');
+            }
+        });
+    }
+
+    printInvoice(invoiceId: string) {
+        this.posService.getInvoicePdf(invoiceId).subscribe(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Invoice_${invoiceId.substring(0, 8)}.pdf`;
+            link.click();
+            window.URL.revokeObjectURL(url);
         });
     }
 }

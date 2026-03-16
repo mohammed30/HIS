@@ -3,12 +3,14 @@ import { test, expect } from '@playwright/test';
 test.describe('Pharmacy Module Workflow', () => {
 
     test.beforeEach(async ({ page }) => {
-        await page.goto('/account/login');
-        if (page.url().includes('/account/login')) {
-            await page.fill('input[name="userNameOrEmailAddress"]', 'admin');
-            await page.fill('input[name="password"]', '1q2w3E*');
+        await page.goto('/patients', { timeout: 60000 });
+        if (page.url().toLowerCase().includes('/account/login')) {
+            await page.waitForSelector('input[name*="UserNameOrEmailAddress"]', { timeout: 30000 });
+            await page.fill('input[name*="UserNameOrEmailAddress"]', 'admin');
+            await page.fill('input[name*="Password"]', '1q2w3E*');
             await page.click('button[type="submit"]');
-            await page.waitForURL('/', { timeout: 15000 });
+            await page.waitForURL('**/patients', { timeout: 60000 });
+            await page.waitForSelector('ngx-datatable', { timeout: 30000 });
         }
     });
 
@@ -36,7 +38,7 @@ test.describe('Pharmacy Module Workflow', () => {
         const typeSelect = page.locator('select').first();
         // Try selecting by value '2' (Medication enum value) if possible, or by label
         // Based on OrderType enum: Lab=0, Radiology=1, Medication=2
-        await typeSelect.selectOption({ text: 'Medication' }).catch(() => typeSelect.selectOption({ index: 2 }));
+        await typeSelect.selectOption({ label: 'Medication' }).catch(() => typeSelect.selectOption({ index: 2 }));
 
         await page.waitForTimeout(500);
 
