@@ -137,6 +137,12 @@ public class HRAppService : ApplicationService
         var entity = new Employee(_guidGenerator.Create(), CurrentTenant.Id, employeeNumber, input.NameAr);
         ObjectMapper.Map(input, entity);
         
+        // Re-assign the generated number if it was overwritten by null/empty from input
+        if (string.IsNullOrWhiteSpace(entity.EmployeeNumber))
+        {
+            entity.EmployeeNumber = employeeNumber;
+        }
+        
         await _employeeRepository.InsertAsync(entity);
 
         // Automatically create Salary Setup for Basic Salary if provided
@@ -186,22 +192,22 @@ public class HRAppService : ApplicationService
     private async Task<string> GenerateNextEmployeeNumberAsync()
     {
         var lastEmployee = (await _employeeRepository.GetListAsync())
-            .Where(x => x.EmployeeNumber.StartsWith("EMP-"))
+            .Where(x => x.EmployeeNumber.StartsWith("EMP"))
             .OrderByDescending(x => x.EmployeeNumber)
             .FirstOrDefault();
 
         if (lastEmployee == null)
         {
-            return "EMP-0001";
+            return "EMP001";
         }
 
-        var lastNumberStr = lastEmployee.EmployeeNumber.Replace("EMP-", "");
+        var lastNumberStr = lastEmployee.EmployeeNumber.Replace("EMP-", "").Replace("EMP", "");
         if (int.TryParse(lastNumberStr, out int lastNumber))
         {
-            return $"EMP-{(lastNumber + 1):D4}";
+            return $"EMP{(lastNumber + 1):D3}";
         }
 
-        return "EMP-0001";
+        return "EMP001";
     }
 
     [Authorize(HISPermissions.HR.EmployeesDelete)]

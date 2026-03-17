@@ -740,7 +740,7 @@
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">{{ '::BookingDate' | abpLocalization }}</label>
                         <input type="datetime-local" class="form-control form-control-sm"
-                            [(ngModel)]="booking.appointmentDate">
+                            [(ngModel)]="booking.appointmentDate" (change)="updateConsultationFee()">
                     </div>
 
                     <div class="mb-2">
@@ -753,7 +753,7 @@
 
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">{{ '::Service' | abpLocalization }}</label>
-                        <select class="form-select form-select-sm" [(ngModel)]="booking.serviceItemId">
+                        <select class="form-select form-select-sm" [(ngModel)]="booking.serviceItemId" (change)="updateConsultationFee()">
                             <option value="">-- {{ '::Select' | abpLocalization }} --</option>
                             <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
                         </select>
@@ -770,9 +770,9 @@
 
                     <div class="mb-2">
                         <label class="small fw-bold mb-1">الطبيب</label>
-                        <select class="form-select form-select-sm" [(ngModel)]="booking.doctorId">
+                        <select class="form-select form-select-sm" [(ngModel)]="booking.doctorId" (change)="updateConsultationFee()">
                             <option value="">-- اختر --</option>
-                            <option *ngFor="let item of doctors" [value]="item.id">{{ item.name }}</option>
+                            <option *ngFor="let item of doctors" [value]="item.id">{{ item.name }} ({{ item.nameAr || item.name }})</option>
                         </select>
                     </div>
 

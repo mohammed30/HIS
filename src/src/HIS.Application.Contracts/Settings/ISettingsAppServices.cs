@@ -12,6 +12,7 @@ namespace HIS.Settings;
 public interface IDepartmentAppService : ICrudAppService<DepartmentDto, Guid, GetDepartmentsInput, CreateUpdateDepartmentDto>
 {
     Task<List<LookupDto>> GetLookupAsync();
+    Task<List<LookupDto>> GetMedicalDepartmentsLookupAsync();
 }
 
 /// <summary>

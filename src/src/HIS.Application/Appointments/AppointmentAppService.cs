@@ -138,9 +138,9 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
             string description = "كشف طبي / Medical Consultation";
             decimal unitPrice = appt.ConsultationFee;
 
-            if (input.ServiceItemId != Guid.Empty)
+            if (input.ServiceItemId.HasValue && input.ServiceItemId.Value != Guid.Empty)
             {
-                var service = await _serviceRepository.FindAsync(input.ServiceItemId);
+                var service = await _serviceRepository.FindAsync(input.ServiceItemId.Value);
                 if (service != null)
                 {
                     description = service.Name;
@@ -154,7 +154,7 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
                 UnitPrice = unitPrice,
                 Quantity = 1,
                 ServiceType = HIS.Billing.ServiceType.Consultation, 
-                ServiceCode = input.ServiceItemId.ToString()
+                ServiceCode = input.ServiceItemId?.ToString() ?? string.Empty
             });
 
             var invoiceDto = await _invoiceAppService.CreateAsync(new HIS.Billing.CreateUpdateInvoiceDto
@@ -342,7 +342,8 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return slots;
     }
 
-    public async Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId)
+    [HttpGet("doctor-lookup")]
+    public async Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId, Guid? departmentId = null)
     {
         var query = await _doctorRepository.GetQueryableAsync();
         
@@ -354,6 +355,10 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
             {
                 query = query.Where(d => d.DepartmentId == clinic.DepartmentId);
             }
+        }
+        else if (departmentId.HasValue)
+        {
+            query = query.Where(d => d.DepartmentId == departmentId.Value);
         }
         
         var doctors = await AsyncExecuter.ToListAsync(query.Where(d => d.IsActive));

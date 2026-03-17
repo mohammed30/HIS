@@ -69,7 +69,6 @@ export class Employees implements OnInit {
         this.selectedEmployee.hireDate ? new Date(this.selectedEmployee.hireDate).toISOString().split('T')[0] : null,
       ],
       isActive: [this.selectedEmployee.isActive ?? true],
-      basicSalary: [this.selectedEmployee.basicSalary || null],
     });
   }
 
@@ -79,8 +78,8 @@ export class Employees implements OnInit {
     }
 
     const request = this.selectedEmployee.id
-      ? this.hrService.updateEmployee(this.selectedEmployee.id, this.form.value)
-      : this.hrService.createEmployee(this.form.value);
+      ? this.hrService.updateEmployee(this.selectedEmployee.id, this.form.getRawValue())
+      : this.hrService.createEmployee(this.form.getRawValue());
 
     request.subscribe(() => {
       this.isModalOpen = false;

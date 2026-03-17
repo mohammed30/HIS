@@ -773,7 +773,18 @@
                   "Permission:AccountStatement":  "كشف الحساب",
                   "Menu:OperationsReport":  "تقرير العمليات",
                   "Menu:Operations":  "العمليات",
-                  "Menu:SurgicalOperations":  "إدارة �    ",
+                  "Menu:SurgicalOperations":  "إدارة العمليات الجراحية",
+                  "SurgicalOperations":  "العمليات الجراحية",
+                  "NewOperation":  "عملية جديدة",
+                  "OperationName":  "اسم العملية",
+                  "OperationDate":  "تاريخ العملية",
+                  "SurgeonFeePercentage":  "نسبة أتعاب الجراح",
+                  "AnesthesiologistFeePercentage":  "نسبة أتعاب طبيب التخدير",
+                  "Enum:OperationStatus.0":  "مجدولة",
+                  "Enum:OperationStatus.1":  "قيد التنفيذ",
+                  "Enum:OperationStatus.2":  "مكتملة",
+                  "Enum:OperationStatus.3":  "ملغاة",
+                  "OperationDeletionConfirmationMessage": "هل أنت متأكد من حذف هذه العملية؟",
                   "NoServicesAdded":  "لا توجد خدمات مضافة",
                   "PaidAmount":  "المبلغ المدفوع",
                   "GrandTotal":  "الإجمالي الكلي",
@@ -1027,6 +1038,7 @@
                   "DownloadTemplate": "تحميل النموذج",
                   "ImportSuccess": "تم الاستيراد بنجاح",
                   "ImportError": "حدث خطأ أثناء الاستيراد",
-                  "TotalRecords": "إجمالي السجلات"
+                  "TotalRecords": "إجمالي السجلات",
+                  "Status": "الحالة"
               }
 }

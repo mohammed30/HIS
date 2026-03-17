@@ -116,6 +116,8 @@ export interface DoctorDto extends FullAuditedEntityDto<string> {
   email?: string;
   degree?: string;
   consultationFee?: number;
+  morningConsultationFee?: number;
+  eveningConsultationFee?: number;
   followUpFee?: number;
   appointmentDuration?: number;
   photoUrl?: string;

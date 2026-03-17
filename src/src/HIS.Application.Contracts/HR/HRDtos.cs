@@ -42,7 +42,7 @@ public class EmployeeDto : AuditedEntityDto<Guid>
 
 public class CreateUpdateEmployeeDto
 {
-    public string EmployeeNumber { get; set; }
+    public string? EmployeeNumber { get; set; }
     public string NameAr { get; set; }
     public string? NameEn { get; set; }
     public Gender Gender { get; set; }

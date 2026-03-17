@@ -1,9 +1,16 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3>{{ '::SurgicalOperations' | abpLocalization }}</h3>
-        <button class="btn btn-primary btn-sm" (click)="createOperation(operationModal)">
-            <i class="fa fa-plus me-1"></i> {{ '::NewOperation' | abpLocalization }}
-        </button>
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm" style="width: 250px;">
+                <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+                <input type="text" class="form-control border-start-0 ps-0" [placeholder]="'::Search' | abpLocalization"
+                    (input)="onSearch($event)">
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="createOperation(operationModal)">
+                <i class="fa fa-plus me-1"></i> {{ '::NewOperation' | abpLocalization }}
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -20,7 +27,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let row of operations">
+                    <tr *ngFor="let row of filteredOperations">
                         <td>{{ row.patientName }}</td>
                         <td>{{ row.operationName }}</td>
                         <td>{{ row.doctorName }}</td>

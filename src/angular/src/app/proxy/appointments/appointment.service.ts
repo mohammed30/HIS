@@ -95,10 +95,11 @@ export class AppointmentService {
     { apiName: this.apiName,...config });
   
 
-  getDoctorLookup = (clinicId: string, config?: Partial<Rest.Config>) =>
+  getDoctorLookup = (clinicId: string, departmentId?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, LookupDto<string>>({
       method: 'GET',
-      url: `/api/app/appointment/doctor-lookup/${clinicId}`,
+      url: `/api/app/appointment/doctor-lookup`,
+      params: { clinicId, departmentId },
     },
     { apiName: this.apiName,...config });
   

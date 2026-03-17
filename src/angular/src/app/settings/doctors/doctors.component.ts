@@ -60,11 +60,46 @@ interface Lookup {
             <table class="table table-striped table-hover">
               <thead class="table-dark">
                 <tr>
-                  <th>الكود</th>
-                  <th>الاسم (عربي)</th>
-                  <th>الاسم (إنجليزي)</th>
-                  <th>التخصص</th>
-                  <th>القسم</th>
+                  <th (click)="toggleSort('code')" style="cursor: pointer;">
+                    الكود
+                    @if (sortKey === 'code') {
+                      <i class="fas" [class.fa-sort-up]="sortOrder === 'asc'" [class.fa-sort-down]="sortOrder === 'desc'"></i>
+                    } @else {
+                      <i class="fas fa-sort text-muted ms-1"></i>
+                    }
+                  </th>
+                  <th (click)="toggleSort('nameAr')" style="cursor: pointer;">
+                    الاسم (عربي)
+                    @if (sortKey === 'nameAr') {
+                      <i class="fas" [class.fa-sort-up]="sortOrder === 'asc'" [class.fa-sort-down]="sortOrder === 'desc'"></i>
+                    } @else {
+                      <i class="fas fa-sort text-muted ms-1"></i>
+                    }
+                  </th>
+                  <th (click)="toggleSort('nameEn')" style="cursor: pointer;">
+                    الاسم (إنجليزي)
+                    @if (sortKey === 'nameEn') {
+                      <i class="fas" [class.fa-sort-up]="sortOrder === 'asc'" [class.fa-sort-down]="sortOrder === 'desc'"></i>
+                    } @else {
+                      <i class="fas fa-sort text-muted ms-1"></i>
+                    }
+                  </th>
+                  <th (click)="toggleSort('specialtyId')" style="cursor: pointer;">
+                    التخصص
+                    @if (sortKey === 'specialtyId') {
+                      <i class="fas" [class.fa-sort-up]="sortOrder === 'asc'" [class.fa-sort-down]="sortOrder === 'desc'"></i>
+                    } @else {
+                      <i class="fas fa-sort text-muted ms-1"></i>
+                    }
+                  </th>
+                  <th (click)="toggleSort('departmentId')" style="cursor: pointer;">
+                    القسم
+                    @if (sortKey === 'departmentId') {
+                      <i class="fas" [class.fa-sort-up]="sortOrder === 'asc'" [class.fa-sort-down]="sortOrder === 'desc'"></i>
+                    } @else {
+                      <i class="fas fa-sort text-muted ms-1"></i>
+                    }
+                  </th>
                   <th>الجوال</th>
                   <th>الحالة</th>
                   <th>الإجراءات</th>
@@ -223,10 +258,12 @@ export class DoctorsComponent implements OnInit {
   editingItem: Doctor | null = null;
   formData: Partial<Doctor> = this.getEmptyForm();
 
-  // Pagination
+  // Pagination & Sorting
   page = 1;
   pageSize = 10;
   totalCount = 0;
+  sortKey = '';
+  sortOrder: 'asc' | 'desc' = 'asc';
 
   ngOnInit() {
     this.loadData();
@@ -241,13 +278,30 @@ export class DoctorsComponent implements OnInit {
 
   loadData() {
     const skipCount = (this.page - 1) * this.pageSize;
-    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
+    let url = `${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`;
+    
+    if (this.sortKey) {
+      const sorting = `${this.sortKey} ${this.sortOrder}`;
+      url += `&sorting=${sorting}`;
+    }
+
+    this.http.get<any>(url).subscribe({
       next: (res) => {
         this.items = res.items || [];
         this.totalCount = res.totalCount || 0;
       },
       error: (err) => console.error(err)
     });
+  }
+
+  toggleSort(key: string) {
+    if (this.sortKey === key) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortKey = key;
+      this.sortOrder = 'asc';
+    }
+    this.loadData();
   }
 
   onPageChange(page: number) {

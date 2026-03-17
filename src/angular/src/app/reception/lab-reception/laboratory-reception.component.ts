@@ -16,6 +16,7 @@ import { NationalityDto, ProfessionDto, ContractDto, ReferralSourceDto } from '.
 import { PaymentMethodDto } from '../../proxy/general/dtos/models';
 
 import { DoctorService } from '../../proxy/settings/doctor.service';
+import { ClinicService } from '../../proxy/settings/clinic.service';
 import { PatientService } from '../../proxy/patients/patient.service';
 import { ServiceItemService } from '../../proxy/services/service-item.service';
 import { InvoiceService } from '../../proxy/billing/invoice.service';
@@ -59,6 +60,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     private roomService = inject(RoomService);
     private operationService = inject(SurgicalOperationService);
     private doctorService = inject(DoctorService);
+    private clinicService = inject(ClinicService);
     private confirmation = inject(ConfirmationService);
 
     @ViewChild('testSearchInput') testSearchInput!: ElementRef;
@@ -292,9 +294,42 @@ export class LaboratoryReceptionComponent implements OnInit {
     }
 
     loadAllDoctors() {
-        this.doctorService.getLookup().subscribe(res => {
-            this.doctors = (res as any[]) || [];
+        this.doctorService.getList({ maxResultCount: 1000 }).subscribe(res => {
+            this.doctors = (res.items as any[]) || [];
         });
+    }
+
+    updateConsultationFee() {
+        if (!this.booking.doctorId) {
+            this.booking.payAmount = 0;
+            return;
+        }
+
+        const doctor = this.doctors.find(d => d.id === this.booking.doctorId);
+        if (!doctor) return;
+
+        // If a service item is selected, it should have priority (already handled by service logic potentially, 
+        // but here we focus on the doctor fee)
+        if (this.booking.serviceItemId) {
+            const service = this.services.find(s => s.id === this.booking.serviceItemId);
+            if (service) {
+                this.booking.payAmount = service.price || 0;
+                return;
+            }
+        }
+
+        const appointmentDate = new Date(this.booking.appointmentDate);
+        const hour = appointmentDate.getHours();
+
+        let fee = doctor.consultationFee || 0;
+
+        if (hour < 14) { // Morning: Before 2 PM
+            fee = doctor.morningConsultationFee || doctor.consultationFee || 0;
+        } else { // Evening: 2 PM or later
+            fee = doctor.eveningConsultationFee || doctor.consultationFee || 0;
+        }
+
+        this.booking.payAmount = fee;
     }
 
     loadLabTests() {
@@ -556,11 +591,11 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     loadClinicData() {
         this.appointmentService.getClinicLookup().subscribe(res => {
-            this.clinics = (res as any[]) || [];
+            this.clinics = ((res as any[]) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }));
         });
 
         // Load Departments
-        this.http.get<any[]>(environment.apis.default.url + '/api/app/department/lookup').subscribe(res => {
+        this.http.get<any[]>(environment.apis.default.url + '/api/app/department/medical-departments-lookup').subscribe(res => {
             this.departments = res || [];
         });
 
@@ -574,14 +609,24 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.booking.clinicId = '';
         this.booking.doctorId = '';
         this.doctors = [];
+        this.clinics = [];
+
         if (this.selectedDepartmentId) {
-            this.http.get<any[]>(environment.apis.default.url + `/api/app/clinic/by-department?departmentId=${this.selectedDepartmentId}`).subscribe(res => {
-                this.clinics = res || [];
+            // Filter Clinics by Department using Proxy Service
+            this.clinicService.getByDepartment(this.selectedDepartmentId).subscribe(res => {
+                this.clinics = (res || []).map(x => ({ ...x, name: x.nameAr || x.nameEn || (x as any).name }));
+            });
+
+            // Filter Doctors by Department (directly)
+            this.appointmentService.getDoctorLookup(undefined, this.selectedDepartmentId).subscribe(res => {
+                this.doctors = (res as any) || [];
             });
         } else {
+            // Load all if no department selected (optional, match user request for "tied to department")
             this.appointmentService.getClinicLookup().subscribe(res => {
                 this.clinics = (res as any[]) || [];
             });
+            this.doctors = [];
         }
     }
 
@@ -589,7 +634,12 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.booking.doctorId = '';
         if (this.booking.clinicId) {
             this.appointmentService.getDoctorLookup(this.booking.clinicId).subscribe(res => {
-                this.doctors = (res as any[]) || [];
+                this.doctors = (res as any) || [];
+            });
+        } else if (this.selectedDepartmentId) {
+            // Fallback to department doctors if clinic is cleared
+            this.appointmentService.getDoctorLookup(undefined, this.selectedDepartmentId).subscribe(res => {
+                this.doctors = (res as any) || [];
             });
         } else {
             this.doctors = [];
@@ -610,7 +660,7 @@ export class LaboratoryReceptionComponent implements OnInit {
             patientId: this.patientInfo.id,
             clinicId: this.booking.clinicId,
             doctorId: this.booking.doctorId,
-            serviceItemId: this.booking.serviceItemId || null,
+            serviceItemId: (this.booking.serviceItemId && this.booking.serviceItemId !== '') ? this.booking.serviceItemId : null,
             appointmentDate: this.booking.appointmentDate,
             createInvoice: type !== 'followup', // Don't create invoice for simple follow-up unless specified
             paymentMethod: this.booking.paymentMethod,

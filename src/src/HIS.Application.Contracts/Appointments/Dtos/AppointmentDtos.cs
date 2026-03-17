@@ -67,7 +67,7 @@ public class BookClinicAppointmentDto
     public Guid PatientId { get; set; }
     public Guid ClinicId { get; set; }
     public Guid DoctorId { get; set; }
-    public Guid ServiceItemId { get; set; }
+    public Guid? ServiceItemId { get; set; }
     public DateTime AppointmentDate { get; set; }
     public AppointmentType Type { get; set; } = AppointmentType.NewVisit;
     public bool IsWalkIn { get; set; } = true; // Default to true for lab reception as it's often more flexible

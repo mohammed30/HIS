@@ -199,7 +199,7 @@ export class ClinicsComponent implements OnInit {
   }
 
   loadDepartments() {
-    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/lookup').subscribe({
+    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/medical-departments-lookup').subscribe({
       next: (res) => this.departments = res,
       error: (err) => console.error(err)
     });

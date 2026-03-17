@@ -35,6 +35,7 @@ export class SurgicalOperations implements OnInit {
   selectedTask = {} as SurgicalOperationDto;
   isModalOpen = false;
   patientSearchTerm = '';
+  listSearchTerm = '';
 
   operationStatusOptions = [
     { value: OperationStatus.Scheduled, key: '::Enum:OperationStatus.0' },
@@ -58,7 +59,28 @@ export class SurgicalOperations implements OnInit {
     const streamCreator = (query) => this.operationService.getList(query);
     this.list.hookToQuery(streamCreator).subscribe((res) => {
       this.operations = res.items;
+      this.applyFilter();
     });
+  }
+
+  filteredOperations: SurgicalOperationDto[] = [];
+  
+  applyFilter() {
+    if (!this.listSearchTerm) {
+      this.filteredOperations = [...this.operations];
+      return;
+    }
+    const term = this.listSearchTerm.toLowerCase();
+    this.filteredOperations = this.operations.filter(op => 
+      op.patientName?.toLowerCase().includes(term) || 
+      op.operationName?.toLowerCase().includes(term) ||
+      op.doctorName?.toLowerCase().includes(term)
+    );
+  }
+
+  onSearch(event: any) {
+    this.listSearchTerm = event.target.value;
+    this.applyFilter();
   }
 
   loadDropdowns() {

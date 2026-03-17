@@ -19,7 +19,7 @@ public interface IAppointmentAppService : IApplicationService
     Task CompleteConsultationAsync(Guid id);
 
     Task<List<DateTime>> GetAvailableSlotsAsync(Guid doctorId, DateTime date);
-    Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId);
+    Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId, Guid? departmentId = null);
     Task<AppointmentDto> BookClinicAppointmentAsync(BookClinicAppointmentDto input);
     Task<Volo.Abp.Content.IRemoteStreamContent> GetTicketPdfAsync(Guid appointmentId);
     Task<List<LookupDto<Guid>>> GetClinicLookupAsync();
