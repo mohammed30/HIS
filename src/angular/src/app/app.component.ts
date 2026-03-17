@@ -3,7 +3,6 @@ import { DynamicLayoutComponent, ReplaceableComponentsService } from '@abp/ng.co
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
 import { eAccountComponents } from '@abp/ng.account';
-import { CustomLoginComponent } from './auth/login/custom-login.component';
 import { AppLogoComponent } from './shared/logo/app-logo.component';
 import { UserManagementComponent } from './identity-extended/users/user-management.component';
 import { RoleManagementComponent } from './identity-extended/roles/role-management.component';
@@ -27,6 +26,10 @@ export class AppComponent implements OnInit {
     this.replaceableComponents.add({
       component: AppLogoComponent,
       key: 'Logo',
+    });
+    this.replaceableComponents.add({
+      component: AppLogoComponent,
+      key: 'Account.Logo',
     });
     this.replaceableComponents.add({
       component: AppLogoComponent,

@@ -78,6 +78,8 @@ export class LaboratoryReceptionComponent implements OnInit {
     clinics: any[] = [];
     doctors: any[] = [];
     services: any[] = []; // Clinic Services
+    departments: any[] = [];
+    selectedDepartmentId: string = '';
 
     booking: any = {
         clinicId: '',
@@ -489,16 +491,65 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.invoiceService.create(invoice).subscribe({
             next: (res) => {
                 this.toaster.success('تم حفظ الفاتورة بنجاح', 'نجاح');
+
+                // Create Payment if Paid Amount > 0
+                if (this.billingDetails.paidAmount > 0) {
+                    const paymentInput: any = {
+                        patientId: this.patientInfo.id,
+                        invoiceId: res.id,
+                        amount: this.billingDetails.paidAmount,
+                        paymentMethod: this.mapPaymentMethod(this.activePaymentType),
+                        paymentDate: new Date().toISOString(),
+                        referenceNumber: '',
+                        notes: 'Lab Services Payment'
+                    };
+
+                    this.paymentService.create(paymentInput).subscribe({
+                        next: () => {
+                            this.toaster.success('تم حفظ الدفع بنجاح', 'نجاح');
+                        },
+                        error: (err) => {
+                            console.error('Payment Error', err);
+                            this.toaster.error('فشل حفظ الدفع', 'خطأ');
+                        }
+                    });
+                }
+
                 if (this.printTicketChecked) {
                     this.printInvoice(res.id);
                 }
+                
+                // Clear state
                 this.selectedTests = [];
+                this.billingDetails = {
+                    total: 0,
+                    discount: 0,
+                    tax: 0,
+                    grandTotal: 0,
+                    cash: 0,
+                    card: 0,
+                    transfer: 0,
+                    clientBalance: 0,
+                    paidAmount: 0,
+                    remainingAmount: 0,
+                    applyTax: false
+                };
             },
             error: (err) => {
                 console.error(err);
                 this.toaster.error('حدث خطأ أثناء حفظ الفاتورة', 'خطأ');
             }
         });
+    }
+
+    private mapPaymentMethod(type: string): number {
+        switch (type) {
+            case 'Cash': return 0;
+            case 'Card': return 1;
+            case 'Transfer': return 2;
+            case 'ClientBalance': return 3;
+            default: return 0;
+        }
     }
 
     // --- Clinic Booking Methods ---
@@ -508,10 +559,30 @@ export class LaboratoryReceptionComponent implements OnInit {
             this.clinics = (res as any[]) || [];
         });
 
+        // Load Departments
+        this.http.get<any[]>(environment.apis.default.url + '/api/app/department/lookup').subscribe(res => {
+            this.departments = res || [];
+        });
+
         // Load Services (Clinic Services)
         this.serviceItemService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
             this.services = (res.items || []).filter(x => x.category === ServiceCategory.Consultation || x.category === ServiceCategory.Procedure);
         });
+    }
+
+    onDepartmentChange() {
+        this.booking.clinicId = '';
+        this.booking.doctorId = '';
+        this.doctors = [];
+        if (this.selectedDepartmentId) {
+            this.http.get<any[]>(environment.apis.default.url + `/api/app/clinic/by-department?departmentId=${this.selectedDepartmentId}`).subscribe(res => {
+                this.clinics = res || [];
+            });
+        } else {
+            this.appointmentService.getClinicLookup().subscribe(res => {
+                this.clinics = (res as any[]) || [];
+            });
+        }
     }
 
     onClinicChange() {
@@ -958,7 +1029,7 @@ export class LaboratoryReceptionComponent implements OnInit {
                         patientId: this.patientInfo.id,
                         invoiceId: invoice.id,
                         amount: this.medicalServicesPayment.amountPaid,
-                        paymentMethod: this.medicalServicesPayment.paymentMethod,
+                        paymentMethod: this.mapPaymentMethod(this.activePaymentType),
                         paymentDate: new Date().toISOString(),
                         referenceNumber: '',
                         notes: 'Medical Services Ticket Payment'

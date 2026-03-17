@@ -16,6 +16,9 @@ interface Doctor {
   mobile?: string;
   email?: string;
   nationalId?: string;
+  consultationFee: number;
+  morningConsultationFee: number;
+  eveningConsultationFee: number;
   isActive: boolean;
 }
 
@@ -167,9 +170,24 @@ interface Lookup {
                     <input type="email" class="form-control" [(ngModel)]="formData.email">
                   </div>
                 </div>
-                 <div class="mb-3">
+                  <div class="mb-3">
                     <label class="form-label">رقم الهوية</label>
                     <input type="text" class="form-control" [(ngModel)]="formData.nationalId">
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label class="form-label">سعر الكشف (عام)</label>
+                      <input type="number" class="form-control" [(ngModel)]="formData.consultationFee">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label class="form-label">سعر الكشف (صباحي)</label>
+                      <input type="number" class="form-control" [(ngModel)]="formData.morningConsultationFee">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label class="form-label">سعر الكشف (مسائي)</label>
+                      <input type="number" class="form-control" [(ngModel)]="formData.eveningConsultationFee">
+                    </div>
                   </div>
 
                 <div class="form-check mb-3">
@@ -216,7 +234,7 @@ export class DoctorsComponent implements OnInit {
   }
 
   getEmptyForm(): Partial<Doctor> {
-    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', mobile: '', email: '', nationalId: '', isActive: true };
+    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', mobile: '', email: '', nationalId: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true };
   }
 
   resetForm() { this.formData = this.getEmptyForm(); }

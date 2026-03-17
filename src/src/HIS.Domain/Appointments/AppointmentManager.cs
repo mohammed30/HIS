@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Domain.Services;
+using HIS.Settings;
+
 
 namespace HIS.Appointments;
 
@@ -10,13 +12,16 @@ public class AppointmentManager : DomainService
 {
     private readonly IRepository<Appointment, Guid> _appointmentRepository;
     private readonly IRepository<DoctorSchedule, Guid> _scheduleRepository;
+    private readonly IRepository<Doctor, Guid> _doctorRepository;
 
     public AppointmentManager(
         IRepository<Appointment, Guid> appointmentRepository,
-        IRepository<DoctorSchedule, Guid> scheduleRepository)
+        IRepository<DoctorSchedule, Guid> scheduleRepository,
+        IRepository<Doctor, Guid> doctorRepository)
     {
         _appointmentRepository = appointmentRepository;
         _scheduleRepository = scheduleRepository;
+        _doctorRepository = doctorRepository;
     }
 
     public async Task<Appointment> CreateAsync(
@@ -77,6 +82,20 @@ public class AppointmentManager : DomainService
             }
         }
 
+        // 3. Calculate Fee
+        var doctor = await _doctorRepository.GetAsync(doctorId);
+        decimal fee = doctor.ConsultationFee; // Fallback
+        
+        var hour = appointmentDate.Hour;
+        if (hour < 14) // Before 2 PM
+        {
+            fee = doctor.MorningConsultationFee > 0 ? doctor.MorningConsultationFee : doctor.ConsultationFee;
+        }
+        else // 2 PM or later
+        {
+            fee = doctor.EveningConsultationFee > 0 ? doctor.EveningConsultationFee : doctor.ConsultationFee;
+        }
+
         return new Appointment(
             GuidGenerator.Create(),
             CurrentTenant.Id,
@@ -90,7 +109,8 @@ public class AppointmentManager : DomainService
         {
             Notes = notes,
             IsWalkIn = isWalkIn,
-            ServiceItemId = serviceItemId
+            ServiceItemId = serviceItemId,
+            ConsultationFee = fee
         };
     }
 

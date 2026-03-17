@@ -131,9 +131,25 @@ public class HRAppService : ApplicationService
     [Authorize(HISPermissions.HR.EmployeesCreate)]
     public async Task<EmployeeDto> CreateEmployeeAsync(CreateUpdateEmployeeDto input)
     {
-        var entity = new Employee(_guidGenerator.Create(), CurrentTenant.Id, input.EmployeeNumber, input.NameAr);
+        // Auto-generate employee number
+        var employeeNumber = await GenerateNextEmployeeNumberAsync();
+        
+        var entity = new Employee(_guidGenerator.Create(), CurrentTenant.Id, employeeNumber, input.NameAr);
         ObjectMapper.Map(input, entity);
+        
         await _employeeRepository.InsertAsync(entity);
+
+        // Automatically create Salary Setup for Basic Salary if provided
+        if (input.BasicSalary.HasValue && input.BasicSalary.Value > 0)
+        {
+            var basicSalaryItem = await _compensationItemRepository.FirstOrDefaultAsync(x => x.NameAr == "الراتب الأساسي");
+            if (basicSalaryItem != null)
+            {
+                var salarySetup = new SalarySetup(_guidGenerator.Create(), CurrentTenant.Id, entity.Id, basicSalaryItem.Id, input.BasicSalary.Value);
+                await _salarySetupRepository.InsertAsync(salarySetup);
+            }
+        }
+
         return ObjectMapper.Map<Employee, EmployeeDto>(entity);
     }
 
@@ -141,9 +157,51 @@ public class HRAppService : ApplicationService
     public async Task<EmployeeDto> UpdateEmployeeAsync(Guid id, CreateUpdateEmployeeDto input)
     {
         var entity = await _employeeRepository.GetAsync(id);
+        
+        // If basic salary changed, update or create Salary Setup
+        if (input.BasicSalary != entity.BasicSalary)
+        {
+            var basicSalaryItem = await _compensationItemRepository.FirstOrDefaultAsync(x => x.NameAr == "الراتب الأساسي");
+            if (basicSalaryItem != null)
+            {
+                var setup = await _salarySetupRepository.FirstOrDefaultAsync(x => x.EmployeeId == id && x.CompensationItemId == basicSalaryItem.Id);
+                if (setup != null)
+                {
+                    setup.Amount = input.BasicSalary ?? 0;
+                    await _salarySetupRepository.UpdateAsync(setup);
+                }
+                else if (input.BasicSalary.HasValue)
+                {
+                    var salarySetup = new SalarySetup(_guidGenerator.Create(), CurrentTenant.Id, id, basicSalaryItem.Id, input.BasicSalary.Value);
+                    await _salarySetupRepository.InsertAsync(salarySetup);
+                }
+            }
+        }
+
         ObjectMapper.Map(input, entity);
         await _employeeRepository.UpdateAsync(entity);
         return ObjectMapper.Map<Employee, EmployeeDto>(entity);
+    }
+
+    private async Task<string> GenerateNextEmployeeNumberAsync()
+    {
+        var lastEmployee = (await _employeeRepository.GetListAsync())
+            .Where(x => x.EmployeeNumber.StartsWith("EMP-"))
+            .OrderByDescending(x => x.EmployeeNumber)
+            .FirstOrDefault();
+
+        if (lastEmployee == null)
+        {
+            return "EMP-0001";
+        }
+
+        var lastNumberStr = lastEmployee.EmployeeNumber.Replace("EMP-", "");
+        if (int.TryParse(lastNumberStr, out int lastNumber))
+        {
+            return $"EMP-{(lastNumber + 1):D4}";
+        }
+
+        return "EMP-0001";
     }
 
     [Authorize(HISPermissions.HR.EmployeesDelete)]

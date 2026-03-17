@@ -2,29 +2,29 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
       <h5 class="m-0 font-weight-bold text-primary">
-        <i class="fas fa-ticket-alt mr-2"></i> {{ 'Menu:PaidTickets' | abpLocalization }}
+        <i class="fas fa-ticket-alt mr-2"></i> {{ '::Menu:PaidTickets' | abpLocalization }}
       </h5>
       <button class="btn btn-outline-danger btn-sm" (click)="exportPdf()">
-        <i class="fas fa-file-pdf mr-1"></i>تصدير PDF / Export PDF
+        <i class="fas fa-file-pdf mr-1"></i>{{ '::ExportPdf' | abpLocalization }}
       </button>
     </div>
     <div class="card-body bg-light">
       <div class="row align-items-end">
         <div class="col-md-3">
-          <label class="small font-weight-bold">من تاريخ / From Date</label>
+          <label class="small font-weight-bold">{{ '::FromDate' | abpLocalization }}</label>
           <input type="date" class="form-control form-control-sm border-0 shadow-sm" [(ngModel)]="filters.fromDate" (change)="loadData()">
         </div>
         <div class="col-md-3">
-          <label class="small font-weight-bold">إلى تاريخ / To Date</label>
+          <label class="small font-weight-bold">{{ '::ToDate' | abpLocalization }}</label>
           <input type="date" class="form-control form-control-sm border-0 shadow-sm" [(ngModel)]="filters.toDate" (change)="loadData()">
         </div>
         <div class="col-md-3">
-          <label class="small font-weight-bold">المستخدم / User</label>
-          <input type="text" class="form-control form-control-sm border-0 shadow-sm" placeholder="اسم المستخدم..." [(ngModel)]="filters.creatorUser" (keyup.enter)="loadData()">
+          <label class="small font-weight-bold">{{ '::User' | abpLocalization }}</label>
+          <input type="text" class="form-control form-control-sm border-0 shadow-sm" [placeholder]="'::User' | abpLocalization" [(ngModel)]="filters.creatorUser" (keyup.enter)="loadData()">
         </div>
         <div class="col-md-3">
           <button class="btn btn-primary btn-block btn-sm shadow-sm" (click)="loadData()">
-            <i class="fas fa-search mr-1"></i>بحث / Search
+            <i class="fas fa-search mr-1"></i>{{ '::Search' | abpLocalization }}
           </button>
         </div>
       </div>
@@ -36,15 +36,15 @@
       <table class="table table-hover table-striped mb-0 text-center">
         <thead class="bg-primary text-white">
           <tr>
-            <th>رقم التذكرة</th>
-            <th>التاريخ</th>
-            <th>المريض</th>
-            <th>العيادة</th>
-            <th>الطبيب</th>
-            <th>الخدمة</th>
-            <th>القيمة</th>
-            <th>المستخدم</th>
-            <th>إجراءات</th>
+            <th>{{ '::TicketNumber' | abpLocalization }}</th>
+            <th>{{ '::Date' | abpLocalization }}</th>
+            <th>{{ '::Patient' | abpLocalization }}</th>
+            <th>{{ '::Clinic' | abpLocalization }}</th>
+            <th>{{ '::Doctor' | abpLocalization }}</th>
+            <th>{{ '::Service' | abpLocalization }}</th>
+            <th>{{ '::Amount' | abpLocalization }}</th>
+            <th>{{ '::User' | abpLocalization }}</th>
+            <th>{{ '::Actions' | abpLocalization }}</th>
           </tr>
         </thead>
         <tbody>
@@ -59,17 +59,17 @@
             <td><span class="badge badge-info shadow-sm">{{ item.createdByUser }}</span></td>
             <td>
               <div class="btn-group">
-                <button class="btn btn-outline-primary btn-sm" (click)="reprint(item.appointmentId)" title="إعادة طباعة">
+                <button class="btn btn-outline-primary btn-sm" (click)="reprint(item.appointmentId)" [title]="'::Reprint' | abpLocalization">
                   <i class="fas fa-print"></i>
                 </button>
-                <button class="btn btn-outline-warning btn-sm" (click)="refund(item.appointmentId)" title="إرجاع">
+                <button class="btn btn-outline-warning btn-sm" (click)="refund(item.appointmentId)" [title]="'::Refund' | abpLocalization">
                   <i class="fas fa-undo"></i>
                 </button>
               </div>
             </td>
           </tr>
           <tr *ngIf="data.items.length === 0">
-            <td colspan="9" class="py-5 text-muted">لا يوجد بيانات للعرض / No data available</td>
+            <td colspan="9" class="py-5 text-muted">{{ '::NoDataFound' | abpLocalization }}</td>
           </tr>
         </tbody>
       </table>

@@ -8,12 +8,12 @@
                     <div class="row g-1">
                         <!-- Row 1 -->
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">رقم الملف (MRN)</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::MRN' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm border-primary text-dark fw-bold"
-                                [(ngModel)]="patientInfo.mrn" placeholder="جديد">
+                                [(ngModel)]="patientInfo.mrn" [placeholder]="'::New' | abpLocalization">
                         </div>
                         <div class="col-md-6 position-relative">
-                            <label class="form-label small mb-0 fw-bold text-dark">الاسم (عربي) *</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::NameAr' | abpLocalization }} *</label>
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control border-primary text-dark fw-semibold"
                                     [(ngModel)]="patientInfo.fullNameAr" (keyup.enter)="searchPatient()"
@@ -29,7 +29,7 @@
                                 style="z-index: 9999; max-height: 300px;">
                                 <div
                                     class="card-header py-1 px-2 fw-bold small d-flex justify-content-between align-items-center bg-primary text-white">
-                                    <span>نتائج البحث ({{searchResults.length}})</span>
+                                    <span>{{ '::SearchResults' | abpLocalization }} ({{searchResults.length}})</span>
                                     <i class="fas fa-times cursor-pointer" (click)="searchResults = []"></i>
                                 </div>
                                 <div class="list-group list-group-flush overflow-auto" style="max-height: 260px;">
@@ -39,23 +39,23 @@
                                             <h6 class="mb-0 fw-bold text-primary">{{ res.fullNameAr }}</h6>
                                             <span class="badge bg-secondary">{{ res.mobileNumber }}</span>
                                         </div>
-                                        <small class="text-muted d-block text-end">ملف: {{ res.mrn }}</small>
+                                        <small class="text-muted d-block text-end">{{ '::File' | abpLocalization }}: {{ res.mrn }}</small>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <label class="form-label small mb-0 fw-bold text-dark">النوع</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::Gender' | abpLocalization }}</label>
                             <select class="form-select form-select-sm text-dark" [(ngModel)]="patientInfo.gender">
                                 <option [ngValue]="0">ذكر</option>
                                 <option [ngValue]="1">أنثى</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">الجنسية</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::Nationality' | abpLocalization }}</label>
                             <select class="form-select form-select-sm text-dark"
                                 [(ngModel)]="patientInfo.nationalityId">
-                                <option [ngValue]="null">-- اختر --</option>
+                                <option [ngValue]="null">-- {{ '::Select' | abpLocalization }} --</option>
                                 <option *ngFor="let n of nationalities" [ngValue]="n.id">{{ n.nameAr }} - {{ n.nameEn }}
                                 </option>
                             </select>
@@ -63,40 +63,40 @@
 
                         <!-- Row 2 -->
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الميلاد</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::DateOfBirth' | abpLocalization }}</label>
                             <input type="date" class="form-control form-control-sm text-dark border-info"
                                 [(ngModel)]="patientInfo.dateOfBirth" (ngModelChange)="calculateAge()">
                         </div>
                         <div class="col-md-4">
                             <div class="row g-1 align-items-end">
                                 <div class="col-4">
-                                    <label class="form-label small mb-0 fw-bold text-dark">العمر</label>
+                                    <label class="form-label small mb-0 fw-bold text-dark">{{ '::Age' | abpLocalization }}</label>
                                     <div class="input-group input-group-sm">
                                         <input type="text" class="form-control px-1 text-dark fw-bold"
                                             [(ngModel)]="ageYears" readonly>
-                                        <span class="input-group-text p-1 small">سنة</span>
+                                        <span class="input-group-text p-1 small">{{ '::Year' | abpLocalization }}</span>
                                     </div>
                                 </div>
                                 <div class="col-4">
                                     <div class="input-group input-group-sm">
                                         <input type="text" class="form-control px-1 text-dark fw-bold"
                                             [(ngModel)]="ageMonths" readonly>
-                                        <span class="input-group-text p-1 small">شهر</span>
+                                        <span class="input-group-text p-1 small">{{ '::Month' | abpLocalization }}</span>
                                     </div>
                                 </div>
                                 <div class="col-4">
                                     <div class="input-group input-group-sm">
                                         <input type="text" class="form-control px-1 text-dark fw-bold"
                                             [(ngModel)]="ageDays" readonly>
-                                        <span class="input-group-text p-1 small">يوم</span>
+                                        <span class="input-group-text p-1 small">{{ '::Day' | abpLocalization }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">المهنة</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::Profession' | abpLocalization }}</label>
                             <select class="form-select form-select-sm text-dark" [(ngModel)]="patientInfo.professionId">
-                                <option [ngValue]="null">-- اختر --</option>
+                                <option [ngValue]="null">-- {{ '::Select' | abpLocalization }} --</option>
                                 <option *ngFor="let p of professions" [ngValue]="p.id">{{ p.nameAr }}</option>
                             </select>
                         </div>
@@ -104,124 +104,123 @@
                             <div class="form-check form-switch small">
                                 <input class="form-check-input" type="checkbox" id="isSocialSecurity"
                                     [(ngModel)]="patientInfo.isSocialSecurity">
-                                <label class="form-check-label fw-bold text-dark" for="isSocialSecurity">تأمين
-                                    اجتماعي</label>
+                                <label class="form-check-label fw-bold text-dark" for="isSocialSecurity">{{ '::SocialSecurity' | abpLocalization }}</label>
                             </div>
                         </div>
 
                         <!-- Row 3: Identity -->
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">نوع الهوية</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::IdentityType' | abpLocalization }}</label>
                             <select class="form-select form-select-sm text-dark" [(ngModel)]="patientInfo.identityType">
-                                <option [ngValue]="0">هوية وطنية</option>
-                                <option [ngValue]="1">إقامة</option>
-                                <option [ngValue]="2">جواز سفر</option>
-                                <option [ngValue]="3">أخرى</option>
+                                <option [ngValue]="0">{{ '::NationalId' | abpLocalization }}</option>
+                                <option [ngValue]="1">{{ '::ResidentId' | abpLocalization }}</option>
+                                <option [ngValue]="2">{{ '::Passport' | abpLocalization }}</option>
+                                <option [ngValue]="3">{{ '::Other' | abpLocalization }}</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">رقم الهوية</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::IdentityNumber' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.identityNumber">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الانتهاء</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::ExpiryDate' | abpLocalization }}</label>
                             <input type="date" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.idExpiryDate">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">مكان الاصدار</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::IssuePlace' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.idIssuePlace">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">الموبايل *</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::MobileNumber' | abpLocalization }} *</label>
                             <input type="text" class="form-control form-control-sm text-dark border-info"
                                 [(ngModel)]="patientInfo.mobileNumber">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">الهاتف</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::PhoneNumber' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.phoneNumber">
                         </div>
 
                         <!-- Row 4: Passport & Address -->
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">رقم الجواز</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::PassportNumber' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.passportNumber">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الاصدار</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::IssueDate' | abpLocalization }}</label>
                             <input type="date" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.passportIssueDate">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الانتهاء</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::ExpiryDate' | abpLocalization }}</label>
                             <input type="date" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.passportExpiryDate">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small mb-0 fw-bold text-dark">العنوان السكني</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::Address' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.address">
                         </div>
 
                         <!-- Row 5: Visa & Emergency -->
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">رقم التاشيرة</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::VisaNumber' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.visaNumber">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">تاريخ الانتهاء</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::ExpiryDate' | abpLocalization }}</label>
                             <input type="date" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.visaExpiryDate">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">قريب للطوارئ</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::EmergencyContact' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
-                                [(ngModel)]="patientInfo.emergencyContactName" placeholder="الاسم">
+                                [(ngModel)]="patientInfo.emergencyContactName" [placeholder]="'::Name' | abpLocalization">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small mb-0 fw-bold text-dark">جوال الطوارئ</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::EmergencyPhone' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.emergencyContactPhone">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">البريد الإلكتروني</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::Email' | abpLocalization }}</label>
                             <input type="email" class="form-control form-control-sm text-dark"
                                 [(ngModel)]="patientInfo.email">
                         </div>
 
                         <!-- Row 6: Sponsor & Contracts -->
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">طريقة الدفع *</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::PaymentMethod' | abpLocalization }} *</label>
                             <select class="form-select form-select-sm text-dark border-warning"
                                 [(ngModel)]="patientInfo.paymentMethodId"
                                 (ngModelChange)="onPaymentMethodChange($event)">
-                                <option [ngValue]="null">-- اختر --</option>
+                                <option [ngValue]="null">-- {{ '::Select' | abpLocalization }} --</option>
                                 <option *ngFor="let m of paymentMethods" [ngValue]="m.id">{{ m.nameAr }}</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">جهة التعاقد</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::Contract' | abpLocalization }}</label>
                             <select class="form-select form-select-sm text-dark border-warning"
                                 [(ngModel)]="patientInfo.contractId">
-                                <option [ngValue]="null">-- اختر --</option>
+                                <option [ngValue]="null">-- {{ '::Select' | abpLocalization }} --</option>
                                 <option *ngFor="let ct of contracts" [ngValue]="ct.id">{{ ct.nameAr }}</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">رقم بطاقة التأمين</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::InsuranceCardNumber' | abpLocalization }}</label>
                             <input type="text" class="form-control form-control-sm text-dark border-warning"
                                 [(ngModel)]="patientInfo.cardNumber">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small mb-0 fw-bold text-dark">الجهة المحولة</label>
+                            <label class="form-label small mb-0 fw-bold text-dark">{{ '::ReferralSource' | abpLocalization }}</label>
                             <select class="form-select form-select-sm text-dark"
                                 [(ngModel)]="patientInfo.referralSourceId">
-                                <option [ngValue]="null">-- اختر --</option>
+                                <option [ngValue]="null">-- {{ '::Select' | abpLocalization }} --</option>
                                 <option *ngFor="let rs of referralSources" [ngValue]="rs.id">{{ rs.nameAr }}</option>
                             </select>
                         </div>
@@ -232,19 +231,19 @@
                 <div class="col-md-2 d-flex flex-column gap-1 sidebar-btns">
                     <button (click)="savePatient()"
                         class="btn btn-success btn-sm py-1 px-2 fw-bold shadow-sm d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-save mb-1"></i> حفظ
+                        <i class="fas fa-save mb-1"></i> {{ '::Save' | abpLocalization }}
                     </button>
                     <button
                         class="btn btn-info btn-sm py-1 px-2 fw-bold text-white shadow-sm d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-edit mb-1"></i> تعديل
+                        <i class="fas fa-edit mb-1"></i> {{ '::Edit' | abpLocalization }}
                     </button>
                     <button
                         class="btn btn-warning btn-sm py-1 px-2 fw-bold text-white shadow-sm d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-file-alt mb-1"></i> المستندات
+                        <i class="fas fa-file-alt mb-1"></i> {{ '::Documents' | abpLocalization }}
                     </button>
                     <button (click)="newPatient()"
                         class="btn btn-danger btn-sm py-1 px-2 fw-bold shadow-sm d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-user-plus mb-1"></i> مريض جديد
+                        <i class="fas fa-user-plus mb-1"></i> {{ '::NewPatient' | abpLocalization }}
                     </button>
                 </div>
             </div>
@@ -256,27 +255,27 @@
         <ul class="nav nav-tabs border-bottom-0">
             <li class="nav-item">
                 <a class="nav-link py-1 px-3 cursor-pointer" [class.active]="activeTab === 'lab'"
-                    (click)="activeTab = 'lab'">المعمل</a>
+                    (click)="activeTab = 'lab'">{{ '::Laboratory' | abpLocalization }}</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link py-1 px-3 cursor-pointer" [class.active]="activeTab === 'accounts'"
-                    (click)="activeTab = 'accounts'">الحسابات</a>
+                    (click)="activeTab = 'accounts'">{{ '::Accounts' | abpLocalization }}</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link py-1 px-3 cursor-pointer" [class.active]="activeTab === 'clinics'"
-                    (click)="activeTab = 'clinics'">العيادات</a>
+                    (click)="activeTab = 'clinics'">{{ '::Clinics' | abpLocalization }}</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link py-1 px-3 cursor-pointer" [class.active]="activeTab === 'medicalServices'"
-                    (click)="activeTab = 'medicalServices'">الخدمات الطبية</a>
+                    (click)="activeTab = 'medicalServices'">{{ '::MedicalServices' | abpLocalization }}</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link py-1 px-3 cursor-pointer" [class.active]="activeTab === 'inpatient'"
-                    (click)="activeTab = 'inpatient'">إدارة التنويم</a>
+                    (click)="activeTab = 'inpatient'">{{ '::InpatientManagement' | abpLocalization }}</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link py-1 px-3 cursor-pointer" [class.active]="activeTab === 'operations'"
-                    (click)="activeTab = 'operations'">العمليات</a>
+                    (click)="activeTab = 'operations'">{{ '::Operations' | abpLocalization }}</a>
             </li>
         </ul>
     </div>
@@ -287,12 +286,12 @@
         <div class="col-md-4 d-flex flex-column">
             <div class="card h-100 shadow-sm border-0 overflow-auto">
                 <div class="card-header bg-primary text-white py-1">
-                    <span class="small fw-bold">الحسابات</span>
+                    <span class="small fw-bold">{{ '::Accounts' | abpLocalization }}</span>
                 </div>
                 <div class="card-body p-2 d-flex flex-column gap-2 bg-white">
                     <div class="payment-methods p-1 border rounded bg-light">
                         <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">نقداً</label>
+                            <label class="col-4 small text-end fw-bold">{{ '::Cash' | abpLocalization }}</label>
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.cash" (ngModelChange)="calculateBillingTotals()"
@@ -300,7 +299,7 @@
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">شبكة</label>
+                            <label class="col-4 small text-end fw-bold">{{ '::Card' | abpLocalization }}</label>
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.card" (ngModelChange)="calculateBillingTotals()"
@@ -308,7 +307,7 @@
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">تحويل</label>
+                            <label class="col-4 small text-end fw-bold">{{ '::BankTransfer' | abpLocalization }}</label>
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.transfer" (ngModelChange)="calculateBillingTotals()"
@@ -316,7 +315,7 @@
                             </div>
                         </div>
                         <div class="row g-1 mb-0 align-items-center">
-                            <label class="col-4 small text-end fw-bold">رصيد العميل</label>
+                            <label class="col-4 small text-end fw-bold">{{ '::ClientBalance' | abpLocalization }}</label>
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.clientBalance"
@@ -398,12 +397,12 @@
                 </div>
                 <div class="card-body p-0 overflow-auto bg-white">
                     <table class="table table-sm table-bordered mb-0 small text-center">
-                        <thead class="bg-light sticky-top">
-                            <tr>
-                                <th>Test</th>
-                                <th>السعر</th>
-                                <th>التعاقد</th>
-                                <th>إلغاء</th>
+                        <thead class="table-dark">
+                            <tr class="small text-center">
+                                <th>{{ '::Service' | abpLocalization }}</th>
+                                <th>{{ '::Price' | abpLocalization }}</th>
+                                <th>{{ '::ContractPrice' | abpLocalization }}</th>
+                                <th>{{ '::Action' | abpLocalization }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -723,40 +722,48 @@
                 <div class="card-header bg-primary text-white py-1 px-2 small fw-bold">حجز العيادات</div>
                 <div class="card-body p-2">
                     <div class="row g-2 mb-2 align-items-center">
-                        <div class="col-4 small text-end fw-bold">تحمل البطاقة</div>
+                        <div class="col-4 small text-end fw-bold">{{ '::CardBearing' | abpLocalization }}</div>
                         <div class="col-4">
                             <div class="form-check form-check-inline m-0 small">
                                 <input class="form-check-input" type="radio" name="cardType" id="cardPercent" checked>
-                                <label class="form-check-label" for="cardPercent">نسبة</label>
+                                <label class="form-check-label" for="cardPercent">{{ '::Percentage' | abpLocalization }}</label>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="form-check form-check-inline m-0 small">
                                 <input class="form-check-input" type="radio" name="cardType" id="cardAmount">
-                                <label class="form-check-label" for="cardAmount">مبلغ</label>
+                                <label class="form-check-label" for="cardAmount">{{ '::Amount' | abpLocalization }}</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-2">
-                        <label class="small fw-bold mb-1">تاريخ الحجز</label>
+                        <label class="small fw-bold mb-1">{{ '::BookingDate' | abpLocalization }}</label>
                         <input type="datetime-local" class="form-control form-control-sm"
                             [(ngModel)]="booking.appointmentDate">
                     </div>
 
                     <div class="mb-2">
-                        <label class="small fw-bold mb-1">الخدمة</label>
-                        <select class="form-select form-select-sm" [(ngModel)]="booking.serviceItemId">
-                            <option value="">-- اختر --</option>
-                            <option *ngFor="let item of services" [value]="item.id">{{ item.name }}</option>
+                        <label class="small fw-bold mb-1">{{ '::SelectDepartment' | abpLocalization }}</label>
+                        <select class="form-select form-select-sm border-info" [(ngModel)]="selectedDepartmentId" (change)="onDepartmentChange()">
+                            <option value="">-- {{ '::AllDepartments' | abpLocalization }} --</option>
+                            <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
                         </select>
                     </div>
 
                     <div class="mb-2">
-                        <label class="small fw-bold mb-1">العيادة</label>
+                        <label class="small fw-bold mb-1">{{ '::Service' | abpLocalization }}</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="booking.serviceItemId">
+                            <option value="">-- {{ '::Select' | abpLocalization }} --</option>
+                            <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1">{{ '::Clinic' | abpLocalization }}</label>
                         <select class="form-select form-select-sm" [(ngModel)]="booking.clinicId"
                             (change)="onClinicChange()">
-                            <option value="">-- اختر --</option>
+                            <option value="">-- {{ '::Select' | abpLocalization }} --</option>
                             <option *ngFor="let item of clinics" [value]="item.id">{{ item.name }}</option>
                         </select>
                     </div>

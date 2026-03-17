@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { PharmacyService } from '../pharmacy.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DrugDialogComponent } from './drug-dialog/drug-dialog.component';
 import { CommonModule } from '@angular/common';
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 
@@ -23,9 +23,16 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
             </h5>
           </div>
           <div class="text-end col col-md-6">
+            <button class="btn btn-success me-1" (click)="downloadTemplate()">
+              <i class="fa fa-download me-1"></i> {{ '::DownloadTemplate' | abpLocalization }}
+            </button>
+            <button class="btn btn-warning me-1" (click)="fileInput.click()">
+              <i class="fa fa-file-excel me-1"></i> {{ '::ImportFromExcel' | abpLocalization }}
+            </button>
             <button class="btn btn-primary" (click)="createDrug()">
               <i class="fa fa-plus me-1"></i> {{ '::NewDrug' | abpLocalization }}
             </button>
+            <input type="file" #fileInput accept=".xlsx,.xls" (change)="onFileSelected($event)" style="display:none" />
           </div>
         </div>
       </div>
@@ -101,12 +108,14 @@ import { ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 export class DrugsComponent implements OnInit {
   book = { items: [], totalCount: 0 } as PagedResultDto<any>;
   searchText = '';
+  importing = false;
 
   constructor(
     public readonly list: ListService,
     private pharmacyService: PharmacyService,
     private modalService: NgbModal,
-    private confirmation: ConfirmationService
+    private confirmation: ConfirmationService,
+    private toaster: ToasterService
   ) { }
 
   ngOnInit() {
@@ -138,5 +147,35 @@ export class DrugsComponent implements OnInit {
         });
       }
     });
+  }
+
+  downloadTemplate() {
+    this.pharmacyService.downloadDrugTemplate().subscribe((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'DrugImportTemplate.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.importing = true;
+      this.pharmacyService.importDrugsFromExcel(file).subscribe({
+        next: () => {
+          this.importing = false;
+          this.toaster.success('::ImportSuccess');
+          this.list.get();
+        },
+        error: (err) => {
+          this.importing = false;
+          this.toaster.error('::ImportError');
+          console.error(err);
+        }
+      });
+    }
   }
 }

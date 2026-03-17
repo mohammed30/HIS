@@ -86,6 +86,7 @@ export interface CreateUpdateEmployeeDto {
   reminderEnabled?: boolean;
   isSuspended?: boolean;
   isActive?: boolean;
+  basicSalary?: number;
 }
 
 export interface CreateUpdateEmployeeLeaveDto {
@@ -177,6 +178,7 @@ export interface EmployeeDto extends AuditedEntityDto<string> {
   terminationDate?: string;
   isSuspended?: boolean;
   isActive?: boolean;
+  basicSalary?: number;
 }
 
 export interface EmployeeLeaveDto extends AuditedEntityDto<string> {

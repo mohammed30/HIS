@@ -37,6 +37,7 @@ public class EmployeeDto : AuditedEntityDto<Guid>
     public DateTime? TerminationDate { get; set; }
     public bool IsSuspended { get; set; }
     public bool IsActive { get; set; }
+    public decimal? BasicSalary { get; set; }
 }
 
 public class CreateUpdateEmployeeDto
@@ -68,6 +69,7 @@ public class CreateUpdateEmployeeDto
     public bool ReminderEnabled { get; set; }
     public bool IsSuspended { get; set; }
     public bool IsActive { get; set; } = true;
+    public decimal? BasicSalary { get; set; }
 }
 
 // ===== JobGrade =====

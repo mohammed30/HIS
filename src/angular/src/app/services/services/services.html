@@ -1,11 +1,11 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
-            <h5 class="card-title mb-0">Medical Services Master Data</h5>
-            <small class="text-muted">Manage standard billable services</small>
+            <h5 class="card-title mb-0">{{ '::MedicalServicesMasterData' | abpLocalization }}</h5>
+            <small class="text-muted">{{ '::ManageStandardBillableServices' | abpLocalization }}</small>
         </div>
         <button class="btn btn-primary" (click)="create()">
-            <i class="fas fa-plus me-1"></i> New Service
+            <i class="fas fa-plus me-1"></i> {{ '::NewService' | abpLocalization }}
         </button>
     </div>
     <div class="card-body">
@@ -53,7 +53,7 @@
 
 <abp-modal [(visible)]="isModalOpen">
     <ng-template #abpHeader>
-        <h3>{{ selectedItem.id ? 'Edit Service' : 'New Service' }}</h3>
+        <h3>{{ selectedItem.id ? ('::EditService' | abpLocalization) : ('::NewService' | abpLocalization) }}</h3>
     </ng-template>
 
     <ng-template #abpBody>
@@ -72,7 +72,7 @@
                     <label class="form-label">{{ '::Category' | abpLocalization }} *</label>
                     <select class="form-select" formControlName="category">
                         <option [ngValue]="null">{{ '::SelectCategory' | abpLocalization }}</option>
-                        <option *ngFor="let cat of categories" [ngValue]="cat.key">{{ cat.value }}</option>
+                        <option *ngFor="let cat of categories" [ngValue]="cat.key">{{ getCategoryName(cat.key) }}</option>
                     </select>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -112,7 +112,7 @@
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary" abpClose>Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">Save</button>
+        <button type="button" class="btn btn-secondary" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">{{ '::Save' | abpLocalization }}</button>
     </ng-template>
 </abp-modal>

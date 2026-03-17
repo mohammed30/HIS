@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
-import { CoreModule, PagedResultDto } from '@abp/ng.core';
+import { LocalizationService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReportService, PaidTicketDto, GetPaidTicketsInput } from '../../proxy/reports/report.service';
@@ -27,7 +27,8 @@ export class PaidTicketsComponent implements OnInit {
 
   constructor(
     private reportService: ReportService,
-    private toaster: ToasterService
+    private toaster: ToasterService,
+    private localizationService: LocalizationService
   ) {}
 
   ngOnInit(): void {
@@ -50,9 +51,10 @@ export class PaidTicketsComponent implements OnInit {
   }
 
   refund(appointmentId: string) {
-    if (confirm('هل أنت متأكد من رغبتك في إرجاع هذه التذكرة؟ سيتم إنشاء قيد عكسي.')) {
+    const confirmMsg = this.localizationService.instant('::RefundTicketConfirm');
+    if (confirm(confirmMsg)) {
       this.reportService.refundTicket(appointmentId).subscribe(() => {
-        this.toaster.success('تم إرجاع التذكرة بنجاح', 'عملية ناجحة');
+        this.toaster.success('::RefundTicketSuccess', '::ProcessSuccessful');
         this.loadData();
       });
     }

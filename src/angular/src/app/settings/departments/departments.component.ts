@@ -15,6 +15,7 @@ interface Department {
   extensionNumber?: string;
   isActive: boolean;
   sortOrder: number;
+  isMedical: boolean;
   costCenterId?: string;
 }
 
@@ -156,6 +157,10 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
                   <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" id="isActive">
                   <label class="form-check-label" for="isActive">نشط</label>
                 </div>
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isMedical" id="isMedical">
+                  <label class="form-check-label" for="isMedical">قسم طبي (يظهر في تعريف الأطباء)</label>
+                </div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="showForm = false">إلغاء</button>
@@ -197,7 +202,7 @@ export class DepartmentsComponent implements OnInit {
   }
 
   getEmptyForm(): Partial<Department> {
-    return { code: '', nameAr: '', nameEn: '', description: '', location: '', extensionNumber: '', isActive: true, sortOrder: 0, costCenterId: null };
+    return { code: '', nameAr: '', nameEn: '', description: '', location: '', extensionNumber: '', isActive: true, sortOrder: 0, isMedical: false, costCenterId: null };
   }
 
   resetForm() {

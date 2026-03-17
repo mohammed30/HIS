@@ -128,6 +128,8 @@ public class DoctorDto : FullAuditedEntityDto<Guid>
     public string? Email { get; set; }
     public string? Degree { get; set; }
     public decimal ConsultationFee { get; set; }
+    public decimal MorningConsultationFee { get; set; }
+    public decimal EveningConsultationFee { get; set; }
     public decimal FollowUpFee { get; set; }
     public int AppointmentDuration { get; set; }
     public string? PhotoUrl { get; set; }
@@ -150,6 +152,8 @@ public class CreateUpdateDoctorDto
     public string? Email { get; set; }
     public string? Degree { get; set; }
     public decimal ConsultationFee { get; set; }
+    public decimal MorningConsultationFee { get; set; }
+    public decimal EveningConsultationFee { get; set; }
     public decimal FollowUpFee { get; set; }
     public int AppointmentDuration { get; set; } = 15;
     public string? Bio { get; set; }

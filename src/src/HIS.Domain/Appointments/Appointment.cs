@@ -19,6 +19,8 @@ public class Appointment : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public bool IsWalkIn { get; set; } = false;
     public Guid? ServiceItemId { get; set; }
 
+    public decimal ConsultationFee { get; set; }
+
     public string? Notes { get; set; }
 
     protected Appointment()

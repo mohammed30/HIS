@@ -67,6 +67,16 @@ public class Doctor : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public decimal ConsultationFee { get; set; }
 
     /// <summary>
+    /// سعر الكشف صباحي
+    /// </summary>
+    public decimal MorningConsultationFee { get; set; }
+
+    /// <summary>
+    /// سعر الكشف مسائي
+    /// </summary>
+    public decimal EveningConsultationFee { get; set; }
+
+    /// <summary>
     /// سعر المتابعة
     /// </summary>
     public decimal FollowUpFee { get; set; }

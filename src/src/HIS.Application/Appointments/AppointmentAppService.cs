@@ -36,6 +36,8 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
     private readonly IRepository<ServiceItem, Guid> _serviceRepository;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly AppointmentManager _appointmentManager;
+    private readonly HIS.Billing.IInvoiceAppService _invoiceAppService;
+    private readonly HIS.Billing.IPaymentAppService _paymentAppService;
 
     public AppointmentAppService(
         IRepository<Appointment, Guid> appointmentRepository,
@@ -46,7 +48,9 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         IRepository<Patient, Guid> patientRepository,
         IRepository<ServiceItem, Guid> serviceRepository,
         IWebHostEnvironment webHostEnvironment,
-        AppointmentManager appointmentManager)
+        AppointmentManager appointmentManager,
+        HIS.Billing.IInvoiceAppService invoiceAppService,
+        HIS.Billing.IPaymentAppService paymentAppService)
     {
         _appointmentRepository = appointmentRepository;
         _waitingListRepository = waitingListRepository;
@@ -57,6 +61,8 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         _serviceRepository = serviceRepository;
         _webHostEnvironment = webHostEnvironment;
         _appointmentManager = appointmentManager;
+        _invoiceAppService = invoiceAppService;
+        _paymentAppService = paymentAppService;
     }
 
     // --- APPOINTMENTS ---
@@ -127,14 +133,51 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         // 2. Create Invoice if requested
         if (input.CreateInvoice)
         {
-             // TODO: Inject IInvoiceAppService or use InvoiceManager directly
-             // For now, we'll assume the client handles invoice creation via a separate call if needed, 
-             // OR we inject InvoiceAppService here.
-             // Given the scope, let's keep it simple: The frontend calls this for booking, 
-             // and if it wants an invoice, it calls InvoiceService.Create separately OR we expand this later.
-             // 
-             // WAITING: To properly implement "Book/Bond" (Hajz/Sanad), we need to create the invoice here transactionally.
-             // I'll add a TODO/Placeholder for Invoice integration.
+            var invoiceItems = new List<HIS.Billing.CreateUpdateInvoiceItemDto>();
+            
+            string description = "كشف طبي / Medical Consultation";
+            decimal unitPrice = appt.ConsultationFee;
+
+            if (input.ServiceItemId != Guid.Empty)
+            {
+                var service = await _serviceRepository.FindAsync(input.ServiceItemId);
+                if (service != null)
+                {
+                    description = service.Name;
+                    unitPrice = service.Price;
+                }
+            }
+
+            invoiceItems.Add(new HIS.Billing.CreateUpdateInvoiceItemDto
+            {
+                Description = description,
+                UnitPrice = unitPrice,
+                Quantity = 1,
+                ServiceType = HIS.Billing.ServiceType.Consultation, 
+                ServiceCode = input.ServiceItemId.ToString()
+            });
+
+            var invoiceDto = await _invoiceAppService.CreateAsync(new HIS.Billing.CreateUpdateInvoiceDto
+            {
+                PatientId = input.PatientId,
+                AppointmentId = appt.Id,
+                DiscountAmount = input.Discount ?? 0,
+                Items = invoiceItems,
+                Notes = $"Invoice for Appointment {appt.Id.ToString().Substring(0,8)}"
+            });
+
+            // 3. Create Payment if paid
+            if (input.PaidAmount > 0)
+            {
+                await _paymentAppService.CreateAsync(new HIS.Billing.CreatePaymentDto
+                {
+                    PatientId = input.PatientId,
+                    InvoiceId = invoiceDto.Id,
+                    Amount = input.PaidAmount.Value,
+                    PaymentMethod = input.PaymentMethod == "Cash" ? HIS.Billing.PaymentMethod.Cash : HIS.Billing.PaymentMethod.BankTransfer,
+                    Notes = "Paid at booking"
+                });
+            }
         }
 
         return ObjectMapper.Map<Appointment, AppointmentDto>(appt);
@@ -160,6 +203,10 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
                  serviceName = service.Name;
                  price = service.Price;
              }
+        }
+        else
+        {
+            price = appt.ConsultationFee;
         }
         
         // Logo

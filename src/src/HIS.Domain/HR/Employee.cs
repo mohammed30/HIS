@@ -154,6 +154,11 @@ public class Employee : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// الراتب الأساسي
+    /// </summary>
+    public decimal? BasicSalary { get; set; }
+
     public int SortOrder { get; set; }
 
     protected Employee() { }

@@ -78,50 +78,60 @@ public class ReportAppService : ApplicationService, IReportAppService
 
     public async Task<PagedResultDto<PaidTicketDto>> GetPaidTicketsAsync(GetPaidTicketsInput input)
     {
-        var appointments = await _appointmentRepository.GetQueryableAsync();
-        var invoices = await _invoiceRepository.GetQueryableAsync();
+        var invoices = await _invoiceRepository.WithDetailsAsync(x => x.Items);
         
-        var query = from appt in appointments
-                   join inv in invoices on appt.Id equals inv.AppointmentId
+        var query = from inv in invoices
                    where inv.Status == InvoiceStatus.Paid || inv.Status == InvoiceStatus.PartiallyPaid
-                   select new { appt, inv };
+                   select inv;
 
         if (input.FromDate.HasValue)
-            query = query.Where(x => x.appt.AppointmentDate >= input.FromDate.Value);
+            query = query.Where(x => x.InvoiceDate >= input.FromDate.Value);
         
         if (input.ToDate.HasValue)
-            query = query.Where(x => x.appt.AppointmentDate < input.ToDate.Value.Date.AddDays(1));
+            query = query.Where(x => x.InvoiceDate < input.ToDate.Value.Date.AddDays(1));
 
         var totalCount = await AsyncExecuter.CountAsync(query);
-        var items = await AsyncExecuter.ToListAsync(query.PageBy(input));
+        var items = await AsyncExecuter.ToListAsync(query.OrderByDescending(x => x.InvoiceDate).PageBy(input));
 
         var dtos = new List<PaidTicketDto>();
-        foreach (var item in items)
+        foreach (var inv in items)
         {
-            var patient = await _patientRepository.FindAsync(item.appt.PatientId);
-            var clinic = await _clinicRepository.FindAsync(item.appt.ClinicId);
-            var doctor = await _doctorRepository.FindAsync(item.appt.DoctorId);
-            var creator = await _userRepository.FindAsync(item.appt.CreatorId ?? Guid.Empty);
+            var patient = await _patientRepository.FindAsync(inv.PatientId);
+            var creator = await _userRepository.FindAsync(inv.CreatorId ?? Guid.Empty);
+            
+            Appointment appt = null;
+            if (inv.AppointmentId.HasValue)
+            {
+                appt = await _appointmentRepository.FindAsync(inv.AppointmentId.Value);
+            }
+
+            Clinic clinic = appt != null ? await _clinicRepository.FindAsync(appt.ClinicId) : null;
+            Doctor doctor = appt != null ? await _doctorRepository.FindAsync(appt.DoctorId) : null;
 
             string serviceName = "N/A";
-            if (item.appt.ServiceItemId.HasValue)
+            if (appt != null && appt.ServiceItemId.HasValue)
             {
-                var service = await _serviceRepository.FindAsync(item.appt.ServiceItemId.Value);
+                var service = await _serviceRepository.FindAsync(appt.ServiceItemId.Value);
                 serviceName = service?.Name ?? "N/A";
+            }
+            else if (inv.Items.Any())
+            {
+                serviceName = string.Join(", ", inv.Items.Select(x => x.Description));
+                if (serviceName.Length > 50) serviceName = serviceName.Substring(0, 47) + "...";
             }
 
             dtos.Add(new PaidTicketDto
             {
-                AppointmentId = item.appt.Id,
-                TicketNumber = item.appt.Id.ToString().Substring(0, 8).ToUpper(),
-                PatientName = patient?.FullNameAr ?? "Unknown",
-                ClinicName = clinic?.NameAr ?? "Unknown",
-                DoctorName = doctor?.NameAr ?? "Unknown",
+                AppointmentId = inv.AppointmentId ?? Guid.Empty,
+                TicketNumber = inv.InvoiceNumber.Length > 8 ? inv.InvoiceNumber.Substring(inv.InvoiceNumber.Length - 8).ToUpper() : inv.InvoiceNumber.ToUpper(),
+                PatientName = patient?.FullNameAr ?? L["Unknown"],
+                ClinicName = clinic?.NameAr ?? (inv.AppointmentId.HasValue ? L["Unknown"] : L["Direct"]),
+                DoctorName = doctor?.NameAr ?? (inv.AppointmentId.HasValue ? L["Unknown"] : L["Direct"]),
                 ServiceName = serviceName,
-                Amount = item.inv.TotalAmount,
-                AppointmentDate = item.appt.AppointmentDate,
+                Amount = inv.TotalAmount,
+                AppointmentDate = appt?.AppointmentDate ?? inv.InvoiceDate,
                 CreatedByUser = creator?.UserName ?? "system",
-                CreationTime = item.appt.CreationTime
+                CreationTime = inv.CreationTime
             });
         }
 

@@ -110,6 +110,16 @@
                 </div>
             </div>
 
+            <div class="mb-4 p-3 bg-soft-success rounded-3 border d-flex justify-content-between align-items-center shadow-xs" *ngIf="bookingData.consultationFee > 0">
+                <div>
+                    <label class="form-label text-muted small fw-bold d-block mb-0">سعر الكشف / Fee</label>
+                    <span class="fw-bold text-success fs-5">{{ bookingData.consultationFee | number:'1.2-2' }} ريال</span>
+                </div>
+                <div class="text-end text-muted small">
+                    <i class="fas fa-info-circle me-1"></i> يتم الحساب حسب الوردية
+                </div>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label fw-bold text-dark">{{ '::SearchPatient' | abpLocalization }}</label>
                 <div class="input-group input-group-lg shadow-xs rounded-3 overflow-hidden">

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Localization;
 using HIS.Localization;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Ui.Branding;
@@ -16,4 +16,5 @@ public class HISBrandingProvider : DefaultBrandingProvider
     }
 
     public override string AppName => _localizer["AppName"];
+    public override string LogoUrl => "/images/logo/Dark.png";
 }

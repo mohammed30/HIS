@@ -91,4 +91,22 @@ export class PharmacyService {
             url: `/api/app/drug/${id}`
         });
     }
+
+    downloadDrugTemplate(): Observable<Blob> {
+        return this.restService.request({
+            method: 'GET',
+            url: '/api/app/drug/import-template',
+            responseType: 'blob'
+        }, { apiName: this.apiName });
+    }
+
+    importDrugsFromExcel(file: File): Observable<void> {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.restService.request({
+            method: 'POST',
+            url: '/api/app/drug/import-excel',
+            body: formData
+        });
+    }
 }

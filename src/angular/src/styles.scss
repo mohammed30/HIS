@@ -63,7 +63,7 @@ body {
   --lpx-theme-dim-bg: url('assets/images/login/login-bg-img-dim.svg');
   --lpx-theme-dark-bg: url('assets/images/login/login-bg-img-dark.svg');
 
-  --lpx-logo-icon: url('assets/images/logo/icon-lite.svg');
+  --lpx-logo-icon: url('assets/images/logo/Dark.png');
   --lpx-logo-url: var(--lpx-logo-icon);
   --lpx-logo: var(--lpx-logo-icon);
 
@@ -1275,4 +1275,123 @@ html:not([data-theme="dark"]) .vital-card {
 .lpx-sidebar-container .lpx-menu {
   margin-top: 0 !important;
   /* Menu starts right after the smaller logo header */
+}
+
+/* ===== PROFESSIONAL LOGIN PAGE CUSTOMIZATION (DEFAULT ABP COMPONENT) ===== */
+
+/* Target the layout wrapper for ABP Account module */
+.lpx-account-wrapper, 
+.abp-account-layout,
+.auth-wrapper {
+  background: linear-gradient(135deg, #1a1d21 0%, #212529 100%) !important;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Customize the Card */
+.lpx-account-card, 
+.account-card,
+.abp-account-container .card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden;
+  max-width: 450px !important;
+  width: 100%;
+}
+
+/* Logo in Login Page - Nuclear Option */
+.abp-account-container .abp-logo,
+.account-brand-container .abp-logo,
+.lpx-account-logo,
+.auth-wrapper .brand-logo,
+.lpx-logo,
+.lpx-brand-logo {
+  height: 120px !important;
+  width: 250px !important;
+  margin: 0 auto 30px auto !important;
+  background-image: url('assets/images/logo/Dark.png') !important;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  display: block !important;
+  
+  /* Hide any nested SVGs or icons that might be there by default */
+  svg, img, i, span {
+    display: none !important;
+  }
+}
+
+/* Specific fix for the circular icon logo shown in screenshot */
+.lpx-logo-icon, .lpx-logo, .account-logo-container, .lpx-brand-logo-icon {
+  background-image: url('assets/images/logo/Dark.png') !important;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-color: transparent !important; /* Remove the light blue background if desired */
+  
+  svg, img, i {
+    display: none !important;
+  }
+}
+
+/* Hide default text if it appears near logo */
+.abp-account-container h1, 
+.abp-account-container .display-4 {
+  font-weight: 700 !important;
+  color: #fff !important;
+  text-align: center;
+  margin-bottom: 25px !important;
+}
+
+/* Input Fields in Login */
+.abp-account-container .form-control {
+  border-radius: 10px !important;
+  padding: 12px 15px !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  
+  &:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  }
+}
+
+/* Login Button */
+.abp-account-container .btn-primary {
+  border-radius: 10px !important;
+  padding: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: linear-gradient(to right, #0d6efd, #0b5ed7) !important;
+  border: none !important;
+  margin-top: 10px !important;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4) !important;
+  }
+}
+
+/* Footer / Tenant Switcher links */
+.abp-account-container a {
+  color: #0d6efd !important;
+  text-decoration: none !important;
+  
+  &:hover {
+    text-decoration: underline !important;
+  }
+}
+
+/* Responsive adjustment */
+@media (max-width: 576px) {
+  .lpx-account-card, .account-card {
+    margin: 15px;
+    border-radius: 15px !important;
+  }
 }

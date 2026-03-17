@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using HIS.Pharmacy.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -11,4 +12,6 @@ public interface IDrugAppService : ICrudAppService<
     PagedAndSortedResultRequestDto, 
     CreateUpdateDrugDto>
 {
+    Task<Volo.Abp.Content.IRemoteStreamContent> GetImportTemplateAsync();
+    Task ImportExcelAsync(Volo.Abp.Content.IRemoteStreamContent input);
 }

@@ -405,6 +405,8 @@ public class HISDbContext :
             b.Property(x => x.Email).HasMaxLength(256);
             b.Property(x => x.Degree).HasMaxLength(128);
             b.Property(x => x.ConsultationFee).HasPrecision(18, 2);
+            b.Property(x => x.MorningConsultationFee).HasPrecision(18, 2);
+            b.Property(x => x.EveningConsultationFee).HasPrecision(18, 2);
             b.Property(x => x.FollowUpFee).HasPrecision(18, 2);
             b.Property(x => x.PhotoUrl).HasMaxLength(512);
             b.Property(x => x.Bio).HasMaxLength(2048);
@@ -492,6 +494,7 @@ public class HISDbContext :
             b.ToTable(HISConsts.DbTablePrefix + "Appointments", HISConsts.DbSchema);
             b.ConfigureByConvention();
             
+            b.Property(x => x.ConsultationFee).HasPrecision(18, 2);
             b.Property(x => x.Notes).HasMaxLength(2048);
             
             b.HasIndex(x => x.PatientId);
@@ -1227,6 +1230,7 @@ public class HISDbContext :
                 b.Property(x => x.JobTitle).HasMaxLength(256);
                 b.Property(x => x.EmploymentClassification).HasMaxLength(128);
                 b.Property(x => x.PhotoUrl).HasMaxLength(1024);
+                b.Property(x => x.BasicSalary).HasColumnType("decimal(18,2)");
                 b.HasIndex(x => x.EmployeeNumber);
                 b.HasIndex(x => x.DepartmentId);
                 b.HasIndex(x => x.JobGradeId);

@@ -59,7 +59,7 @@ export class Employees implements OnInit {
 
   buildForm() {
     this.form = this.fb.group({
-      employeeNumber: [this.selectedEmployee.employeeNumber || '', Validators.required],
+      employeeNumber: [{ value: this.selectedEmployee.employeeNumber || '', disabled: !this.selectedEmployee.id }],
       nameAr: [this.selectedEmployee.nameAr || '', Validators.required],
       nameEn: [this.selectedEmployee.nameEn || '', Validators.required],
       phone: [this.selectedEmployee.phone || ''],
@@ -69,6 +69,7 @@ export class Employees implements OnInit {
         this.selectedEmployee.hireDate ? new Date(this.selectedEmployee.hireDate).toISOString().split('T')[0] : null,
       ],
       isActive: [this.selectedEmployee.isActive ?? true],
+      basicSalary: [this.selectedEmployee.basicSalary || null],
     });
   }
 

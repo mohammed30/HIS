@@ -1,4 +1,4 @@
-import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
+import { ListService, PagedResultDto, CoreModule, LocalizationService } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
 import { ServiceItemService } from '../../proxy/services/service-item.service';
 import { ServiceItemDto, ServiceCategory } from '../../proxy/services';
@@ -31,7 +31,8 @@ export class ServicesComponent implements OnInit {
     public readonly list: ListService,
     private serviceItemService: ServiceItemService,
     private fb: FormBuilder,
-    private confirmation: ConfirmationService
+    private confirmation: ConfirmationService,
+    private localizationService: LocalizationService
   ) { }
 
   ngOnInit() {
@@ -87,7 +88,7 @@ export class ServicesComponent implements OnInit {
   }
 
   delete(id: string) {
-    this.confirmation.warn('Are you sure you want to delete this service?', 'Confirm Delete').subscribe((status) => {
+    this.confirmation.warn('::AreYouSureToDelete', '::ConfirmDelete').subscribe((status) => {
       if (status === Confirmation.Status.confirm) {
         this.serviceItemService.delete(id).subscribe(() => this.list.get());
       }
@@ -95,14 +96,17 @@ export class ServicesComponent implements OnInit {
   }
 
   getCategoryName(category: number): string {
-    const names: { [key: number]: string } = {
-      0: 'استشارة',
-      1: 'إجراء',
-      2: 'تحليل مخبري',
-      3: 'أشعة',
-      4: 'عملية',
-      5: 'أخرى'
+    const keyMap: { [key: number]: string } = {
+      0: 'Consultation',
+      1: 'Procedure',
+      2: 'LabTest',
+      3: 'Radiology',
+      4: 'Surgery',
+      5: 'Other',
+      6: 'Pharmacy',
+      7: 'Consumable'
     };
-    return names[category] || 'غير محدد';
+    const key = keyMap[category] || 'Other';
+    return this.localizationService.instant(`::ServiceCategory:${key}`);
   }
 }

@@ -57,9 +57,19 @@
 
     <ng-template #abpBody>
         <form [formGroup]="form" (ngSubmit)="save()" validateOnSubmit>
+            <div class="mt-2" *ngIf="selectedEmployee.id">
+                <label for="emp-num">{{ '::HR:EmployeeNumber' | abpLocalization }}</label>
+                <input type="text" id="emp-num" class="form-control" formControlName="employeeNumber" readonly />
+            </div>
+
+            <div class="mt-2" *ngIf="!selectedEmployee.id">
+                <label>{{ '::HR:EmployeeNumber' | abpLocalization }}</label>
+                <input type="text" class="form-control" placeholder="T-Auto Generated" disabled />
+            </div>
+
             <div class="mt-2">
-                <label for="emp-num">{{ '::HR:EmployeeNumber' | abpLocalization }} *</label>
-                <input type="text" id="emp-num" class="form-control" formControlName="employeeNumber" autofocus />
+                <label for="emp-salary">الراتب الأساسي</label>
+                <input type="number" id="emp-salary" class="form-control" formControlName="basicSalary" />
             </div>
 
             <div class="mt-2">
