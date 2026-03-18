@@ -591,17 +591,37 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     loadClinicData() {
         this.appointmentService.getClinicLookup().subscribe(res => {
-            this.clinics = ((res as any[]) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }));
+            this.clinics = ((res as any[]) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
+                .sort((a, b) => a.name.localeCompare(b.name));
         });
 
         // Load Departments
         this.http.get<any[]>(environment.apis.default.url + '/api/app/department/medical-departments-lookup').subscribe(res => {
-            this.departments = res || [];
+            this.departments = (res || []).sort((a, b) => a.name.localeCompare(b.name));
         });
 
         // Load Services (Clinic Services)
         this.serviceItemService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
-            this.services = (res.items || []).filter(x => x.category === ServiceCategory.Consultation || x.category === ServiceCategory.Procedure);
+            let items = (res.items || []).filter(x => x.category === ServiceCategory.Consultation || x.category === ServiceCategory.Procedure);
+            
+            // Sort items alphabetically by name first
+            items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            // Find "General Consultation" (كشف عام)
+            const generalConsultation = items.find(x => x.name?.includes('كشف عام'));
+            if (generalConsultation) {
+                // Move it to the top
+                items = items.filter(x => x.id !== generalConsultation.id);
+                items.unshift(generalConsultation);
+                
+                // Set as default if not already set
+                if (!this.booking.serviceItemId) {
+                    this.booking.serviceItemId = generalConsultation.id;
+                    this.updateConsultationFee();
+                }
+            }
+            
+            this.services = items;
         });
     }
 
@@ -614,17 +634,21 @@ export class LaboratoryReceptionComponent implements OnInit {
         if (this.selectedDepartmentId) {
             // Filter Clinics by Department using Proxy Service
             this.clinicService.getByDepartment(this.selectedDepartmentId).subscribe(res => {
-                this.clinics = (res || []).map(x => ({ ...x, name: x.nameAr || x.nameEn || (x as any).name }));
+                this.clinics = (res || []).map(x => ({ ...x, name: x.nameAr || x.nameEn || (x as any).name }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
             });
 
             // Filter Doctors by Department (directly)
-            this.appointmentService.getDoctorLookup(undefined, this.selectedDepartmentId).subscribe(res => {
-                this.doctors = (res as any) || [];
+            // Use null instead of undefined for clinicId to avoid 400 error
+            this.appointmentService.getDoctorLookup(null, this.selectedDepartmentId).subscribe(res => {
+                this.doctors = ((res as any) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
             });
         } else {
-            // Load all if no department selected (optional, match user request for "tied to department")
+            // Load all if no department selected
             this.appointmentService.getClinicLookup().subscribe(res => {
-                this.clinics = (res as any[]) || [];
+                this.clinics = ((res as any[]) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
             });
             this.doctors = [];
         }
@@ -633,13 +657,16 @@ export class LaboratoryReceptionComponent implements OnInit {
     onClinicChange() {
         this.booking.doctorId = '';
         if (this.booking.clinicId) {
-            this.appointmentService.getDoctorLookup(this.booking.clinicId).subscribe(res => {
-                this.doctors = (res as any) || [];
+            // Pass both clinic and selectedDepartmentId to narrow down
+            this.appointmentService.getDoctorLookup(this.booking.clinicId, this.selectedDepartmentId || undefined).subscribe(res => {
+                this.doctors = ((res as any) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
             });
         } else if (this.selectedDepartmentId) {
             // Fallback to department doctors if clinic is cleared
-            this.appointmentService.getDoctorLookup(undefined, this.selectedDepartmentId).subscribe(res => {
-                this.doctors = (res as any) || [];
+            this.appointmentService.getDoctorLookup(null, this.selectedDepartmentId).subscribe(res => {
+                this.doctors = ((res as any) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
             });
         } else {
             this.doctors = [];

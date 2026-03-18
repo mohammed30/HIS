@@ -6,11 +6,12 @@ import { AttendanceRecordDto, EmployeeLookupDto } from '../../proxy/hr/models';
 import { HRService } from '../../proxy/hr/hr.service';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { FilterByIdPipe } from '../../shared/pipes/filter-by-id.pipe';
 
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CoreModule, ThemeSharedModule, ReactiveFormsModule, CommonModule, NgbDropdownModule],
+  imports: [CoreModule, ThemeSharedModule, ReactiveFormsModule, CommonModule, NgbDropdownModule, FilterByIdPipe],
   templateUrl: './attendance.html',
   styleUrls: ['./attendance.scss'],
   providers: [ListService],

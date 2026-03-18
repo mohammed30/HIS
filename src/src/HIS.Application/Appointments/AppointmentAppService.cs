@@ -342,7 +342,8 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         return slots;
     }
 
-    [HttpGet("doctor-lookup")]
+    [HttpGet]
+    [Route("api/app/appointment/doctor-lookup")]
     public async Task<List<LookupDto<Guid>>> GetDoctorLookupAsync(Guid? clinicId, Guid? departmentId = null)
     {
         var query = await _doctorRepository.GetQueryableAsync();
@@ -370,6 +371,8 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
         }).ToList();
     }
 
+    [HttpGet]
+    [Route("api/app/appointment/clinic-lookup")]
     public async Task<List<LookupDto<Guid>>> GetClinicLookupAsync()
     {
         var clinics = await _clinicRepository.GetListAsync(c => c.IsActive);

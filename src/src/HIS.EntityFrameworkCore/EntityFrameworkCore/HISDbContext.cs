@@ -605,7 +605,7 @@ public class HISDbContext :
             b.ToTable(HISConsts.DbTablePrefix + "InvoiceItems", HISConsts.DbSchema);
             b.ConfigureByConvention();
             
-            b.Property(x => x.ServiceCode).HasMaxLength(32);
+            b.Property(x => x.ServiceCode).HasMaxLength(64);
             b.Property(x => x.Description).HasMaxLength(512).IsRequired();
             b.Property(x => x.Quantity).HasPrecision(10, 2);
             b.Property(x => x.UnitPrice).HasPrecision(18, 2);
