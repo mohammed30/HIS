@@ -9,5 +9,6 @@ public enum ServiceCategory
     Surgery = 4,
     Other = 5,
     Pharmacy = 6,
-    Consumable = 7
+    Consumable = 7,
+    Inpatient = 8
 }

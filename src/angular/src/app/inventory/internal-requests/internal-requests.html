@@ -1,0 +1,121 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col col-md-6">
+        <h5 class="card-title">طلبات الصرف الداخلي (المستودع / الصيدلية)</h5>
+      </div>
+      <div class="text-end col col-md-6">
+        <button id="refresh" class="btn btn-outline-primary" type="button" (click)="getList()">
+          <i class="fa fa-sync me-1"></i> تحديث
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="getList" default>
+      <ngx-datatable-column
+        [name]="'::Actions' | abpLocalization"
+        [maxWidth]="150"
+        [sortable]="false"
+      >
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <div ngbDropdown container="body" class="d-inline-block">
+            <button
+              class="btn btn-primary btn-sm dropdown-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              ngbDropdownToggle
+            >
+              <i class="fa fa-cog me-1"></i> الإجراءات
+            </button>
+            <div ngbDropdownMenu>
+              <!-- Approve action -->
+              <button
+                ngbDropdownItem
+                (click)="approve(row.id)"
+                *ngIf="row.status === statusEnum.Submitted"
+              >
+                اعتماد وصرف الكمية
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </ngx-datatable-column>
+
+      <ngx-datatable-column name="رقم الطلب" prop="requestNumber"></ngx-datatable-column>
+      <ngx-datatable-column name="تاريخ الطلب" prop="requestDate">
+        <ng-template let-value="value" ngx-datatable-cell-template>
+          {{ value | date:'short' }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="القسم الطالب">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row.requestingDepartmentName || 'قسم طبي' }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="الحالة">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <span class="badge" [ngClass]="{
+            'bg-secondary': row.status === statusEnum.Draft,
+            'bg-warning text-dark': row.status === statusEnum.Submitted,
+            'bg-success': row.status === statusEnum.Approved,
+            'bg-primary': row.status === statusEnum.Received,
+            'bg-danger': row.status === statusEnum.Rejected
+          }">
+            {{ getStatusText(row.status) }}
+          </span>
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="تفاصيل">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <button class="btn btn-outline-info btn-sm" (click)="showDetails(row)">
+            <i class="fa fa-eye"></i> عرض
+          </button>
+        </ng-template>
+      </ngx-datatable-column>
+    </ngx-datatable>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<abp-modal [(visible)]="isModalOpen" [busy]="isLoading">
+  <ng-template #abpHeader>
+    <h3>تفاصيل طلب الصرف: {{ selectedRequest?.requestNumber }}</h3>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <div *ngIf="selectedRequest">
+      <div class="row mb-3">
+        <div class="col-6"><strong>من:</strong> {{ selectedRequest.requestingDepartmentName }}</div>
+        <div class="col-6"><strong>التاريخ:</strong> {{ selectedRequest.requestDate | date:'short' }}</div>
+      </div>
+      <p><strong>ملاحظات:</strong> {{ selectedRequest.notes || 'لا يوجد' }}</p>
+      
+      <table class="table table-bordered mt-3">
+        <thead>
+          <tr>
+            <th>الصنف</th>
+            <th class="text-center">الكمية المطلوبة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let line of selectedRequest.lines">
+            <td>{{ line.inventoryItemName }}</td>
+            <td class="text-center">{{ line.requestedQuantity }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button type="button" class="btn btn-secondary" abpClose>إغلاق</button>
+    <button 
+      class="btn btn-success" 
+      *ngIf="selectedRequest?.status === statusEnum.Submitted"
+      (click)="approve(selectedRequest!.id)"
+    >
+      <i class="fa fa-check me-1"></i> اعتماد وصرف الكمية
+    </button>
+  </ng-template>
+</abp-modal>

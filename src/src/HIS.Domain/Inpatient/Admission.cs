@@ -110,6 +110,7 @@ public class Admission : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// الفاتورة المرتبطة
     /// </summary>
     public Guid? InvoiceId { get; set; }
+    public Guid? PatientInsuranceId { get; set; }
 
     /// <summary>
     /// إجمالي رسوم الغرف السابقة المتراكمة

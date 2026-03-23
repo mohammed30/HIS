@@ -1,0 +1,137 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col col-md-6">
+        <h5 class="card-title">فواتير المشتريات (توليد المخزون)</h5>
+      </div>
+      <div class="text-end col col-md-6">
+        <button id="create" class="btn btn-primary" type="button" (click)="createInvoice()">
+          <i class="fa fa-plus me-1"></i> فاتورة جديدة
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="getList" default>
+      <ngx-datatable-column
+        [name]="'::Actions' | abpLocalization"
+        [maxWidth]="150"
+        [sortable]="false"
+      >
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <div ngbDropdown container="body" class="d-inline-block">
+            <button
+              class="btn btn-primary btn-sm dropdown-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              ngbDropdownToggle
+            >
+              <i class="fa fa-cog me-1"></i> الإجراءات
+            </button>
+            <div ngbDropdownMenu>
+              <button
+                ngbDropdownItem
+                (click)="post(row.id)"
+                *ngIf="row.status === statusEnum.Draft"
+              >
+                ترحيل للمستودع (Post)
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </ngx-datatable-column>
+
+      <ngx-datatable-column name="رقم الفاتورة" prop="invoiceNumber"></ngx-datatable-column>
+      <ngx-datatable-column name="المورد" prop="supplierName"></ngx-datatable-column>
+      <ngx-datatable-column name="التاريخ" prop="invoiceDate">
+        <ng-template let-value="value" ngx-datatable-cell-template>
+          {{ value | date:'shortDate' }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="المبلغ الصافي" prop="netAmount"></ngx-datatable-column>
+      <ngx-datatable-column name="الحالة">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <span class="badge" [ngClass]="{
+            'bg-secondary': row.status === statusEnum.Draft,
+            'bg-success': row.status === statusEnum.Posted,
+            'bg-danger': row.status === statusEnum.Cancelled
+          }">
+            {{ getStatusText(row.status) }}
+          </span>
+        </ng-template>
+      </ngx-datatable-column>
+    </ngx-datatable>
+  </div>
+</div>
+
+<abp-modal [(visible)]="isModalOpen">
+  <ng-template #abpHeader>
+    <h3>إضافة فاتورة مشتريات جديدة</h3>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
+      <div class="row">
+        <div class="col-md-6 mb-2">
+            <label>رقم فاتورة المورد</label>
+            <input type="text" class="form-control" formControlName="invoiceNumber" />
+        </div>
+        <div class="col-md-6 mb-2">
+            <label>المورد</label>
+            <select class="form-control" formControlName="supplierId">
+                <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-2">
+            <label>تاريخ الفاتورة</label>
+            <input type="date" class="form-control" formControlName="invoiceDate" />
+        </div>
+      </div>
+
+      <h5 class="mt-4">الأصناف والتكاليف</h5>
+      <div formArrayName="lines">
+          <div class="border p-2 mb-2 rounded bg-light" *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
+              <div class="row">
+                  <div class="col-md-6 mb-2">
+                      <label>الصنف (GUID)</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="productId" placeholder="مثلاً: 00000000-..." />
+                  </div>
+                  <div class="col-md-3 mb-2">
+                      <label>الكمية</label>
+                      <input type="number" class="form-control form-control-sm" formControlName="quantity" />
+                  </div>
+                  <div class="col-md-3 mb-2">
+                      <label>التكلفة للوحدة</label>
+                      <input type="number" class="form-control form-control-sm" formControlName="unitCost" />
+                  </div>
+                  <div class="col-md-6 mb-2">
+                      <label>رقم التشغيلة (Batch)</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="batchNumber" />
+                  </div>
+                  <div class="col-md-6 mb-2">
+                      <label>تاريخ الانتهاء</label>
+                      <input type="date" class="form-control form-control-sm" formControlName="expiryDate" />
+                  </div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm mt-1" (click)="removeLine(i)">حذف الصنف</button>
+          </div>
+      </div>
+      
+      <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addLine()">
+        <i class="fa fa-plus"></i> إضافة صنف للفاتورة
+      </button>
+
+      <div>
+        <label>ملاحظات</label>
+        <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button type="button" class="btn btn-secondary" abpClose>إغلاق</button>
+    <button class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
+      <i class="fa fa-check me-1"></i> حفظ كمسودة
+    </button>
+  </ng-template>
+</abp-modal>

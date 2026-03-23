@@ -28,6 +28,7 @@ export interface AdmissionDto extends FullAuditedEntityDto<string> {
   dueAmount?: number;
   notes?: string;
   invoiceId?: string;
+  patientInsuranceId?: string;
 }
 
 export interface CreatePatientTransferDto {
@@ -50,6 +51,7 @@ export interface CreateUpdateAdmissionDto {
   pharmacyPercentage?: number;
   isServicesStopped?: boolean;
   notes?: string;
+  patientInsuranceId?: string;
 }
 
 export interface CreateUpdateReservationDto {

@@ -4,6 +4,7 @@ import { PatientListComponent } from './patient-list/patient-list.component';
 import { PatientDashboardComponent } from './patient-dashboard/patient-dashboard.component';
 import { PatientCareDashboardComponent } from './patient-care-dashboard/patient-care-dashboard.component';
 import { ShiftHandoverComponent } from './shift-handover/shift-handover.component';
+import { InternalRequestsComponent } from './internal-requests/internal-requests';
 
 const routes: Routes = [
   { path: '', redirectTo: 'patient-list', pathMatch: 'full' },
@@ -11,6 +12,7 @@ const routes: Routes = [
   { path: 'patient/:patientId', component: PatientDashboardComponent },
   { path: 'patient-care/:patientId', component: PatientCareDashboardComponent },
   { path: 'shift-handover', component: ShiftHandoverComponent },
+  { path: 'internal-requests', component: InternalRequestsComponent },
 ];
 
 @NgModule({

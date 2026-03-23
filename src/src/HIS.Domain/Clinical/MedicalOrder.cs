@@ -6,6 +6,7 @@ namespace HIS.Clinical;
 public class MedicalOrder : FullAuditedEntity<Guid>
 {
     public Guid PatientId { get; set; }
+    public Guid? AdmissionId { get; set; }
     public Guid? DoctorId { get; set; }
     public OrderType Type { get; set; }
     public OrderStatus Status { get; set; }

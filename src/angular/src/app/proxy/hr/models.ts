@@ -67,12 +67,14 @@ export interface CreateUpdateEmployeeDto {
   maritalStatus?: MaritalStatus;
   address?: string;
   phone?: string;
+  email?: string;
   qualification?: string;
   identityType?: IdentityDocumentType;
   identityNumber?: string;
   insuranceNumber?: string;
   bankName?: string;
   bankAccountNumber?: string;
+  iban?: string;
   departmentId?: string;
   sectionName?: string;
   jobGradeId?: string;
@@ -157,12 +159,14 @@ export interface EmployeeDto extends AuditedEntityDto<string> {
   maritalStatus?: MaritalStatus;
   address?: string;
   phone?: string;
+  email?: string;
   qualification?: string;
   identityType?: IdentityDocumentType;
   identityNumber?: string;
   insuranceNumber?: string;
   bankName?: string;
   bankAccountNumber?: string;
+  iban?: string;
   departmentId?: string;
   departmentName?: string;
   sectionName?: string;
@@ -309,6 +313,7 @@ export interface DailyAttendanceDto extends AuditedEntityDto<string> {
   checkOutTime?: string;
   status?: number;
   workedHours?: number;
+  overtimeHours?: number;
   notes?: string;
 }
 
@@ -318,5 +323,6 @@ export interface CreateUpdateDailyAttendanceDto {
   checkInTime?: string;
   checkOutTime?: string;
   status?: number;
+  overtimeHours?: number;
   notes?: string;
 }

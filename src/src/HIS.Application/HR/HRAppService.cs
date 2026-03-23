@@ -12,6 +12,9 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
+using Volo.Abp.Content;
+using MiniExcelLibs;
+using System.IO;
 
 namespace HIS.HR;
 
@@ -452,25 +455,67 @@ public class HRAppService : ApplicationService
 
         var salarySetups = (await _salarySetupRepository.GetListAsync(s => s.IsActive)).ToList();
         var compensationItems = await _compensationItemRepository.GetListAsync();
+        var attendanceRecords = await _dailyAttendanceRepository.GetListAsync(a => a.Date >= input.PeriodStart && a.Date <= input.PeriodEnd);
+
+        var overtimeItem = compensationItems.FirstOrDefault(ci => ci.NameAr == "بدل إضافي" || ci.NameAr == "Overtime Allowance");
+        var absenceItem = compensationItems.FirstOrDefault(ci => ci.NameAr == "خصم غياب" || ci.NameAr == "Absence Deduction");
 
         decimal totalEarnings = 0, totalDeductions = 0;
 
         foreach (var emp in empList)
         {
+            decimal empEarnings = 0, empDeductions = 0;
+
+            // 1. Regular Salary Setups (Basic, Housing, etc.)
             var empSetups = salarySetups.Where(s => s.EmployeeId == emp.Id).ToList();
             foreach (var setup in empSetups)
             {
                 var item = compensationItems.FirstOrDefault(ci => ci.Id == setup.CompensationItemId);
                 if (item == null) continue;
 
-                var line = new PayrollLine(
-                    _guidGenerator.Create(), payrollRun.Id, emp.Id,
-                    setup.CompensationItemId, setup.Amount, item.Nature);
+                var line = new PayrollLine(_guidGenerator.Create(), payrollRun.Id, emp.Id, setup.CompensationItemId, setup.Amount, item.Nature);
                 payrollRun.Lines.Add(line);
 
-                if (item.Nature == CompensationNature.Allowance) totalEarnings += setup.Amount;
-                else totalDeductions += setup.Amount;
+                if (item.Nature == CompensationNature.Allowance) empEarnings += setup.Amount;
+                else empDeductions += setup.Amount;
             }
+
+            // 2. Automated Overtime Calculation
+            var empAttendance = attendanceRecords.Where(a => a.EmployeeId == emp.Id).ToList();
+            var totalOvertimeHours = empAttendance.Sum(a => a.OvertimeHours);
+            
+            if (totalOvertimeHours > 0 && overtimeItem != null)
+            {
+                // Hourly rate = Basic / 240 (approx 30 days * 8 hours) * 1.5 multiplier
+                decimal hourlyRate = (emp.BasicSalary ?? 0) / 240;
+                decimal overtimeAmount = Math.Round(totalOvertimeHours * hourlyRate * 1.5m, 2);
+
+                if (overtimeAmount > 0)
+                {
+                    var line = new PayrollLine(_guidGenerator.Create(), payrollRun.Id, emp.Id, overtimeItem.Id, overtimeAmount, CompensationNature.Allowance);
+                    payrollRun.Lines.Add(line);
+                    empEarnings += overtimeAmount;
+                }
+            }
+
+            // 3. Automated Absence Calculation
+            var absenceDays = empAttendance.Count(a => a.Status == AttendanceStatus.Absent);
+            if (absenceDays > 0 && absenceItem != null)
+            {
+                // Daily rate = Basic / 30
+                decimal dailyRate = (emp.BasicSalary ?? 0) / 30;
+                decimal absenceAmount = Math.Round(absenceDays * dailyRate, 2);
+
+                if (absenceAmount > 0)
+                {
+                    var line = new PayrollLine(_guidGenerator.Create(), payrollRun.Id, emp.Id, absenceItem.Id, absenceAmount, CompensationNature.Deduction);
+                    payrollRun.Lines.Add(line);
+                    empDeductions += absenceAmount;
+                }
+            }
+
+            totalEarnings += empEarnings;
+            totalDeductions += empDeductions;
         }
 
         payrollRun.TotalEarnings = totalEarnings;
@@ -721,6 +766,48 @@ public class HRAppService : ApplicationService
         entity.CalculateWorkedHours();
         await _dailyAttendanceRepository.UpdateAsync(entity);
         return ObjectMapper.Map<DailyAttendance, DailyAttendanceDto>(entity);
+    }
+
+    [Authorize(HISPermissions.HR.Attendance)]
+    public async Task ImportAttendanceAsync(IRemoteStreamContent file)
+    {
+        using (var stream = file.GetStream())
+        {
+            var rows = stream.Query().ToList();
+            var employees = await _employeeRepository.GetListAsync();
+            var empDict = employees.ToDictionary(e => e.EmployeeNumber, e => e.Id);
+
+            foreach (var row in rows)
+            {
+                // Expected columns: EmployeeNumber, Date, CheckInTime, CheckOutTime
+                IDictionary<string, object> rowDict = row;
+                string empNum = rowDict.ContainsKey("EmployeeNumber") ? rowDict["EmployeeNumber"]?.ToString() : null;
+                if (string.IsNullOrEmpty(empNum) || !empDict.ContainsKey(empNum)) continue;
+
+                if (!DateTime.TryParse(rowDict.ContainsKey("Date") ? rowDict["Date"]?.ToString() : null, out DateTime date)) continue;
+
+                var attendance = await _dailyAttendanceRepository.FirstOrDefaultAsync(x => x.EmployeeId == empDict[empNum] && x.Date.Date == date.Date);
+                
+                if (attendance == null)
+                {
+                    attendance = new DailyAttendance(_guidGenerator.Create(), CurrentTenant.Id, empDict[empNum], date.Date);
+                    await _dailyAttendanceRepository.InsertAsync(attendance);
+                }
+
+                if (DateTime.TryParse(rowDict.ContainsKey("CheckInTime") ? rowDict["CheckInTime"]?.ToString() : null, out DateTime checkIn))
+                {
+                    attendance.CheckInTime = new DateTime(date.Year, date.Month, date.Day, checkIn.Hour, checkIn.Minute, 0);
+                }
+
+                if (DateTime.TryParse(rowDict.ContainsKey("CheckOutTime") ? rowDict["CheckOutTime"]?.ToString() : null, out DateTime checkOut))
+                {
+                    attendance.CheckOutTime = new DateTime(date.Year, date.Month, date.Day, checkOut.Hour, checkOut.Minute, 0);
+                }
+
+                attendance.Status = AttendanceStatus.Present;
+                attendance.CalculateWorkedHours();
+            }
+        }
     }
 
     [Authorize(HISPermissions.HR.Attendance)]

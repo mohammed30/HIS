@@ -101,6 +101,7 @@ export class DailyAttendanceComponent implements OnInit {
             ],
             checkInTime: [this.selectedRecord.checkInTime ? new Date(this.selectedRecord.checkInTime).toTimeString().slice(0, 5) : nowTimeStr],
             checkOutTime: [this.selectedRecord.checkOutTime ? new Date(this.selectedRecord.checkOutTime).toTimeString().slice(0, 5) : ''],
+            overtimeHours: [this.selectedRecord.overtimeHours || 0],
             status: [this.selectedRecord.status ?? 0, Validators.required],
             notes: [this.selectedRecord.notes || ''],
         });
@@ -117,6 +118,7 @@ export class DailyAttendanceComponent implements OnInit {
             date: dateStr,
             checkInTime: formVal.checkInTime ? `${dateStr}T${formVal.checkInTime}:00` : null,
             checkOutTime: formVal.checkOutTime ? `${dateStr}T${formVal.checkOutTime}:00` : null,
+            overtimeHours: formVal.overtimeHours,
             status: formVal.status,
             notes: formVal.notes,
         };
@@ -139,6 +141,21 @@ export class DailyAttendanceComponent implements OnInit {
             if (status === Confirmation.Status.confirm) {
                 this.hrService.deleteDailyAttendance(id).subscribe(() => this.list.get());
             }
+        });
+    }
+
+    selectedFile: File | null = null;
+    onFileSelected(event: any) {
+        this.selectedFile = event.target.files[0];
+    }
+
+    importAttendance() {
+        if (!this.selectedFile) return;
+        
+        // Use any to avoid proxy interface mismatch if any
+        (this.hrService as any).importAttendance(this.selectedFile).subscribe(() => {
+            this.selectedFile = null;
+            this.list.get();
         });
     }
 }

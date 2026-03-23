@@ -7,4 +7,8 @@ export * from './purchase-requisition-status.enum';
 export * from './purchase-requisition.service';
 export * from './supplier.service';
 export * from './transaction-type.enum';
+export * from './internal-request-status.enum';
+export * from './internal-request.service';
+export * from './purchase-invoice-status.enum';
+export * from './purchase-invoice.service';
 export { Dtos };

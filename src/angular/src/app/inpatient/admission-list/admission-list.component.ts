@@ -15,6 +15,8 @@ import { PatientDto } from '@proxy/patients/models';
 import { MedicalOrderService } from '@proxy/clinical';
 import { OrderType } from '@proxy/clinical/order-type.enum';
 import { ServiceItemService } from '@proxy/services';
+import { PatientInsuranceService } from '@proxy/insurance';
+import { PatientInsuranceDto } from '@proxy/insurance/models';
 
 @Component({
   selector: 'app-admission-list',
@@ -39,10 +41,12 @@ export class AdmissionListComponent implements OnInit {
   private modalService = inject(NgbModal);
   private medicalOrderService = inject(MedicalOrderService);
   private serviceItemService = inject(ServiceItemService);
+  private patientInsuranceService = inject(PatientInsuranceService);
 
   admissions: AdmissionDto[] = [];
   selectedAdmission: AdmissionDto | null = null;
   roomTypes = roomTypeOptions;
+  provisionalInvoice: any = null;
 
   patients: PatientDto[] = [];
   filteredPatients: PatientDto[] = [];
@@ -50,6 +54,7 @@ export class AdmissionListComponent implements OnInit {
 
   availableRooms: RoomLookupDto[] = [];
   availableBedsList: BedDto[] = [];
+  patientInsurances: PatientInsuranceDto[] = [];
 
   transferRooms: RoomLookupDto[] = [];
   transferBeds: BedDto[] = [];
@@ -67,7 +72,8 @@ export class AdmissionListComponent implements OnInit {
     isServicesStopped: [false],
     pharmacyPercentage: [0],
     purpose: [''],
-    notes: ['']
+    notes: [''],
+    patientInsuranceId: [null as string | null]
   });
 
   dischargeForm = this.fb.group({
@@ -103,7 +109,8 @@ export class AdmissionListComponent implements OnInit {
     purpose: [''],
     notes: [''],
     numberOfDays: [0],
-    paidAmount: [0]
+    paidAmount: [0],
+    patientInsuranceId: [null as string | null]
   });
 
   paymentMethods = [
@@ -118,9 +125,27 @@ export class AdmissionListComponent implements OnInit {
     clinicalNotes: ['']
   });
 
+  labForm = this.fb.group({
+    serviceItemId: [null as string | null, Validators.required],
+    clinicalNotes: ['']
+  });
+
+  radiologyForm = this.fb.group({
+    serviceItemId: [null as string | null, Validators.required],
+    clinicalNotes: ['']
+  });
+
   consumableItems: any[] = [];
   filteredConsumableItems: any[] = [];
   consumableSearchTerm = '';
+
+  labItems: any[] = [];
+  filteredLabItems: any[] = [];
+  labSearchTerm = '';
+
+  radiologyItems: any[] = [];
+  filteredRadiologyItems: any[] = [];
+  radiologySearchTerm = '';
 
   ngOnInit() {
     this.loadAdmissions();
@@ -155,9 +180,15 @@ export class AdmissionListComponent implements OnInit {
       isServicesStopped: admission.isServicesStopped || false,
       pharmacyPercentage: admission.pharmacyPercentage || 0,
       purpose: admission.purpose || '',
-      notes: admission.notes || ''
+      notes: admission.notes || '',
+      patientInsuranceId: admission.patientInsuranceId || null
     });
     this.detailForm.markAsPristine();
+    if (admission.patientId) {
+      this.patientInsuranceService.getByPatient(admission.patientId).subscribe(res => {
+        this.patientInsurances = res || [];
+      });
+    }
   }
 
   saveDetails() {
@@ -188,7 +219,18 @@ export class AdmissionListComponent implements OnInit {
       dischargeDate: new Date().toISOString().substring(0, 16),
       notes: ''
     });
-    this.modalService.open(content, { centered: true });
+    this.admissionService.getProvisionalInvoice(this.selectedAdmission.id).subscribe((res) => {
+      this.provisionalInvoice = res;
+      this.modalService.open(content, { centered: true });
+    });
+  }
+
+  openProvisionalInvoiceModal(content: any) {
+    if (!this.selectedAdmission) return;
+    this.admissionService.getProvisionalInvoice(this.selectedAdmission.id).subscribe((res) => {
+      this.provisionalInvoice = res;
+      this.modalService.open(content, { centered: true, size: 'lg' });
+    });
   }
 
   confirmDischarge() {
@@ -205,6 +247,11 @@ export class AdmissionListComponent implements OnInit {
       const index = this.admissions.findIndex(x => x.id === updated.id);
       if (index > -1) {
         this.admissions[index] = updated;
+      }
+      
+      // Auto-print invoice if required or just show notification
+      if (updated.invoiceId) {
+        this.toaster.info('تم إنشاء الفاتورة النهائية للرقم المرجعي ' + updated.invoiceId, 'تنويه');
       }
     });
   }
@@ -355,6 +402,19 @@ export class AdmissionListComponent implements OnInit {
     );
   }
 
+  onPatientSelect(patient: PatientDto) {
+    this.newAdmissionForm.get('patientId')?.setValue(patient.id);
+    this.patientSearchTerm = patient.fullNameAr || '';
+    this.patientInsurances = [];
+    this.patientInsuranceService.getByPatient(patient.id).subscribe(res => {
+      this.patientInsurances = res || [];
+      if (this.patientInsurances.length > 0) {
+          const primary = this.patientInsurances.find(x => x.isPrimary) || this.patientInsurances[0];
+          this.newAdmissionForm.get('patientInsuranceId')?.setValue(primary.id);
+      }
+    });
+  }
+
   onNewAdmissionRoomTypeChange() {
     this.newAdmissionForm.patchValue({ roomId: null, bedId: null });
     this.availableRooms = [];
@@ -424,9 +484,100 @@ export class AdmissionListComponent implements OnInit {
     const formVal = this.consumableForm.value;
     this.medicalOrderService.create({
       patientId: this.selectedAdmission.patientId,
+      admissionId: this.selectedAdmission.id,
       serviceItemId: formVal.serviceItemId!,
       type: OrderType.Consumable,
       quantity: formVal.quantity || 1,
+      clinicalNotes: formVal.clinicalNotes || ''
+    } as any).subscribe(() => {
+      this.toaster.success('::SuccessfullySaved');
+      this.modalService.dismissAll();
+    });
+  }
+
+  // Lab Ordering
+  openLabModal(content: any) {
+    if (!this.selectedAdmission) return;
+    this.labForm.reset({ serviceItemId: null, clinicalNotes: '' });
+    this.labSearchTerm = '';
+    this.filteredLabItems = [];
+
+    // Load Lab service items (category = 2 = LabTest)
+    this.serviceItemService.getList({ maxResultCount: 500 } as any).subscribe(res => {
+      this.labItems = (res.items || []).filter((item: any) => item.category === 2);
+      this.filteredLabItems = [...this.labItems];
+    });
+
+    this.modalService.open(content, { centered: true });
+  }
+
+  filterLab() {
+    const term = this.labSearchTerm.toLowerCase();
+    if (!term) {
+      this.filteredLabItems = [...this.labItems];
+      return;
+    }
+    this.filteredLabItems = this.labItems.filter((item: any) =>
+      (item.name && item.name.toLowerCase().includes(term)) ||
+      (item.code && item.code.toLowerCase().includes(term))
+    );
+  }
+
+  confirmLabOrder() {
+    if (!this.selectedAdmission || this.labForm.invalid) return;
+
+    const formVal = this.labForm.value;
+    this.medicalOrderService.create({
+      patientId: this.selectedAdmission.patientId,
+      admissionId: this.selectedAdmission.id,
+      serviceItemId: formVal.serviceItemId!,
+      type: OrderType.Lab,
+      quantity: 1,
+      clinicalNotes: formVal.clinicalNotes || ''
+    } as any).subscribe(() => {
+      this.toaster.success('::SuccessfullySaved');
+      this.modalService.dismissAll();
+    });
+  }
+
+  // Radiology Ordering
+  openRadiologyModal(content: any) {
+    if (!this.selectedAdmission) return;
+    this.radiologyForm.reset({ serviceItemId: null, clinicalNotes: '' });
+    this.radiologySearchTerm = '';
+    this.filteredRadiologyItems = [];
+
+    // Load Radiology service items (category = 3 = Radiology)
+    this.serviceItemService.getList({ maxResultCount: 500 } as any).subscribe(res => {
+      this.radiologyItems = (res.items || []).filter((item: any) => item.category === 3);
+      this.filteredRadiologyItems = [...this.radiologyItems];
+    });
+
+    this.modalService.open(content, { centered: true });
+  }
+
+  filterRadiology() {
+    const term = this.radiologySearchTerm.toLowerCase();
+    if (!term) {
+      this.filteredRadiologyItems = [...this.radiologyItems];
+      return;
+    }
+    this.filteredRadiologyItems = this.radiologyItems.filter((item: any) =>
+      (item.name && item.name.toLowerCase().includes(term)) ||
+      (item.code && item.code.toLowerCase().includes(term))
+    );
+  }
+
+  confirmRadiologyOrder() {
+    if (!this.selectedAdmission || this.radiologyForm.invalid) return;
+
+    const formVal = this.radiologyForm.value;
+    this.medicalOrderService.create({
+      patientId: this.selectedAdmission.patientId,
+      admissionId: this.selectedAdmission.id,
+      serviceItemId: formVal.serviceItemId!,
+      type: OrderType.Radiology,
+      quantity: 1,
       clinicalNotes: formVal.clinicalNotes || ''
     } as any).subscribe(() => {
       this.toaster.success('::SuccessfullySaved');

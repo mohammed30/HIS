@@ -42,6 +42,8 @@ public enum ServiceType
     Consumables = 6,
     /// <summary>عملية جراحية</summary>
     Surgery = 7,
+    /// <summary>جراحي</summary>
+    Surgical = 8,
     /// <summary>أخرى</summary>
     Other = 99
 }

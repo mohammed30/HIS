@@ -44,6 +44,13 @@ export class AdmissionService {
     },
     { apiName: this.apiName,...config });
   
+  getProvisionalInvoice = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, any>({
+      method: 'GET',
+      url: `/api/app/admission/${id}/provisional-invoice`,
+    },
+    { apiName: this.apiName,...config });
+  
 
   getList = (input: GetAdmissionsInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<AdmissionDto>>({

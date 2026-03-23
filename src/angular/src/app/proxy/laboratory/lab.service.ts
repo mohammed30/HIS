@@ -146,6 +146,14 @@ export class LabService {
       url: `/api/app/lab/result-pdf/${id}`,
     },
     { apiName: this.apiName,...config });
+
+  getSampleBarcodePdf = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: `/api/app/lab/sample-barcode-pdf/${id}`,
+    },
+    { apiName: this.apiName,...config });
   
 
   getTests = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>

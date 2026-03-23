@@ -53,6 +53,11 @@ public class Employee : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public string? Phone { get; set; }
 
     /// <summary>
+    /// البريد الإلكتروني
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>
     /// المؤهل العلمي
     /// </summary>
     public string? Qualification { get; set; }
@@ -81,6 +86,11 @@ public class Employee : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// رقم الحساب البنكي
     /// </summary>
     public string? BankAccountNumber { get; set; }
+
+    /// <summary>
+    /// رقم الآيبان
+    /// </summary>
+    public string? IBAN { get; set; }
 
     // ======== القسم والتخصص ========
 

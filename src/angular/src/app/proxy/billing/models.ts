@@ -53,6 +53,7 @@ export interface CreateUpdateInvoiceItemDto {
   quantity?: number;
   unitPrice?: number;
   discountPercentage?: number;
+  discountAmount?: number;
   isCoveredByInsurance?: boolean;
   notes?: string;
 }

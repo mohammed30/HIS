@@ -1,6 +1,7 @@
 using AutoMapper;
 using HIS.Settings;
 using HIS.Settings.Dtos;
+using Volo.Abp.AutoMapper;
 
 namespace HIS;
 
@@ -24,7 +25,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Clinic, ClinicDto>();
         CreateMap<CreateUpdateClinicDto, Clinic>();
 
-        CreateMap<Doctor, DoctorDto>();
+        CreateMap<Doctor, DoctorDto>()
+            .ForMember(x => x.ClinicName, map => map.MapFrom(s => s.ClinicId != null ? "Clinic Name" : null)); // Will be populated in AppService if needed, or via Include
         CreateMap<CreateUpdateDoctorDto, Doctor>();
         
         CreateMap<Appointments.Appointment, Appointments.Dtos.AppointmentDto>()
@@ -100,6 +102,9 @@ public class HISApplicationAutoMapperProfile : Profile
         
         CreateMap<Insurance.PatientInsurance, Insurance.PatientInsuranceDto>();
         CreateMap<Insurance.CreateUpdatePatientInsuranceDto, Insurance.PatientInsurance>();
+
+        CreateMap<Insurance.InsuranceServicePrice, Insurance.InsuranceServicePriceDto>();
+        CreateMap<Insurance.CreateUpdateInsuranceServicePriceDto, Insurance.InsuranceServicePrice>();
 
         // Billing
         CreateMap<Billing.Invoice, Billing.InvoiceDto>();
@@ -197,6 +202,23 @@ public class HISApplicationAutoMapperProfile : Profile
             .ForMember(x => x.ProductName, opt => opt.Ignore());
         CreateMap<Inventory.Dtos.CreateUpdatePurchaseRequisitionDto, Inventory.PurchaseRequisition>();
         CreateMap<Inventory.Dtos.CreateUpdatePurchaseRequisitionLineDto, Inventory.PurchaseRequisitionLine>();
+
+        CreateMap<Inventory.InternalRequest, Inventory.Dtos.InternalRequestDto>()
+            .ForMember(x => x.RequestingDepartmentName, opt => opt.Ignore())
+            .ForMember(x => x.FulfilledByWarehouseName, opt => opt.Ignore());
+        CreateMap<Inventory.InternalRequestLine, Inventory.Dtos.InternalRequestLineDto>()
+            .ForMember(x => x.InventoryItemName, opt => opt.Ignore());
+        CreateMap<Inventory.Dtos.CreateUpdateInternalRequestDto, Inventory.InternalRequest>();
+        CreateMap<Inventory.Dtos.CreateUpdateInternalRequestLineDto, Inventory.InternalRequestLine>();
+
+        CreateMap<Inventory.PurchaseInvoice, Inventory.Dtos.PurchaseInvoiceDto>()
+            .ForMember(x => x.SupplierName, opt => opt.Ignore())
+            .ForMember(x => x.PurchaseOrderNumber, opt => opt.Ignore());
+        CreateMap<Inventory.PurchaseInvoiceLine, Inventory.Dtos.PurchaseInvoiceLineDto>()
+            .ForMember(x => x.ProductName, opt => opt.Ignore());
+        CreateMap<Inventory.Dtos.CreateUpdatePurchaseInvoiceDto, Inventory.PurchaseInvoice>()
+             .IgnoreFullAuditedObjectProperties();
+        CreateMap<Inventory.Dtos.CreateUpdatePurchaseInvoiceLineDto, Inventory.PurchaseInvoiceLine>();
 
         // General Master Data (Definitions)
         CreateMap<General.Nationality, General.NationalityDto>();

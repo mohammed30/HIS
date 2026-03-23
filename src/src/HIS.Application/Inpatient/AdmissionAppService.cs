@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
 using HIS.Patients;
 using HIS.Rooms;
+using HIS.Clinical;
+using HIS.Operations;
+using HIS.Insurance;
 
 namespace HIS.Inpatient;
 
@@ -30,6 +33,11 @@ public class AdmissionAppService : CrudAppService<
     private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
     private readonly IRepository<HIS.Billing.InpatientDeposit, Guid> _inpatientDepositRepository;
     private readonly IRepository<PatientTransfer, Guid> _patientTransferRepository;
+    private readonly IRepository<SurgicalOperation, Guid> _surgicalOperationRepository;
+    private readonly IRepository<PatientInsurance, Guid> _patientInsuranceRepository;
+    private readonly IRepository<InsurancePlan, Guid> _insurancePlanRepository;
+    private readonly IRepository<InsuranceServicePrice, Guid> _insurancePriceRepository;
+    private readonly IRepository<Clinical.MedicalOrder, Guid> _medicalOrderRepository;
     private readonly HIS.Billing.IInvoiceAppService _invoiceAppService;
 
     public AdmissionAppService(
@@ -41,6 +49,11 @@ public class AdmissionAppService : CrudAppService<
         IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
         IRepository<HIS.Billing.InpatientDeposit, Guid> inpatientDepositRepository,
         IRepository<PatientTransfer, Guid> patientTransferRepository,
+        IRepository<SurgicalOperation, Guid> surgicalOperationRepository,
+        IRepository<PatientInsurance, Guid> patientInsuranceRepository,
+        IRepository<InsurancePlan, Guid> insurancePlanRepository,
+        IRepository<InsuranceServicePrice, Guid> insurancePriceRepository,
+        IRepository<Clinical.MedicalOrder, Guid> medicalOrderRepository,
         HIS.Billing.IInvoiceAppService invoiceAppService) : base(repository)
     {
         _patientRepository = patientRepository;
@@ -50,6 +63,11 @@ public class AdmissionAppService : CrudAppService<
         _journalEntryRepository = journalEntryRepository;
         _inpatientDepositRepository = inpatientDepositRepository;
         _patientTransferRepository = patientTransferRepository;
+        _surgicalOperationRepository = surgicalOperationRepository;
+        _patientInsuranceRepository = patientInsuranceRepository;
+        _insurancePlanRepository = insurancePlanRepository;
+        _insurancePriceRepository = insurancePriceRepository;
+        _medicalOrderRepository = medicalOrderRepository;
         _invoiceAppService = invoiceAppService;
     }
 
@@ -84,7 +102,8 @@ public class AdmissionAppService : CrudAppService<
             Purpose = input.Purpose,
             PharmacyPercentage = input.PharmacyPercentage,
             IsServicesStopped = input.IsServicesStopped,
-            Notes = input.Notes
+            Notes = input.Notes,
+            PatientInsuranceId = input.PatientInsuranceId
         };
 
         await Repository.InsertAsync(admission);
@@ -167,6 +186,33 @@ public class AdmissionAppService : CrudAppService<
         decimal currentStayCharges = currentStayDays * room.DailyRate;
         admission.TotalAmount = admission.AccumulatedRoomCharges + currentStayCharges;
         
+        // Handle Medical Orders
+        var medicalOrderRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Clinical.MedicalOrder, Guid>>();
+        var orders = await medicalOrderRepo.GetListAsync(x => x.AdmissionId == admission.Id && x.Status != OrderStatus.Cancelled);
+        foreach (var order in orders)
+        {
+            admission.TotalAmount += (order.Price * order.Quantity);
+        }
+
+        // Handle Surgical Operations
+        var operations = await _surgicalOperationRepository.GetListAsync(x => x.AdmissionId == admission.Id && x.Status != OperationStatus.Cancelled);
+        foreach (var op in operations)
+        {
+            admission.TotalAmount += op.TotalAmount;
+        }
+
+        // --- Insurance Calculation Logic ---
+        decimal totalInsuranceShare = 0;
+        InsurancePlan? plan = null;
+        if (admission.PatientInsuranceId.HasValue)
+        {
+            var patientInsurance = await _patientInsuranceRepository.FindAsync(admission.PatientInsuranceId.Value);
+            if (patientInsurance != null && patientInsurance.Status == PatientInsuranceStatus.Active)
+            {
+                plan = await _insurancePlanRepository.FindAsync(patientInsurance.InsurancePlanId);
+            }
+        }
+        
         // Handle Advance Payments (Deposits)
         var activeDeposits = await _inpatientDepositRepository.GetListAsync(d => d.AdmissionId == id && d.Status == HIS.Billing.DepositStatus.Active);
         if (activeDeposits.Any())
@@ -193,17 +239,75 @@ public class AdmissionAppService : CrudAppService<
         // Add Room Charges
         if (admission.TotalAmount > 0)
         {
+            // room is already fetched on line 182
+            string roomServiceCode = GetRoomServiceCode(room.Type);
+            decimal dailyRate = await GetServicePriceAsync(admission.PatientInsuranceId, roomServiceCode, room.DailyRate);
+
+            decimal itemAmount = (admission.NumberOfDays * dailyRate) + admission.AccumulatedRoomCharges;
+            decimal insuranceShare = (plan != null && plan.IncludesInpatient) ? (itemAmount * (plan.CoveragePercentage / 100)) : 0;
+            totalInsuranceShare += insuranceShare;
+
             invoiceInput.Items.Add(new HIS.Billing.CreateUpdateInvoiceItemDto
             {
-                ServiceType = HIS.Billing.ServiceType.Consultation, // Or better map to RoomCharge
-                Description = $"رسوم إقامة الغرف - {admission.NumberOfDays} يوم",
-                UnitPrice = admission.TotalAmount, // This includes surgeries and accumulated charges added to TotalAmount
-                Quantity = 1,
-                IsCoveredByInsurance = admission.InsuranceAmount > 0
+                ServiceType = HIS.Billing.ServiceType.Inpatient, 
+                Description = $"رسوم إقامة الغرف ({room.RoomNumber}) - {admission.NumberOfDays} يوم",
+                UnitPrice = dailyRate,
+                Quantity = admission.NumberOfDays,
+                IsCoveredByInsurance = insuranceShare > 0,
+                DiscountAmount = insuranceShare
             });
         }
 
-        // Deduct Deposits as lines or apply immediately 
+        // Add Medical Orders
+        foreach (var order in orders)
+        {
+            decimal itemAmount = order.Price * order.Quantity;
+            decimal insuranceShare = 0;
+            if (plan != null)
+            {
+                bool isCovered = (order.Type == OrderType.Lab && plan.IncludesLab) ||
+                                (order.Type == OrderType.Radiology && plan.IncludesRadiology) ||
+                                ((order.Type == OrderType.Medication || order.Type == OrderType.Consumable) && plan.IncludesMedications);
+                insuranceShare = isCovered ? (itemAmount * (plan.CoveragePercentage / 100)) : 0;
+            }
+            totalInsuranceShare += insuranceShare;
+
+            invoiceInput.Items.Add(new HIS.Billing.CreateUpdateInvoiceItemDto
+            {
+                ServiceType = order.Type == OrderType.Lab ? HIS.Billing.ServiceType.Laboratory :
+                              order.Type == OrderType.Radiology ? HIS.Billing.ServiceType.Radiology :
+                              order.Type == OrderType.Consumable ? HIS.Billing.ServiceType.Consumables : 
+                              HIS.Billing.ServiceType.Other, 
+                Description = order.ServiceName ?? "خدمة طبية",
+                UnitPrice = order.Price,
+                Quantity = order.Quantity,
+                IsCoveredByInsurance = insuranceShare > 0,
+                DiscountAmount = insuranceShare
+            });
+        }
+
+        // Add Surgical Operations
+        foreach (var op in operations)
+        {
+            decimal itemAmount = op.TotalAmount;
+            decimal insuranceShare = (plan != null && plan.IncludesInpatient) ? (itemAmount * (plan.CoveragePercentage / 100)) : 0;
+            totalInsuranceShare += insuranceShare;
+
+            invoiceInput.Items.Add(new HIS.Billing.CreateUpdateInvoiceItemDto
+            {
+                ServiceType = HIS.Billing.ServiceType.Surgical,
+                Description = op.OperationName ?? "عملية جراحية",
+                UnitPrice = op.TotalAmount,
+                Quantity = 1,
+                IsCoveredByInsurance = insuranceShare > 0,
+                DiscountAmount = insuranceShare
+            });
+        }
+
+        admission.InsuranceAmount = totalInsuranceShare;
+        // Proceed with Invoice Creation
+
+        // Deduct Deposits as lines or apply immediately  
         // We handle this by setting PaidAmount on the invoice directly, but since CreateAsync doesn't accept PaidAmount directly, 
         // we'll fetch the created invoice and update it or create a payment record.
         var invoice = await _invoiceAppService.CreateAsync(invoiceInput);
@@ -240,6 +344,133 @@ public class AdmissionAppService : CrudAppService<
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
         await EnrichAdmissionDtoAsync(dto);
         return dto;
+    }
+
+    /// <summary>
+    /// عرض الفاتورة المبدئية
+    /// </summary>
+    public async Task<HIS.Billing.InvoiceDto> GetProvisionalInvoiceAsync(Guid id)
+    {
+        var admission = await Repository.GetAsync(id);
+        var patient = await _patientRepository.GetAsync(admission.PatientId);
+        var room = await _roomRepository.GetAsync(admission.RoomId);
+
+        var invoiceDto = new HIS.Billing.InvoiceDto
+        {
+            PatientId = admission.PatientId,
+            PatientName = !string.IsNullOrWhiteSpace(patient.FullNameAr) ? patient.FullNameAr : patient.MRN,
+            InvoiceDate = DateTime.Now,
+            Status = HIS.Billing.InvoiceStatus.Draft,
+            Items = new System.Collections.Generic.List<HIS.Billing.InvoiceItemDto>()
+        };
+
+        // 1. Room Charges
+        int currentStayDays = (int)(DateTime.Now - admission.LastTransferDate).TotalDays;
+        if (currentStayDays < 1 && admission.AccumulatedRoomCharges == 0) currentStayDays = 1;
+        
+        string roomServiceCode = GetRoomServiceCode(room.Type);
+        decimal dailyRate = await GetServicePriceAsync(admission.PatientInsuranceId, roomServiceCode, room.DailyRate);
+        
+        decimal currentStayCharges = currentStayDays * dailyRate;
+        decimal totalRoomCharges = admission.AccumulatedRoomCharges + currentStayCharges;
+
+        // --- Insurance Calculation Logic ---
+        decimal totalInsuranceShare = 0;
+        InsurancePlan? plan = null;
+        if (admission.PatientInsuranceId.HasValue)
+        {
+            var patientInsurance = await _patientInsuranceRepository.FindAsync(admission.PatientInsuranceId.Value);
+            if (patientInsurance != null && patientInsurance.Status == PatientInsuranceStatus.Active)
+            {
+                plan = await _insurancePlanRepository.FindAsync(patientInsurance.InsurancePlanId);
+            }
+        }
+
+        // 1. Room Charges
+        if (totalRoomCharges > 0)
+        {
+            decimal insuranceShare = (plan != null && plan.IncludesInpatient) ? (totalRoomCharges * (plan.CoveragePercentage / 100)) : 0;
+            totalInsuranceShare += insuranceShare;
+
+            invoiceDto.Items.Add(new HIS.Billing.InvoiceItemDto
+            {
+                ServiceType = HIS.Billing.ServiceType.Inpatient, 
+                Description = $"رسوم إقامة الغرف ({room.RoomNumber}) - حتى تاريخه",
+                Quantity = currentStayDays, // Number of days including transfers
+                UnitPrice = dailyRate,
+                TotalPrice = totalRoomCharges,
+                IsCoveredByInsurance = insuranceShare > 0,
+                DiscountAmount = insuranceShare
+            });
+            invoiceDto.TotalAmount += totalRoomCharges;
+            invoiceDto.NetAmount += (totalRoomCharges - insuranceShare);
+        }
+
+        // 2. Medical Orders (Lab, Radiology, Consumables, Medications)
+        var medicalOrderRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Clinical.MedicalOrder, Guid>>();
+        var orders = await medicalOrderRepo.GetListAsync(x => x.AdmissionId == id && x.Status != OrderStatus.Cancelled);
+        
+        foreach (var order in orders)
+        {
+            decimal itemTotal = order.Price * order.Quantity;
+            decimal insuranceShare = 0;
+            if (plan != null)
+            {
+                bool isCovered = (order.Type == OrderType.Lab && plan.IncludesLab) ||
+                                (order.Type == OrderType.Radiology && plan.IncludesRadiology) ||
+                                ((order.Type == OrderType.Medication || order.Type == OrderType.Consumable) && plan.IncludesMedications);
+                insuranceShare = isCovered ? (itemTotal * (plan.CoveragePercentage / 100)) : 0;
+            }
+            totalInsuranceShare += insuranceShare;
+
+            invoiceDto.Items.Add(new HIS.Billing.InvoiceItemDto
+            {
+                ServiceType = order.Type == OrderType.Lab ? HIS.Billing.ServiceType.Laboratory :
+                              order.Type == OrderType.Radiology ? HIS.Billing.ServiceType.Radiology :
+                              order.Type == OrderType.Consumable ? HIS.Billing.ServiceType.Consumables : 
+                              HIS.Billing.ServiceType.Other, 
+                Description = order.ServiceName ?? "خدمة طبية",
+                Quantity = order.Quantity,
+                UnitPrice = order.Price,
+                TotalPrice = itemTotal,
+                IsCoveredByInsurance = insuranceShare > 0,
+                DiscountAmount = insuranceShare
+            });
+            invoiceDto.TotalAmount += itemTotal;
+            invoiceDto.NetAmount += (itemTotal - insuranceShare);
+        }
+
+        // 3. Surgical Operations
+        var operations = await _surgicalOperationRepository.GetListAsync(x => x.AdmissionId == id && x.Status != OperationStatus.Cancelled);
+        foreach (var op in operations)
+        {
+            decimal itemTotal = op.TotalAmount;
+            decimal insuranceShare = (plan != null && plan.IncludesInpatient) ? (itemTotal * (plan.CoveragePercentage / 100)) : 0;
+            totalInsuranceShare += insuranceShare;
+
+            invoiceDto.Items.Add(new HIS.Billing.InvoiceItemDto
+            {
+                ServiceType = HIS.Billing.ServiceType.Surgical,
+                Description = op.OperationName ?? "عملية جراحية",
+                Quantity = 1,
+                UnitPrice = itemTotal,
+                TotalPrice = itemTotal,
+                IsCoveredByInsurance = insuranceShare > 0,
+                DiscountAmount = insuranceShare
+            });
+            invoiceDto.TotalAmount += itemTotal;
+            invoiceDto.NetAmount += (itemTotal - insuranceShare);
+        }
+
+        // 3. Paid Amount (Deposits)
+        var activeDeposits = await _inpatientDepositRepository.GetListAsync(d => d.AdmissionId == id && d.Status == HIS.Billing.DepositStatus.Active);
+        decimal totalDeposits = activeDeposits.Sum(d => d.Amount);
+        
+        invoiceDto.PaidAmount = admission.PaidAmount + totalDeposits;
+        invoiceDto.DueAmount = invoiceDto.NetAmount - invoiceDto.PaidAmount;
+        if (invoiceDto.DueAmount < 0) invoiceDto.DueAmount = 0;
+
+        return invoiceDto;
     }
 
     /// <summary>
@@ -426,5 +657,36 @@ public class AdmissionAppService : CrudAppService<
                 dto.BedNumber = bed.BedNumber;
             }
         }
+    }
+
+    private string GetRoomServiceCode(RoomType type)
+    {
+        return type switch
+        {
+            RoomType.Standard => "ROOM-STD",
+            RoomType.Private => "ROOM-PRV",
+            RoomType.ICU => "ROOM-ICU",
+            RoomType.Suite => "ROOM-SUI",
+            RoomType.Isolation => "ROOM-ISO",
+            _ => "ROOM-STD"
+        };
+    }
+
+    private async Task<decimal> GetServicePriceAsync(Guid? patientInsuranceId, string serviceCode, decimal defaultPrice)
+    {
+        if (!patientInsuranceId.HasValue) return defaultPrice;
+
+        var patientInsurance = await _patientInsuranceRepository.FindAsync(patientInsuranceId.Value);
+        if (patientInsurance == null) return defaultPrice;
+
+        var serviceItemRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Services.ServiceItem, Guid>>();
+        var serviceItem = await serviceItemRepo.FirstOrDefaultAsync(s => s.Code == serviceCode);
+        if (serviceItem == null) return defaultPrice;
+
+        var customPrice = await _insurancePriceRepository.FirstOrDefaultAsync(x => 
+            x.InsurancePlanId == patientInsurance.InsurancePlanId && 
+            x.ServiceItemId == serviceItem.Id);
+
+        return customPrice != null ? customPrice.CustomPrice : defaultPrice;
     }
 }

@@ -75,6 +75,7 @@ public class CreateUpdateInvoiceItemDto
     public decimal Quantity { get; set; } = 1;
     public decimal UnitPrice { get; set; }
     public decimal DiscountPercentage { get; set; }
+    public decimal DiscountAmount { get; set; }
     public bool IsCoveredByInsurance { get; set; } = true;
     public string? Notes { get; set; }
 }

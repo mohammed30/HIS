@@ -41,6 +41,7 @@ public class LabRequestDto : AuditedEntityDto<Guid>
     
     public DateTime RequestDate { get; set; }
     public LabRequestStatus Status { get; set; }
+    public string? SampleNumber { get; set; }
     public string Result { get; set; }
     public string Notes { get; set; }
 }

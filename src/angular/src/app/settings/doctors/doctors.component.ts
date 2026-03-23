@@ -12,7 +12,11 @@ interface Doctor {
   nameAr: string;
   nameEn: string;
   specialtyId: string;
+  specialtyName?: string;
   departmentId: string;
+  departmentName?: string;
+  clinicId?: string;
+  clinicName?: string;
   mobile?: string;
   email?: string;
   nationalId?: string;
@@ -100,6 +104,7 @@ interface Lookup {
                       <i class="fas fa-sort text-muted ms-1"></i>
                     }
                   </th>
+                  <th>العيادة</th>
                   <th>الجوال</th>
                   <th>الحالة</th>
                   <th>الإجراءات</th>
@@ -184,9 +189,9 @@ interface Lookup {
                       }
                     </select>
                   </div>
-                  <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-3">
                     <label class="form-label">القسم *</label>
-                    <select class="form-select" [(ngModel)]="formData.departmentId" required>
+                    <select class="form-select" [(ngModel)]="formData.departmentId" (change)="onDepartmentChange()" required>
                       <option value="">اختر القسم</option>
                       @for (dept of departments; track dept.id) {
                         <option [value]="dept.id">{{ dept.name }}</option>
@@ -197,24 +202,35 @@ interface Lookup {
 
                 <div class="row">
                   <div class="col-md-6 mb-3">
+                    <label class="form-label">العيادة</label>
+                    <select class="form-select" [(ngModel)]="formData.clinicId">
+                      <option value="">اختر العيادة (اختياري)</option>
+                      @for (clinic of filteredClinics; track clinic.id) {
+                        <option [value]="clinic.id">{{ clinic.name }}</option>
+                      }
+                    </select>
+                  </div>
+                   <div class="col-md-6 mb-3">
                     <label class="form-label">الجوال</label>
                     <input type="text" class="form-control" [(ngModel)]="formData.mobile">
                   </div>
-                   <div class="col-md-6 mb-3">
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
                     <label class="form-label">البريد الإلكتروني</label>
                     <input type="email" class="form-control" [(ngModel)]="formData.email">
                   </div>
-                </div>
-                  <div class="mb-3">
+                  <div class="col-md-6 mb-3">
                     <label class="form-label">رقم الهوية</label>
                     <input type="text" class="form-control" [(ngModel)]="formData.nationalId">
                   </div>
+                </div>
 
-                  <div class="row">
-                    <div class="col-md-4 mb-3">
-                      <label class="form-label">سعر الكشف (عام)</label>
-                      <input type="number" class="form-control" [(ngModel)]="formData.consultationFee">
-                    </div>
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">سعر الكشف (عام)</label>
+                    <input type="number" class="form-control" [(ngModel)]="formData.consultationFee">
+                  </div>
                     <div class="col-md-4 mb-3">
                       <label class="form-label">سعر الكشف (صباحي)</label>
                       <input type="number" class="form-control" [(ngModel)]="formData.morningConsultationFee">
@@ -252,6 +268,8 @@ export class DoctorsComponent implements OnInit {
   items: Doctor[] = [];
   departments: Lookup[] = [];
   specialties: Lookup[] = [];
+  allClinics: any[] = [];
+  filteredClinics: Lookup[] = [];
 
   searchText = '';
   showForm = false;
@@ -270,8 +288,47 @@ export class DoctorsComponent implements OnInit {
     this.loadLookups();
   }
 
+  loadLookups() {
+    // Load only medical departments for doctor assignment
+    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/medical-departments-lookup').subscribe({
+      next: (res) => this.departments = res,
+      error: (err) => console.error(err)
+    });
+    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/specialty/lookup').subscribe({
+      next: (res) => this.specialties = res,
+      error: (err) => console.error(err)
+    });
+    // Load clinics but keep them all for filtering
+    this.http.get<any[]>(environment.apis.default.url + '/api/app/clinic/lookup').subscribe({
+      next: (res) => {
+        this.allClinics = res;
+        this.filterClinics();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  onDepartmentChange() {
+    this.formData.clinicId = '';
+    this.filterClinics();
+  }
+
+  filterClinics() {
+    if (!this.formData.departmentId) {
+      this.filteredClinics = [];
+      return;
+    }
+    // we need to know which department each clinic belongs to.
+    // The lookup might not have it. Let's check the Clinic DTO.
+    // Actually, I should probably call GetByDepartment if the lookup doesn't have it.
+    this.http.get<Lookup[]>(`${environment.apis.default.url}/api/app/clinic/by-department?departmentId=${this.formData.departmentId}`).subscribe({
+      next: (res) => this.filteredClinics = res,
+      error: (err) => console.error(err)
+    });
+  }
+
   getEmptyForm(): Partial<Doctor> {
-    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', mobile: '', email: '', nationalId: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true };
+    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', clinicId: '', mobile: '', email: '', nationalId: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true };
   }
 
   resetForm() { this.formData = this.getEmptyForm(); }
@@ -309,25 +366,6 @@ export class DoctorsComponent implements OnInit {
     this.loadData();
   }
 
-  loadLookups() {
-    // Load only medical departments for doctor assignment
-    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/medical-departments-lookup').subscribe({
-      next: (res) => this.departments = res,
-      error: (err) => console.error(err)
-    });
-    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/specialty/lookup').subscribe({
-      next: (res) => this.specialties = res,
-      error: (err) => console.error(err)
-    });
-  }
-
-  getDepartmentName(id?: string): string {
-    return this.departments.find(d => d.id === id)?.name || '-';
-  }
-  getSpecialtyName(id?: string): string {
-    return this.specialties.find(s => s.id === id)?.name || '-';
-  }
-
   search() {
     this.page = 1;
     this.loadData();
@@ -337,6 +375,15 @@ export class DoctorsComponent implements OnInit {
     this.editingItem = item;
     this.formData = { ...item };
     this.showForm = true;
+    this.filterClinics(); // Load clinics for the doctor's department
+  }
+
+  getDepartmentName(id?: string): string {
+    return this.departments.find(d => d.id === id)?.name || '-';
+  }
+
+  getSpecialtyName(id?: string): string {
+    return this.specialties.find(s => s.id === id)?.name || '-';
   }
 
   save() {

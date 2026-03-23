@@ -1,0 +1,11 @@
+﻿9c6cf5dd-4633-6dfd-2373-3a1fc36804a4 | Paracetamol + Caffeine | Panadol Extra
+c6ba7fe6-229a-a931-b88e-3a1fc36804c6 | Aspirin | Jusprin
+2d50dcb5-57d1-88b9-eb91-3a1fc36804c6 | Warfarin Sodium | Warfarin
+af945585-1aef-f093-736c-3a1fc36804c7 | Amoxicillin | Amoxil
+3096936d-474a-8c55-1489-3a1fc36804c8 | Amoxicillin + Clavulanic Acid | Augmentin
+95131f32-ddee-d631-2efd-3a1fc36804c8 | Pantoprazole | Pantoloc
+efa23273-96fb-a1a6-7ea5-3a1fc36804c8 | Ibuprofen | Brufen
+867d1d33-f49d-d970-94e9-3a1fc36804c8 | Metformin | Glucophage
+c46c4118-0581-53dd-a63e-3a1fc36804c8 | Atorvastatin | Lipitor
+2961728f-02ee-8f5a-ce7b-3a1fc36804c8 | Rosuvastatin | Crestor
+

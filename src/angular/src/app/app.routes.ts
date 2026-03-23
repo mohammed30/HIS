@@ -378,6 +378,18 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       },
       {
+        path: 'internal-requests',
+        loadComponent: () => import('./inventory/internal-requests/internal-requests').then(c => c.InternalRequestsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
+      },
+      {
+        path: 'purchase-invoices',
+        loadComponent: () => import('./inventory/purchase-invoices/purchase-invoices.component').then(c => c.PurchaseInvoicesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.PurchaseOrders' }
+      },
+      {
         path: 'suppliers',
         loadChildren: () => import('./inventory/suppliers/suppliers-module').then(m => m.SuppliersModule),
         canActivate: [permissionGuard],

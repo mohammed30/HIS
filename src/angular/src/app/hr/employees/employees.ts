@@ -63,11 +63,18 @@ export class Employees implements OnInit {
       nameAr: [this.selectedEmployee.nameAr || '', Validators.required],
       nameEn: [this.selectedEmployee.nameEn || '', Validators.required],
       phone: [this.selectedEmployee.phone || ''],
+      email: [this.selectedEmployee.email || '', [Validators.email]],
+      identityType: [this.selectedEmployee.identityType || null],
+      identityNumber: [this.selectedEmployee.identityNumber || ''],
       jobTitleId: [this.selectedEmployee.jobTitleId || null],
       jobTitle: [this.selectedEmployee.jobTitle || ''],
       hireDate: [
         this.selectedEmployee.hireDate ? new Date(this.selectedEmployee.hireDate).toISOString().split('T')[0] : null,
       ],
+      bankName: [this.selectedEmployee.bankName || ''],
+      bankAccountNumber: [this.selectedEmployee.bankAccountNumber || ''],
+      iban: [this.selectedEmployee.iban || ''],
+      basicSalary: [this.selectedEmployee.basicSalary || null],
       isActive: [this.selectedEmployee.isActive ?? true],
     });
   }

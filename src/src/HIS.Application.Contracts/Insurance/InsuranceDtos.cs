@@ -52,6 +52,7 @@ public class InsurancePlanDto : FullAuditedEntityDto<Guid>
     public string NameAr { get; set; } = string.Empty;
     public string? NameEn { get; set; }
     public InsurancePlanType PlanType { get; set; }
+    public InsurancePlanClass PlanClass { get; set; }
     public decimal CoveragePercentage { get; set; }
     public decimal? MaxCoverageAmount { get; set; }
     public decimal CoPaymentPercentage { get; set; }
@@ -72,6 +73,7 @@ public class CreateUpdateInsurancePlanDto
     public string NameAr { get; set; } = string.Empty;
     public string? NameEn { get; set; }
     public InsurancePlanType PlanType { get; set; } = InsurancePlanType.Individual;
+    public InsurancePlanClass PlanClass { get; set; } = InsurancePlanClass.ClassB;
     public decimal CoveragePercentage { get; set; } = 80;
     public decimal? MaxCoverageAmount { get; set; }
     public decimal CoPaymentPercentage { get; set; } = 20;
@@ -134,5 +136,32 @@ public class GetPatientInsurancesInput : PagedAndSortedResultRequestDto
     public Guid? PatientId { get; set; }
     public Guid? InsurancePlanId { get; set; }
     public PatientInsuranceStatus? Status { get; set; }
+}
+#endregion
+
+#region InsuranceServicePrice DTOs
+public class InsuranceServicePriceDto : FullAuditedEntityDto<Guid>
+{
+    public Guid InsurancePlanId { get; set; }
+    public string? InsurancePlanName { get; set; }
+    public Guid ServiceItemId { get; set; }
+    public string? ServiceItemName { get; set; }
+    public string? ServiceItemCode { get; set; }
+    public decimal CustomPrice { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class CreateUpdateInsuranceServicePriceDto
+{
+    public Guid InsurancePlanId { get; set; }
+    public Guid ServiceItemId { get; set; }
+    public decimal CustomPrice { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class GetInsuranceServicePricesInput : PagedAndSortedResultRequestDto
+{
+    public Guid? InsurancePlanId { get; set; }
+    public Guid? ServiceItemId { get; set; }
 }
 #endregion

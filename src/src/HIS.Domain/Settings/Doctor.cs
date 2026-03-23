@@ -37,6 +37,11 @@ public class Doctor : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public Guid DepartmentId { get; set; }
 
     /// <summary>
+    /// العيادة المرتبطة
+    /// </summary>
+    public Guid? ClinicId { get; set; }
+
+    /// <summary>
     /// رقم الترخيص الطبي
     /// </summary>
     public string? LicenseNumber { get; set; }

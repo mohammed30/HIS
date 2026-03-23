@@ -122,6 +122,8 @@ public class DoctorDto : FullAuditedEntityDto<Guid>
     public string? SpecialtyName { get; set; }
     public Guid DepartmentId { get; set; }
     public string? DepartmentName { get; set; }
+    public Guid? ClinicId { get; set; }
+    public string? ClinicName { get; set; }
     public string? LicenseNumber { get; set; }
     public DateTime? LicenseExpiryDate { get; set; }
     public string? MobileNumber { get; set; }
@@ -146,6 +148,7 @@ public class CreateUpdateDoctorDto
     public string? NameEn { get; set; }
     public Guid SpecialtyId { get; set; }
     public Guid DepartmentId { get; set; }
+    public Guid? ClinicId { get; set; }
     public string? LicenseNumber { get; set; }
     public DateTime? LicenseExpiryDate { get; set; }
     public string? MobileNumber { get; set; }

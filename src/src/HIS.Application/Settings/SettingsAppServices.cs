@@ -206,8 +206,19 @@ public class ClinicAppService : CrudAppService<Clinic, ClinicDto, Guid, GetClini
 [Authorize(HISPermissions.Settings.Default)]
 public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDoctorsInput, CreateUpdateDoctorDto>, IDoctorAppService
 {
-    public DoctorAppService(IRepository<Doctor, Guid> repository) : base(repository)
+    private readonly IRepository<Clinic, Guid> _clinicRepository;
+    private readonly IRepository<Department, Guid> _departmentRepository;
+    private readonly IRepository<Specialty, Guid> _specialtyRepository;
+
+    public DoctorAppService(
+        IRepository<Doctor, Guid> repository,
+        IRepository<Clinic, Guid> clinicRepository,
+        IRepository<Department, Guid> departmentRepository,
+        IRepository<Specialty, Guid> specialtyRepository) : base(repository)
     {
+        _clinicRepository = clinicRepository;
+        _departmentRepository = departmentRepository;
+        _specialtyRepository = specialtyRepository;
     }
 
     public override async Task<DoctorDto> CreateAsync(CreateUpdateDoctorDto input)
@@ -246,6 +257,29 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
                      .OrderBy(x => x.SortOrder).ThenBy(x => x.NameAr));
         
         return ObjectMapper.Map<List<Doctor>, List<DoctorDto>>(items);
+    }
+
+    protected override async Task<DoctorDto> MapToGetListOutputDtoAsync(Doctor entity)
+    {
+        return await MapToGetOutputDtoAsync(entity);
+    }
+
+    protected override async Task<DoctorDto> MapToGetOutputDtoAsync(Doctor entity)
+    {
+        var dto = await base.MapToGetOutputDtoAsync(entity);
+        if (entity.ClinicId.HasValue)
+        {
+            var clinic = await _clinicRepository.FindAsync(entity.ClinicId.Value);
+            dto.ClinicName = clinic?.NameAr;
+        }
+        
+        var dept = await _departmentRepository.FindAsync(entity.DepartmentId);
+        dto.DepartmentName = dept?.NameAr;
+
+        var specialty = await _specialtyRepository.FindAsync(entity.SpecialtyId);
+        dto.SpecialtyName = specialty?.NameAr;
+
+        return dto;
     }
 
     protected override async Task<IQueryable<Doctor>> CreateFilteredQueryAsync(GetDoctorsInput input)

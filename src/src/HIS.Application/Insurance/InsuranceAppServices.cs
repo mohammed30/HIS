@@ -198,6 +198,54 @@ public class PatientInsuranceAppService : CrudAppService<PatientInsurance, Patie
     }
 }
 
+
+
+/// <summary>
+/// خدمة تسعير الخدمات لشركات التأمين
+/// </summary>
+public class InsuranceServicePriceAppService : CrudAppService<InsuranceServicePrice, InsuranceServicePriceDto, Guid, GetInsuranceServicePricesInput, CreateUpdateInsuranceServicePriceDto>, IInsuranceServicePriceAppService
+{
+    private readonly IRepository<InsurancePlan, Guid> _planRepository;
+    private readonly IRepository<HIS.Services.ServiceItem, Guid> _serviceItemRepository;
+
+    public InsuranceServicePriceAppService(
+        IRepository<InsuranceServicePrice, Guid> repository,
+        IRepository<InsurancePlan, Guid> planRepository,
+        IRepository<HIS.Services.ServiceItem, Guid> serviceItemRepository) : base(repository)
+    {
+        _planRepository = planRepository;
+        _serviceItemRepository = serviceItemRepository;
+    }
+
+    public override async Task<InsuranceServicePriceDto> GetAsync(Guid id)
+    {
+        var entity = await Repository.GetAsync(id);
+        var dto = ObjectMapper.Map<InsuranceServicePrice, InsuranceServicePriceDto>(entity);
+        
+        var plan = await _planRepository.FindAsync(entity.InsurancePlanId);
+        dto.InsurancePlanName = plan?.NameAr;
+        
+        var service = await _serviceItemRepository.FindAsync(entity.ServiceItemId);
+        dto.ServiceItemName = service?.Name;
+        dto.ServiceItemCode = service?.Code;
+        
+        return dto;
+    }
+
+    protected override async Task<IQueryable<InsuranceServicePrice>> CreateFilteredQueryAsync(GetInsuranceServicePricesInput input)
+    {
+        var queryable = await Repository.GetQueryableAsync();
+
+        if (input.InsurancePlanId.HasValue)
+            queryable = queryable.Where(x => x.InsurancePlanId == input.InsurancePlanId);
+
+        if (input.ServiceItemId.HasValue)
+            queryable = queryable.Where(x => x.ServiceItemId == input.ServiceItemId);
+
+        return queryable;
+    }
+}
+
 #region Interfaces
 public interface IInsuranceCompanyAppService : ICrudAppService<InsuranceCompanyDto, Guid, GetInsuranceCompaniesInput, CreateUpdateInsuranceCompanyDto>
 {
@@ -212,6 +260,10 @@ public interface IInsurancePlanAppService : ICrudAppService<InsurancePlanDto, Gu
 public interface IPatientInsuranceAppService : ICrudAppService<PatientInsuranceDto, Guid, GetPatientInsurancesInput, CreateUpdatePatientInsuranceDto>
 {
     Task<List<PatientInsuranceDto>> GetByPatientAsync(Guid patientId);
+}
+
+public interface IInsuranceServicePriceAppService : ICrudAppService<InsuranceServicePriceDto, Guid, GetInsuranceServicePricesInput, CreateUpdateInsuranceServicePriceDto>
+{
 }
 
 public class LookupDto

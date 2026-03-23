@@ -132,6 +132,15 @@
                                                 formControlName="pharmacyPercentage">
                                         </div>
                                     </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted">الجهة الضامنة / التأمين</label>
+                                        <select class="form-select form-select-sm" formControlName="patientInsuranceId">
+                                            <option [ngValue]="null">-- نقد / لا يوجد تأمين --</option>
+                                            <option *ngFor="let ins of patientInsurances" [ngValue]="ins.id">
+                                                {{ ins.insurancePlan?.nameAr || ins.policyNumber }}
+                                            </option>
+                                        </select>
+                                    </div>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox"
                                             formControlName="isServicesStopped">
@@ -164,6 +173,24 @@
                                     (click)="openConsumableModal(consumableModal)"
                                     *ngIf="selectedAdmission.status !== 2">
                                     <i class="fa fa-boxes me-1"></i> {{ '::OrderConsumables' | abpLocalization }}
+                                </button>
+
+                                <button class="btn btn-primary btn-sm text-white"
+                                    (click)="openLabModal(labModal)"
+                                    *ngIf="selectedAdmission.status !== 2">
+                                    <i class="fa fa-vial me-1"></i> طلب مختبر
+                                </button>
+
+                                <button class="btn btn-secondary btn-sm text-white"
+                                    (click)="openRadiologyModal(radiologyModal)"
+                                    *ngIf="selectedAdmission.status !== 2">
+                                    <i class="fa fa-x-ray me-1"></i> طلب أشعة
+                                </button>
+
+                                <button class="btn btn-dark btn-sm text-white"
+                                    (click)="openProvisionalInvoiceModal(provisionalInvoiceModal)"
+                                    *ngIf="selectedAdmission.status !== 2">
+                                    <i class="fa fa-file-invoice-dollar me-1"></i> فاتورة مبدئية
                                 </button>
 
                                 <button class="btn btn-danger btn-sm" (click)="openDischargeModal(dischargeModal)"
@@ -206,8 +233,27 @@
             (click)="modal.dismiss('Cross click')"></button>
     </div>
     <div class="modal-body" [formGroup]="dischargeForm">
-        <p class="text-muted small mb-3">{{ '::DischargeWarningMsg' | abpLocalization: selectedAdmission?.patientName }}
-        </p>
+        <p class="text-muted small mb-3">{{ '::DischargeWarningMsg' | abpLocalization: selectedAdmission?.patientName }}</p>
+
+        <div class="alert alert-info border-info" *ngIf="provisionalInvoice">
+            <h6 class="mb-2 border-bottom pb-1"><i class="fa fa-file-invoice me-1"></i> ملخص الحساب قبل الخروج:</h6>
+            <div class="d-flex justify-content-between mb-1">
+                <span>إجمالي الفاتورة:</span>
+                <strong>{{ provisionalInvoice.netAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-1 text-success">
+                <span>المدفوع مقدماً (ودائع):</span>
+                <strong>{{ provisionalInvoice.paidAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mt-2 pt-2 border-top text-danger" *ngIf="provisionalInvoice.dueAmount > 0">
+                <span class="fw-bold">المتبقي للدفع:</span>
+                <strong class="fs-5">{{ provisionalInvoice.dueAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mt-2 pt-2 border-top text-success" *ngIf="provisionalInvoice.dueAmount === 0">
+                <span class="fw-bold">حالة الحساب:</span>
+                <strong class="fs-5">مسدد بالكامل</strong>
+            </div>
+        </div>
 
         <div class="mb-3">
             <label class="form-label required">{{ '::DischargeDate' | abpLocalization }}</label>
@@ -346,7 +392,7 @@
                 <div class="dropdown-menu w-100 shadow" ngbDropdownMenu style="max-height: 300px; overflow-y: auto;">
                     <button type="button" *ngFor="let p of filteredPatients"
                         class="dropdown-item d-flex justify-content-between"
-                        (click)="newAdmissionForm.get('patientId')?.setValue(p.id); patientSearchTerm = p.fullNameAr || ''">
+                        (click)="onPatientSelect(p)">
                         <span>{{ p.fullNameAr }}</span>
                         <small class="text-muted">{{ p.mrn }}</small>
                     </button>
@@ -356,6 +402,16 @@
                 </div>
             </div>
             <input type="hidden" formControlName="patientId" required>
+        </div>
+
+        <div class="mb-3" *ngIf="patientInsurances.length > 0">
+            <label class="form-label text-primary fw-bold"><i class="fa fa-shield-alt me-1"></i> الجهة الضامنة / التأمين للمريض</label>
+            <select class="form-select border-primary" formControlName="patientInsuranceId">
+                <option [ngValue]="null">-- نقد / لا يوجد تأمين --</option>
+                <option *ngFor="let ins of patientInsurances" [ngValue]="ins.id">
+                    {{ ins.insurancePlan?.nameAr || ins.policyNumber }} ({{ ins.cardNumber || '' }})
+                </option>
+            </select>
         </div>
 
         <div class="row">
@@ -497,6 +553,155 @@
         <button type="button" class="btn btn-info text-white" (click)="confirmConsumableOrder()"
             [disabled]="consumableForm.invalid">
             <i class="fa fa-check me-1"></i> {{ '::ConfirmOrder' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- Lab Order Modal -->
+<ng-template #labModal let-modal>
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fa fa-vial me-2"></i>طلب مختبر</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="labForm">
+        <p class="text-muted small mb-3">اختر الفحص المخبري لإضافته للمريض المنوم</p>
+
+        <div class="mb-3">
+            <label class="form-label">بحث عن فحص مختبر</label>
+            <input type="text" class="form-control" [(ngModel)]="labSearchTerm"
+                [ngModelOptions]="{standalone: true}" (input)="filterLab()"
+                [placeholder]="'::SearchByNameOrCode' | abpLocalization">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label required">اختيار التحليل</label>
+            <select class="form-select" formControlName="serviceItemId" required>
+                <option [ngValue]="null">-- اختر التحليل --</option>
+                <option *ngFor="let item of filteredLabItems" [ngValue]="item.id">
+                    {{ item.name }} ({{ item.price | currency }})
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+            <textarea class="form-control" rows="2" formControlName="clinicalNotes"
+                [placeholder]="'::EnterNotesOptionally' | abpLocalization"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-primary text-white" (click)="confirmLabOrder()"
+            [disabled]="labForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::ConfirmOrder' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- Radiology Order Modal -->
+<ng-template #radiologyModal let-modal>
+    <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title"><i class="fa fa-x-ray me-2"></i>طلب أشعة</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" [formGroup]="radiologyForm">
+        <p class="text-muted small mb-3">اختر خدمة الأشعة لإضافتها للمريض المنوم</p>
+
+        <div class="mb-3">
+            <label class="form-label">بحث عن أشعة</label>
+            <input type="text" class="form-control" [(ngModel)]="radiologySearchTerm"
+                [ngModelOptions]="{standalone: true}" (input)="filterRadiology()"
+                [placeholder]="'::SearchByNameOrCode' | abpLocalization">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label required">اختيار خدمة الأشعة</label>
+            <select class="form-select" formControlName="serviceItemId" required>
+                <option [ngValue]="null">-- اختر الأشعة --</option>
+                <option *ngFor="let item of filteredRadiologyItems" [ngValue]="item.id">
+                    {{ item.name }} ({{ item.price | currency }})
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+            <textarea class="form-control" rows="2" formControlName="clinicalNotes"
+                [placeholder]="'::EnterNotesOptionally' | abpLocalization"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Cancel' |
+            abpLocalization }}</button>
+        <button type="button" class="btn btn-secondary text-white" (click)="confirmRadiologyOrder()"
+            [disabled]="radiologyForm.invalid">
+            <i class="fa fa-check me-1"></i> {{ '::ConfirmOrder' | abpLocalization }}
+        </button>
+    </div>
+</ng-template>
+
+<!-- Provisional Invoice Modal -->
+<ng-template #provisionalInvoiceModal let-modal>
+    <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title"><i class="fa fa-file-invoice-dollar me-2"></i>الفاتورة المبدئية</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body" *ngIf="provisionalInvoice">
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>الخدمة / الوصف</th>
+                        <th class="text-center">الكمية</th>
+                        <th class="text-end">الوحدة</th>
+                        <th class="text-end">الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of provisionalInvoice.items">
+                        <td>{{ item.description }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">{{ item.unitPrice | currency:'EGP':'symbol-narrow':'1.0-2' }}</td>
+                        <td class="text-end fw-bold">
+                            <div [class.text-decoration-line-through]="item.discountAmount > 0" [class.text-muted]="item.discountAmount > 0">
+                                {{ item.totalPrice | currency:'EGP':'symbol-narrow':'1.0-2' }}
+                            </div>
+                            <div class="text-success small" *ngIf="item.discountAmount > 0">
+                                <i class="fa fa-shield-alt"></i> مغطى: ({{ item.discountAmount | currency:'EGP':'symbol-narrow':'1.0-2' }})
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row mt-3 pt-2">
+            <div class="col-8 text-end">الإجمالي الكلي للخدمات:</div>
+            <div class="col-4 text-end fw-bold">{{ provisionalInvoice.totalAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</div>
+        </div>
+        <div class="row mt-1 text-success" *ngIf="provisionalInvoice.totalAmount - provisionalInvoice.netAmount > 0">
+            <div class="col-8 text-end">إجمالي تغطية التأمين:</div>
+            <div class="col-4 text-end fw-bold">- {{ (provisionalInvoice.totalAmount - provisionalInvoice.netAmount) | currency:'EGP':'symbol-narrow':'1.0-2' }}</div>
+        </div>
+        <div class="row mt-1 border-top pt-1">
+            <div class="col-8 text-end fw-bold">الصافي المطلوب من المريض:</div>
+            <div class="col-4 text-end fw-bold">{{ provisionalInvoice.netAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</div>
+        </div>
+        <div class="row mt-1 border-bottom pb-2">
+            <div class="col-8 text-end text-info">المدفوع مقدماً (ودائع):</div>
+            <div class="col-4 text-end text-info fw-bold">- {{ provisionalInvoice.paidAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</div>
+        </div>
+        <div class="row mt-2 pt-1 bg-light p-2 rounded">
+            <div class="col-8 text-end text-danger fw-bold fs-5">المبلغ المستحق:</div>
+            <div class="col-4 text-end text-danger fw-bold fs-5">{{ provisionalInvoice.dueAmount | currency:'EGP':'symbol-narrow':'1.0-2' }}</div>
+        </div>
+    </div>
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Close' | abpLocalization }}</button>
+        <button type="button" class="btn btn-primary" (click)="modal.close('Print')">
+            <i class="fa fa-print me-1"></i> طباعة
         </button>
     </div>
 </ng-template>

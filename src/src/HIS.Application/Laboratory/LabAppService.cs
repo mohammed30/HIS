@@ -175,14 +175,22 @@ public class LabAppService : ApplicationService, ILabAppService
     public async Task<LabRequestDto> CollectSampleAsync(Guid id)
     {
         var request = await _requestRepository.GetAsync(id);
-        if (request.Status != LabRequestStatus.Requested)
+        if (string.IsNullOrEmpty(request.SampleNumber))
         {
-            throw new Volo.Abp.UserFriendlyException("Sample can only be collected for Requested status.");
+            request.SampleNumber = await GenerateSampleNumberAsync();
         }
 
         request.Status = LabRequestStatus.SampleCollected;
         await _requestRepository.UpdateAsync(request);
         return ObjectMapper.Map<LabRequest, LabRequestDto>(request);
+    }
+
+    private async Task<string> GenerateSampleNumberAsync()
+    {
+        var datePrefix = DateTime.Now.ToString("yyMMdd");
+        var query = await _requestRepository.GetQueryableAsync();
+        var count = await AsyncExecuter.CountAsync(query.Where(x => x.SampleNumber != null && x.SampleNumber.StartsWith(datePrefix)));
+        return $"{datePrefix}-{(count + 1).ToString("D4")}";
     }
 
     [HttpPost]
@@ -247,6 +255,33 @@ public class LabAppService : ApplicationService, ILabAppService
         var stream = new System.IO.MemoryStream(pdfBytes);
         var printTime = Clock.Now;
         return new Volo.Abp.Content.RemoteStreamContent(stream, $"نتيجة_تحليل_{printTime:yyyy-MM-dd_HH-mm-ss}.pdf", "application/pdf");
+    }
+
+    [Microsoft.AspNetCore.Mvc.HttpGet]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/lab/sample-barcode-pdf/{id}")]
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetSampleBarcodePdfAsync(Guid id)
+    {
+        var request = await _requestRepository.GetAsync(id);
+        var patient = await _patientRepository.GetAsync(request.PatientId);
+        var test = await _testRepository.GetAsync(request.ServiceItemId);
+
+        if (string.IsNullOrEmpty(request.SampleNumber))
+        {
+            request.SampleNumber = await GenerateSampleNumberAsync();
+            await _requestRepository.UpdateAsync(request);
+        }
+
+        var document = new HIS.Laboratory.Printing.LabSampleBarcodeDocument
+        {
+            PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
+            SampleNumber = request.SampleNumber,
+            TestName = test.Name,
+            RequestDate = request.RequestDate
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        return new Volo.Abp.Content.RemoteStreamContent(stream, $"بارcode_عينة_{request.SampleNumber}.pdf", "application/pdf");
     }
 
 

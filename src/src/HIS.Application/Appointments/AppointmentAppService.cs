@@ -166,17 +166,34 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
                 Notes = $"Invoice for Appointment {appt.Id.ToString().Substring(0,8)}"
             });
 
-            // 3. Create Payment if paid
-            if (input.PaidAmount > 0)
+            // 3. Create Payment or Deferred based on method
+            var method = input.PaymentMethod?.ToLowerInvariant() switch
             {
+                "cash" => HIS.Billing.PaymentMethod.Cash,
+                "card" or "creditcard" => HIS.Billing.PaymentMethod.CreditCard,
+                "debitcard" or "mada" => HIS.Billing.PaymentMethod.DebitCard,
+                "banktransfer" or "transfer" => HIS.Billing.PaymentMethod.BankTransfer,
+                "check" or "cheque" => HIS.Billing.PaymentMethod.Check,
+                "insurance" => HIS.Billing.PaymentMethod.Insurance,
+                _ => (HIS.Billing.PaymentMethod?)null // "statement" or unknown → deferred / on account
+            };
+
+            if (method.HasValue && input.PaidAmount > 0)
+            {
+                // Regular payment
                 await _paymentAppService.CreateAsync(new HIS.Billing.CreatePaymentDto
                 {
                     PatientId = input.PatientId,
                     InvoiceId = invoiceDto.Id,
                     Amount = input.PaidAmount.Value,
-                    PaymentMethod = input.PaymentMethod == "Cash" ? HIS.Billing.PaymentMethod.Cash : HIS.Billing.PaymentMethod.BankTransfer,
+                    PaymentMethod = method.Value,
                     Notes = "Paid at booking"
                 });
+            }
+            else if (method == null)
+            {
+                // "statement" / آجل → mark invoice as deferred, no payment created
+                invoiceDto = await _invoiceAppService.UpdateStatusAsync(invoiceDto.Id, HIS.Billing.InvoiceStatus.Deferred);
             }
         }
 

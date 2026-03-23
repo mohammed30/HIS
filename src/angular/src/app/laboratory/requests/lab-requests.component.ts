@@ -120,6 +120,16 @@ export class LabRequestsComponent implements OnInit {
         });
     }
 
+    printBarcode(id: string) {
+        this.labService.getSampleBarcodePdf(id).subscribe((blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        }, err => {
+            console.error(err);
+            this.toaster.error('حدث خطأ أثناء تحميل ملصق الباركود');
+        });
+    }
+
     getStatusClass(status: number) {
         switch (status) {
             case LabRequestStatus.Requested: return 'bg-warning text-dark';

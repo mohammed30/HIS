@@ -33,6 +33,7 @@ public class AdmissionDto : FullAuditedEntityDto<Guid>
     public decimal DueAmount { get; set; }
     public string? Notes { get; set; }
     public Guid? InvoiceId { get; set; }
+    public Guid? PatientInsuranceId { get; set; }
 }
 
 public class CreateUpdateAdmissionDto
@@ -50,6 +51,7 @@ public class CreateUpdateAdmissionDto
     public decimal PharmacyPercentage { get; set; }
     public bool IsServicesStopped { get; set; }
     public string? Notes { get; set; }
+    public Guid? PatientInsuranceId { get; set; }
 }
 
 public class DischargeAdmissionDto
@@ -83,5 +85,6 @@ public interface IAdmissionAppService : Volo.Abp.Application.Services.ICrudAppSe
     Task<AdmissionDto> DischargeAsync(Guid id, DischargeAdmissionDto input);
     Task<AdmissionDto> UpdateDaysAsync(Guid id, int numberOfDays);
     Task<AdmissionDto> TransferPatientAsync(Guid id, CreatePatientTransferDto input);
+    Task<HIS.Billing.InvoiceDto> GetProvisionalInvoiceAsync(Guid id);
 }
 #endregion

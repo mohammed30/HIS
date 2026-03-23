@@ -43,6 +43,11 @@ public class DailyAttendance : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public decimal WorkedHours { get; set; }
 
     /// <summary>
+    /// ساعات العمل الإضافية
+    /// </summary>
+    public decimal OvertimeHours { get; set; }
+
+    /// <summary>
     /// ملاحظات
     /// </summary>
     public string? Notes { get; set; }
@@ -65,11 +70,16 @@ public class DailyAttendance : FullAuditedAggregateRoot<Guid>, IMultiTenant
         if (CheckInTime.HasValue && CheckOutTime.HasValue)
         {
             var diff = CheckOutTime.Value - CheckInTime.Value;
-            WorkedHours = Math.Round((decimal)diff.TotalHours, 2);
+            var totalHours = (decimal)diff.TotalHours;
+            
+            // Standard shift is 8 hours
+            WorkedHours = Math.Min(8, Math.Round(totalHours, 2));
+            OvertimeHours = totalHours > 8 ? Math.Round(totalHours - 8, 2) : 0;
         }
         else
         {
             WorkedHours = 0;
+            OvertimeHours = 0;
         }
     }
 }

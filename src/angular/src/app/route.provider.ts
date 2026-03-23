@@ -609,6 +609,24 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Inventory.PurchaseOrders',
     },
     {
+      path: '/inventory/internal-requests',
+      name: '::Menu:InternalRequests',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-exchange-alt',
+      order: 39,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.StockOperations',
+    },
+    {
+      path: '/inventory/purchase-invoices',
+      name: '::Menu:PurchaseInvoices',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-file-invoice-dollar',
+      order: 40,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.PurchaseOrders',
+    },
+    {
       path: '/inventory/reports/department-consumption',
       name: '::Menu:DepartmentalConsumption',
       parentName: '::Menu:Reports',
@@ -660,6 +678,15 @@ function configureRoutes() {
       order: 2,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Nursing.ShiftHandover',
+    },
+    {
+      path: '/nursing/internal-requests',
+      name: '::Menu:InternalRequests',
+      parentName: '::Menu:Nursing',
+      iconClass: 'fas fa-clipboard-check',
+      order: 3,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Nursing',
     },
     // Inpatient
     {

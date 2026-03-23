@@ -16,12 +16,14 @@ public class EmployeeDto : AuditedEntityDto<Guid>
     public MaritalStatus? MaritalStatus { get; set; }
     public string? Address { get; set; }
     public string? Phone { get; set; }
+    public string? Email { get; set; }
     public string? Qualification { get; set; }
     public IdentityDocumentType? IdentityType { get; set; }
     public string? IdentityNumber { get; set; }
     public string? InsuranceNumber { get; set; }
     public string? BankName { get; set; }
     public string? BankAccountNumber { get; set; }
+    public string? IBAN { get; set; }
     public Guid? DepartmentId { get; set; }
     public string? DepartmentName { get; set; }
     public string? SectionName { get; set; }
@@ -50,12 +52,14 @@ public class CreateUpdateEmployeeDto
     public MaritalStatus? MaritalStatus { get; set; }
     public string? Address { get; set; }
     public string? Phone { get; set; }
+    public string? Email { get; set; }
     public string? Qualification { get; set; }
     public IdentityDocumentType? IdentityType { get; set; }
     public string? IdentityNumber { get; set; }
     public string? InsuranceNumber { get; set; }
     public string? BankName { get; set; }
     public string? BankAccountNumber { get; set; }
+    public string? IBAN { get; set; }
     public Guid? DepartmentId { get; set; }
     public string? SectionName { get; set; }
     public Guid? JobGradeId { get; set; }
@@ -310,6 +314,7 @@ public class DailyAttendanceDto : AuditedEntityDto<Guid>
     public DateTime? CheckOutTime { get; set; }
     public Enums.AttendanceStatus Status { get; set; }
     public decimal WorkedHours { get; set; }
+    public decimal OvertimeHours { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -320,6 +325,7 @@ public class CreateUpdateDailyAttendanceDto
     public DateTime? CheckInTime { get; set; }
     public DateTime? CheckOutTime { get; set; }
     public Enums.AttendanceStatus Status { get; set; }
+    public decimal? OvertimeHours { get; set; }
     public string? Notes { get; set; }
 }
 

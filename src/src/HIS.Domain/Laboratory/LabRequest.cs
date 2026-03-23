@@ -17,6 +17,7 @@ public class LabRequest : FullAuditedAggregateRoot<Guid>
     public LabRequestStatus Status { get; set; }
     
     public string? Result { get; set; }
+    public string? SampleNumber { get; set; }
     public string? Notes { get; set; }
 
     protected LabRequest() { }

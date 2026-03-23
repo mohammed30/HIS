@@ -37,7 +37,7 @@ public class InventoryManager : DomainService
         SettingProvider = settingProvider;
     }
 
-    public async Task ReceiveStockAsync(Guid warehouseId, Guid productId, string productName, InventoryItemType type, decimal quantity, decimal unitCost, string reference)
+    public async Task ReceiveStockAsync(Guid warehouseId, Guid productId, string productName, InventoryItemType type, decimal quantity, decimal unitCost, string reference, string batchNumber = null, DateTime? expiryDate = null)
     {
         // 1. Update Inventory Item (Total Qty Only)
         var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
@@ -55,15 +55,16 @@ public class InventoryManager : DomainService
 
         await _inventoryItemRepository.UpdateAsync(item);
 
-        // 2. Create Inventory Batch (LIFO Support)
+        // 2. Create Inventory Batch
         var batch = new InventoryBatch(
             GuidGenerator.Create(),
             item.Id,
-            Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(), // Auto-gen batch ID for now
+            batchNumber ?? Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(), // Use provided or auto-gen
             quantity,
             unitCost,
             DateTime.Now,
-            reference
+            reference,
+            expiryDate
         );
         await _batchRepository.InsertAsync(batch);
 

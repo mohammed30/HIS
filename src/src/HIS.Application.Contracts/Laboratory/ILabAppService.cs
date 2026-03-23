@@ -20,6 +20,8 @@ public interface ILabAppService : IApplicationService
     Task<LabRequestDto> CollectSampleAsync(Guid id);
     Task<LabRequestDto> CompleteRequestAsync(Guid id, UpdateLabResultDto input);
     Task<Volo.Abp.Content.IRemoteStreamContent> GetResultPdfAsync(Guid id);
+    Task<Volo.Abp.Content.IRemoteStreamContent> GetSampleBarcodePdfAsync(Guid id);
+    Task<Volo.Abp.Content.IRemoteStreamContent> GetRequestOrderPdfAsync(Guid id);
 
     // Lab Appointments (حجوزات المعمل)
     Task<PagedResultDto<LabAppointmentDto>> GetAppointmentsAsync(PagedAndSortedResultRequestDto input);

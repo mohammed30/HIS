@@ -1,5 +1,6 @@
 import type { InsurancePlanType } from './insurance-plan-type.enum';
 import type { PatientInsuranceStatus } from './patient-insurance-status.enum';
+import type { InsurancePlanClass } from './insurance-plan-class.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface CreateUpdateInsuranceCompanyDto {
@@ -23,6 +24,7 @@ export interface CreateUpdateInsurancePlanDto {
   nameAr?: string;
   nameEn?: string;
   planType?: InsurancePlanType;
+  planClass?: InsurancePlanClass;
   coveragePercentage?: number;
   maxCoverageAmount?: number;
   coPaymentPercentage?: number;
@@ -90,6 +92,7 @@ export interface InsurancePlanDto extends FullAuditedEntityDto<string> {
   nameAr?: string;
   nameEn?: string;
   planType?: InsurancePlanType;
+  planClass?: InsurancePlanClass;
   coveragePercentage?: number;
   maxCoverageAmount?: number;
   coPaymentPercentage?: number;
@@ -124,4 +127,26 @@ export interface PatientInsuranceDto extends FullAuditedEntityDto<string> {
   relationToSubscriber?: string;
   employerName?: string;
   notes?: string;
+}
+
+export interface InsuranceServicePriceDto extends FullAuditedEntityDto<string> {
+  insurancePlanId?: string;
+  insurancePlanName?: string;
+  serviceItemId?: string;
+  serviceItemName?: string;
+  serviceItemCode?: string;
+  customPrice?: number;
+  notes?: string;
+}
+
+export interface CreateUpdateInsuranceServicePriceDto {
+  insurancePlanId?: string;
+  serviceItemId?: string;
+  customPrice?: number;
+  notes?: string;
+}
+
+export interface GetInsuranceServicePricesInput extends PagedAndSortedResultRequestDto {
+  insurancePlanId?: string;
+  serviceItemId?: string;
 }

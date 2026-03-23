@@ -37,6 +37,11 @@ public class InsurancePlan : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public InsurancePlanType PlanType { get; set; } = InsurancePlanType.Individual;
 
     /// <summary>
+    /// فئة الخطة (A, B, C)
+    /// </summary>
+    public InsurancePlanClass PlanClass { get; set; } = InsurancePlanClass.ClassB;
+
+    /// <summary>
     /// نسبة التغطية (%)
     /// </summary>
     public decimal CoveragePercentage { get; set; } = 80;

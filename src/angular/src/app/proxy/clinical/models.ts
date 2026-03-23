@@ -4,6 +4,7 @@ import type { OrderStatus } from './order-status.enum';
 
 export interface CreateUpdateMedicalOrderDto {
   patientId: string;
+  admissionId?: string;
   serviceItemId: string;
   type?: OrderType;
   clinicalNotes?: string;
@@ -13,6 +14,7 @@ export interface CreateUpdateMedicalOrderDto {
 
 export interface MedicalOrderDto extends AuditedEntityDto<string> {
   patientId?: string;
+  admissionId?: string;
   doctorId?: string;
   type?: OrderType;
   status?: OrderStatus;
