@@ -37,7 +37,7 @@ public class AdmissionAppService : CrudAppService<
     private readonly IRepository<PatientInsurance, Guid> _patientInsuranceRepository;
     private readonly IRepository<InsurancePlan, Guid> _insurancePlanRepository;
     private readonly IRepository<InsuranceServicePrice, Guid> _insurancePriceRepository;
-    private readonly IRepository<Clinical.MedicalOrder, Guid> _medicalOrderRepository;
+    private readonly IRepository<MedicalOrder, Guid> _medicalOrderRepository;
     private readonly HIS.Billing.IInvoiceAppService _invoiceAppService;
 
     public AdmissionAppService(
@@ -53,7 +53,7 @@ public class AdmissionAppService : CrudAppService<
         IRepository<PatientInsurance, Guid> patientInsuranceRepository,
         IRepository<InsurancePlan, Guid> insurancePlanRepository,
         IRepository<InsuranceServicePrice, Guid> insurancePriceRepository,
-        IRepository<Clinical.MedicalOrder, Guid> medicalOrderRepository,
+        IRepository<MedicalOrder, Guid> medicalOrderRepository,
         HIS.Billing.IInvoiceAppService invoiceAppService) : base(repository)
     {
         _patientRepository = patientRepository;
@@ -187,7 +187,7 @@ public class AdmissionAppService : CrudAppService<
         admission.TotalAmount = admission.AccumulatedRoomCharges + currentStayCharges;
         
         // Handle Medical Orders
-        var medicalOrderRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Clinical.MedicalOrder, Guid>>();
+        var medicalOrderRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<MedicalOrder, Guid>>();
         var orders = await medicalOrderRepo.GetListAsync(x => x.AdmissionId == admission.Id && x.Status != OrderStatus.Cancelled);
         foreach (var order in orders)
         {

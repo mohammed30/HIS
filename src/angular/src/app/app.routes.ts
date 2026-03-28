@@ -384,6 +384,12 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       },
       {
+        path: 'inventory-counting',
+        loadComponent: () => import('./inventory/inventory-counting/inventory-counting.component').then(c => c.InventoryCountingComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
+      },
+      {
         path: 'purchase-invoices',
         loadComponent: () => import('./inventory/purchase-invoices/purchase-invoices.component').then(c => c.PurchaseInvoicesComponent),
         canActivate: [permissionGuard],

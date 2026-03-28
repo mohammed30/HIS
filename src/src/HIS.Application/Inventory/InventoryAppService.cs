@@ -54,6 +54,13 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         );
     }
 
+    [HttpGet("warehouse-lookup")]
+    public async Task<List<HIS.Appointments.Dtos.LookupDto<Guid>>> GetWarehouseLookupAsync()
+    {
+        var list = await _warehouseRepository.GetListAsync();
+        return list.Select(x => new HIS.Appointments.Dtos.LookupDto<Guid> { Id = x.Id, Name = x.Name }).ToList();
+    }
+
     [HttpPost("warehouse")]
     [Authorize(HISPermissions.Inventory.ManageWarehouses)]
     public async Task<WarehouseDto> CreateWarehouseAsync(CreateUpdateWarehouseDto input)

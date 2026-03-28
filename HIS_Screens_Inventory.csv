@@ -1,0 +1,89 @@
+﻿م,الموديل,الاسم العربي,الاسم الإنجليزي,المسار
+1,الرئيسية,الرئيسية,Home,/
+2,الاستقبال,تذاكر المختبر,Tickets,/reception/laboratory-reception
+3,الاستقبال,المرضى,Patients,/patients
+4,المواعيد,حجز موعد جديد,Book New Appointment,/appointments/booking
+5,المواعيد,مواعيدي,My Appointments,/appointments/my-appointments
+6,المواعيد,قائمة الانتظار,Waiting List,/appointments/waiting-list
+7,المواعيد,سير العمل العيادي,Clinic Flow,/appointments/flow
+8,الحسابات,شجرة الحسابات,Chart of Accounts,/accounting/chart-of-accounts
+9,الحسابات,القيود اليومية,Journal Entries,/accounting/journal-entries
+10,الحسابات,التقارير المالية,Financial Reports,/accounting/reports
+11,الحسابات,سندات الصرف,Payment Vouchers,/accounting/payment-vouchers
+12,الحسابات,سندات القبض,Receipt Vouchers,/accounting/receipt-vouchers
+13,الحسابات,المعاملات البنكية,Bank Transactions,/accounting/bank-transactions
+14,الحسابات,مطالبات التعاقدات,Contract Claims,/accounting/claims
+15,الحسابات,التقرير اليومي للحسابات,Daily Accounts Report,/accounting/reports/daily
+16,الحسابات,تقرير ديون العملاء,Customer Debts Report,/accounting/reports/debts
+17,الحسابات,تقرير التخفيضات,Discounts Report,/accounting/reports/discounts
+18,الحسابات,قائمة الدخل,Income Statement,/accounting/reports/income-statement
+19,الحسابات,الميزانية العمومية,Balance Sheet,/accounting/reports/balance-sheet
+20,الحسابات,كشف الحساب,Account Statement,/accounting/reports/account-statement
+21,التأمين,شركات التأمين,Insurance Companies,/reception/insurance-companies
+22,التأمين,خطط التأمين,Insurance Plans,/reception/insurance-plans
+23,التأمين,تقارير التأمين,Insurance Reports,/reports/insurance-reports
+24,الفوترة,الفواتير,Invoices,/reception/invoices
+25,الفوترة,الدفعات,Payments,/reception/payments
+26,الفوترة,الأقساط/المؤجل,Deferred Payments,/reception/deferred-payments
+27,التعريفات,الأقسام,Departments,/settings/departments
+28,التعريفات,التخصصات,Specialties,/settings/specialties
+29,التعريفات,العيادات,Clinics,/settings/clinics
+30,التعريفات,الأطباء,Doctors,/settings/doctors
+31,التعريفات,المختبرات,Laboratories,/settings/laboratories
+32,التعريفات,جدول الأطباء,Doctor Schedule,/settings/doctor-schedule
+33,التعريفات,الجنسيات,Nationalities,/definitions/nationalities
+34,التعريفات,المهن,Professions,/definitions/professions
+35,التعريفات,التعاقدات,Contracts,/definitions/contracts
+36,التعريفات,فئات المرضى,Patient Categories,/definitions/patient-categories
+37,التعريفات,جهات الإحالة,Referral Sources,/definitions/referral-sources
+38,التعريفات,مسميات الوظائف,Job Titles,/settings/job-titles
+39,الصيدلية,إعدادات الصيدلية,Pharmacy Settings,/settings/pharmacy
+40,المختبر,قائمة التحاليل,Lab Catalog,/laboratory/catalog
+41,المختبر,طلبات التحاليل,Lab Requests,/laboratory/requests
+42,المختبر,حجوزات المعمل,Lab Appointments,/laboratory/appointments
+43,الطوارئ,لوحة الطوارئ,Emergency Dashboard,/emergency/dashboard
+44,الصيدلية,الوصفات الطبية,Prescriptions,/pharmacy
+45,الصيدلية,المخزون,Stock,/pharmacy/stock
+46,الصيدلية,الأدوية,Drugs,/pharmacy/drugs
+47,الصيدلية,تدقيق الصرف,Dispensing Verification,/pharmacy/dispensing
+48,الصيدلية,نقطة البيع,POS,/pharmacy/pos
+49,التعريفات,الخدمات,Services,/services
+50,التعريفات,الأشعة,Radiology,/services/radiology
+51,التعريفات,قوائم الأسعار,Price Lists,/services/price-lists
+52,التعريفات,طرق الدفع,Payment Methods,/definitions/payment-methods
+53,الإدارة,إدارة المستخدمين,User Management,/identity
+54,الإدارة,سجل النشاطات,Activity Logs,/admin/activity-logs
+55,المخزون,لوحة قيادة المخزون,Inventory Dashboard,/inventory/dashboard
+56,المخزون,إدارة المخازن,Warehouse Management,/inventory/warehouse-management
+57,المخزون,الموردين,Suppliers,/inventory/suppliers
+58,المخزون,طلبات الشراء,Purchase Requisitions,/inventory/purchase-requisitions
+59,المخزون,أوامر الشراء,Purchase Orders,/inventory/purchase-orders
+60,المخزون,الطلبات الداخلية,Internal Requests,/inventory/internal-requests
+61,المخزون,جرد المخزون,Inventory Counting,/inventory/inventory-counting
+62,المخزون,فواتير الشراء,Purchase Invoices,/inventory/purchase-invoices
+63,التقارير,استهلاك الأقسام,Departmental Consumption,/inventory/reports/department-consumption
+64,التقارير,تقرير النواقص,Low Stock Report,/inventory/reports/low-stock
+65,التقارير,تقرير المخزون الراكد,Stagnant Stock Report,/inventory/reports/stagnant-stock
+66,التمريض,قائمة المرضى,Patient List,/nursing/patient-list
+67,التمريض,تسليم الشفت,Shift Handover,/nursing/shift-handover
+68,التمريض,الطلبات الداخلية,Internal Requests,/nursing/internal-requests
+69,التنويم,لوحة المعلومات,Inpatient Dashboard,/inpatient/dashboard
+70,التنويم,الغرف,Rooms,/inpatient/rooms
+71,التنويم,الحجوزات,Reservations,/inpatient/reservations
+72,التنويم,حالات التنويم,Admissions,/inpatient/admissions
+73,شؤون العاملين,الموظفين,Employees,/hr/employees
+74,شؤون العاملين,الغياب والأذونات,Attendance,/hr/attendance
+75,شؤون العاملين,الحضور والانصراف,Daily Attendance,/hr/daily-attendance
+76,شؤون العاملين,إجازات الموظفين,Employee Leaves,/hr/leaves
+77,شؤون العاملين,السلفيات,Loans,/hr/loans
+78,شؤون العاملين,العقوبات والإنذارات,Penalties,/hr/penalties
+79,شؤون العاملين,المرتبات,Payroll,/hr/payroll
+80,شؤون العاملين,بنود المرتب,Compensation Items,/hr/compensation-items
+81,شؤون العاملين,قسيمة الراتب,HR Reports,/hr/reports
+82,العمليات,العمليات الجراحية,Surgical Operations,/operations/surgical-operations
+83,التقارير,تقرير العمليات,Operations Report,/operations/reports/surgical-operations
+84,التقارير,تقرير خدمات المريض,Patient Services Report,/patients/services-report
+85,التقارير,تذاكر مسددة,Paid Tickets,/reports/paid-tickets
+86,التقارير,مبيعات الصيدلية,Pharmacy Sales,/reports/pharmacy-sales
+87,التقارير,تقارير التأمين,Insurance Reports,/reports/insurance-reports
+88,الإعدادات,الإعدادات,Settings,/setting-management

@@ -115,6 +115,13 @@ export class InventoryService {
     },
     { apiName: this.apiName,...config });
   
+  getWarehouseLookup = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, any[]>({
+      method: 'GET',
+      url: '/api/app/inventory/warehouse-lookup',
+    },
+    { apiName: this.apiName,...config });
+  
 
   issueStock = (input: IssueStockDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({

@@ -221,6 +221,15 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Reception.InsurancePlans',
     },
+    {
+      path: '/reports/insurance-reports',
+      name: '::Menu:InsuranceReports',
+      parentName: '::Menu:Insurance',
+      iconClass: 'fas fa-chart-line',
+      order: 43,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.InsuranceCompanies',
+    },
     // Billing
     {
       name: '::Menu:Billing',
@@ -618,6 +627,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Inventory.StockOperations',
     },
     {
+      path: '/inventory/inventory-counting',
+      name: '::Menu:InventoryCounting',
+      parentName: '::Menu:Inventory',
+      iconClass: 'fas fa-clipboard-check',
+      order: 40,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Inventory.StockOperations',
+    },
+    {
       path: '/inventory/purchase-invoices',
       name: '::Menu:PurchaseInvoices',
       parentName: '::Menu:Inventory',
@@ -878,6 +896,15 @@ function configureRoutes() {
       order: 4,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Operations.Report',
+    },
+    {
+      path: '/reports/insurance-reports',
+      name: '::Menu:InsuranceReports',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-shield-alt',
+      order: 5,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.InsuranceCompanies',
     },
     {
       path: '/setting-management',

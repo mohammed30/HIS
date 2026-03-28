@@ -1,4 +1,7 @@
-import * as Dtos from './dtos';
+export * from './dtos';
+export * as Dtos from './dtos';
+export * from './inventory-count.service';
+export * from './inventory-count-status.enum';
 export * from './inventory-item-type.enum';
 export * from './inventory.service';
 export * from './purchase-order-status.enum';
@@ -11,4 +14,3 @@ export * from './internal-request-status.enum';
 export * from './internal-request.service';
 export * from './purchase-invoice-status.enum';
 export * from './purchase-invoice.service';
-export { Dtos };

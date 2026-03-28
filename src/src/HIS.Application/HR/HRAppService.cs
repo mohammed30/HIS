@@ -85,18 +85,23 @@ public class HRAppService : ApplicationService
     [Authorize(HISPermissions.HR.Employees)]
     public async Task<PagedResultDto<EmployeeDto>> GetEmployeesAsync(PagedAndSortedResultRequestDto input)
     {
-        var employees = await _employeeRepository.GetListAsync();
-        var departments = await _departmentRepository.GetListAsync();
-        var jobGrades = await _jobGradeRepository.GetListAsync();
-        var jobTitles = await _jobTitleRepository.GetListAsync();
+        var query = await _employeeRepository.GetQueryableAsync();
+        var totalCount = await AsyncExecuter.CountAsync(query);
 
-        var deptLookup = departments.ToDictionary(d => d.Id, d => d.NameAr);
-        var gradeLookup = jobGrades.ToDictionary(g => g.Id, g => g.NameAr);
-        var titleLookup = jobTitles.ToDictionary(t => t.Id, t => t.NameAr);
+        var employees = await AsyncExecuter.ToListAsync(query
+            .OrderByDescending(x => x.CreationTime)
+            .Skip(input.SkipCount).Take(input.MaxResultCount));
+
+        // Optimized lookups for only the departments, grades, and titles in the current page
+        var deptIds = employees.Where(e => e.DepartmentId.HasValue).Select(e => e.DepartmentId.Value).Distinct().ToList();
+        var gradeIds = employees.Where(e => e.JobGradeId.HasValue).Select(e => e.JobGradeId.Value).Distinct().ToList();
+        var titleIds = employees.Where(e => e.JobTitleId.HasValue).Select(e => e.JobTitleId.Value).Distinct().ToList();
+
+        var deptLookup = (await _departmentRepository.GetListAsync(d => deptIds.Contains(d.Id))).ToDictionary(d => d.Id, d => d.NameAr);
+        var gradeLookup = (await _jobGradeRepository.GetListAsync(g => gradeIds.Contains(g.Id))).ToDictionary(g => g.Id, g => g.NameAr);
+        var titleLookup = (await _jobTitleRepository.GetListAsync(t => titleIds.Contains(t.Id))).ToDictionary(t => t.Id, t => t.NameAr);
 
         var items = employees
-            .OrderByDescending(x => x.CreationTime)
-            .Skip(input.SkipCount).Take(input.MaxResultCount)
             .Select(e => {
                 var dto = ObjectMapper.Map<Employee, EmployeeDto>(e);
                 dto.DepartmentName = e.DepartmentId.HasValue && deptLookup.ContainsKey(e.DepartmentId.Value) ? deptLookup[e.DepartmentId.Value] : null;
@@ -105,7 +110,7 @@ public class HRAppService : ApplicationService
                 return dto;
             }).ToList();
 
-        return new PagedResultDto<EmployeeDto>(employees.Count, items);
+        return new PagedResultDto<EmployeeDto>(totalCount, items);
     }
 
     [Authorize(HISPermissions.HR.Employees)]
@@ -194,10 +199,10 @@ public class HRAppService : ApplicationService
 
     private async Task<string> GenerateNextEmployeeNumberAsync()
     {
-        var lastEmployee = (await _employeeRepository.GetListAsync())
+        var query = await _employeeRepository.GetQueryableAsync();
+        var lastEmployee = await AsyncExecuter.FirstOrDefaultAsync(query
             .Where(x => x.EmployeeNumber.StartsWith("EMP"))
-            .OrderByDescending(x => x.EmployeeNumber)
-            .FirstOrDefault();
+            .OrderByDescending(x => x.EmployeeNumber));
 
         if (lastEmployee == null)
         {
@@ -524,9 +529,8 @@ public class HRAppService : ApplicationService
         payrollRun.Status = PayrollRunStatus.Processed;
 
         // Create Journal Entry (Account 4100 Debit = Salary Expense, Account 2200 Credit = Employee Payables)
-        var accounts = await _accountRepository.GetListAsync();
-        var salaryExpenseAccount = accounts.FirstOrDefault(a => a.Code == "4100");
-        var employeePayableAccount = accounts.FirstOrDefault(a => a.Code == "2200");
+        var salaryExpenseAccount = await _accountRepository.FirstOrDefaultAsync(a => a.Code == "4100");
+        var employeePayableAccount = await _accountRepository.FirstOrDefaultAsync(a => a.Code == "2200");
 
         if (salaryExpenseAccount != null && employeePayableAccount != null)
         {
@@ -549,10 +553,15 @@ public class HRAppService : ApplicationService
     [Authorize(HISPermissions.HR.Payroll)]
     public async Task<PagedResultDto<PayrollRunDto>> GetPayrollRunsAsync(PagedAndSortedResultRequestDto input)
     {
-        var runs = await _payrollRunRepository.GetListAsync();
-        var items = runs.OrderByDescending(x => x.CreationTime)
-            .Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
-        return new PagedResultDto<PayrollRunDto>(runs.Count, ObjectMapper.Map<List<PayrollRun>, List<PayrollRunDto>>(items));
+        var query = await _payrollRunRepository.GetQueryableAsync();
+        var totalCount = await AsyncExecuter.CountAsync(query);
+
+        var runs = await AsyncExecuter.ToListAsync(query
+            .OrderByDescending(x => x.CreationTime)
+            .Skip(input.SkipCount).Take(input.MaxResultCount));
+
+        var items = ObjectMapper.Map<List<PayrollRun>, List<PayrollRunDto>>(runs);
+        return new PagedResultDto<PayrollRunDto>(totalCount, items);
     }
 
     [Authorize(HISPermissions.HR.Payroll)]
@@ -644,13 +653,18 @@ public class HRAppService : ApplicationService
     [Authorize(HISPermissions.HR.Penalties)]
     public async Task<PagedResultDto<PenaltyDto>> GetPenaltiesAsync(PagedAndSortedResultRequestDto input)
     {
-        var penalties = await _penaltyRepository.GetListAsync();
-        var employees = await _employeeRepository.GetListAsync();
+        var query = await _penaltyRepository.GetQueryableAsync();
+        var totalCount = await AsyncExecuter.CountAsync(query);
+
+        var penalties = await AsyncExecuter.ToListAsync(query
+            .OrderByDescending(x => x.Date)
+            .Skip(input.SkipCount).Take(input.MaxResultCount));
+
+        var employeeIds = penalties.Select(x => x.EmployeeId).Distinct().ToList();
+        var employees = await _employeeRepository.GetListAsync(x => employeeIds.Contains(x.Id));
         var empLookup = employees.ToDictionary(e => e.Id, e => e.NameAr);
 
         var items = penalties
-            .OrderByDescending(x => x.Date)
-            .Skip(input.SkipCount).Take(input.MaxResultCount)
             .Select(p =>
             {
                 var dto = ObjectMapper.Map<Penalty, PenaltyDto>(p);
@@ -658,7 +672,7 @@ public class HRAppService : ApplicationService
                 return dto;
             }).ToList();
 
-        return new PagedResultDto<PenaltyDto>(penalties.Count, items);
+        return new PagedResultDto<PenaltyDto>(totalCount, items);
     }
 
     [Authorize(HISPermissions.HR.Penalties)]
@@ -678,16 +692,22 @@ public class HRAppService : ApplicationService
     [Authorize(HISPermissions.HR.Attendance)]
     public async Task<PagedResultDto<AttendanceRecordDto>> GetAttendanceRecordsAsync(PagedAndSortedResultRequestDto input)
     {
-        var records = await _attendanceRecordRepository.GetListAsync();
-        var employees = await _employeeRepository.GetListAsync();
-        var departments = await _departmentRepository.GetListAsync();
+        var query = await _attendanceRecordRepository.GetQueryableAsync();
+        var totalCount = await AsyncExecuter.CountAsync(query);
 
+        var records = await AsyncExecuter.ToListAsync(query
+            .OrderByDescending(x => x.Date)
+            .Skip(input.SkipCount).Take(input.MaxResultCount));
+
+        var employeeIds = records.Select(x => x.EmployeeId).Distinct().ToList();
+        var employees = await _employeeRepository.GetListAsync(x => employeeIds.Contains(x.Id));
         var empLookup = employees.ToDictionary(e => e.Id, e => e.NameAr);
+
+        var departmentIds = records.Where(x => x.DepartmentId.HasValue).Select(x => x.DepartmentId.Value).Distinct().ToList();
+        var departments = await _departmentRepository.GetListAsync(x => departmentIds.Contains(x.Id));
         var deptLookup = departments.ToDictionary(d => d.Id, d => d.NameAr);
 
         var items = records
-            .OrderByDescending(x => x.Date)
-            .Skip(input.SkipCount).Take(input.MaxResultCount)
             .Select(a =>
             {
                 var dto = ObjectMapper.Map<AttendanceRecord, AttendanceRecordDto>(a);
@@ -696,7 +716,7 @@ public class HRAppService : ApplicationService
                 return dto;
             }).ToList();
 
-        return new PagedResultDto<AttendanceRecordDto>(records.Count, items);
+        return new PagedResultDto<AttendanceRecordDto>(totalCount, items);
     }
 
     [Authorize(HISPermissions.HR.Attendance)]

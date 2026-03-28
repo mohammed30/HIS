@@ -493,121 +493,8 @@
 
     <!-- Accounts Tab Content -->
     <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'accounts'">
-        <!-- Sub-tabs Sidebar (Right side for RTL) -->
-        <div class="col-md-2 border-end d-flex flex-column sub-sidebar order-md-1">
-            <div class="sub-sidebar-header p-2 bg-primary text-white text-center fw-bold small">
-                الحسابات
-            </div>
-            <div class="sub-tab-item p-2 border-bottom cursor-pointer" [class.active]="activeSubTab === 'billing'"
-                (click)="activeSubTab = 'billing'">
-                <i class="fas fa-file-invoice me-2"></i> الحسابات
-            </div>
-            <div class="sub-tab-item p-2 border-bottom cursor-pointer" [class.active]="activeSubTab === 'statement'"
-                (click)="activeSubTab = 'statement'">
-                <i class="fas fa-user-clock me-2"></i> كشف حساب المريض
-            </div>
-        </div>
-
-        <!-- Main Content Area -->
-        <div class="col-md-2 col-lg-10 p-2 overflow-auto order-md-2 main-content-area">
-            <!-- Billing Screen -->
-            <div *ngIf="activeSubTab === 'billing'" class="billing-sub-screen">
-                <div class="d-flex justify-content-between align-items-center p-2 border rounded mb-2 filter-panel">
-                    <div class="d-flex align-items-center gap-2">
-                        <label class="small fw-bold mb-0">من</label>
-                        <input type="date" class="form-control form-control-sm" [(ngModel)]="fromDate"
-                            style="width: 150px;">
-                        <label class="small fw-bold mb-0">حتى</label>
-                        <input type="date" class="form-control form-control-sm" [(ngModel)]="toDate"
-                            style="width: 150px;">
-                        <button class="btn btn-warning btn-sm fw-bold">تحديث</button>
-                    </div>
-                </div>
-
-                <div class="row g-2 mb-3 align-items-center">
-                    <div class="col-auto">
-                        <div class="form-check form-check-inline small">
-                            <input class="form-check-input" type="checkbox" id="printOps">
-                            <label class="form-check-label" for="printOps">طباعة أمر التشغيل</label>
-                        </div>
-                        <div class="form-check form-check-inline small">
-                            <input class="form-check-input" type="checkbox" id="printBar">
-                            <label class="form-check-label" for="printBar">طباعة باركود</label>
-                        </div>
-                        <div class="form-check form-check-inline small">
-                            <input class="form-check-input" type="checkbox" id="printTic" checked>
-                            <label class="form-check-label" for="printTic">طباعة تذكرة</label>
-                        </div>
-                    </div>
-                    <div class="col-auto d-flex align-items-center gap-1">
-                        <span class="small fw-bold">عدد نسخة التذكرة</span>
-                        <input type="number" class="form-control form-control-sm" style="width: 60px;"
-                            [(ngModel)]="ticketCount">
-                    </div>
-                </div>
-
-                <div class="billing-form mx-auto border rounded p-4 shadow-sm" style="max-width: 600px;">
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">طريقة الدفع</label>
-                        <div class="col-8">
-                            <select class="form-select border-primary">
-                                <option value="cash">نقداً</option>
-                                <option value="network">شبكة</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">رقم الاشعار</label>
-                        <div class="col-8">
-                            <input type="text" class="form-control border-primary">
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">المبلغ المراد دفعه</label>
-                        <div class="col-8">
-                            <input type="text" class="form-control border-primary" value="0" readonly>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">تخفيض</label>
-                        <div class="col-8">
-                            <input type="text" class="form-control border-primary" value="0">
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">تصديق</label>
-                        <div class="col-8">
-                            <select class="form-select border-primary">
-                                <option value="">-- اختر --</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">المبلغ المدفوع</label>
-                        <div class="col-8">
-                            <input type="text" class="form-control" value="0" readonly>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-3 align-items-center">
-                        <label class="col-4 text-end fw-bold">المبلغ المتبقي</label>
-                        <div class="col-8">
-                            <input type="text" class="form-control" value="0" readonly>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4 align-items-center">
-                        <label class="col-4 text-end fw-bold text-primary fs-5">اجمالي الفاتورة</label>
-                        <div class="col-8">
-                            <input type="text" class="form-control border-primary fw-bold text-primary fs-5" value="0"
-                                readonly>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-success px-5 py-2 fw-bold">
-                            <i class="fas fa-print me-2"></i> طبع الفاتورة
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <!-- Main Content Area - Full Width as requested -->
+        <div class="col-12 p-2 overflow-auto main-content-area">
 
             <!-- Patient Statement Screen -->
             <div *ngIf="activeSubTab === 'statement'" class="statement-sub-screen p-2 d-flex flex-column h-100">
@@ -1007,7 +894,7 @@
                             <div class="col-md-6">
                                 <select class="form-select form-select-sm" [(ngModel)]="requestedByDoctorId">
                                     <option value="">-- اختر --</option>
-                                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.name }}</option>
+                                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.nameAr || d.name }}</option>
                                 </select>
                             </div>
                         </div>
@@ -1331,7 +1218,7 @@
                             <div class="col-md-8">
                                 <select class="form-select form-select-sm" [(ngModel)]="operation.doctorId">
                                     <option value="">-- اختر --</option>
-                                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.name }}</option>
+                                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.nameAr || d.name }}</option>
                                 </select>
                             </div>
                         </div>

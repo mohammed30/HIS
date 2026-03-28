@@ -73,6 +73,7 @@
                         </button>
                         <button *ngIf="row.status === 3" class="btn btn-sm btn-success ms-1" (click)="printResult(row)">
                             <i class="fas fa-print me-1"></i>طباعة
+                        </button>
                         <button *ngIf="row.status !== 0 && row.status !== 4" class="btn btn-sm btn-outline-dark ms-1"
                             (click)="printBarcode(row.id)" title="طباعة باركود العينة">
                             <i class="fas fa-barcode"></i>
@@ -102,14 +103,14 @@
             <label class="form-label">المريض <span class="text-danger">*</span></label>
             <select class="form-control" [(ngModel)]="newRequest.patientId" required>
                 <option value="">-- اختر المريض --</option>
-                <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.fullName }}</option>
+                <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.fullNameAr }}</option>
             </select>
         </div>
         <div class="form-group mb-3">
             <label class="form-label">الطبيب <span class="text-danger">*</span></label>
             <select class="form-control" [(ngModel)]="newRequest.doctorId" required>
                 <option value="">-- اختر الطبيب --</option>
-                <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.fullName }}</option>
+                <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.nameAr }}</option>
             </select>
         </div>
         <div class="form-group mb-3">

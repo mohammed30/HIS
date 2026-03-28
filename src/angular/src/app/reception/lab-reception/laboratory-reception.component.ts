@@ -74,7 +74,7 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     // Tab State
     activeTab: string = 'lab';
-    activeSubTab: string = 'billing';
+    activeSubTab: string = 'statement';
 
     // Clinic Booking
     clinics: any[] = [];
@@ -295,7 +295,10 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     loadAllDoctors() {
         this.doctorService.getList({ maxResultCount: 1000 }).subscribe(res => {
-            this.doctors = (res.items as any[]) || [];
+            this.doctors = (res.items || []).map(x => ({ 
+                ...x, 
+                name: x.nameAr || x.nameEn || (x as any).name 
+            })).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         });
     }
 
@@ -659,8 +662,10 @@ export class LaboratoryReceptionComponent implements OnInit {
         if (this.booking.clinicId) {
             // Pass both clinic and selectedDepartmentId to narrow down
             this.appointmentService.getDoctorLookup(this.booking.clinicId, this.selectedDepartmentId || undefined).subscribe(res => {
-                this.doctors = ((res as any) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
-                    .sort((a, b) => a.name.localeCompare(b.name));
+                this.doctors = ((res as any) || []).map(x => ({ 
+                    ...x, 
+                    name: x.nameAr || x.nameEn || x.name || (x as any).name 
+                })).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             });
         } else if (this.selectedDepartmentId) {
             // Fallback to department doctors if clinic is cleared

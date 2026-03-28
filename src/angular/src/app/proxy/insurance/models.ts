@@ -150,3 +150,32 @@ export interface GetInsuranceServicePricesInput extends PagedAndSortedResultRequ
   insurancePlanId?: string;
   serviceItemId?: string;
 }
+
+export interface InsuranceSummaryDto {
+  insuranceCompanyId?: string;
+  insuranceCompanyName?: string;
+  invoiceCount?: number;
+  totalBilled?: number;
+  totalInsuranceShare?: number;
+  totalPatientShare?: number;
+}
+
+export interface InsuranceDetailedClaimDto {
+  invoiceId?: string;
+  invoiceNumber?: string;
+  invoiceDate?: string;
+  patientId?: string;
+  patientName?: string;
+  insurancePlanName?: string;
+  totalAmount?: number;
+  insuranceShare?: number;
+  patientShare?: number;
+  status?: string;
+}
+
+export interface GetInsuranceReportInput extends PagedAndSortedResultRequestDto {
+  fromDate?: string;
+  toDate?: string;
+  insuranceCompanyId?: string;
+  insurancePlanId?: string;
+}

@@ -143,6 +143,9 @@ public class HISDbContext :
 
     // Operations (Surgery)
     public DbSet<HIS.Operations.SurgicalOperation> SurgicalOperations { get; set; }
+
+    // Insurance
+    public DbSet<HIS.Insurance.InsuranceServicePrice> InsuranceServicePrices { get; set; }
     
     // Nursing Services
     public DbSet<MedicationAdministration> MedicationAdministrations { get; set; }
@@ -1174,6 +1177,17 @@ public class HISDbContext :
             
             b.HasIndex(x => x.DoctorId);
             b.HasIndex(x => x.Status);
+        });
+
+        // Insurance Service Prices
+        builder.Entity<HIS.Insurance.InsuranceServicePrice>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "InsuranceServicePrices", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.CustomPrice).HasPrecision(18, 2);
+            b.Property(x => x.Notes).HasMaxLength(1024);
+            b.HasIndex(x => x.InsurancePlanId);
+            b.HasIndex(x => x.ServiceItemId);
         });
 
         // --- Nursing Module ---

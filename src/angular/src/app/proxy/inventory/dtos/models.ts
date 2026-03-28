@@ -5,6 +5,44 @@ import type { TransactionType } from '../transaction-type.enum';
 import type { PurchaseOrderStatus } from '../purchase-order-status.enum';
 import type { InternalRequestStatus } from '../internal-request-status.enum';
 import type { PurchaseInvoiceStatus } from '../purchase-invoice-status.enum';
+import type { InventoryCountStatus } from '../inventory-count-status.enum';
+
+export interface InventoryCountDto extends FullAuditedEntityDto<string> {
+  warehouseId?: string;
+  warehouseName?: string;
+  countDate?: string;
+  status?: InventoryCountStatus;
+  notes?: string;
+  items?: InventoryCountItemDto[];
+}
+
+export interface InventoryCountItemDto extends FullAuditedEntityDto<string> {
+  inventoryItemId?: string;
+  productName?: string;
+  systemQuantity?: number;
+  countedQuantity?: number;
+  difference?: number;
+  notes?: string;
+}
+
+export interface CreateInventoryCountDto {
+  warehouseId: string;
+  countDate: string;
+  notes?: string;
+}
+
+export interface UpdateInventoryCountItemDto {
+  id: string;
+  countedQuantity: number;
+  notes?: string;
+}
+
+export interface GetInventoryCountsInput extends PagedAndSortedResultRequestDto {
+  warehouseId?: string;
+  status?: InventoryCountStatus;
+  fromDate?: string;
+  toDate?: string;
+}
 
 export interface CreateUpdatePurchaseOrderDto {
   supplierId?: string;
