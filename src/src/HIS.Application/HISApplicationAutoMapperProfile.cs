@@ -45,7 +45,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Appointments.DoctorSchedule, Appointments.DoctorScheduleDto>();
         // Financials (Accounting)
         CreateMap<Accounting.Account, Accounting.Dtos.AccountDto>();
-        CreateMap<Accounting.Dtos.CreateUpdateAccountDto, Accounting.Account>();
+        CreateMap<Accounting.Dtos.CreateUpdateAccountDto, Accounting.Account>()
+            .ForMember(x => x.Code, opt => opt.Condition(src => !string.IsNullOrEmpty(src.Code)));
         
         CreateMap<Accounting.JournalEntry, Accounting.Dtos.JournalEntryDto>();
         CreateMap<Accounting.JournalEntryLine, Accounting.Dtos.JournalEntryLineDto>();

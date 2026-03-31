@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
 
 namespace HIS.ActivityLogs;
 
 /// <summary>
 /// Application service implementation for activity log operations.
 /// </summary>
+[Authorize(HISPermissions.ActivityLogs.Default)]
 public class ActivityLogAppService : ApplicationService, IActivityLogAppService
 {
     private readonly IRepository<ActivityLog, Guid> _repository;

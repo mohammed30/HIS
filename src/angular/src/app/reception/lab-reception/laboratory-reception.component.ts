@@ -923,6 +923,42 @@ export class LaboratoryReceptionComponent implements OnInit {
         }
     }
 
+    dischargeAdmission() {
+        if (!this.selectedAdmission) {
+            this.toaster.warn('يرجى اختيار التنويم من القائمة أولاً', 'تنبيه');
+            return;
+        }
+        this.confirmation.warn('هل أنت متأكد من إصدار إذن الخروج لهذا المريض؟', 'تأكيد').subscribe(status => {
+            if (status === Confirmation.Status.confirm) {
+                const input = {
+                    dischargeDate: new Date().toISOString(),
+                    notes: ''
+                };
+                this.admissionService.discharge(this.selectedAdmission.id, input).subscribe({
+                    next: () => {
+                        this.toaster.success('تم إصدار إذن الخروج بنجاح', 'نجاح');
+                        this.loadInpatientList();
+                        this.selectedAdmission = null;
+                    },
+                    error: (err) => {
+                        console.error(err);
+                        this.toaster.error('حدث خطأ أثناء إصدار إذن الخروج', 'خطأ');
+                    }
+                });
+            }
+        });
+    }
+
+    getAdmissionStatusName(status: number): string {
+        const statusMap: { [key: number]: string } = {
+            0: 'نشط',
+            1: 'خرج',
+            2: 'نقل',
+            3: 'ملغي'
+        };
+        return statusMap[status] || 'غير معروف';
+    }
+
     // --- Operations Methods ---
 
     loadOperationTypes() {

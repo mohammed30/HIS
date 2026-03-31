@@ -978,7 +978,7 @@
                         <div class="col-9"><input type="text" class="form-control form-control-sm"
                                 [(ngModel)]="admission.companionName"></div>
                     </div>
-                    <div class="row g-2 mb-2 align-items-center">
+                    <div class="row g-2 mb-0 align-items-center">
                         <label class="col-3 text-end small">رقم الهاتف</label>
                         <div class="col-4"><input type="text" class="form-control form-control-sm"
                                 [(ngModel)]="admission.companionPhone"></div>
@@ -1006,9 +1006,8 @@
                     <div class="row g-2 mb-2 align-items-center">
                         <div class="col-5">
                             <div class="form-check small p-0 m-0"><input class="form-check-input ms-0 me-1"
-                                    type="checkbox" id="stopSv" [(ngModel)]="admission.isServicesStopped"><label
-                                    class="form-check-label" for="stopSv">إيقاف
-                                    الخدمات</label></div>
+                                    type="checkbox" id="stopSvInp" [(ngModel)]="admission.isServicesStopped"><label
+                                    class="form-check-label" for="stopSvInp">إيقاف الخدمات</label></div>
                         </div>
                     </div>
                     <div class="row g-2 mb-2">
@@ -1037,8 +1036,7 @@
                             <select class="form-select form-select-sm" [(ngModel)]="admission.roomId"
                                 (change)="onRoomChange()">
                                 <option [ngValue]="null">-- اختر --</option>
-                                <option *ngFor="let r of availableRooms" [ngValue]="r.id">{{ r.roomNumber }} - {{ r.name
-                                    }}</option>
+                                <option *ngFor="let r of availableRooms" [ngValue]="r.id">{{ r.roomNumber }} - {{ r.name }}</option>
                             </select>
                         </div>
                         <div class="col-4">
@@ -1050,100 +1048,42 @@
                             </select>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <label class="small fw-bold mb-1">عدد الايام المتوقع</label>
-                        <input type="number" class="form-control form-control-sm" [(ngModel)]="admission.numberOfDays">
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="small fw-bold mb-1">عدد الأيام المتوقع</label>
+                            <input type="number" class="form-control form-control-sm" [(ngModel)]="admission.numberOfDays">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold mb-1">المبلغ المدفوع</label>
+                            <input type="number" class="form-control form-control-sm" [(ngModel)]="admission.paidAmount">
+                        </div>
                     </div>
                     <div class="mb-0">
                         <label class="small fw-bold mb-1">ملاحظات</label>
-                        <textarea class="form-control form-control-sm" rows="1"
-                            [(ngModel)]="admission.notes"></textarea>
+                        <textarea class="form-control form-control-sm" rows="1" [(ngModel)]="admission.notes"></textarea>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm mb-2">
-                <div class="card-header bg-primary text-white py-1 px-2 small fw-bold">الحسابات</div>
-                <div class="card-body p-2">
-                    <div class="row g-2 mb-2">
-                        <div class="col-4">
-                            <label class="d-block text-end small">دفع مبلغ</label>
-                            <div class="d-flex align-items-center gap-1">
-                                <input type="checkbox"><input type="text"
-                                    class="form-control form-control-sm text-center" value="0">
-                            </div>
-                        </div>
-                        <div class="col-4 text-center">
-                            <label class="small">المبلغ المدفوع</label>
-                            <input type="text" class="form-control form-control-sm text-center" value="0" readonly>
-                        </div>
-                        <div class="col-4 text-start">
-                            <label class="small">المبلغ المتبقي</label>
-                            <input type="text" class="form-control form-control-sm text-center" value="0" readonly>
-                        </div>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="small">اجمالي الفاتورة</label>
-                            <input type="text" class="form-control form-control-sm text-center fw-bold" value="0"
-                                readonly>
-                        </div>
-                        <div class="col-6">
-                            <label class="small">شركة التأمين</label>
-                            <input type="text" class="form-control form-control-sm text-center" value="0" readonly>
-                        </div>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-12"><button
-                                class="btn btn-warning btn-sm w-100 fw-bold border-dark shadow-sm mb-2">إضافة الرصيد
-                                للتنويم</button></div>
-                        <div class="col-3"><button
-                                class="btn btn-warning btn-sm w-100 fw-bold border-dark shadow-sm">توجيه</button></div>
-                        <div class="col-3"><button class="btn btn-danger btn-sm w-100 fw-bold border-dark shadow-sm">إذن
-                                خروج</button></div>
-                        <div class="col-6"><button
-                                class="btn btn-info text-white btn-sm w-100 fw-bold border-dark shadow-sm">عيادة إذن
-                                دخول</button></div>
-                    </div>
-                </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-warning flex-grow-1 py-2 border-dark shadow-sm fw-bold"
+                    (click)="saveAdmission()" [disabled]="isSavingAdmission">
+                    <i class="fas fa-save me-1"></i> حفظ التنويم
+                </button>
+                <button class="btn btn-danger flex-grow-1 py-2 border-dark shadow-sm fw-bold"
+                    (click)="dischargeAdmission()" [disabled]="!selectedAdmission">
+                    <i class="fas fa-sign-out-alt me-1"></i> إذن خروج
+                </button>
             </div>
-
-            <button class="btn btn-warning w-100 py-2 border-dark shadow-sm" (click)="saveAdmission()"><i
-                    class="fas fa-save me-1"></i>
-                حفظ</button>
         </div>
 
         <!-- Inpatient List Area (Left) -->
         <div class="col-md-8 p-2 d-flex flex-column h-100 order-md-2">
-            <div class="p-2 border rounded shadow-sm mb-2 filter-panel">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-success fw-bold px-4 shadow-sm border-dark">ارشيف التنويم</button>
-                        <button class="btn btn-warning fw-bold px-4 shadow-sm border-dark">عرض التنويم</button>
-                    </div>
-                    <div class="text-end" style="min-width: 250px;">
-                        <span class="small fw-bold d-block text-primary border-bottom mb-2 pb-1">قائمة التنويم</span>
-                        <div class="row g-2 align-items-center">
-                            <label class="col-auto small fw-bold">نوع الغرفة</label>
-                            <div class="col"><select class="form-select form-select-sm shadow-sm">
-                                    <option value="">-- اختر --</option>
-                                </select></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 align-items-center">
-                    <div class="col-auto d-flex align-items-center gap-3">
-                        <div class="form-check small m-0"><input class="form-check-input ms-0 me-1" type="radio"
-                                name="inpSearch" id="inpName" checked><label class="form-check-label" for="inpName">بحث
-                                باسم المريض</label></div>
-                        <div class="form-check small m-0"><input class="form-check-input ms-0 me-1" type="radio"
-                                name="inpSearch" id="inpFile"><label class="form-check-label" for="inpFile">بحث برقم
-                                المريض</label></div>
-                    </div>
-                    <div class="col"><input type="text" class="form-control form-control-sm shadow-sm"></div>
-                    <div class="col-auto"><span class="fw-bold small">عدد المنومين: 0</span></div>
-                </div>
+            <div class="p-2 border rounded shadow-sm mb-2 d-flex justify-content-between align-items-center">
+                <span class="fw-bold small text-primary">
+                    <i class="fas fa-bed me-1"></i> قائمة المنومين للمريض الحالي
+                </span>
+                <span class="badge bg-primary">{{ inpatientList.length }} تنويم</span>
             </div>
 
             <div class="flex-grow-1 border rounded shadow-sm overflow-auto mb-2 bottom-list-panel">
@@ -1155,7 +1095,9 @@
                             <th>رقم الملف</th>
                             <th>نوع الغرفة</th>
                             <th>رقم الغرفة</th>
+                            <th>السرير</th>
                             <th>تاريخ الدخول</th>
+                            <th>عدد الأيام</th>
                             <th>الحالة</th>
                         </tr>
                     </thead>
@@ -1168,11 +1110,21 @@
                             <td>{{ item.patientFileNumber }}</td>
                             <td>{{ item.roomTypeName }}</td>
                             <td>{{ item.roomNumber }}</td>
-                            <td>{{ item.admissionDate | date:'short' }}</td>
-                            <td>{{ item.status }}</td>
+                            <td>{{ item.bedNumber }}</td>
+                            <td>{{ item.admissionDate | date:'yyyy-MM-dd' }}</td>
+                            <td>{{ item.numberOfDays }}</td>
+                            <td>
+                                <span class="badge"
+                                    [class.bg-success]="item.status === 0"
+                                    [class.bg-secondary]="item.status === 1"
+                                    [class.bg-info]="item.status === 2"
+                                    [class.bg-danger]="item.status === 3">
+                                    {{ getAdmissionStatusName(item.status) }}
+                                </span>
+                            </td>
                         </tr>
                         <tr *ngIf="inpatientList.length === 0" class="text-muted">
-                            <td colspan="7" class="py-5">لا توجد بيانات</td>
+                            <td colspan="9" class="py-5">لا توجد بيانات</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1180,15 +1132,17 @@
 
             <div class="d-flex gap-2 mt-auto">
                 <button class="btn btn-info text-white fw-bold shadow-sm border-dark py-2 px-3"
-                    (click)="printAdmissionInvoice()"><i class="fas fa-print me-1"></i> طباعة فاتورة</button>
-                <button class="btn btn-primary fw-bold shadow-sm border-dark py-2 px-3"><i
-                        class="fas fa-camera me-1"></i> تصوير فاتورة التنويم</button>
+                    (click)="printAdmissionInvoice()" [disabled]="!selectedAdmission">
+                    <i class="fas fa-print me-1"></i> طباعة فاتورة
+                </button>
                 <button class="btn btn-success fw-bold shadow-sm border-dark py-2 px-3"
-                    (click)="updateAdmissionDays()"><i class="fas fa-calendar-alt me-1"></i> تعديل عدد ايام
-                    الإقامة</button>
+                    (click)="updateAdmissionDays()" [disabled]="!selectedAdmission">
+                    <i class="fas fa-calendar-alt me-1"></i> تعديل عدد أيام الإقامة
+                </button>
             </div>
         </div>
     </div>
+
 
     <!-- Operations Tab Content -->
     <div class="row g-0 flex-grow-1 overflow-hidden" *ngIf="activeTab === 'operations'">

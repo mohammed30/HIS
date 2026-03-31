@@ -152,6 +152,9 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         hr.AddChild(HISPermissions.HR.Attendance, L("Permission:HRAttendance"));
         hr.AddChild(HISPermissions.HR.Reports, L("Permission:HRReports"));
         hr.AddChild(HISPermissions.HR.PaySlip, L("Permission:HRPaySlip"));
+
+        // Activity Logs
+        hisGroup.AddPermission(HISPermissions.ActivityLogs.Default, L("Permission:ActivityLogs"));
     }
 
     private static LocalizableString L(string name)

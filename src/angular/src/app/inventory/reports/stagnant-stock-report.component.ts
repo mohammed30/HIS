@@ -12,55 +12,93 @@ import { StagnantStockReportDto, WarehouseDto } from '@proxy/inventory/dtos/mode
   standalone: true,
   imports: [CommonModule, FormsModule, CoreModule, ThemeSharedModule],
   template: `
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="card-title mb-0">تقرير المخزون الراكد</h4>
-        <div class="d-flex align-items-center gap-2">
-            <select class="form-select" [(ngModel)]="warehouseId" (change)="loadReport()">
-                <option [ngValue]="null">جميع المستودعات</option>
-                <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
-            </select>
-            <div class="input-group" style="width: 200px;">
-                <span class="input-group-text">أيام الركود</span>
-                <input type="number" class="form-control" [(ngModel)]="thresholdDays" min="1">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-transparent border-bottom py-4 px-4">
+        <div class="row align-items-end g-3">
+          <!-- Title Section -->
+          <div class="col-md-auto">
+            <h4 class="mb-0 text-primary d-flex align-items-center">
+              <i class="fa fa-boxes-stacked me-2 fs-3"></i>
+              <span class="fw-bold fs-5">{{ '::StagnantStockReport' | abpLocalization }}</span>
+            </h4>
+          </div>
+          
+          <!-- Filters and Actions Section -->
+          <div class="col-md">
+            <div class="d-flex flex-wrap justify-content-end align-items-end gap-3">
+              <!-- Warehouse Selector -->
+              <div style="min-width: 240px;" class="form-group mb-0">
+                <label class="form-label small text-muted fw-bold mb-2">
+                  <i class="fa fa-warehouse me-1 small"></i> {{ '::Warehouse' | abpLocalization }}
+                </label>
+                <select class="form-select border-0 shadow-sm bg-light" [(ngModel)]="warehouseId" (change)="loadReport()">
+                  <option [ngValue]="null">{{ '::AllWarehouses' | abpLocalization }}</option>
+                  <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
+                </select>
+              </div>
+
+              <!-- Stagnancy Threshold -->
+              <div style="width: 160px;" class="form-group mb-0">
+                <label class="form-label small text-muted fw-bold mb-2">
+                  <i class="fa fa-clock me-1 small"></i> {{ '::DaysStagnant' | abpLocalization }}
+                </label>
+                <div class="input-group shadow-sm">
+                  <input type="number" class="form-control border-0 bg-light text-center" [(ngModel)]="thresholdDays" min="1">
+                  <span class="input-group-text border-0 bg-light small text-muted">{{ '::Days' | abpLocalization }}</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow-sm h-100" style="min-height: 38px;" (click)="loadReport()" [disabled]="isLoading">
+                  <i class="fa fa-sync-alt" [class.fa-spin]="isLoading"></i>
+                  <span class="d-none d-lg-inline">{{ '::Refresh' | abpLocalization }}</span>
+                </button>
+                <button class="btn btn-outline-primary d-flex align-items-center gap-2 px-4 shadow-sm h-100 border-2" style="min-height: 38px;" (click)="print()" [disabled]="isLoading">
+                  <i class="fa fa-print"></i>
+                  <span class="d-none d-lg-inline">{{ '::Print' | abpLocalization }}</span>
+                </button>
+              </div>
             </div>
-            <button class="btn btn-primary" (click)="loadReport()" [disabled]="isLoading">
-              <i class="fa fa-sync" [class.fa-spin]="isLoading"></i> تحديث
-            </button>
-            <button class="btn btn-outline-secondary" (click)="print()">
-                <i class="fa fa-print"></i> طباعة
-            </button>
+          </div>
         </div>
       </div>
-      <div class="card-body">
+      <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-bordered table-striped">
-            <thead>
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
               <tr>
-                <th>{{ '::ProductName' | abpLocalization }}</th>
+                <th class="ps-4">{{ '::ProductName' | abpLocalization }}</th>
                 <th>{{ '::Warehouse' | abpLocalization }}</th>
-                <th>الكمية المتوفرة</th>
-                <th>آخر حركة صرف</th>
-                <th>أيام الركود</th>
+                <th class="text-center">{{ '::AvailableQuantity' | abpLocalization }}</th>
+                <th class="text-center">{{ '::LastTransactionDate' | abpLocalization }}</th>
+                <th class="text-center">{{ '::DaysStagnant' | abpLocalization }}</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="isLoading">
-                <td colspan="5" class="text-center py-4">
+                <td colspan="5" class="text-center py-5">
                   <div class="spinner-border text-primary" role="status"></div>
                 </td>
               </tr>
               <tr *ngIf="!isLoading && reportData.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted">
-                    لا يوجد أصناف راكدة حسب المتطلبات الحالية
+                <td colspan="5" class="text-center py-5 text-muted">
+                    <i class="fa fa-info-circle me-2"></i>
+                    {{ '::NoStagnantItems' | abpLocalization }}
                 </td>
               </tr>
               <tr *ngFor="let item of reportData">
-                <td>{{ item.productName }}</td>
-                <td>{{ item.warehouseName }}</td>
-                <td>{{ item.currentQuantity | number:'1.0-2' }}</td>
-                <td>{{ item.lastTransactionDate ? (item.lastTransactionDate | date:'shortDate') : 'لا يوجد' }}</td>
-                <td class="text-danger fw-bold">{{ item.daysStagnant }} يوم</td>
+                <td class="ps-4 fw-bold text-dark">{{ item.productName }}</td>
+                <td>
+                    <span class="badge bg-light text-dark border">{{ item.warehouseName }}</span>
+                </td>
+                <td class="text-center fw-bold">{{ item.currentQuantity | number:'1.0-2' }}</td>
+                <td class="text-center text-muted">
+                    {{ item.lastTransactionDate ? (item.lastTransactionDate | date:'dd/MM/yyyy') : ('::NoData' | abpLocalization) }}
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-danger px-3 py-2">{{ item.daysStagnant }} {{ '::Days' | abpLocalization }}</span>
+                </td>
               </tr>
             </tbody>
           </table>

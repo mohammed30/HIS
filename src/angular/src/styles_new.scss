@@ -50,9 +50,9 @@ body {
 /* ===== DARK/LIGHT MODE THEME VARIABLES ===== */
 :root {
   /* Light Mode (Default) */
-  --lpx-theme-light-bg: url('assets/images/login/login-bg-img-light.svg');
-  --lpx-theme-dim-bg: url('assets/images/login/login-bg-img-dim.svg');
-  --lpx-theme-dark-bg: url('assets/images/login/login-bg-img-dark.svg');
+  --lpx-theme-light-bg: url('assets/images/login/medical-login-bg.png');
+  --lpx-theme-dim-bg: url('assets/images/login/medical-login-bg.png');
+  --lpx-theme-dark-bg: url('assets/images/login/medical-login-bg.png');
 
   --lpx-logo-icon: url('assets/images/logo/Dark.png');
   --lpx-logo-url: var(--lpx-logo-icon);

@@ -169,5 +169,10 @@ public static class HISPermissions
         public const string Reports = Default + ".Reports";
         public const string PaySlip = Default + ".PaySlip";
     }
+
+    public static class ActivityLogs
+    {
+        public const string Default = GroupName + ".ActivityLogs";
+    }
 }
 

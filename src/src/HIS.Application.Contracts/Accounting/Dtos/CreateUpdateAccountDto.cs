@@ -5,9 +5,8 @@ namespace HIS.Accounting.Dtos;
 
 public class CreateUpdateAccountDto
 {
-    [Required]
     [StringLength(32)]
-    public string Code { get; set; }
+    public string? Code { get; set; }
 
     [Required]
     [StringLength(128)]
