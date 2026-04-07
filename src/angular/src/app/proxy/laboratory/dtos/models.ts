@@ -78,3 +78,11 @@ export interface UpdateLabResultDto {
   result?: string;
   notes?: string;
 }
+
+export interface GetLabRequestsInput extends PagedAndSortedResultRequestDto {
+  fromDate?: string;
+  toDate?: string;
+  filter?: string;
+}
+
+import type { PagedAndSortedResultRequestDto } from '@abp/ng.core';

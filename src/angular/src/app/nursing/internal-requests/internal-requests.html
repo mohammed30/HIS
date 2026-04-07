@@ -87,14 +87,21 @@
           <label class="form-label">القسم الطالب</label>
           <select class="form-control" formControlName="requestingDepartmentId">
             <option [ngValue]="null">اختر القسم...</option>
-            <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
+            <option *ngFor="let dept of requestingDepartments" [ngValue]="dept.id">{{ dept.name }}</option>
           </select>
         </div>
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3 d-none">
           <label class="form-label">المستودع المورد</label>
           <select class="form-control" formControlName="fulfilledByWarehouseId">
             <option [ngValue]="null">اختر المستودع...</option>
             <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label text-primary">المريض المنوم (لخصم التكلفة - إن وجد)</label>
+          <select class="form-control" formControlName="admissionId">
+            <option [ngValue]="null">بدون مريض (صرف عام للقسم)</option>
+            <option *ngFor="let pt of activeAdmissions" [ngValue]="pt.id">{{ pt.displayName }}</option>
           </select>
         </div>
       </div>

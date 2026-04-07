@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -81,6 +81,12 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         await UpdateNameArAsync("5100", "مصروفات الرواتب", true);
         await UpdateNameArAsync("5200", "مصروفات مستلزمات", true);
         await UpdateNameArAsync("5300", "مصروفات مرافق", true);
+        
+        await EnsureAccountExistsAsync("5400", "Petty Cash & Sundry Expenses", "نثريات ومصاريف متنوعة", AccountType.Expense, expenses.Id);
+        await UpdateNameArAsync("5400", "نثريات ومصاريف متنوعة", true);
+
+        await EnsureAccountExistsAsync("5410", "Buffet Expenses", "مصاريف البوفيه", AccountType.Expense, expenses.Id);
+        await UpdateNameArAsync("5410", "مصاريف البوفيه", true);
         
         Logger.LogInformation("Financial Data Patch Completed.");
     }
@@ -176,6 +182,8 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         await CreateAccountAsync("5100", "Salaries Expense", "مصروفات الرواتب", AccountType.Expense, expenses.Id);
         await CreateAccountAsync("5200", "Supplies Expense", "مصروفات مستلزمات", AccountType.Expense, expenses.Id);
         await CreateAccountAsync("5300", "Utilities Expense", "مصروفات مرافق", AccountType.Expense, expenses.Id);
+        await CreateAccountAsync("5400", "Petty Cash & Sundry Expenses", "نثريات ومصاريف متنوعة", AccountType.Expense, expenses.Id);
+        await CreateAccountAsync("5410", "Buffet Expenses", "مصاريف البوفيه", AccountType.Expense, expenses.Id);
 
         // 6. Sample Journal Entries (only on fresh seed)
         await CreateJournalEntryAsync(DateTime.Now.AddDays(-30), "Initial Capital Injection", 

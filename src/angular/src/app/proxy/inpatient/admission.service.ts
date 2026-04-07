@@ -1,4 +1,4 @@
-import type { AdmissionDto, CreatePatientTransferDto, CreateUpdateAdmissionDto, DischargeAdmissionDto, GetAdmissionsInput } from './models';
+import type { AdmissionDto, CreatePatientTransferDto, CreateUpdateAdmissionDto, DischargeAdmissionDto, GetAdmissionsInput, AdmissionLookupDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -84,6 +84,13 @@ export class AdmissionService {
       method: 'PUT',
       url: `/api/app/admission/${id}/days`,
       params: { numberOfDays },
+    },
+    { apiName: this.apiName,...config });
+
+  getActiveAdmissionsLookup = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AdmissionLookupDto[]>({
+      method: 'GET',
+      url: '/api/app/admission/active-admissions-lookup',
     },
     { apiName: this.apiName,...config });
 }

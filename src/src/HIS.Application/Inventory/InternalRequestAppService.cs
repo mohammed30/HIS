@@ -15,17 +15,29 @@ namespace HIS.Inventory;
 public class InternalRequestAppService : CrudAppService<InternalRequest, InternalRequestDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateInternalRequestDto>, IInternalRequestAppService
 {
     private readonly InventoryManager _inventoryManager;
+    private readonly IRepository<Warehouse, Guid> _warehouseRepository;
 
     public InternalRequestAppService(
         IRepository<InternalRequest, Guid> repository,
+        IRepository<Warehouse, Guid> warehouseRepository,
         InventoryManager inventoryManager) 
         : base(repository)
     {
+        _warehouseRepository = warehouseRepository;
         _inventoryManager = inventoryManager;
     }
 
     public override async Task<InternalRequestDto> CreateAsync(CreateUpdateInternalRequestDto input)
     {
+        if (input.FulfilledByWarehouseId == Guid.Empty)
+        {
+            var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+            if (pharmacyWarehouse != null)
+            {
+                input.FulfilledByWarehouseId = pharmacyWarehouse.Id;
+            }
+        }
+
         var requestNumber = $"REQ-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
 
         var entity = new InternalRequest(
@@ -35,6 +47,7 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
             input.FulfilledByWarehouseId, 
             input.RequestDate)
         {
+            AdmissionId = input.AdmissionId,
             Notes = input.Notes,
             Status = InternalRequestStatus.Draft
         };
@@ -78,6 +91,10 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         if (entity.Status != InternalRequestStatus.Submitted)
             throw new UserFriendlyException("Only submitted requests can be approved.");
 
+        decimal totalChargeForPatient = 0m;
+        var serviceItemRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Services.ServiceItem, Guid>>();
+        var inventoryItemRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inventory.InventoryItem, Guid>>();
+
         // For simplicity, we auto-approve the full requested quantity here.
         // In a real UI, the Store Manager would pass the exactly approved quantities.
         foreach (var line in entity.Lines)
@@ -92,6 +109,31 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
                 $"Approved Req: {entity.RequestNumber}",
                 entity.RequestingDepartmentId // The department that takes the items
             );
+
+            // Calculate selling price for patient if admission is linked
+            if (entity.AdmissionId.HasValue)
+            {
+                var inventoryItem = await inventoryItemRepo.FindAsync(line.InventoryItemId);
+                if (inventoryItem != null)
+                {
+                    var serviceItem = await serviceItemRepo.FindAsync(inventoryItem.ProductId);
+                    if (serviceItem != null)
+                    {
+                        totalChargeForPatient += (serviceItem.Price * line.ApprovedQuantity);
+                    }
+                }
+            }
+        }
+
+        if (entity.AdmissionId.HasValue && totalChargeForPatient > 0)
+        {
+            var admissionRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inpatient.Admission, Guid>>();
+            var admission = await admissionRepo.FindAsync(entity.AdmissionId.Value);
+            if (admission != null)
+            {
+                admission.TotalAmount += totalChargeForPatient;
+                await admissionRepo.UpdateAsync(admission);
+            }
         }
 
         entity.Status = InternalRequestStatus.Approved;

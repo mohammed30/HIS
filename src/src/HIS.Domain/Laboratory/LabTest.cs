@@ -11,6 +11,7 @@ public class LabTest : FullAuditedAggregateRoot<Guid>
     public string? Instructions { get; set; }
     public string? ReferenceRange { get; set; }
     public string? Unit { get; set; }
+    public Guid? CategoryId { get; set; }
     public bool IsActive { get; set; }
 
     protected LabTest() { }

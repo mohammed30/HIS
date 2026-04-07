@@ -12,6 +12,9 @@ public class InternalRequestDto : FullAuditedEntityDto<Guid>
     public Guid FulfilledByWarehouseId { get; set; }
     public string FulfilledByWarehouseName { get; set; }
     
+    public Guid? AdmissionId { get; set; }
+    public string PatientName { get; set; }
+    
     public DateTime RequestDate { get; set; }
     public InternalRequestStatus Status { get; set; }
     public string Notes { get; set; }
@@ -33,6 +36,7 @@ public class CreateUpdateInternalRequestDto
 {
     public Guid RequestingDepartmentId { get; set; }
     public Guid FulfilledByWarehouseId { get; set; }
+    public Guid? AdmissionId { get; set; }
     public DateTime RequestDate { get; set; }
     public string Notes { get; set; }
 

@@ -8,6 +8,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { InventoryService } from '../../proxy/inventory/inventory.service';
 import { InventoryItemDto } from '../../proxy/inventory/dtos/models';
+import { DepartmentService } from '../../proxy/settings/department.service';
+import { LookupDto } from '../../proxy/settings/models';
+import { AdmissionService } from '../../proxy/inpatient/admission.service';
+import { AdmissionLookupDto } from '../../proxy/inpatient/models';
+
 @Component({
   selector: 'app-nursing-internal-requests',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, CoreModule, ThemeSharedModule],
@@ -23,6 +28,9 @@ export class InternalRequestsComponent implements OnInit {
   
   availableItems: InventoryItemDto[] = [];
   warehouses: any[] = [];
+  requestingDepartments: LookupDto[] = [];
+  activeAdmissions: AdmissionLookupDto[] = [];
+  pharmacyWarehouseId: string | null = null;
   
   // Dummy departments / warehouses for MVP
   myDepartmentId = '00000000-0000-0000-0000-000000000000'; // To be replaced in real
@@ -31,6 +39,8 @@ export class InternalRequestsComponent implements OnInit {
   constructor(
     private internalRequestService: InternalRequestService,
     private inventoryService: InventoryService,
+    private departmentService: DepartmentService,
+    private admissionService: AdmissionService,
     private confirmation: ConfirmationService,
     private fb: FormBuilder
   ) {}
@@ -39,12 +49,15 @@ export class InternalRequestsComponent implements OnInit {
     this.buildForm();
     this.getList();
     this.getWarehouses();
+    this.getDepartments();
+    this.getActiveAdmissions();
   }
 
   buildForm() {
     this.form = this.fb.group({
       requestingDepartmentId: [null, Validators.required],
       fulfilledByWarehouseId: [null, Validators.required],
+      admissionId: [null],
       requestDate: [new Date().toISOString(), Validators.required],
       notes: [''],
       lines: this.fb.array([])
@@ -84,6 +97,9 @@ export class InternalRequestsComponent implements OnInit {
 
   createRequest() {
     this.buildForm();
+    if (this.pharmacyWarehouseId) {
+      this.form.get('fulfilledByWarehouseId')?.setValue(this.pharmacyWarehouseId);
+    }
     this.addLine();
     this.isModalOpen = true;
   }
@@ -112,6 +128,30 @@ export class InternalRequestsComponent implements OnInit {
   getWarehouses() {
     this.inventoryService.getWarehouseList({ maxResultCount: 100, skipCount: 0, sorting: '' }).subscribe(res => {
       this.warehouses = res.items;
+      
+      const pharmacy = res.items.find(w => 
+        w.name.toLowerCase().includes('pharmacy') || 
+        w.name.includes('صيدلية')
+      );
+
+      if (pharmacy) {
+        this.pharmacyWarehouseId = pharmacy.id;
+        if (this.isModalOpen) {
+          this.form.get('fulfilledByWarehouseId')?.setValue(pharmacy.id);
+        }
+      }
+    });
+  }
+
+  getDepartments() {
+    this.departmentService.getMedicalDepartmentsLookup().subscribe(res => {
+      this.requestingDepartments = res;
+    });
+  }
+
+  getActiveAdmissions() {
+    this.admissionService.getActiveAdmissionsLookup().subscribe(res => {
+      this.activeAdmissions = res;
     });
   }
 

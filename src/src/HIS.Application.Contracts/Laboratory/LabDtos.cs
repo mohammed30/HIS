@@ -1,8 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Application.Dtos;
 
 namespace HIS.Laboratory.Dtos;
+
+public class LabTestCategoryDto : AuditedEntityDto<Guid>
+{
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public Guid? ParentId { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsActive { get; set; }
+    public List<LabTestCategoryDto> Children { get; set; } = new();
+    public List<LabTestDto> Tests { get; set; } = new();
+}
 
 public class LabTestDto : AuditedEntityDto<Guid>
 {
@@ -12,6 +24,8 @@ public class LabTestDto : AuditedEntityDto<Guid>
     public string? Instructions { get; set; }
     public string? ReferenceRange { get; set; }
     public string? Unit { get; set; }
+    public Guid? CategoryId { get; set; }
+    public string? CategoryName { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -26,6 +40,7 @@ public class CreateUpdateLabTestDto
     public string? Instructions { get; set; }
     public string? ReferenceRange { get; set; }
     public string? Unit { get; set; }
+    public Guid? CategoryId { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -58,6 +73,13 @@ public class UpdateLabResultDto
 {
     public string Result { get; set; }
     public string Notes { get; set; }
+}
+
+public class GetLabRequestsInput : PagedAndSortedResultRequestDto
+{
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+    public string? Filter { get; set; }
 }
 
 // --- Lab Appointments DTOs ---

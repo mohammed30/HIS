@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HIS.Laboratory.Dtos;
 using Volo.Abp.Application.Dtos;
@@ -8,6 +9,10 @@ namespace HIS.Laboratory;
 
 public interface ILabAppService : IApplicationService
 {
+    // Lab Test Categories
+    Task<List<LabTestCategoryDto>> GetCategoriesWithTestsAsync();
+    Task<List<LabTestCategoryDto>> GetCategoriesAsync();
+
     // Lab Tests (Catalog)
     Task<PagedResultDto<LabTestDto>> GetTestsAsync(PagedAndSortedResultRequestDto input);
     Task<LabTestDto> CreateTestAsync(CreateUpdateLabTestDto input);
@@ -15,7 +20,7 @@ public interface ILabAppService : IApplicationService
     Task DeleteTestAsync(Guid id);
 
     // Lab Requests
-    Task<PagedResultDto<LabRequestDto>> GetRequestsAsync(PagedAndSortedResultRequestDto input);
+    Task<PagedResultDto<LabRequestDto>> GetRequestsAsync(GetLabRequestsInput input);
     Task<LabRequestDto> CreateRequestAsync(CreateLabRequestDto input);
     Task<LabRequestDto> CollectSampleAsync(Guid id);
     Task<LabRequestDto> CompleteRequestAsync(Guid id, UpdateLabResultDto input);

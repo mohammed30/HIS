@@ -34,6 +34,7 @@ import { AdmissionStatus } from '../../proxy/inpatient/admission-status.enum';
 import { OperationStatus } from '../../proxy/operations/operation-status.enum';
 import { BedDto } from '../../proxy/rooms/models';
 import { BedStatus } from '../../proxy/rooms/bed-status.enum';
+import { LabService } from '../../proxy/laboratory/lab.service';
 
 @Component({
     selector: 'app-laboratory-reception',
@@ -61,6 +62,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     private operationService = inject(SurgicalOperationService);
     private doctorService = inject(DoctorService);
     private clinicService = inject(ClinicService);
+    private labService = inject(LabService);
     private confirmation = inject(ConfirmationService);
 
     @ViewChild('testSearchInput') testSearchInput!: ElementRef;
@@ -255,6 +257,8 @@ export class LaboratoryReceptionComponent implements OnInit {
     displayTests: any[] = [];
     selectedTests: any[] = [];
     testSearchText: string = '';
+    searchMode: 'code' | 'name' = 'code';
+    requestingDoctorId: string = '';
     ticketCount: number = 1;
 
     // Modal State
@@ -349,10 +353,16 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
         const lower = this.testSearchText.toLowerCase();
-        this.displayTests = this.availableTests.filter(t =>
-            (t.name && t.name.toLowerCase().includes(lower)) ||
-            (t.code && t.code.toLowerCase().includes(lower))
-        );
+        
+        if (this.searchMode === 'code') {
+            this.displayTests = this.availableTests.filter(t =>
+                t.code && t.code.toLowerCase().includes(lower)
+            );
+        } else {
+            this.displayTests = this.availableTests.filter(t =>
+                t.name && t.name.toLowerCase().includes(lower)
+            );
+        }
     }
 
     newPatient() {
@@ -505,6 +515,11 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
 
+        if (!this.requestingDoctorId) {
+            this.toaster.warn('يجب اختيار الطبيب المعالج', 'تنبيه');
+            return;
+        }
+
         if (this.selectedTests.length === 0) {
             this.toaster.warn('يجب اختيار فحص واحد على الأقل', 'تنبيه');
             return;
@@ -529,6 +544,18 @@ export class LaboratoryReceptionComponent implements OnInit {
         this.invoiceService.create(invoice).subscribe({
             next: (res) => {
                 this.toaster.success('تم حفظ الفاتورة بنجاح', 'نجاح');
+
+                // Create Lab Requests for the Lab Module
+                this.selectedTests.forEach(test => {
+                    this.labService.createRequest({
+                        patientId: this.patientInfo.id,
+                        doctorId: this.requestingDoctorId,
+                        serviceItemId: test.id,
+                        notes: 'Created from Reception screen'
+                    }).subscribe({
+                        error: (err) => console.error('Error creating LabRequest', err)
+                    });
+                });
 
                 // Create Payment if Paid Amount > 0
                 if (this.billingDetails.paidAmount > 0) {
@@ -559,6 +586,7 @@ export class LaboratoryReceptionComponent implements OnInit {
                 
                 // Clear state
                 this.selectedTests = [];
+                this.requestingDoctorId = '';
                 this.billingDetails = {
                     total: 0,
                     discount: 0,

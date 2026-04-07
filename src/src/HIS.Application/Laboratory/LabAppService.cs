@@ -20,6 +20,7 @@ namespace HIS.Laboratory;
 public class LabAppService : ApplicationService, ILabAppService
 {
     private readonly IRepository<LabTest, Guid> _testRepository;
+    private readonly IRepository<LabTestCategory, Guid> _categoryRepository;
     private readonly IRepository<LabRequest, Guid> _requestRepository;
     private readonly IRepository<LabAppointment, Guid> _appointmentRepository;
     private readonly IRepository<Patient, Guid> _patientRepository;
@@ -28,6 +29,7 @@ public class LabAppService : ApplicationService, ILabAppService
 
     public LabAppService(
         IRepository<LabTest, Guid> testRepository,
+        IRepository<LabTestCategory, Guid> categoryRepository,
         IRepository<LabRequest, Guid> requestRepository,
         IRepository<LabAppointment, Guid> appointmentRepository,
         IRepository<Patient, Guid> patientRepository,
@@ -36,6 +38,7 @@ public class LabAppService : ApplicationService, ILabAppService
         IWebHostEnvironment env)
     {
         _testRepository = testRepository;
+        _categoryRepository = categoryRepository;
         _requestRepository = requestRepository;
         _appointmentRepository = appointmentRepository;
         _patientRepository = patientRepository;
@@ -45,6 +48,61 @@ public class LabAppService : ApplicationService, ILabAppService
     }
 
     private readonly IWebHostEnvironment _env;
+
+    // --- CATEGORIES ---
+
+    public async Task<List<LabTestCategoryDto>> GetCategoriesWithTestsAsync()
+    {
+        var categories = await _categoryRepository.GetListAsync();
+        var tests = await _testRepository.GetListAsync();
+
+        var categoryDtos = categories
+            .OrderBy(c => c.SortOrder)
+            .Select(c => new LabTestCategoryDto
+            {
+                Id = c.Id,
+                Code = c.Code,
+                Name = c.Name,
+                ParentId = c.ParentId,
+                SortOrder = c.SortOrder,
+                IsActive = c.IsActive
+            }).ToList();
+
+        var testDtos = tests
+            .OrderBy(t => t.Code)
+            .Select(t =>
+            {
+                var dto = ObjectMapper.Map<LabTest, LabTestDto>(t);
+                dto.CategoryName = categories.FirstOrDefault(c => c.Id == t.CategoryId)?.Name;
+                return dto;
+            }).ToList();
+
+        // Build tree: assign tests & children to parent categories
+        foreach (var cat in categoryDtos)
+        {
+            cat.Tests = testDtos.Where(t => t.CategoryId == cat.Id).ToList();
+            cat.Children = categoryDtos.Where(c => c.ParentId == cat.Id).OrderBy(c => c.SortOrder).ToList();
+        }
+
+        // Return only root categories (no parent)
+        return categoryDtos.Where(c => c.ParentId == null).ToList();
+    }
+
+    public async Task<List<LabTestCategoryDto>> GetCategoriesAsync()
+    {
+        var categories = await _categoryRepository.GetListAsync();
+        return categories
+            .OrderBy(c => c.SortOrder)
+            .Select(c => new LabTestCategoryDto
+            {
+                Id = c.Id,
+                Code = c.Code,
+                Name = c.Name,
+                ParentId = c.ParentId,
+                SortOrder = c.SortOrder,
+                IsActive = c.IsActive
+            }).ToList();
+    }
 
     // --- TESTS ---
 
@@ -59,10 +117,22 @@ public class LabAppService : ApplicationService, ILabAppService
 
         var items = await AsyncExecuter.ToListAsync(query);
 
-        return new PagedResultDto<LabTestDto>(
-            totalCount,
-            ObjectMapper.Map<List<LabTest>, List<LabTestDto>>(items)
-        );
+        // Fetch category names
+        var categoryIds = items.Where(x => x.CategoryId.HasValue).Select(x => x.CategoryId!.Value).Distinct().ToList();
+        var categories = categoryIds.Any()
+            ? await _categoryRepository.GetListAsync(x => categoryIds.Contains(x.Id))
+            : new List<LabTestCategory>();
+
+        var dtos = items.Select(t =>
+        {
+            var dto = ObjectMapper.Map<LabTest, LabTestDto>(t);
+            dto.CategoryName = t.CategoryId.HasValue
+                ? categories.FirstOrDefault(c => c.Id == t.CategoryId.Value)?.Name
+                : null;
+            return dto;
+        }).ToList();
+
+        return new PagedResultDto<LabTestDto>(totalCount, dtos);
     }
 
     public async Task<LabTestDto> CreateTestAsync(CreateUpdateLabTestDto input)
@@ -80,6 +150,7 @@ public class LabAppService : ApplicationService, ILabAppService
             Instructions = input.Instructions,
             ReferenceRange = input.ReferenceRange,
             Unit = input.Unit,
+            CategoryId = input.CategoryId,
             IsActive = input.IsActive
         };
 
@@ -114,40 +185,51 @@ public class LabAppService : ApplicationService, ILabAppService
 
     // --- REQUESTS ---
 
-    public async Task<PagedResultDto<LabRequestDto>> GetRequestsAsync(PagedAndSortedResultRequestDto input)
+    public async Task<PagedResultDto<LabRequestDto>> GetRequestsAsync(GetLabRequestsInput input)
     {
-        var query = await _requestRepository.GetQueryableAsync();
-        
-        var totalCount = await AsyncExecuter.CountAsync(query);
-        
-        query = query.OrderBy(input.Sorting ?? "RequestDate DESC")
-                     .PageBy(input);
-                     
-        var requests = await AsyncExecuter.ToListAsync(query);
-        
-        // Fetch related data
-        var patientIds = requests.Select(x => x.PatientId).Distinct().ToList();
-        var doctorIds = requests.Select(x => x.DoctorId).Distinct().ToList();
-        var testIds = requests.Select(x => x.ServiceItemId).Distinct().ToList();
+        var requestQuery = await _requestRepository.GetQueryableAsync();
+        var patientQuery = await _patientRepository.GetQueryableAsync();
+        var doctorQuery = await _doctorRepository.GetQueryableAsync();
+        var testQuery = await _testRepository.GetQueryableAsync();
 
-        var patients = await _patientRepository.GetListAsync(x => patientIds.Contains(x.Id));
-        var doctors = await _doctorRepository.GetListAsync(x => doctorIds.Contains(x.Id));
-        
-        // Fetch from LabTests table instead of ServiceItems
-        var labTests = await _testRepository.GetListAsync(x => testIds.Contains(x.Id));
-
-        var dtos = requests.Select(r =>
+        // Apply filters to requestQuery
+        if (input.FromDate.HasValue)
         {
-            var dto = ObjectMapper.Map<LabRequest, LabRequestDto>(r);
-            var p = patients.FirstOrDefault(x => x.Id == r.PatientId);
-            var d = doctors.FirstOrDefault(x => x.Id == r.DoctorId);
-            var t = labTests.FirstOrDefault(x => x.Id == r.ServiceItemId);
+            var fromDate = input.FromDate.Value.Date;
+            requestQuery = requestQuery.Where(x => x.RequestDate >= fromDate);
+        }
 
-            dto.PatientName = p != null ? $"{p.FirstNameAr} {p.LastNameAr}" : "Unknown";
-            dto.DoctorName = d?.NameAr ?? "Unknown";
-            dto.TestName = t?.Name ?? "Unknown";
-            dto.TestCode = t?.Code ?? "-";
-            
+        if (input.ToDate.HasValue)
+        {
+            var toDate = input.ToDate.Value.Date.AddDays(1);
+            requestQuery = requestQuery.Where(x => x.RequestDate < toDate);
+        }
+
+        if (!string.IsNullOrEmpty(input.Filter))
+        {
+            requestQuery = requestQuery.Where(x => x.SampleNumber.Contains(input.Filter));
+        }
+
+        var totalCount = await AsyncExecuter.CountAsync(requestQuery);
+
+        var combinedQuery = from request in requestQuery
+                            join patient in patientQuery on request.PatientId equals patient.Id
+                            join doctor in doctorQuery on request.DoctorId equals doctor.Id
+                            join test in testQuery on request.ServiceItemId equals test.Id
+                            select new { request, patient, doctor, test };
+
+        combinedQuery = combinedQuery.OrderBy(input.Sorting != null ? "request." + input.Sorting : "request.RequestDate DESC")
+                                     .PageBy(input);
+
+        var results = await AsyncExecuter.ToListAsync(combinedQuery);
+
+        var dtos = results.Select(x =>
+        {
+            var dto = ObjectMapper.Map<LabRequest, LabRequestDto>(x.request);
+            dto.PatientName = $"{x.patient.FirstNameAr} {x.patient.LastNameAr}";
+            dto.DoctorName = x.doctor.NameAr ?? "Unknown";
+            dto.TestName = x.test.Name;
+            dto.TestCode = x.test.Code;
             return dto;
         }).ToList();
 

@@ -13,6 +13,11 @@ public class InternalRequest : FullAuditedAggregateRoot<Guid>
     public Guid RequestingDepartmentId { get; set; } // e.g. Pharmacy Id, Nursing Ward Id
     public Guid FulfilledByWarehouseId { get; set; } // e.g. Main Store Id
     
+    /// <summary>
+    /// المريض المنوم (لخصم التكلفة على حسابه)
+    /// </summary>
+    public Guid? AdmissionId { get; set; }
+
     public DateTime RequestDate { get; set; }
     public InternalRequestStatus Status { get; set; }
     public string? Notes { get; set; }

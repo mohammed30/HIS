@@ -99,3 +99,8 @@ export interface ReservationDto extends FullAuditedEntityDto<string> {
   status?: ReservationStatus;
   notes?: string;
 }
+
+export interface AdmissionLookupDto {
+  id: string;
+  displayName: string;
+}

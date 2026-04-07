@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
@@ -688,5 +689,24 @@ public class AdmissionAppService : CrudAppService<
             x.ServiceItemId == serviceItem.Id);
 
         return customPrice != null ? customPrice.CustomPrice : defaultPrice;
+    }
+
+    public async Task<List<AdmissionLookupDto>> GetActiveAdmissionsLookupAsync()
+    {
+        var admissions = await Repository.GetListAsync(x => x.Status == AdmissionStatus.Active);
+        var patientIds = admissions.Select(x => x.PatientId).Distinct().ToList();
+        var patients = await _patientRepository.GetListAsync(x => patientIds.Contains(x.Id));
+
+        var lookup = new List<AdmissionLookupDto>();
+        foreach (var admission in admissions)
+        {
+            var patient = patients.FirstOrDefault(x => x.Id == admission.PatientId);
+            lookup.Add(new AdmissionLookupDto
+            {
+                Id = admission.Id,
+                DisplayName = patient?.FullNameAr ?? patient?.MRN ?? "مريض مجهول"
+            });
+        }
+        return lookup;
     }
 }

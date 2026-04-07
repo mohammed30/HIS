@@ -62,6 +62,7 @@ public class HISDbContext :
     public DbSet<WaitingList> WaitingLists { get; set; }
 
     // Laboratory Module (New)
+    public DbSet<HIS.Laboratory.LabTestCategory> LabTestCategories { get; set; }
     public DbSet<HIS.Laboratory.LabTest> LabTests { get; set; }
     public DbSet<HIS.Laboratory.LabRequest> LabRequests { get; set; }
     public DbSet<HIS.Laboratory.LabAppointment> LabAppointments { get; set; }
@@ -444,6 +445,16 @@ public class HISDbContext :
 
         // --- Laboratory Module ---
 
+        builder.Entity<HIS.Laboratory.LabTestCategory>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "LabTestCategories", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            b.HasIndex(x => x.Code).IsUnique();
+            b.HasIndex(x => x.ParentId);
+        });
+
         builder.Entity<HIS.Laboratory.LabTest>(b =>
         {
             b.ToTable(HISConsts.DbTablePrefix + "LabTests", HISConsts.DbSchema);
@@ -453,6 +464,7 @@ public class HISDbContext :
             b.Property(x => x.Price).HasPrecision(18, 2);
             b.Property(x => x.Instructions).HasMaxLength(1024);
             b.HasIndex(x => x.Code).IsUnique();
+            b.HasIndex(x => x.CategoryId);
         });
 
         builder.Entity<HIS.Laboratory.LabRequest>(b =>

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy } from '@angular/core';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LabService } from '../../proxy/laboratory/lab.service';
@@ -18,7 +19,7 @@ import { DoctorService } from '../../proxy/settings/doctor.service';
     providers: [ListService],
     templateUrl: './lab-requests.component.html'
 })
-export class LabRequestsComponent implements OnInit {
+export class LabRequestsComponent implements OnInit, OnDestroy {
     labService = inject(LabService);
     patientService = inject(PatientService);
     doctorService = inject(DoctorService);
@@ -27,6 +28,13 @@ export class LabRequestsComponent implements OnInit {
 
     data: PagedResultDto<LabRequestDto> = { items: [], totalCount: 0 };
     searchText = '';
+    private searchSubject = new Subject<string>();
+    private destroy$ = new Subject<void>();
+
+    // Filters
+    filterByDate = true;
+    fromDate = new Date().toISOString().split('T')[0];
+    toDate = new Date().toISOString().split('T')[0];
 
     // Create modal
     isCreateModalOpen = false;
@@ -46,10 +54,45 @@ export class LabRequestsComponent implements OnInit {
     statuses = LabRequestStatus;
 
     ngOnInit() {
-        this.list.hookToQuery(query => this.labService.getRequests({ ...query, searchText: this.searchText })).subscribe(res => {
+        this.list.hookToQuery(query => {
+            const params: any = { ...query, filter: this.searchText };
+            if (this.filterByDate) {
+                params.fromDate = this.fromDate;
+                params.toDate = this.toDate;
+            }
+            return this.labService.getRequests(params);
+        }).subscribe(res => {
             this.data = res;
         });
+
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(() => {
+            this.list.get();
+        });
+
         this.loadDropdownData();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    onSearch(value: string) {
+        this.searchText = value;
+        this.searchSubject.next(value);
+    }
+
+    onFilterChange() {
+        this.list.get();
+    }
+
+    toggleDateFilter() {
+        this.filterByDate = !this.filterByDate;
+        this.list.get();
     }
 
     loadDropdownData() {

@@ -255,6 +255,8 @@ export interface InternalRequestDto extends FullAuditedEntityDto<string> {
   requestingDepartmentName?: string;
   fulfilledByWarehouseId?: string;
   fulfilledByWarehouseName?: string;
+  admissionId?: string;
+  patientName?: string;
   requestDate?: string;
   status: InternalRequestStatus;
   notes?: string;
@@ -273,6 +275,7 @@ export interface InternalRequestLineDto extends FullAuditedEntityDto<string> {
 export interface CreateUpdateInternalRequestDto {
   requestingDepartmentId?: string;
   fulfilledByWarehouseId?: string;
+  admissionId?: string;
   requestDate?: string;
   notes?: string;
   lines: CreateUpdateInternalRequestLineDto[];

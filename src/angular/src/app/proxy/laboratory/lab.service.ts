@@ -1,4 +1,4 @@
-import type { CreateLabAppointmentDto, CreateLabRequestDto, CreateUpdateLabTestDto, LabAppointmentDto, LabRequestDto, LabTestDto, UpdateLabAppointmentDto, UpdateLabResultDto } from './dtos/models';
+import type { CreateLabAppointmentDto, CreateLabRequestDto, CreateUpdateLabTestDto, GetLabRequestsInput, LabAppointmentDto, LabRequestDto, LabTestDto, UpdateLabAppointmentDto, UpdateLabResultDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -130,11 +130,18 @@ export class LabService {
     { apiName: this.apiName,...config });
   
 
-  getRequests = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getRequests = (input: GetLabRequestsInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<LabRequestDto>>({
       method: 'GET',
       url: '/api/app/lab/requests',
-      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { 
+        sorting: input.sorting, 
+        skipCount: input.skipCount, 
+        maxResultCount: input.maxResultCount,
+        fromDate: input.fromDate,
+        toDate: input.toDate,
+        filter: input.filter
+      },
     },
     { apiName: this.apiName,...config });
   

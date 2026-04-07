@@ -17,13 +17,36 @@
         </div>
     </div>
     <div class="card-body">
-        <!-- Search Input -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization"
-                        [(ngModel)]="searchText" (keyup.enter)="list.get()" (ngModelChange)="list.get()">
+        <!-- Filters & Search -->
+        <div class="row g-3 mb-4 align-items-end p-3 bg-light rounded border shadow-sm">
+            <div class="col-md-auto">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" id="filterByDate" [(ngModel)]="filterByDate" (change)="onFilterChange()">
+                    <label class="form-check-label fw-bold text-primary" for="filterByDate">
+                        <i class="fas fa-calendar-check me-1"></i> فلترة بالتاريخ
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3" [hidden]="!filterByDate">
+                <label class="form-label small fw-bold text-muted">من تاريخ</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="far fa-calendar-alt"></i></span>
+                    <input type="date" class="form-control" [(ngModel)]="fromDate" (change)="onFilterChange()">
+                </div>
+            </div>
+            <div class="col-md-3" [hidden]="!filterByDate">
+                <label class="form-label small fw-bold text-muted">إلى تاريخ</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="far fa-calendar-alt"></i></span>
+                    <input type="date" class="form-control" [(ngModel)]="toDate" (change)="onFilterChange()">
+                </div>
+            </div>
+            <div class="col-md-3 ms-auto">
+                <label class="form-label small fw-bold text-muted">بحث سريع</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-primary"></i></span>
+                    <input type="text" class="form-control border-start-0" [placeholder]="'::Search' | abpLocalization"
+                        [ngModel]="searchText" (input)="onSearch($any($event.target).value)">
                 </div>
             </div>
         </div>
