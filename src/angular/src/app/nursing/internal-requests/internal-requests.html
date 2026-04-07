@@ -13,40 +13,28 @@
     </div>
   </div>
   <div class="card-body">
-    <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="getList" default>
+    <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
       <ngx-datatable-column
         [name]="'::Actions' | abpLocalization"
-        [maxWidth]="150"
+        [maxWidth]="200"
         [sortable]="false"
       >
         <ng-template let-row="row" ngx-datatable-cell-template>
-          <div ngbDropdown container="body" class="d-inline-block">
+          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Draft">
             <button
-              class="btn btn-primary btn-sm dropdown-toggle"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              ngbDropdownToggle
+              class="btn btn-primary btn-sm"
+              (click)="submit(row.id)"
             >
-              <i class="fa fa-cog me-1"></i> {{ '::Actions' | abpLocalization }}
+              <i class="fa fa-paper-plane me-1"></i> إرسال للاعتماد
             </button>
-            <div ngbDropdownMenu>
-              <!-- Submit action -->
-              <button
-                ngbDropdownItem
-                (click)="submit(row.id)"
-                *ngIf="row.status === statusEnum.Draft"
-              >
-                إرسال للاعتماد
-              </button>
-              <!-- Receive action -->
-              <button
-                ngbDropdownItem
-                (click)="receive(row.id)"
-                *ngIf="row.status === statusEnum.Approved"
-              >
-                تأكيد الاستلام
-              </button>
-            </div>
+          </div>
+          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Approved">
+            <button
+              class="btn btn-success btn-sm"
+              (click)="receive(row.id)"
+            >
+              <i class="fa fa-check-circle me-1"></i> تأكيد الاستلام
+            </button>
           </div>
         </ng-template>
       </ngx-datatable-column>
@@ -116,10 +104,24 @@
         <div class="row align-items-center mb-2" *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
           <div class="col-6">
             <label class="form-label" *ngIf="i === 0">الصنف</label>
-            <select class="form-control" formControlName="inventoryItemId">
-              <option [ngValue]="null">اختر الصنف...</option>
-              <option *ngFor="let ai of availableItems" [ngValue]="ai.productId">{{ ai.productName }} ({{ ai.quantity }})</option>
-            </select>
+            <ng-template #rt let-r="result" let-t="term">
+               <div class="d-flex justify-content-between">
+                 <span><ngb-highlight [result]="r.productName" [term]="t"></ngb-highlight></span>
+                 <small class="text-muted">({{ r.quantity }})</small>
+               </div>
+            </ng-template>
+
+            <input
+              type="text"
+              class="form-control"
+              formControlName="selectedItem"
+              [ngbTypeahead]="searchItems"
+              [inputFormatter]="itemFormatter"
+              [resultTemplate]="rt"
+              (selectItem)="onSelectItem($event, i)"
+              placeholder="ابحث عن صنف..."
+            />
+            <input type="hidden" formControlName="inventoryItemId" />
           </div>
           <div class="col-4">
             <label class="form-label" *ngIf="i === 0">الكمية المطلوبة</label>

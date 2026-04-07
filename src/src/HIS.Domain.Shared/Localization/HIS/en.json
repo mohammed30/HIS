@@ -906,6 +906,10 @@
     "AbpUi:Save": "Save",
     "Nursing:Enum:ShiftType:0": "Morning",
     "Nursing:Enum:ShiftType:1": "Evening",
-    "Nursing:Enum:ShiftType:2": "Night"
+    "Nursing:Enum:ShiftType:2": "Night",
+    "Menu:DispensingVerification": "Dispensing Verification",
+    "Menu:POS": "Point of Sale",
+    "Menu:InventoryInternalRequests": "Internal Requests",
+    "Menu:NursingInternalRequests": "Internal Requests (Nursing)"
   }
 }

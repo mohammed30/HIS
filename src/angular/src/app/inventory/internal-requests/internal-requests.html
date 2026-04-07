@@ -12,33 +12,24 @@
     </div>
   </div>
   <div class="card-body">
-    <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="getList" default>
+    <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
       <ngx-datatable-column
         [name]="'::Actions' | abpLocalization"
-        [maxWidth]="150"
+        [maxWidth]="200"
         [sortable]="false"
       >
         <ng-template let-row="row" ngx-datatable-cell-template>
-          <div ngbDropdown container="body" class="d-inline-block">
-            <button
-              class="btn btn-primary btn-sm dropdown-toggle"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              ngbDropdownToggle
-            >
-              <i class="fa fa-cog me-1"></i> الإجراءات
-            </button>
-            <div ngbDropdownMenu>
-              <!-- Approve action -->
-              <button
-                ngbDropdownItem
-                (click)="approve(row.id)"
-                *ngIf="row.status === statusEnum.Submitted"
-              >
-                اعتماد وصرف الكمية
-              </button>
-            </div>
-          </div>
+          <button
+            class="btn btn-success btn-sm"
+            (click)="approve(row.id)"
+            *ngIf="row.status === statusEnum.Submitted"
+          >
+            <i class="fa fa-check me-1"></i> اعتماد وصرف الكمية
+          </button>
+          
+          <span *ngIf="row.status !== statusEnum.Submitted" class="text-muted small">
+            لا توجد إجراءات معلقة
+          </span>
         </ng-template>
       </ngx-datatable-column>
 

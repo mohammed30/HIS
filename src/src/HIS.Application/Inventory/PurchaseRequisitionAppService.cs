@@ -70,15 +70,34 @@ public class PurchaseRequisitionAppService : CrudAppService<
         await Repository.UpdateAsync(entity);
     }
 
+    protected override async Task<PurchaseRequisitionDto> MapToGetListOutputDtoAsync(PurchaseRequisition entity)
+    {
+        return await MapToGetOutputDtoAsync(entity);
+    }
+
     protected override async Task<PurchaseRequisitionDto> MapToGetOutputDtoAsync(PurchaseRequisition entity)
     {
         var dto = await base.MapToGetOutputDtoAsync(entity);
         
-        var dept = await _departmentRepository.FindAsync(entity.DepartmentId);
-        dto.DepartmentName = dept?.NameAr ?? dept?.NameEn ?? "Unknown";
+        if (entity.DepartmentId != Guid.Empty)
+        {
+            var dept = await _departmentRepository.FindAsync(entity.DepartmentId);
+            dto.DepartmentName = dept?.NameAr ?? dept?.NameEn ?? "Unknown";
+        }
+        else
+        {
+            dto.DepartmentName = "None";
+        }
 
-        var user = await _userRepository.FindAsync(entity.RequestorId);
-        dto.RequestorName = user?.UserName ?? "Unknown";
+        if (entity.RequestorId != Guid.Empty)
+        {
+            var user = await _userRepository.FindAsync(entity.RequestorId);
+            dto.RequestorName = user?.UserName ?? "Unknown";
+        }
+        else
+        {
+            dto.RequestorName = "System";
+        }
 
         return dto;
     }

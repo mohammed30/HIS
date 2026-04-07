@@ -88,17 +88,29 @@ public class InventoryCountAppService : ApplicationService, IInventoryCountAppSe
         if (input.ToDate.HasValue)
             queryable = queryable.Where(x => x.CountDate <= input.ToDate.Value);
 
-        var totalCount = queryable.Count();
-        var items = queryable.OrderByDescending(x => x.CountDate)
-            .Skip(input.SkipCount)
-            .Take(input.MaxResultCount)
-            .ToList();
+        var totalCount = await AsyncExecuter.CountAsync(queryable);
+        
+        var items = await AsyncExecuter.ToListAsync(
+            queryable.OrderByDescending(x => x.CountDate)
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount)
+        );
 
         var dtos = ObjectMapper.Map<List<InventoryCount>, List<InventoryCountDto>>(items);
-        foreach (var dto in dtos)
+        
+        if (dtos.Any())
         {
-            var warehouse = await _warehouseRepository.FindAsync(dto.WarehouseId);
-            dto.WarehouseName = warehouse?.Name ?? "N/A";
+            var warehouseIds = dtos.Select(x => x.WarehouseId).Distinct().ToList();
+            var warehouses = await _warehouseRepository.GetListAsync(x => warehouseIds.Contains(x.Id));
+            var warehouseDict = warehouses.ToDictionary(x => x.Id, x => x.Name);
+            
+            foreach (var dto in dtos)
+            {
+                if (warehouseDict.TryGetValue(dto.WarehouseId, out var name))
+                {
+                    dto.WarehouseName = name;
+                }
+            }
         }
 
         return new PagedResultDto<InventoryCountDto>(totalCount, dtos);

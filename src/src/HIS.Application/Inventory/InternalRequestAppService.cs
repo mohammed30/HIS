@@ -16,14 +16,20 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
 {
     private readonly InventoryManager _inventoryManager;
     private readonly IRepository<Warehouse, Guid> _warehouseRepository;
+    private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
+    private readonly IRepository<HIS.Inventory.InventoryItem, Guid> _inventoryItemRepository;
 
     public InternalRequestAppService(
         IRepository<InternalRequest, Guid> repository,
         IRepository<Warehouse, Guid> warehouseRepository,
+        IRepository<HIS.Settings.Department, Guid> departmentRepository,
+        IRepository<HIS.Inventory.InventoryItem, Guid> inventoryItemRepository,
         InventoryManager inventoryManager) 
         : base(repository)
     {
         _warehouseRepository = warehouseRepository;
+        _departmentRepository = departmentRepository;
+        _inventoryItemRepository = inventoryItemRepository;
         _inventoryManager = inventoryManager;
     }
 
@@ -68,6 +74,19 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         return await MapToGetOutputDtoAsync(entity);
     }
 
+    protected override async Task<IQueryable<InternalRequest>> CreateFilteredQueryAsync(PagedAndSortedResultRequestDto input)
+    {
+        return await Repository.WithDetailsAsync(x => x.Lines);
+    }
+
+    protected override async Task<InternalRequest> GetEntityByIdAsync(Guid id)
+    {
+        var query = await Repository.WithDetailsAsync(x => x.Lines);
+        var entity = await AsyncExecuter.FirstOrDefaultAsync(query.Where(x => x.Id == id));
+        if (entity == null) throw new Volo.Abp.Domain.Entities.EntityNotFoundException(typeof(InternalRequest), id);
+        return entity;
+    }
+
     public async Task<InternalRequestDto> SubmitRequestAsync(Guid id)
     {
         var entity = await Repository.GetAsync(id);
@@ -101,10 +120,13 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         {
             line.ApprovedQuantity = line.RequestedQuantity; 
 
+            var inventoryItem = await inventoryItemRepo.FindAsync(line.InventoryItemId);
+            if (inventoryItem == null) throw new Volo.Abp.BusinessException("Inventory:ItemNotFound");
+
             // Issue stock out of the main store (FulfilledByWarehouseId)
             await _inventoryManager.IssueStockAsync(
                 entity.FulfilledByWarehouseId,
-                line.InventoryItemId,
+                inventoryItem.ProductId,
                 line.ApprovedQuantity,
                 $"Approved Req: {entity.RequestNumber}",
                 entity.RequestingDepartmentId // The department that takes the items
@@ -113,14 +135,10 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
             // Calculate selling price for patient if admission is linked
             if (entity.AdmissionId.HasValue)
             {
-                var inventoryItem = await inventoryItemRepo.FindAsync(line.InventoryItemId);
-                if (inventoryItem != null)
+                var serviceItem = await serviceItemRepo.FindAsync(inventoryItem.ProductId);
+                if (serviceItem != null)
                 {
-                    var serviceItem = await serviceItemRepo.FindAsync(inventoryItem.ProductId);
-                    if (serviceItem != null)
-                    {
-                        totalChargeForPatient += (serviceItem.Price * line.ApprovedQuantity);
-                    }
+                    totalChargeForPatient += (serviceItem.Price * line.ApprovedQuantity);
                 }
             }
         }
@@ -159,6 +177,42 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         entity.Status = InternalRequestStatus.Received;
         await Repository.UpdateAsync(entity);
 
+        return await MapToGetOutputDtoAsync(entity);
+    }
+
+    protected override async Task<InternalRequestDto> MapToGetOutputDtoAsync(InternalRequest entity)
+    {
+        var dto = await base.MapToGetOutputDtoAsync(entity);
+        
+        var department = await _departmentRepository.FindAsync(entity.RequestingDepartmentId);
+        dto.RequestingDepartmentName = department?.NameAr ?? department?.NameEn ?? "قسم طبي";
+        
+        var warehouse = await _warehouseRepository.FindAsync(entity.FulfilledByWarehouseId);
+        dto.FulfilledByWarehouseName = warehouse?.Name ?? "N/A";
+
+        if (entity.AdmissionId.HasValue)
+        {
+            var admissionRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inpatient.Admission, Guid>>();
+            var patientRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Patients.Patient, Guid>>();
+            var admission = await admissionRepo.FindAsync(entity.AdmissionId.Value);
+            if (admission != null)
+            {
+                var patient = await patientRepo.FindAsync(admission.PatientId);
+                dto.PatientName = patient?.FullNameAr ?? "Unknown Patient";
+            }
+        }
+
+        foreach (var lineDto in dto.Lines)
+        {
+            var inventoryItem = await _inventoryItemRepository.FindAsync(lineDto.InventoryItemId);
+            lineDto.InventoryItemName = inventoryItem?.ProductName ?? "Unknown Item";
+        }
+
+        return dto;
+    }
+
+    protected override async Task<InternalRequestDto> MapToGetListOutputDtoAsync(InternalRequest entity)
+    {
         return await MapToGetOutputDtoAsync(entity);
     }
 }

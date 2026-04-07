@@ -2,9 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { InternalRequestService, InternalRequestStatus } from '../../proxy/inventory';
 import { InternalRequestDto, CreateUpdateInternalRequestDto } from '../../proxy/inventory/dtos/models';
 import { PagedResultDto, CoreModule } from '@abp/ng.core';
-import { finalize } from 'rxjs/operators';
+import { finalize, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { Observable, of, OperatorFunction } from 'rxjs';
+import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { InventoryService } from '../../proxy/inventory/inventory.service';
 import { InventoryItemDto } from '../../proxy/inventory/dtos/models';
@@ -15,7 +18,7 @@ import { AdmissionLookupDto } from '../../proxy/inpatient/models';
 
 @Component({
   selector: 'app-nursing-internal-requests',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, CoreModule, ThemeSharedModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CoreModule, ThemeSharedModule, NgbTypeaheadModule, NgxDatatableModule, NgbDropdownModule],
   templateUrl: './internal-requests.html',
   styleUrl: './internal-requests.scss'
 })
@@ -76,6 +79,7 @@ export class InternalRequestsComponent implements OnInit {
   addLine() {
     this.lines.push(this.fb.group({
       inventoryItemId: [null, Validators.required],
+      selectedItem: [null], // Temporary to hold the object for typeahead
       requestedQuantity: [1, [Validators.required, Validators.min(0.01)]],
       notes: ['']
     }));
@@ -107,7 +111,14 @@ export class InternalRequestsComponent implements OnInit {
   save() {
     if (this.form.invalid) return;
 
-    this.internalRequestService.create(this.form.value).subscribe(() => {
+    // Clean data before sending (remove selectedItem helper)
+    const requestData = { ...this.form.value };
+    requestData.lines = this.lines.value.map(line => {
+      const { selectedItem, ...rest } = line;
+      return rest;
+    });
+
+    this.internalRequestService.create(requestData).subscribe(() => {
       this.isModalOpen = false;
       this.getList();
     });
@@ -159,6 +170,22 @@ export class InternalRequestsComponent implements OnInit {
     this.inventoryService.getStockLevels(warehouseId).subscribe(res => {
       this.availableItems = res.items;
     });
+  }
+
+  // Typeahead search function
+  searchItems: OperatorFunction<string, readonly InventoryItemDto[]> = (text$: Observable<string>) =>
+    text$.pipe(
+      debounceTime(200),
+      distinctUntilChanged(),
+      map(term => term.length < 2 ? []
+        : this.availableItems.filter(v => v.productName.toLowerCase().indexOf(term.toLowerCase()) > -1).slice(0, 10))
+    );
+
+  itemFormatter = (x: InventoryItemDto) => x.productName;
+
+  onSelectItem(event: NgbTypeaheadSelectItemEvent, index: number) {
+    const item = event.item as InventoryItemDto;
+    this.lines.at(index).get('inventoryItemId')?.setValue(item.id);
   }
 
   getStatusText(status: number) {

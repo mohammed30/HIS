@@ -115,6 +115,12 @@ public class HISDbContext :
     public DbSet<HIS.Inventory.InventoryTransaction> InventoryTransactions { get; set; }
     public DbSet<HIS.Inventory.InventoryBatch> InventoryBatches { get; set; }
     
+    public DbSet<HIS.Inventory.PurchaseRequisition> PurchaseRequisitions { get; set; }
+    public DbSet<HIS.Inventory.PurchaseRequisitionLine> PurchaseRequisitionLines { get; set; }
+    
+    public DbSet<HIS.Inventory.InventoryCount> InventoryCounts { get; set; }
+    public DbSet<HIS.Inventory.InventoryCountItem> InventoryCountItems { get; set; }
+
     public DbSet<HIS.Inventory.PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<HIS.Inventory.PurchaseOrderLine> PurchaseOrderLines { get; set; }
     
@@ -1421,5 +1427,54 @@ public class HISDbContext :
                 b.HasIndex(x => x.EmployeeId);
                 b.HasIndex(x => x.Date);
             });
+
+            // Purchase Requisitions (Procurement)
+            builder.Entity<HIS.Inventory.PurchaseRequisition>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PurchaseRequisitions", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.RequisitionNumber).HasMaxLength(32).IsRequired();
+                b.Property(x => x.Notes).HasMaxLength(2048);
+                
+                b.HasIndex(x => x.RequisitionNumber).IsUnique();
+                b.HasIndex(x => x.DepartmentId);
+                b.HasIndex(x => x.RequestorId);
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.RequiredDate);
+
+                b.HasMany(x => x.Lines).WithOne().HasForeignKey(x => x.PurchaseRequisitionId).IsRequired();
+            });
+
+            builder.Entity<HIS.Inventory.PurchaseRequisitionLine>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PurchaseRequisitionLines", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Quantity).HasPrecision(18, 4);
+                b.Property(x => x.Description).HasMaxLength(512);
+
+                b.HasIndex(x => x.PurchaseRequisitionId);
+                b.HasIndex(x => x.ProductId);
+            });
+
+            builder.Entity<HIS.Inventory.InventoryCount>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "InventoryCounts", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.InventoryCountId).IsRequired();
+                b.HasIndex(x => x.WarehouseId);
+            });
+
+            builder.Entity<HIS.Inventory.InventoryCountItem>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "InventoryCountItems", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.SystemQuantity).HasPrecision(18, 4);
+                b.Property(x => x.CountedQuantity).HasPrecision(18, 4);
+                
+                b.HasIndex(x => x.InventoryCountId);
+                b.HasIndex(x => x.InventoryItemId);
+            });
+
     }
 }
+

@@ -619,7 +619,7 @@ function configureRoutes() {
     },
     {
       path: '/inventory/internal-requests',
-      name: '::Menu:InternalRequests',
+      name: '::Menu:InventoryInternalRequests',
       parentName: '::Menu:Inventory',
       iconClass: 'fas fa-exchange-alt',
       order: 39,
@@ -699,7 +699,7 @@ function configureRoutes() {
     },
     {
       path: '/nursing/internal-requests',
-      name: '::Menu:InternalRequests',
+      name: '::Menu:NursingInternalRequests',
       parentName: '::Menu:Nursing',
       iconClass: 'fas fa-clipboard-check',
       order: 3,

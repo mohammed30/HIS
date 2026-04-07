@@ -1072,6 +1072,10 @@
                   "Covered": "مغطى",
                   "TotalServicesAmount": "إجمالي الكلي للخدمات",
                   "TotalInsuranceCoverage": "إجمالي تغطية التأمين",
-                  "NetRequiredFromPatient": "الصافي المطلوب من المريض"
-  }
+                  "NetRequiredFromPatient": "الصافي المطلوب من المريض",
+                  "Menu:DispensingVerification": "تدقيق الصرف",
+                  "Menu:POS": "نقطة البيع",
+                  "Menu:InventoryInternalRequests": "طلبات الصرف الداخلي",
+                  "Menu:NursingInternalRequests": "طلبات داخلية (التمريض)"
+    }
 }
