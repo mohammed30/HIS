@@ -8,6 +8,8 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp;
+using HIS.Billing;
+using HIS.Inpatient;
 
 namespace HIS.Inventory;
 
@@ -18,18 +20,24 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
     private readonly IRepository<Warehouse, Guid> _warehouseRepository;
     private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
     private readonly IRepository<HIS.Inventory.InventoryItem, Guid> _inventoryItemRepository;
+    private readonly IRepository<Invoice, Guid> _invoiceRepository;
+    private readonly IRepository<InvoiceItem, Guid> _invoiceItemRepository;
 
     public InternalRequestAppService(
         IRepository<InternalRequest, Guid> repository,
         IRepository<Warehouse, Guid> warehouseRepository,
         IRepository<HIS.Settings.Department, Guid> departmentRepository,
         IRepository<HIS.Inventory.InventoryItem, Guid> inventoryItemRepository,
+        IRepository<Invoice, Guid> invoiceRepository,
+        IRepository<InvoiceItem, Guid> invoiceItemRepository,
         InventoryManager inventoryManager) 
         : base(repository)
     {
         _warehouseRepository = warehouseRepository;
         _departmentRepository = departmentRepository;
         _inventoryItemRepository = inventoryItemRepository;
+        _invoiceRepository = invoiceRepository;
+        _invoiceItemRepository = invoiceItemRepository;
         _inventoryManager = inventoryManager;
     }
 
@@ -145,12 +153,59 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
 
         if (entity.AdmissionId.HasValue && totalChargeForPatient > 0)
         {
-            var admissionRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inpatient.Admission, Guid>>();
+            var admissionRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<Admission, Guid>>();
             var admission = await admissionRepo.FindAsync(entity.AdmissionId.Value);
             if (admission != null)
             {
+                // Create or find Invoice
+                Invoice invoice;
+                if (admission.InvoiceId.HasValue)
+                {
+                    invoice = await _invoiceRepository.GetAsync(admission.InvoiceId.Value);
+                }
+                else
+                {
+                    var invoiceNumber = $"INV-INP-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+                    invoice = new Invoice(GuidGenerator.Create(), CurrentTenant.Id, admission.PatientId, invoiceNumber)
+                    {
+                        Status = InvoiceStatus.Draft,
+                        Notes = $"Inpatient bill for Admission {admission.AdmissionDate:yyyy-MM-dd}"
+                    };
+                    await _invoiceRepository.InsertAsync(invoice);
+                    admission.InvoiceId = invoice.Id;
+                }
+
+                // Add itemized lines to invoice
+                foreach (var line in entity.Lines)
+                {
+                    var inventoryItem = await _inventoryItemRepository.GetAsync(line.InventoryItemId);
+                    var serviceItem = await serviceItemRepo.FindAsync(inventoryItem.ProductId);
+                    
+                    if (serviceItem != null)
+                    {
+                        var invoiceItem = new InvoiceItem(
+                            GuidGenerator.Create(),
+                            CurrentTenant.Id,
+                            invoice.Id,
+                            inventoryItem.ProductName,
+                            serviceItem.Price)
+                        {
+                            Quantity = line.ApprovedQuantity,
+                            ServiceCode = serviceItem.Code,
+                            ServiceType = inventoryItem.Type == InventoryItemType.Medication ? ServiceType.Medication : ServiceType.Consumables,
+                            Notes = $"From Internal Request {entity.RequestNumber}"
+                        };
+                        await _invoiceItemRepository.InsertAsync(invoiceItem);
+                    }
+                }
+
+                // Update totals
                 admission.TotalAmount += totalChargeForPatient;
                 await admissionRepo.UpdateAsync(admission);
+                
+                invoice.TotalAmount += totalChargeForPatient;
+                invoice.NetAmount = invoice.TotalAmount - invoice.DiscountAmount + invoice.TaxAmount;
+                await _invoiceRepository.UpdateAsync(invoice);
             }
         }
 

@@ -2,7 +2,7 @@ import { Environment } from '@abp/ng.core';
 
 const baseUrl = 'http://asiahospitalhis-001-site1.qtempurl.com';
 const oAuthConfig = {
-  issuer: 'http://strategicmoves-001-site1.jtempurl.com/',
+  issuer: 'http://strategicmoves-001-site1.jtempurl.com',
   redirectUri: baseUrl,
   clientId: 'HIS_App',
   responseType: 'code',
