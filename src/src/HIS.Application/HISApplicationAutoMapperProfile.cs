@@ -151,6 +151,9 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Services.RadiologyItem, Services.RadiologyItemDto>();
         CreateMap<Services.CreateUpdateRadiologyItemDto, Services.RadiologyItem>();
 
+        CreateMap<Radiology.RadiologyRequest, Radiology.RadiologyRequestDto>();
+        CreateMap<Radiology.CreateUpdateRadiologyRequestDto, Radiology.RadiologyRequest>();
+
         // Pricing
         CreateMap<Pricing.PriceList, Pricing.PriceListDto>();
         CreateMap<Pricing.CreateUpdatePriceListDto, Pricing.PriceList>();

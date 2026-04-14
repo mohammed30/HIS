@@ -36,11 +36,29 @@ export class DrugService {
     { apiName: this.apiName,...config });
   
 
+  getImportTemplate = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Blob>({
+      method: 'GET',
+      responseType: 'blob',
+      url: '/api/app/drug/import-template',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<DrugDto>>({
       method: 'GET',
       url: '/api/app/drug',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  importExcel = (input: FormData, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/drug/import-excel',
+      body: input,
     },
     { apiName: this.apiName,...config });
   

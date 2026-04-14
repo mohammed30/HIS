@@ -14,5 +14,7 @@ public enum InternalRequestStatus
     /// <summary>مستلم (تم التأكيد من قبل القسم الطالب)</summary>
     Received = 3,
     /// <summary>مرفوض</summary>
-    Rejected = 4
+    Rejected = 4,
+    /// <summary>ملغي</summary>
+    Cancelled = 5
 }

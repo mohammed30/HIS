@@ -1,4 +1,4 @@
-import type { CreateLabAppointmentDto, CreateLabRequestDto, CreateUpdateLabTestDto, GetLabRequestsInput, LabAppointmentDto, LabRequestDto, LabTestDto, UpdateLabAppointmentDto, UpdateLabResultDto } from './dtos/models';
+import type { CreateLabAppointmentDto, CreateLabRequestDto, CreateUpdateLabTestDto, GetLabRequestsInput, LabAppointmentDto, LabRequestDto, LabTestCategoryDto, LabTestDto, UpdateLabAppointmentDto, UpdateLabResultDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -121,6 +121,22 @@ export class LabService {
     { apiName: this.apiName,...config });
   
 
+  getCategories = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, LabTestCategoryDto[]>({
+      method: 'GET',
+      url: '/api/app/lab/categories',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCategoriesWithTests = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, LabTestCategoryDto[]>({
+      method: 'GET',
+      url: '/api/app/lab/categories-with-tests',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getRequestOrderPdf = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, Blob>({
       method: 'GET',
@@ -134,14 +150,7 @@ export class LabService {
     this.restService.request<any, PagedResultDto<LabRequestDto>>({
       method: 'GET',
       url: '/api/app/lab/requests',
-      params: { 
-        sorting: input.sorting, 
-        skipCount: input.skipCount, 
-        maxResultCount: input.maxResultCount,
-        fromDate: input.fromDate,
-        toDate: input.toDate,
-        filter: input.filter
-      },
+      params: { fromDate: input.fromDate, toDate: input.toDate, filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -153,6 +162,7 @@ export class LabService {
       url: `/api/app/lab/result-pdf/${id}`,
     },
     { apiName: this.apiName,...config });
+  
 
   getSampleBarcodePdf = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, Blob>({

@@ -8,13 +8,13 @@ import type { PaymentStatus } from './payment-status.enum';
 
 export interface CreateDeferredPaymentDto {
   patientId?: string;
-  invoiceId?: string;
+  invoiceId?: string | null;
   totalAmount?: number;
   dueDate?: string;
   numberOfInstallments?: number;
-  reason?: string;
-  contactPhone?: string;
-  notes?: string;
+  reason?: string | null;
+  contactPhone?: string | null;
+  notes?: string | null;
 }
 
 export interface CreateInpatientDepositDto {
@@ -22,47 +22,47 @@ export interface CreateInpatientDepositDto {
   admissionId?: string;
   amount?: number;
   paymentMethod?: PaymentMethod;
-  referenceNumber?: string;
-  notes?: string;
+  referenceNumber?: string | null;
+  notes?: string | null;
 }
 
 export interface CreatePaymentDto {
-  invoiceId?: string;
+  invoiceId?: string | null;
   patientId?: string;
   amount?: number;
   paymentMethod?: PaymentMethod;
-  referenceNumber?: string;
-  notes?: string;
+  referenceNumber?: string | null;
+  notes?: string | null;
 }
 
 export interface CreateUpdateInvoiceDto {
   patientId?: string;
-  dueDate?: string;
+  dueDate?: string | null;
   discountAmount?: number;
   taxPercentage?: number;
-  patientInsuranceId?: string;
-  appointmentId?: string;
-  notes?: string;
-  items?: CreateUpdateInvoiceItemDto[];
+  patientInsuranceId?: string | null;
+  appointmentId?: string | null;
+  notes?: string | null;
+  items?: CreateUpdateInvoiceItemDto[] | null;
 }
 
 export interface CreateUpdateInvoiceItemDto {
   serviceType?: ServiceType;
-  serviceCode?: string;
+  serviceCode?: string | null;
   description?: string;
   quantity?: number;
   unitPrice?: number;
   discountPercentage?: number;
   discountAmount?: number;
   isCoveredByInsurance?: boolean;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface DeferredPaymentDto extends FullAuditedEntityDto<string> {
   patientId?: string;
-  patientName?: string;
-  invoiceId?: string;
-  invoiceNumber?: string;
+  patientName?: string | null;
+  invoiceId?: string | null;
+  invoiceNumber?: string | null;
   deferredNumber?: string;
   totalAmount?: number;
   paidAmount?: number;
@@ -72,61 +72,61 @@ export interface DeferredPaymentDto extends FullAuditedEntityDto<string> {
   numberOfInstallments?: number;
   installmentAmount?: number;
   status?: DeferredPaymentStatus;
-  reason?: string;
-  contactPhone?: string;
-  notes?: string;
+  reason?: string | null;
+  contactPhone?: string | null;
+  notes?: string | null;
 }
 
 export interface GetDeferredPaymentsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  patientId?: string;
-  status?: DeferredPaymentStatus;
+  searchText?: string | null;
+  patientId?: string | null;
+  status?: DeferredPaymentStatus | null;
 }
 
 export interface GetInpatientDepositsInput extends PagedAndSortedResultRequestDto {
-  patientId?: string;
-  admissionId?: string;
-  status?: DepositStatus;
+  patientId?: string | null;
+  admissionId?: string | null;
+  status?: DepositStatus | null;
 }
 
 export interface GetInvoicesInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  patientId?: string;
-  status?: InvoiceStatus;
-  fromDate?: string;
-  toDate?: string;
+  searchText?: string | null;
+  patientId?: string | null;
+  status?: InvoiceStatus | null;
+  fromDate?: string | null;
+  toDate?: string | null;
 }
 
 export interface GetPaymentsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  patientId?: string;
-  invoiceId?: string;
-  paymentMethod?: PaymentMethod;
-  fromDate?: string;
-  toDate?: string;
+  searchText?: string | null;
+  patientId?: string | null;
+  invoiceId?: string | null;
+  paymentMethod?: PaymentMethod | null;
+  fromDate?: string | null;
+  toDate?: string | null;
 }
 
 export interface InpatientDepositDto extends FullAuditedEntityDto<string> {
   patientId?: string;
-  patientName?: string;
+  patientName?: string | null;
   admissionId?: string;
   receiptNumber?: string;
   depositDate?: string;
   amount?: number;
   paymentMethod?: PaymentMethod;
-  referenceNumber?: string;
-  journalEntryId?: string;
-  receivedBy?: string;
-  notes?: string;
+  referenceNumber?: string | null;
+  journalEntryId?: string | null;
+  receivedBy?: string | null;
+  notes?: string | null;
   status?: DepositStatus;
 }
 
 export interface InvoiceDto extends FullAuditedEntityDto<string> {
   patientId?: string;
-  patientName?: string;
+  patientName?: string | null;
   invoiceNumber?: string;
   invoiceDate?: string;
-  dueDate?: string;
+  dueDate?: string | null;
   totalAmount?: number;
   discountAmount?: number;
   taxPercentage?: number;
@@ -137,17 +137,17 @@ export interface InvoiceDto extends FullAuditedEntityDto<string> {
   insuranceCoverage?: number;
   coPaymentAmount?: number;
   status?: InvoiceStatus;
-  patientInsuranceId?: string;
-  appointmentId?: string;
-  notes?: string;
-  items?: InvoiceItemDto[];
+  patientInsuranceId?: string | null;
+  appointmentId?: string | null;
+  notes?: string | null;
+  items?: InvoiceItemDto[] | null;
 }
 
 export interface InvoiceItemDto {
   id?: string;
   invoiceId?: string;
   serviceType?: ServiceType;
-  serviceCode?: string;
+  serviceCode?: string | null;
   description?: string;
   quantity?: number;
   unitPrice?: number;
@@ -155,7 +155,7 @@ export interface InvoiceItemDto {
   discountAmount?: number;
   totalPrice?: number;
   isCoveredByInsurance?: boolean;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface PaymentDailyReportDto {
@@ -165,18 +165,18 @@ export interface PaymentDailyReportDto {
 }
 
 export interface PaymentDto extends FullAuditedEntityDto<string> {
-  invoiceId?: string;
-  invoiceNumber?: string;
+  invoiceId?: string | null;
+  invoiceNumber?: string | null;
   patientId?: string;
-  patientName?: string;
+  patientName?: string | null;
   paymentNumber?: string;
   paymentDate?: string;
   amount?: number;
   paymentMethod?: PaymentMethod;
-  referenceNumber?: string;
+  referenceNumber?: string | null;
   status?: PaymentStatus;
-  receivedBy?: string;
-  notes?: string;
+  receivedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface PaymentMethodSummaryDto {

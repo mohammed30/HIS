@@ -8,7 +8,7 @@ export interface AccountDto extends AuditedEntityDto<string> {
   name?: string;
   nameAr?: string;
   type?: AccountType;
-  parentId?: string;
+  parentId?: string | null;
   parentName?: string;
   isActive?: boolean;
 }
@@ -18,7 +18,7 @@ export interface AccountLookupDto extends EntityDto<string> {
   name?: string;
   nameAr?: string;
   type?: AccountType;
-  parentId?: string;
+  parentId?: string | null;
   hasChildren?: boolean;
 }
 
@@ -33,7 +33,7 @@ export interface AccountStatementDto {
 }
 
 export interface AccountStatementInputDto {
-  accountId?: string;
+  accountId?: string | null;
   startDate?: string;
   endDate?: string;
 }
@@ -78,7 +78,7 @@ export interface BankTransactionDto extends AuditedEntityDto<string> {
   description?: string;
   amount?: number;
   transactionType?: BankTransactionType;
-  relatedJournalEntryId?: string;
+  relatedJournalEntryId?: string | null;
 }
 
 export interface CashFlowStatementDto {
@@ -114,11 +114,11 @@ export interface ContractClaimDto extends AuditedEntityDto<string> {
 }
 
 export interface CreateUpdateAccountDto {
-  code: string;
+  code?: string | null;
   name: string;
   nameAr?: string;
   type?: AccountType;
-  parentId?: string;
+  parentId?: string | null;
 }
 
 export interface CreateUpdateBankTransactionDto {
@@ -152,11 +152,11 @@ export interface CreateUpdateJournalEntryLineDto {
 
 export interface CreateUpdatePaymentVoucherDto {
   date?: string;
-  supplierId?: string;
+  supplierId?: string | null;
   payeeName?: string;
   amount?: number;
   description?: string;
-  paymentMethodId?: string;
+  paymentMethodId?: string | null;
   lines?: CreateUpdatePaymentVoucherLineDto[];
 }
 
@@ -168,11 +168,11 @@ export interface CreateUpdatePaymentVoucherLineDto {
 
 export interface CreateUpdateReceiptVoucherDto {
   date?: string;
-  patientId?: string;
+  patientId?: string | null;
   payerName?: string;
   amount?: number;
   description?: string;
-  paymentMethodId?: string;
+  paymentMethodId?: string | null;
   lines?: CreateUpdateReceiptVoucherLineDto[];
 }
 
@@ -271,12 +271,12 @@ export interface JournalEntryLineDto extends EntityDto<string> {
 export interface PaymentVoucherDto extends AuditedEntityDto<string> {
   voucherNumber?: string;
   date?: string;
-  supplierId?: string;
+  supplierId?: string | null;
   supplierName?: string;
   payeeName?: string;
   amount?: number;
   description?: string;
-  paymentMethodId?: string;
+  paymentMethodId?: string | null;
   paymentMethodName?: string;
   lines?: PaymentVoucherLineDto[];
 }
@@ -291,12 +291,12 @@ export interface PaymentVoucherLineDto extends EntityDto<string> {
 export interface ReceiptVoucherDto extends AuditedEntityDto<string> {
   voucherNumber?: string;
   date?: string;
-  patientId?: string;
+  patientId?: string | null;
   patientName?: string;
   payerName?: string;
   amount?: number;
   description?: string;
-  paymentMethodId?: string;
+  paymentMethodId?: string | null;
   paymentMethodName?: string;
   lines?: ReceiptVoucherLineDto[];
 }

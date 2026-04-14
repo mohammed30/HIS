@@ -8,15 +8,15 @@ export interface CreateUpdateRadiologyItemDto extends CreateUpdateServiceItemDto
 }
 
 export interface CreateUpdateServiceItemDto {
-  code?: string;
+  code?: string | null;
   name?: string;
   category?: ServiceCategory;
-  departmentId?: string;
+  departmentId?: string | null;
   isActive?: boolean;
-  price?: number;
-  unit?: string;
-  referenceRange?: string;
-  instructions?: string;
+  price?: number | null;
+  unit?: string | null;
+  referenceRange?: string | null;
+  instructions?: string | null;
 }
 
 export interface RadiologyItemDto extends ServiceItemDto {
@@ -29,10 +29,10 @@ export interface ServiceItemDto extends AuditedEntityDto<string> {
   code?: string;
   name?: string;
   category?: ServiceCategory;
-  departmentId?: string;
+  departmentId?: string | null;
   isActive?: boolean;
-  price?: number;
-  unit?: string;
-  referenceRange?: string;
-  instructions?: string;
+  price?: number | null;
+  unit?: string | null;
+  referenceRange?: string | null;
+  instructions?: string | null;
 }

@@ -24,7 +24,7 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'http://strategicmoves-001-site1.jtempurl.com/',
+      url: 'http://strategicmoves-001-site1.jtempurl.com',
       rootNamespace: 'HIS',
     },
     AbpAccountPublic: {

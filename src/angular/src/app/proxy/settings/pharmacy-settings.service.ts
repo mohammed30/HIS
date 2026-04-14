@@ -1,27 +1,28 @@
-import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
 import type { PharmacySettingsDto } from './models';
+import { RestService, Rest } from '@abp/ng.core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PharmacySettingsService {
+  private restService = inject(RestService);
   apiName = 'Default';
+  
 
-  get = () =>
+  get = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, PharmacySettingsDto>({
       method: 'GET',
       url: '/api/app/pharmacy-settings',
     },
-    { apiName: this.apiName });
+    { apiName: this.apiName,...config });
+  
 
-  update = (input: PharmacySettingsDto) =>
+  update = (input: PharmacySettingsDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',
       url: '/api/app/pharmacy-settings',
       body: input,
     },
-    { apiName: this.apiName });
-
-  constructor(private restService: RestService) {}
+    { apiName: this.apiName,...config });
 }

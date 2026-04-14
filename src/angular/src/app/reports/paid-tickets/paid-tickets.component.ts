@@ -5,7 +5,8 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { LocalizationService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { ReportService, PaidTicketDto, GetPaidTicketsInput } from '../../proxy/reports/report.service';
+import { ReportService } from '../../proxy/reports/report.service';
+import { PaidTicketDto, GetPaidTicketsInput } from '../../proxy/reports/models';
 
 @Component({
   selector: 'app-paid-tickets',
@@ -61,7 +62,9 @@ export class PaidTicketsComponent implements OnInit {
   }
 
   exportPdf() {
-    const url = this.reportService.getPaidTicketsPdf(this.filters);
-    window.open(url, '_blank');
+    this.reportService.getPaidTicketsPdf(this.filters).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    });
   }
 }

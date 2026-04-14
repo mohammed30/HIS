@@ -3,12 +3,12 @@ import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/
 export interface ClinicDto extends FullAuditedEntityDto<string> {
   code?: string;
   nameAr?: string;
-  nameEn?: string;
+  nameEn?: string | null;
   departmentId?: string;
-  departmentName?: string;
-  location?: string;
-  roomNumber?: string;
-  extensionNumber?: string;
+  departmentName?: string | null;
+  location?: string | null;
+  roomNumber?: string | null;
+  extensionNumber?: string | null;
   capacity?: number;
   appointmentDuration?: number;
   consultationFee?: number;
@@ -17,13 +17,13 @@ export interface ClinicDto extends FullAuditedEntityDto<string> {
 }
 
 export interface CreateUpdateClinicDto {
-  code?: string;
+  code?: string | null;
   nameAr?: string;
-  nameEn?: string;
+  nameEn?: string | null;
   departmentId?: string;
-  location?: string;
-  roomNumber?: string;
-  extensionNumber?: string;
+  location?: string | null;
+  roomNumber?: string | null;
+  extensionNumber?: string | null;
   capacity?: number;
   appointmentDuration?: number;
   consultationFee?: number;
@@ -32,58 +32,61 @@ export interface CreateUpdateClinicDto {
 }
 
 export interface CreateUpdateDepartmentDto {
-  code?: string;
+  code?: string | null;
   nameAr?: string;
-  nameEn?: string;
-  description?: string;
-  location?: string;
-  extensionNumber?: string;
-  managerId?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  location?: string | null;
+  extensionNumber?: string | null;
+  managerId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
   isMedical?: boolean;
-  costCenterId?: string;
+  costCenterId?: string | null;
 }
 
 export interface CreateUpdateDoctorDto {
-  code?: string;
+  code?: string | null;
   nameAr?: string;
-  nameEn?: string;
+  nameEn?: string | null;
   specialtyId?: string;
   departmentId?: string;
-  licenseNumber?: string;
-  licenseExpiryDate?: string;
-  mobileNumber?: string;
-  email?: string;
-  degree?: string;
+  clinicId?: string | null;
+  licenseNumber?: string | null;
+  licenseExpiryDate?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  degree?: string | null;
   consultationFee?: number;
+  morningConsultationFee?: number;
+  eveningConsultationFee?: number;
   followUpFee?: number;
   appointmentDuration?: number;
-  bio?: string;
-  userId?: string;
+  bio?: string | null;
+  userId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
 }
 
 export interface CreateUpdateLaboratoryDto {
-  code?: string;
+  code?: string | null;
   nameAr?: string;
-  nameEn?: string;
-  description?: string;
-  location?: string;
-  extensionNumber?: string;
-  managerId?: string;
-  workingHours?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  location?: string | null;
+  extensionNumber?: string | null;
+  managerId?: string | null;
+  workingHours?: string | null;
   is24Hours?: boolean;
   isActive?: boolean;
   sortOrder?: number;
 }
 
 export interface CreateUpdateSpecialtyDto {
-  code?: string;
+  code?: string | null;
   nameAr?: string;
-  nameEn?: string;
-  description?: string;
+  nameEn?: string | null;
+  description?: string | null;
   isActive?: boolean;
   sortOrder?: number;
 }
@@ -91,89 +94,91 @@ export interface CreateUpdateSpecialtyDto {
 export interface DepartmentDto extends FullAuditedEntityDto<string> {
   code?: string;
   nameAr?: string;
-  nameEn?: string;
-  description?: string;
-  location?: string;
-  extensionNumber?: string;
-  managerId?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  location?: string | null;
+  extensionNumber?: string | null;
+  managerId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
   isMedical?: boolean;
-  costCenterId?: string;
+  costCenterId?: string | null;
 }
 
 export interface DoctorDto extends FullAuditedEntityDto<string> {
   code?: string;
   nameAr?: string;
-  nameEn?: string;
+  nameEn?: string | null;
   specialtyId?: string;
-  specialtyName?: string;
+  specialtyName?: string | null;
   departmentId?: string;
-  departmentName?: string;
-  licenseNumber?: string;
-  licenseExpiryDate?: string;
-  mobileNumber?: string;
-  email?: string;
-  degree?: string;
+  departmentName?: string | null;
+  clinicId?: string | null;
+  clinicName?: string | null;
+  licenseNumber?: string | null;
+  licenseExpiryDate?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  degree?: string | null;
   consultationFee?: number;
   morningConsultationFee?: number;
   eveningConsultationFee?: number;
   followUpFee?: number;
   appointmentDuration?: number;
-  photoUrl?: string;
-  bio?: string;
-  userId?: string;
+  photoUrl?: string | null;
+  bio?: string | null;
+  userId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
 }
 
 export interface GetClinicsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  departmentId?: string;
-  isActive?: boolean;
+  searchText?: string | null;
+  departmentId?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface GetDepartmentsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  isActive?: boolean;
-  isMedical?: boolean;
+  searchText?: string | null;
+  isActive?: boolean | null;
+  isMedical?: boolean | null;
 }
 
 export interface GetDoctorsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  specialtyId?: string;
-  departmentId?: string;
-  isActive?: boolean;
+  searchText?: string | null;
+  specialtyId?: string | null;
+  departmentId?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface GetLaboratoriesInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  isActive?: boolean;
+  searchText?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface GetSpecialtiesInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  isActive?: boolean;
+  searchText?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface HospitalSettingsDto {
   hospitalName: string;
-  hospitalAddress?: string;
-  hospitalPhone?: string;
-  hospitalEmail?: string;
-  hospitalLogo?: string;
-  hospitalTaxNumber?: string;
+  hospitalAddress?: string | null;
+  hospitalPhone?: string | null;
+  hospitalEmail?: string | null;
+  hospitalLogo?: string | null;
+  hospitalTaxNumber?: string | null;
 }
 
 export interface LaboratoryDto extends FullAuditedEntityDto<string> {
   code?: string;
   nameAr?: string;
-  nameEn?: string;
-  description?: string;
-  location?: string;
-  extensionNumber?: string;
-  managerId?: string;
-  workingHours?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  location?: string | null;
+  extensionNumber?: string | null;
+  managerId?: string | null;
+  workingHours?: string | null;
   is24Hours?: boolean;
   isActive?: boolean;
   sortOrder?: number;
@@ -184,30 +189,15 @@ export interface LookupDto {
   name?: string;
 }
 
+export interface PharmacySettingsDto {
+  allowNegativeStock?: boolean;
+}
+
 export interface SpecialtyDto extends FullAuditedEntityDto<string> {
   code?: string;
   nameAr?: string;
-  nameEn?: string;
-  description?: string;
+  nameEn?: string | null;
+  description?: string | null;
   isActive?: boolean;
   sortOrder?: number;
-}
-
-export interface JobTitleDto extends FullAuditedEntityDto<string> {
-  nameAr?: string;
-  nameEn?: string;
-  description?: string;
-  departmentId?: string;
-  departmentName?: string;
-}
-
-export interface CreateUpdateJobTitleDto {
-  nameAr?: string;
-  nameEn?: string;
-  description?: string;
-  departmentId?: string;
-}
-
-export interface PharmacySettingsDto {
-  allowNegativeStock: boolean;
 }

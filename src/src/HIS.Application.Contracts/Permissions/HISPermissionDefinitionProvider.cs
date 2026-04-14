@@ -42,7 +42,8 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         laboratory.AddChild(HISPermissions.Laboratory.ApproveResults, L("Permission:ApproveResults"));
         laboratory.AddChild(HISPermissions.Laboratory.Catalog, L("Permission:Catalog"));
         laboratory.AddChild(HISPermissions.Laboratory.Requests, L("Permission:Requests"));
-        laboratory.AddChild(HISPermissions.Laboratory.Appointments, L("Permission:LabAppointments"));
+        laboratory.AddChild(HISPermissions.Radiology.Default, L("Permission:RadiologyDept"));
+        laboratory.AddChild(HISPermissions.Radiology.Requests, L("Permission:RadiologyRequests"));
 
         // Emergency
         var emergency = hisGroup.AddPermission(HISPermissions.Emergency.Default, L("Permission:Emergency"));

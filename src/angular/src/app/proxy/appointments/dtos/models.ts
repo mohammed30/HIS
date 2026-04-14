@@ -14,6 +14,7 @@ export interface AppointmentDto extends AuditedEntityDto<string> {
   status?: AppointmentStatus;
   type?: AppointmentType;
   isWalkIn?: boolean;
+  consultationFee?: number;
   notes?: string;
 }
 
@@ -21,14 +22,14 @@ export interface BookClinicAppointmentDto {
   patientId?: string;
   clinicId?: string;
   doctorId?: string;
-  serviceItemId?: string;
+  serviceItemId?: string | null;
   appointmentDate?: string;
   type?: AppointmentType;
   isWalkIn?: boolean;
   createInvoice?: boolean;
   paymentMethod?: string;
-  paidAmount?: number;
-  discount?: number;
+  paidAmount?: number | null;
+  discount?: number | null;
 }
 
 export interface CreateAppointmentDto {
@@ -38,12 +39,13 @@ export interface CreateAppointmentDto {
   appointmentDate?: string;
   type?: AppointmentType;
   isWalkIn?: boolean;
+  consultationFee?: number;
   notes?: string;
 }
 
 export interface CreateUpdateWaitingListDto {
   patientId?: string;
-  doctorId?: string;
+  doctorId?: string | null;
   departmentId?: string;
   requestDate?: string;
   priority?: WaitingListPriority;
@@ -52,14 +54,14 @@ export interface CreateUpdateWaitingListDto {
 }
 
 export interface LookupDto<TKey> {
-  id?: TKey;
+  id?: TKey | null;
   name?: string;
 }
 
 export interface WaitingListDto extends AuditedEntityDto<string> {
   patientId?: string;
   patientName?: string;
-  doctorId?: string;
+  doctorId?: string | null;
   doctorName?: string;
   departmentId?: string;
   departmentName?: string;

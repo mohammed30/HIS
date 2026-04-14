@@ -3,57 +3,57 @@ import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/
 
 export interface CreateUpdateSurgicalOperationDto {
   patientId?: string;
-  doctorId?: string;
-  operationTypeId?: string;
+  doctorId?: string | null;
+  operationTypeId?: string | null;
   operationName?: string;
   operationDate?: string;
-  details?: string;
+  details?: string | null;
   totalAmount?: number;
   companyShare?: number;
   patientShare?: number;
   status?: OperationStatus;
-  admissionId?: string;
+  admissionId?: string | null;
   surgeonFeePercentage?: number;
   surgeonFeeAmount?: number;
-  anesthesiologistId?: string;
+  anesthesiologistId?: string | null;
   anesthesiologistFeePercentage?: number;
   anesthesiologistFeeAmount?: number;
   hospitalShareAmount?: number;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface GetSurgicalOperationsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  patientId?: string;
-  doctorId?: string;
-  status?: OperationStatus;
-  specialtyId?: string;
-  fromDate?: string;
-  toDate?: string;
+  searchText?: string | null;
+  patientId?: string | null;
+  doctorId?: string | null;
+  status?: OperationStatus | null;
+  specialtyId?: string | null;
+  fromDate?: string | null;
+  toDate?: string | null;
 }
 
 export interface SurgicalOperationDto extends FullAuditedEntityDto<string> {
   patientId?: string;
-  patientName?: string;
-  doctorId?: string;
-  doctorName?: string;
-  operationTypeId?: string;
+  patientName?: string | null;
+  doctorId?: string | null;
+  doctorName?: string | null;
+  operationTypeId?: string | null;
   operationName?: string;
-  specialtyName?: string;
+  specialtyName?: string | null;
   operationDate?: string;
-  details?: string;
+  details?: string | null;
   totalAmount?: number;
   companyShare?: number;
   patientShare?: number;
   insuranceTotal?: number;
   status?: OperationStatus;
-  invoiceId?: string;
-  admissionId?: string;
+  invoiceId?: string | null;
+  admissionId?: string | null;
   surgeonFeePercentage?: number;
   surgeonFeeAmount?: number;
-  anesthesiologistId?: string;
+  anesthesiologistId?: string | null;
   anesthesiologistFeePercentage?: number;
   anesthesiologistFeeAmount?: number;
   hospitalShareAmount?: number;
-  notes?: string;
+  notes?: string | null;
 }

@@ -137,9 +137,11 @@ public class HISDbContext :
     // Pharmacy (Master Data)
     public DbSet<HIS.Pharmacy.Drug> Drugs { get; set; }
     
-    // Phase 3: Stock & POS
     public DbSet<HIS.Pharmacy.StockTransfer> StockTransfers { get; set; }
     public DbSet<HIS.Pharmacy.DispensingVerification> DispensingVerifications { get; set; }
+
+    // Radiology Module
+    public DbSet<HIS.Radiology.RadiologyRequest> RadiologyRequests { get; set; }
 
     // Rooms & Inpatient
     public DbSet<HIS.Rooms.Room> Rooms { get; set; }
@@ -496,6 +498,21 @@ public class HISDbContext :
             b.HasIndex(x => x.AppointmentDate);
             b.HasIndex(x => x.Status);
             b.HasIndex(x => x.ServiceItemId);
+        });
+
+        // Radiology Requests
+        builder.Entity<HIS.Radiology.RadiologyRequest>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "RadiologyRequests", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.ReportBody).HasColumnType("nvarchar(max)");
+            b.Property(x => x.TechnicianNotes).HasMaxLength(2048);
+            b.Property(x => x.RequestNumber).HasMaxLength(32);
+            
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.RequestDate);
+            b.HasIndex(x => x.Status);
         });
 
         // --- Emergency Module ---

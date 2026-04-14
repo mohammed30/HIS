@@ -2,7 +2,7 @@
   <div class="card-header">
     <div class="row">
       <div class="col col-md-6">
-        <h5 class="card-title">طلبات الصرف الداخلي (التمريض)</h5>
+        <h5 class="card-title">طلب تنويم (أدوية / تحاليل / أشعة)</h5>
       </div>
       <div class="text-end col col-md-6">
         <!-- Add Request Button -->
@@ -20,6 +20,30 @@
         [sortable]="false"
       >
         <ng-template let-row="row" ngx-datatable-cell-template>
+          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Approved">
+            <button
+              class="btn btn-success btn-sm"
+              (click)="receive(row.id)"
+            >
+              <i class="fa fa-check-circle me-1"></i> تأكيد الاستلام
+            </button>
+            <button
+              class="btn btn-outline-danger btn-sm"
+              (click)="cancel(row.id)"
+              title="إلغاء الطلب والتكاليف"
+            >
+              <i class="fa fa-times-circle"></i> إلغاء
+            </button>
+          </div>
+          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Submitted">
+            <button
+              class="btn btn-outline-danger btn-sm"
+              (click)="cancel(row.id)"
+              title="إلغاء الطلب"
+            >
+              <i class="fa fa-times-circle"></i> إلغاء
+            </button>
+          </div>
           <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Draft">
             <button
               class="btn btn-primary btn-sm"
@@ -27,13 +51,11 @@
             >
               <i class="fa fa-paper-plane me-1"></i> إرسال للاعتماد
             </button>
-          </div>
-          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Approved">
             <button
-              class="btn btn-success btn-sm"
-              (click)="receive(row.id)"
+              class="btn btn-danger btn-sm"
+              (click)="delete(row.id)"
             >
-              <i class="fa fa-check-circle me-1"></i> تأكيد الاستلام
+              <i class="fa fa-trash"></i>
             </button>
           </div>
         </ng-template>
@@ -52,7 +74,8 @@
             'bg-info': row.status === statusEnum.Submitted,
             'bg-success': row.status === statusEnum.Approved,
             'bg-primary': row.status === statusEnum.Received,
-            'bg-danger': row.status === statusEnum.Rejected
+            'bg-danger': row.status === statusEnum.Rejected,
+            'bg-dark': row.status === statusEnum.Cancelled
           }">
             {{ getStatusText(row.status) }}
           </span>
@@ -63,84 +86,136 @@
 </div>
 
 <!-- Add Modal -->
-<abp-modal [(visible)]="isModalOpen">
+<abp-modal [(visible)]="isModalOpen" [options]="{ size: 'xl' }">
+
   <ng-template #abpHeader>
-    <h3>إنشاء طلب جديد</h3>
+    <h3>إنشاء طلب تنويم جديد</h3>
   </ng-template>
 
   <ng-template #abpBody>
     <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">القسم الطالب</label>
-          <select class="form-control" formControlName="requestingDepartmentId">
-            <option [ngValue]="null">اختر القسم...</option>
-            <option *ngFor="let dept of requestingDepartments" [ngValue]="dept.id">{{ dept.name }}</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-3 d-none">
-          <label class="form-label">المستودع المورد</label>
-          <select class="form-control" formControlName="fulfilledByWarehouseId">
-            <option [ngValue]="null">اختر المستودع...</option>
-            <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label text-primary">المريض المنوم (لخصم التكلفة - إن وجد)</label>
-          <select class="form-control" formControlName="admissionId">
-            <option [ngValue]="null">بدون مريض (صرف عام للقسم)</option>
-            <option *ngFor="let pt of activeAdmissions" [ngValue]="pt.id">{{ pt.displayName }}</option>
-          </select>
-        </div>
-      </div>
+      <div class="row g-3">
+        <!-- Left Column: Form & Selected Items -->
+        <div class="col-md-8 border-end">
+          <div class="row g-2 mb-3 bg-light p-3 rounded shadow-sm">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-primary">المريض المنوم (إلزامي)</label>
+              <select class="form-control form-control-sm border-primary" formControlName="admissionId">
+                <option [ngValue]="null">-- اختر المريض --</option>
+                <option *ngFor="let pt of activeAdmissions" [ngValue]="pt.id">{{ pt.displayName }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">نوع الطلب</label>
+              <select class="form-select form-select-sm" formControlName="requestType">
+                <option [ngValue]="requestTypeEnum.Medication">أدوية</option>
+                <option [ngValue]="requestTypeEnum.Consumable">مستلزمات طبية</option>
+                <option [ngValue]="requestTypeEnum.Laboratory">تحاليل مخبرية</option>
+                <option [ngValue]="requestTypeEnum.Radiology">أشعة</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small">القسم الطالب</label>
+              <select class="form-select form-select-sm" formControlName="requestingDepartmentId">
+                <option [ngValue]="null">اختر القسم...</option>
+                <option *ngFor="let dept of requestingDepartments" [ngValue]="dept.id">{{ dept.name }}</option>
+              </select>
+            </div>
+            <div class="col-12 mt-2">
+              <label class="form-label fw-bold small">ملاحظات الطلب</label>
+              <textarea class="form-control form-control-sm" formControlName="notes" rows="1"></textarea>
+            </div>
+          </div>
 
-      <div>
-        <label class="form-label">ملاحظات الطلب</label>
-        <textarea class="form-control" formControlName="notes" rows="2"></textarea>
-      </div>
+          <div class="selected-items-section">
+            <h6 class="border-bottom pb-2 mb-3 text-secondary d-flex justify-content-between align-items-center">
+              <span>الأصناف المختارة</span>
+              <small class="badge bg-secondary text-white">{{ lines.length }} صنف</small>
+            </h6>
+            
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;" formArrayName="lines">
+              <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                  <tr class="small text-center">
+                    <th style="width: 50%">الصنف</th>
+                    <th style="width: 20%">الكمية</th>
+                    <th style="width: 20%">ملاحظات</th>
+                    <th style="width: 10%">#</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
+                    <td>
+                      <div class="fw-bold small text-dark">{{ item.get('selectedItem')?.value?.name }}</div>
+                      <small class="text-muted" *ngIf="form.get('requestType')?.value === requestTypeEnum.Medication">
+                        متوفر: {{ item.get('selectedItem')?.value?.extra }}
+                      </small>
+                    </td>
+                    <td>
+                      <input type="number" class="form-control form-control-sm text-center" formControlName="requestedQuantity" />
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm" formControlName="notes" />
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-link text-danger p-0" (click)="removeLine(i)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div *ngIf="lines.length === 0" class="text-center py-5 text-muted">
+                <i class="fa fa-shopping-cart fa-3x opacity-25 mb-2"></i>
+                <p>لم يتم اختيار أي أصناف بعد. ابحث في القائمة على اليمين.</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <h5 class="mt-4 border-bottom pb-2">أصناف الطلب</h5>
-      <div formArrayName="lines">
-        <div class="row align-items-center mb-2" *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
-          <div class="col-6">
-            <label class="form-label" *ngIf="i === 0">الصنف</label>
-            <ng-template #rt let-r="result" let-t="term">
-               <div class="d-flex justify-content-between">
-                 <span><ngb-highlight [result]="r.productName" [term]="t"></ngb-highlight></span>
-                 <small class="text-muted">({{ r.quantity }})</small>
-               </div>
-            </ng-template>
-
-            <input
-              type="text"
-              class="form-control"
-              formControlName="selectedItem"
-              [ngbTypeahead]="searchItems"
-              [inputFormatter]="itemFormatter"
-              [resultTemplate]="rt"
-              (selectItem)="onSelectItem($event, i)"
-              placeholder="ابحث عن صنف..."
+        <!-- Right Column: Catalog -->
+        <div class="col-md-4 bg-light p-3 rounded">
+          <h6 class="mb-3 fw-bold"><i class="fa fa-search me-2"></i>البحث في القائمة</h6>
+          
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+            <input 
+              type="text" 
+              class="form-control border-start-0" 
+              placeholder="اكتب للبحث السريع..." 
+              [(ngModel)]="catalogSearchTerm"
+              [ngModelOptions]="{standalone: true}"
             />
-            <input type="hidden" formControlName="inventoryItemId" />
           </div>
-          <div class="col-4">
-            <label class="form-label" *ngIf="i === 0">الكمية المطلوبة</label>
-            <input type="number" class="form-control" formControlName="requestedQuantity" />
-          </div>
-          <div class="col-2">
-            <label class="form-label" *ngIf="i === 0">&nbsp;</label>
-            <button type="button" class="btn btn-outline-danger btn-sm w-100" (click)="removeLine(i)">
-              <i class="fa fa-trash"></i>
-            </button>
+
+          <div class="catalog-list overflow-auto shadow-sm bg-white rounded" style="max-height: 500px;">
+            <ul class="list-group list-group-flush small">
+              <li 
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center cursor-pointer py-2"
+                *ngFor="let item of filteredCatalog"
+                (click)="addItemToRequest(item)"
+              >
+                <div>
+                  <div class="fw-bold">{{ item.name }}</div>
+                  <small class="text-muted" *ngIf="form.get('requestType')?.value === requestTypeEnum.Medication">
+                    {{ item.extra }} متوفر
+                  </small>
+                  <small class="text-muted" *ngIf="form.get('requestType')?.value !== requestTypeEnum.Medication">
+                    {{ item.extra }} SR
+                  </small>
+                </div>
+                <i class="fa fa-plus-circle text-primary fs-5"></i>
+              </li>
+              <li *ngIf="filteredCatalog.length === 0" class="list-group-item text-center py-4 text-muted">
+                لا توجد نتائج مطابقة
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-      
-      <button type="button" class="btn btn-outline-primary mt-2 btn-sm" (click)="addLine()">
-        <i class="fa fa-plus"></i> إضافة صنف
-      </button>
-
     </form>
+
   </ng-template>
 
   <ng-template #abpFooter>

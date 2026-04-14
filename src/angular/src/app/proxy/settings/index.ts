@@ -6,5 +6,6 @@ export * from './hospital-settings.service';
 export * from './job-title.service';
 export * from './laboratory.service';
 export * from './models';
+export * from './pharmacy-settings.service';
 export * from './specialty.service';
 export { Dtos };

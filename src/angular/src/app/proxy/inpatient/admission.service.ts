@@ -1,7 +1,8 @@
-import type { AdmissionDto, CreatePatientTransferDto, CreateUpdateAdmissionDto, DischargeAdmissionDto, GetAdmissionsInput, AdmissionLookupDto } from './models';
+import type { AdmissionDto, AdmissionLookupDto, CreatePatientTransferDto, CreateUpdateAdmissionDto, DischargeAdmissionDto, GetAdmissionsInput } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
+import type { InvoiceDto } from '../billing/models';
 
 @Injectable({
   providedIn: 'root',
@@ -44,10 +45,11 @@ export class AdmissionService {
     },
     { apiName: this.apiName,...config });
   
-  getProvisionalInvoice = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, any>({
+
+  getActiveAdmissionsLookup = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AdmissionLookupDto[]>({
       method: 'GET',
-      url: `/api/app/admission/${id}/provisional-invoice`,
+      url: '/api/app/admission/active-admissions-lookup',
     },
     { apiName: this.apiName,...config });
   
@@ -57,6 +59,14 @@ export class AdmissionService {
       method: 'GET',
       url: '/api/app/admission',
       params: { searchText: input.searchText, patientId: input.patientId, status: input.status, roomId: input.roomId, roomTypeId: input.roomTypeId, fromDate: input.fromDate, toDate: input.toDate, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getProvisionalInvoice = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InvoiceDto>({
+      method: 'GET',
+      url: `/api/app/admission/${id}/provisional-invoice`,
     },
     { apiName: this.apiName,...config });
   
@@ -84,13 +94,6 @@ export class AdmissionService {
       method: 'PUT',
       url: `/api/app/admission/${id}/days`,
       params: { numberOfDays },
-    },
-    { apiName: this.apiName,...config });
-
-  getActiveAdmissionsLookup = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, AdmissionLookupDto[]>({
-      method: 'GET',
-      url: '/api/app/admission/active-admissions-lookup',
     },
     { apiName: this.apiName,...config });
 }

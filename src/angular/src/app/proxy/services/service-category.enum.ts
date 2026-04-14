@@ -9,6 +9,7 @@ export enum ServiceCategory {
   Other = 5,
   Pharmacy = 6,
   Consumable = 7,
+  Inpatient = 8,
 }
 
 export const serviceCategoryOptions = mapEnumToOptions(ServiceCategory);

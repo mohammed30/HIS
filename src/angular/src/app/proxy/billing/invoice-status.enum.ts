@@ -7,6 +7,7 @@ export enum InvoiceStatus {
   Paid = 3,
   Cancelled = 4,
   Deferred = 5,
+  Refunded = 6,
 }
 
 export const invoiceStatusOptions = mapEnumToOptions(InvoiceStatus);

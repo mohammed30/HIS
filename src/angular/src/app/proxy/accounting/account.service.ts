@@ -1,4 +1,4 @@
-import type { AccountDto, AccountStatementDto, AccountStatementInputDto, AccountSummaryDto, BalanceSheetDto, CashFlowStatementDto, ChangesInEquityDto, CreateUpdateAccountDto, CustomerDebtsReportDto, DailyAccountsReportDto, DateRangeDto, DiscountsReportDto, IncomeStatementDto } from './dtos/models';
+import type { AccountDto, AccountLookupDto, AccountStatementDto, AccountStatementInputDto, AccountSummaryDto, BalanceSheetDto, CashFlowStatementDto, ChangesInEquityDto, CreateUpdateAccountDto, CustomerDebtsReportDto, DailyAccountsReportDto, DateRangeDto, DiscountsReportDto, IncomeStatementDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -141,6 +141,14 @@ export class AccountService {
       method: 'GET',
       url: '/api/app/account',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getLookup = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, AccountLookupDto[]>({
+      method: 'GET',
+      url: '/api/app/account/lookup',
     },
     { apiName: this.apiName,...config });
   

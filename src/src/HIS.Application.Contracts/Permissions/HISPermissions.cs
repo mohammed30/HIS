@@ -174,5 +174,11 @@ public static class HISPermissions
     {
         public const string Default = GroupName + ".ActivityLogs";
     }
+
+    public static class Radiology
+    {
+        public const string Default = GroupName + ".Radiology";
+        public const string Requests = Default + ".Requests";
+    }
 }
 

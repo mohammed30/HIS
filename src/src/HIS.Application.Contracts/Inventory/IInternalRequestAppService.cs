@@ -22,4 +22,9 @@ public interface IInternalRequestAppService : ICrudAppService<InternalRequestDto
     /// يتم استدعاؤه من قبل القسم الطالب لتأكيد استلام الكميات
     /// </summary>
     Task<InternalRequestDto> ConfirmReceiptAsync(Guid id);
+
+    /// <summary>
+    /// إلغاء الطلب من قبل التمريض وعكس القيود المالية إن وجدت
+    /// </summary>
+    Task<InternalRequestDto> CancelRequestAsync(Guid id);
 }

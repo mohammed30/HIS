@@ -34,7 +34,7 @@ export class InventoryCountingComponent implements OnInit {
 
   loadWarehouses() {
     this.inventoryService.getWarehouseLookup().subscribe(res => {
-      this.warehouses = res;
+      this.warehouses = res as any; // Assert as any to handle proxy list/object discrepancy
     });
   }
 

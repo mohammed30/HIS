@@ -148,6 +148,7 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
             input.BodyPart
         )
         {
+            Price = input.Price.GetValueOrDefault(),
             Instructions = input.Instructions,
             IsActive = input.IsActive
         };
@@ -168,6 +169,7 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
         item.IsActive = input.IsActive;
         item.Modality = input.Modality;
         item.BodyPart = input.BodyPart;
+        item.Price = input.Price.GetValueOrDefault();
         item.Instructions = input.Instructions;
 
         await _radiologyRepository.UpdateAsync(item);

@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CoreModule, PagedResultDto } from '@abp/ng.core';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { ReportService, PharmacySalesDto, GetPharmacySalesInput } from '../../proxy/reports/report.service';
+import { ReportService } from '../../proxy/reports/report.service';
+import { PharmacySalesDto, GetPharmacySalesInput } from '../../proxy/reports/models';
 
 @Component({
   selector: 'app-pharmacy-sales',
@@ -44,7 +45,9 @@ export class PharmacySalesComponent implements OnInit {
   }
 
   exportPdf() {
-    const url = this.reportService.getPharmacySalesPdf(this.filters);
-    window.open(url, '_blank');
+    this.reportService.getPharmacySalesPdf(this.filters).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    });
   }
 }

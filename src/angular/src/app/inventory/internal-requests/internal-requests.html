@@ -2,7 +2,7 @@
   <div class="card-header">
     <div class="row">
       <div class="col col-md-6">
-        <h5 class="card-title">طلبات الصرف الداخلي (المستودع / الصيدلية)</h5>
+        <h5 class="card-title">{{ '::Menu:InventoryInternalRequests' | abpLocalization }}</h5>
       </div>
       <div class="text-end col col-md-6">
         <button id="refresh" class="btn btn-outline-primary" type="button" (click)="getList()">
@@ -71,7 +71,7 @@
 <!-- Details Modal -->
 <abp-modal [(visible)]="isModalOpen" [busy]="isLoading">
   <ng-template #abpHeader>
-    <h3>تفاصيل طلب الصرف: {{ selectedRequest?.requestNumber }}</h3>
+    <h3>تفاصيل طلب التنويم: {{ selectedRequest?.requestNumber }}</h3>
   </ng-template>
 
   <ng-template #abpBody>

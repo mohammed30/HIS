@@ -11,52 +11,52 @@ export interface AllergyDto extends EntityDto<string> {
   patientId?: string;
   allergenType?: AllergenType;
   allergenNameAr?: string;
-  allergenNameEn?: string;
-  reaction?: string;
+  allergenNameEn?: string | null;
+  reaction?: string | null;
   severity?: AllergySeverity;
-  onsetDate?: string;
+  onsetDate?: string | null;
   status?: AllergyStatus;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface CreateUpdateAllergyDto {
   patientId?: string;
   allergenType?: AllergenType;
   allergenNameAr?: string;
-  allergenNameEn?: string;
-  reaction?: string;
+  allergenNameEn?: string | null;
+  reaction?: string | null;
   severity?: AllergySeverity;
-  onsetDate?: string;
+  onsetDate?: string | null;
   status?: AllergyStatus;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface CreateUpdateDiagnosisDto {
   patientId?: string;
-  visitId?: string;
-  icD10Code?: string;
+  visitId?: string | null;
+  icD10Code?: string | null;
   diagnosisNameAr?: string;
-  diagnosisNameEn?: string;
+  diagnosisNameEn?: string | null;
   diagnosisDate?: string;
   type?: DiagnosisType;
   status?: DiagnosisStatus;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface CreateUpdateMedicalHistoryDto {
   patientId?: string;
   conditionAr?: string;
-  conditionEn?: string;
-  icD10Code?: string;
-  diagnosedDate?: string;
-  resolvedDate?: string;
+  conditionEn?: string | null;
+  icD10Code?: string | null;
+  diagnosedDate?: string | null;
+  resolvedDate?: string | null;
   isChronic?: boolean;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface CreateUpdatePatientNoteDto {
   patientId?: string;
-  visitId?: string;
+  visitId?: string | null;
   noteType?: NoteType;
   title?: string;
   content?: string;
@@ -65,82 +65,82 @@ export interface CreateUpdatePatientNoteDto {
 
 export interface CreateUpdateVitalSignDto {
   patientId?: string;
-  visitId?: string;
+  visitId?: string | null;
   recordedAt?: string;
-  temperature?: number;
-  bloodPressureSystolic?: number;
-  bloodPressureDiastolic?: number;
-  heartRate?: number;
-  respiratoryRate?: number;
-  oxygenSaturation?: number;
-  weight?: number;
-  height?: number;
-  notes?: string;
+  temperature?: number | null;
+  bloodPressureSystolic?: number | null;
+  bloodPressureDiastolic?: number | null;
+  heartRate?: number | null;
+  respiratoryRate?: number | null;
+  oxygenSaturation?: number | null;
+  weight?: number | null;
+  height?: number | null;
+  notes?: string | null;
 }
 
 export interface DiagnosisDto extends EntityDto<string> {
   patientId?: string;
-  visitId?: string;
-  icD10Code?: string;
+  visitId?: string | null;
+  icD10Code?: string | null;
   diagnosisNameAr?: string;
-  diagnosisNameEn?: string;
+  diagnosisNameEn?: string | null;
   diagnosisDate?: string;
   type?: DiagnosisType;
   status?: DiagnosisStatus;
-  diagnosedById?: string;
-  diagnosedByName?: string;
-  notes?: string;
+  diagnosedById?: string | null;
+  diagnosedByName?: string | null;
+  notes?: string | null;
 }
 
 export interface MedicalHistoryDto extends EntityDto<string> {
   patientId?: string;
   conditionAr?: string;
-  conditionEn?: string;
-  icD10Code?: string;
-  diagnosedDate?: string;
-  resolvedDate?: string;
+  conditionEn?: string | null;
+  icD10Code?: string | null;
+  diagnosedDate?: string | null;
+  resolvedDate?: string | null;
   isChronic?: boolean;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface PatientMedicalSummaryDto {
   patientId?: string;
   patientName?: string;
-  bloodType?: string;
-  age?: number;
+  bloodType?: string | null;
+  age?: number | null;
   gender?: Gender;
   activeAllergiesCount?: number;
   chronicConditionsCount?: number;
   activeDiagnosesCount?: number;
-  latestVitals?: VitalSignDto;
+  latestVitals?: VitalSignDto | null;
   activeAllergies?: AllergyDto[];
   chronicConditions?: MedicalHistoryDto[];
 }
 
 export interface PatientNoteDto extends EntityDto<string> {
   patientId?: string;
-  visitId?: string;
+  visitId?: string | null;
   noteType?: NoteType;
   title?: string;
   content?: string;
-  createdByName?: string;
+  createdByName?: string | null;
   isPrivate?: boolean;
   creationTime?: string;
 }
 
 export interface VitalSignDto extends EntityDto<string> {
   patientId?: string;
-  visitId?: string;
+  visitId?: string | null;
   recordedAt?: string;
-  temperature?: number;
-  bloodPressureSystolic?: number;
-  bloodPressureDiastolic?: number;
-  heartRate?: number;
-  respiratoryRate?: number;
-  oxygenSaturation?: number;
-  weight?: number;
-  height?: number;
-  bmi?: number;
-  recordedByName?: string;
-  notes?: string;
+  temperature?: number | null;
+  bloodPressureSystolic?: number | null;
+  bloodPressureDiastolic?: number | null;
+  heartRate?: number | null;
+  respiratoryRate?: number | null;
+  oxygenSaturation?: number | null;
+  weight?: number | null;
+  height?: number | null;
+  bmi?: number | null;
+  recordedByName?: string | null;
+  notes?: string | null;
 }

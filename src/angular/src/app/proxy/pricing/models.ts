@@ -4,7 +4,7 @@ export interface CreateUpdatePriceListDto {
   name?: string;
   isDefault?: boolean;
   effectiveFrom?: string;
-  effectiveTo?: string;
+  effectiveTo?: string | null;
 }
 
 export interface CreateUpdateServicePriceDto {
@@ -18,7 +18,7 @@ export interface PriceListDto extends AuditedEntityDto<string> {
   name?: string;
   isDefault?: boolean;
   effectiveFrom?: string;
-  effectiveTo?: string;
+  effectiveTo?: string | null;
 }
 
 export interface ServicePriceDto extends AuditedEntityDto<string> {

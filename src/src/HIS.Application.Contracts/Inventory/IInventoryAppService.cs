@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using HIS.Inventory.Dtos;
+using HIS.Appointments.Dtos;
 
 namespace HIS.Inventory;
 
@@ -28,4 +29,6 @@ public interface IInventoryAppService : IApplicationService
 
     Task<List<StagnantStockReportDto>> GetStagnantStockReportAsync(GetStagnantStockReportInput input);
     Task<byte[]> GetStagnantStockReportPdfAsync(GetStagnantStockReportInput input);
+
+    Task<List<LookupDto<Guid>>> GetWarehouseLookupAsync();
 }

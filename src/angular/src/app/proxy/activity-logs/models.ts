@@ -3,36 +3,36 @@ import type { ActivityAction } from './activity-action.enum';
 import type { ActivityLogLevel } from './activity-log-level.enum';
 
 export interface ActivityLogDto extends FullAuditedEntityDto<string> {
-  userId?: string;
-  userName?: string;
+  userId?: string | null;
+  userName?: string | null;
   module?: string;
   action?: ActivityAction;
-  entityType?: string;
-  entityId?: string;
-  description?: string;
-  oldValues?: string;
-  newValues?: string;
-  ipAddress?: string;
-  userAgent?: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  description?: string | null;
+  oldValues?: string | null;
+  newValues?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
   timestamp?: string;
   level?: ActivityLogLevel;
-  additionalData?: string;
-  deviceType?: string;
-  browserName?: string;
-  browserVersion?: string;
-  operatingSystem?: string;
-  country?: string;
-  city?: string;
+  additionalData?: string | null;
+  deviceType?: string | null;
+  browserName?: string | null;
+  browserVersion?: string | null;
+  operatingSystem?: string | null;
+  country?: string | null;
+  city?: string | null;
 }
 
 export interface GetActivityLogsInput extends PagedAndSortedResultRequestDto {
-  userId?: string;
-  module?: string;
-  activityActionFilter?: ActivityAction;
-  level?: ActivityLogLevel;
-  entityType?: string;
-  entityId?: string;
-  startDate?: string;
-  endDate?: string;
-  searchText?: string;
+  userId?: string | null;
+  module?: string | null;
+  activityActionFilter?: ActivityAction | null;
+  level?: ActivityLogLevel | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  searchText?: string | null;
 }

@@ -3,7 +3,7 @@ import type { FullAuditedEntityDto } from '@abp/ng.core';
 export interface CreateUpdatePaymentMethodDto {
   nameAr: string;
   nameEn: string;
-  code?: string;
+  code?: string | null;
   isActive?: boolean;
   isDefault?: boolean;
 }
@@ -11,7 +11,7 @@ export interface CreateUpdatePaymentMethodDto {
 export interface PaymentMethodDto extends FullAuditedEntityDto<string> {
   nameAr?: string;
   nameEn?: string;
-  code?: string;
+  code?: string | null;
   isActive?: boolean;
   isDefault?: boolean;
 }

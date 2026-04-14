@@ -2,6 +2,7 @@ import type { CreateUpdateWarehouseDto, DepartmentConsumptionReportDto, GetConsu
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
+import type { LookupDto } from '../appointments/dtos/models';
 
 @Injectable({
   providedIn: 'root',
@@ -115,8 +116,9 @@ export class InventoryService {
     },
     { apiName: this.apiName,...config });
   
+
   getWarehouseLookup = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, any[]>({
+    this.restService.request<any, LookupDto<string>>({
       method: 'GET',
       url: '/api/app/inventory/warehouse-lookup',
     },

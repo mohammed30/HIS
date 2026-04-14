@@ -440,6 +440,24 @@ export const APP_ROUTES: Routes = [
     data: { requiredPolicy: 'HIS.Laboratory' }
   },
   {
+    path: 'radiology',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'requests',
+        loadComponent: () => import('./radiology/radiology-requests/radiology-requests.component').then(c => c.RadiologyRequestsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Radiology' }
+      },
+      {
+        path: 'results',
+        loadComponent: () => import('./radiology/radiology-results/radiology-results.component').then(c => c.RadiologyResultsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Radiology' }
+      }
+    ]
+  },
+  {
     path: 'emergency',
     loadChildren: () => import('./emergency/emergency-module').then(m => m.EmergencyModule),
     canActivate: [authGuard, permissionGuard],

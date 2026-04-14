@@ -1,53 +1,50 @@
+import type { InternalRequestType } from '../internal-request-type.enum';
 import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { PurchaseRequisitionStatus } from '../purchase-requisition-status.enum';
+import type { InternalRequestStatus } from '../internal-request-status.enum';
 import type { InventoryItemType } from '../inventory-item-type.enum';
 import type { TransactionType } from '../transaction-type.enum';
-import type { PurchaseOrderStatus } from '../purchase-order-status.enum';
-import type { InternalRequestStatus } from '../internal-request-status.enum';
 import type { PurchaseInvoiceStatus } from '../purchase-invoice-status.enum';
-import type { InventoryCountStatus } from '../inventory-count-status.enum';
+import type { PurchaseOrderStatus } from '../purchase-order-status.enum';
 
-export interface InventoryCountDto extends FullAuditedEntityDto<string> {
-  warehouseId?: string;
-  warehouseName?: string;
-  countDate?: string;
-  status?: InventoryCountStatus;
+export interface CreateUpdateInternalRequestDto {
+  requestingDepartmentId?: string;
+  fulfilledByWarehouseId?: string;
+  admissionId?: string | null;
+  requestDate?: string;
+  requestType?: InternalRequestType;
   notes?: string;
-  items?: InventoryCountItemDto[];
+  lines?: CreateUpdateInternalRequestLineDto[];
 }
 
-export interface InventoryCountItemDto extends FullAuditedEntityDto<string> {
+export interface CreateUpdateInternalRequestLineDto {
   inventoryItemId?: string;
-  productName?: string;
-  systemQuantity?: number;
-  countedQuantity?: number;
-  difference?: number;
+  requestedQuantity?: number;
   notes?: string;
 }
 
-export interface CreateInventoryCountDto {
-  warehouseId: string;
-  countDate: string;
+export interface CreateUpdatePurchaseInvoiceDto {
+  invoiceNumber?: string;
+  supplierId?: string;
+  purchaseOrderId?: string | null;
+  invoiceDate?: string;
   notes?: string;
+  lines?: CreateUpdatePurchaseInvoiceLineDto[];
 }
 
-export interface UpdateInventoryCountItemDto {
-  id: string;
-  countedQuantity: number;
-  notes?: string;
-}
-
-export interface GetInventoryCountsInput extends PagedAndSortedResultRequestDto {
-  warehouseId?: string;
-  status?: InventoryCountStatus;
-  fromDate?: string;
-  toDate?: string;
+export interface CreateUpdatePurchaseInvoiceLineDto {
+  productId?: string;
+  quantity?: number;
+  unitCost?: number;
+  discount?: number;
+  batchNumber?: string;
+  expiryDate?: string | null;
 }
 
 export interface CreateUpdatePurchaseOrderDto {
   supplierId?: string;
   orderDate?: string;
-  expectedDeliveryDate?: string;
+  expectedDeliveryDate?: string | null;
   referenceNumber?: string;
   notes?: string;
   purchaseOrderLines?: CreateUpdatePurchaseOrderLineDto[];
@@ -64,14 +61,14 @@ export interface CreateUpdatePurchaseOrderLineDto {
 export interface CreateUpdatePurchaseRequisitionDto {
   departmentId?: string;
   requiredDate?: string;
-  notes?: string;
+  notes?: string | null;
   lines?: CreateUpdatePurchaseRequisitionLineDto[];
 }
 
 export interface CreateUpdatePurchaseRequisitionLineDto {
   productId?: string;
   quantity?: number;
-  description?: string;
+  description?: string | null;
 }
 
 export interface CreateUpdateSupplierDto {
@@ -98,24 +95,48 @@ export interface DepartmentConsumptionReportDto {
 }
 
 export interface GetConsumptionReportInput {
-  startDate?: string;
-  endDate?: string;
-  departmentId?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  departmentId?: string | null;
 }
 
 export interface GetLowStockReportInput {
-  warehouseId?: string;
+  warehouseId?: string | null;
 }
 
 export interface GetPurchaseRequisitionsInput extends PagedAndSortedResultRequestDto {
-  filter?: string;
-  status?: PurchaseRequisitionStatus;
-  departmentId?: string;
+  filter?: string | null;
+  status?: PurchaseRequisitionStatus | null;
+  departmentId?: string | null;
 }
 
 export interface GetStagnantStockReportInput {
-  warehouseId?: string;
+  warehouseId?: string | null;
   thresholdDays?: number;
+}
+
+export interface InternalRequestDto extends FullAuditedEntityDto<string> {
+  requestNumber?: string;
+  requestingDepartmentId?: string;
+  requestingDepartmentName?: string;
+  fulfilledByWarehouseId?: string;
+  fulfilledByWarehouseName?: string;
+  admissionId?: string | null;
+  patientName?: string;
+  requestDate?: string;
+  requestType?: InternalRequestType;
+  status?: InternalRequestStatus;
+  notes?: string;
+  lines?: InternalRequestLineDto[];
+}
+
+export interface InternalRequestLineDto extends FullAuditedEntityDto<string> {
+  internalRequestId?: string;
+  inventoryItemId?: string;
+  inventoryItemName?: string;
+  requestedQuantity?: number;
+  approvedQuantity?: number;
+  notes?: string;
 }
 
 export interface InventoryItemDto extends EntityDto<string> {
@@ -138,14 +159,14 @@ export interface InventoryTransactionDto extends EntityDto<string> {
   totalValue?: number;
   transactionDate?: string;
   referenceNumber?: string;
-  departmentId?: string;
+  departmentId?: string | null;
 }
 
 export interface IssueStockDto {
   warehouseId: string;
   productId: string;
   quantity: number;
-  departmentId?: string;
+  departmentId?: string | null;
   referenceNumber?: string;
 }
 
@@ -166,12 +187,39 @@ export interface PriceComparisonDto {
   orderNumber?: string;
 }
 
+export interface PurchaseInvoiceDto extends FullAuditedEntityDto<string> {
+  invoiceNumber?: string;
+  supplierId?: string;
+  supplierName?: string;
+  purchaseOrderId?: string | null;
+  purchaseOrderNumber?: string;
+  invoiceDate?: string;
+  totalAmount?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  netAmount?: number;
+  status?: PurchaseInvoiceStatus;
+  notes?: string;
+  lines?: PurchaseInvoiceLineDto[];
+}
+
+export interface PurchaseInvoiceLineDto extends EntityDto<string> {
+  productId?: string;
+  productName?: string;
+  quantity?: number;
+  unitCost?: number;
+  discount?: number;
+  totalLineAmount?: number;
+  batchNumber?: string;
+  expiryDate?: string | null;
+}
+
 export interface PurchaseOrderDto extends AuditedEntityDto<string> {
   orderNumber?: string;
   supplierId?: string;
   supplierName?: string;
   orderDate?: string;
-  expectedDeliveryDate?: string;
+  expectedDeliveryDate?: string | null;
   status?: PurchaseOrderStatus;
   referenceNumber?: string;
   notes?: string;
@@ -198,7 +246,7 @@ export interface PurchaseRequisitionDto extends FullAuditedEntityDto<string> {
   departmentName?: string;
   requiredDate?: string;
   status?: PurchaseRequisitionStatus;
-  notes?: string;
+  notes?: string | null;
   lines?: PurchaseRequisitionLineDto[];
 }
 
@@ -206,7 +254,7 @@ export interface PurchaseRequisitionLineDto extends EntityDto<string> {
   productId?: string;
   productName?: string;
   quantity?: number;
-  description?: string;
+  description?: string | null;
 }
 
 export interface ReceiveStockDto {
@@ -216,7 +264,7 @@ export interface ReceiveStockDto {
   type?: InventoryItemType;
   quantity: number;
   unitCost: number;
-  supplierId?: string;
+  supplierId?: string | null;
   referenceNumber?: string;
 }
 
@@ -225,7 +273,7 @@ export interface StagnantStockReportDto {
   productName?: string;
   warehouseName?: string;
   currentQuantity?: number;
-  lastTransactionDate?: string;
+  lastTransactionDate?: string | null;
   daysStagnant?: number;
 }
 
@@ -247,87 +295,4 @@ export interface WarehouseDto extends AuditedEntityDto<string> {
   name?: string;
   code?: string;
   location?: string;
-}
-
-export interface InternalRequestDto extends FullAuditedEntityDto<string> {
-  requestNumber?: string;
-  requestingDepartmentId?: string;
-  requestingDepartmentName?: string;
-  fulfilledByWarehouseId?: string;
-  fulfilledByWarehouseName?: string;
-  admissionId?: string;
-  patientName?: string;
-  requestDate?: string;
-  status: InternalRequestStatus;
-  notes?: string;
-  lines: InternalRequestLineDto[];
-}
-
-export interface InternalRequestLineDto extends FullAuditedEntityDto<string> {
-  internalRequestId?: string;
-  inventoryItemId?: string;
-  inventoryItemName?: string;
-  requestedQuantity: number;
-  approvedQuantity: number;
-  notes?: string;
-}
-
-export interface CreateUpdateInternalRequestDto {
-  requestingDepartmentId?: string;
-  fulfilledByWarehouseId?: string;
-  admissionId?: string;
-  requestDate?: string;
-  notes?: string;
-  lines: CreateUpdateInternalRequestLineDto[];
-}
-
-export interface CreateUpdateInternalRequestLineDto {
-  inventoryItemId?: string;
-  requestedQuantity: number;
-  notes?: string;
-}
-
-export interface PurchaseInvoiceDto extends FullAuditedEntityDto<string> {
-  invoiceNumber?: string;
-  supplierId?: string;
-  supplierName?: string;
-  purchaseOrderId?: string;
-  purchaseOrderNumber?: string;
-  invoiceDate?: string;
-  totalAmount?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  netAmount?: number;
-  status?: PurchaseInvoiceStatus;
-  notes?: string;
-  lines?: PurchaseInvoiceLineDto[];
-}
-
-export interface PurchaseInvoiceLineDto extends EntityDto<string> {
-  productId?: string;
-  productName?: string;
-  quantity?: number;
-  unitCost?: number;
-  discount?: number;
-  totalLineAmount?: number;
-  batchNumber?: string;
-  expiryDate?: string;
-}
-
-export interface CreateUpdatePurchaseInvoiceDto {
-  invoiceNumber?: string;
-  supplierId?: string;
-  purchaseOrderId?: string;
-  invoiceDate?: string;
-  notes?: string;
-  lines: CreateUpdatePurchaseInvoiceLineDto[];
-}
-
-export interface CreateUpdatePurchaseInvoiceLineDto {
-  productId?: string;
-  quantity?: number;
-  unitCost?: number;
-  discount?: number;
-  batchNumber?: string;
-  expiryDate?: string;
 }

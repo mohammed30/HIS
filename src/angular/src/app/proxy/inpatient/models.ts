@@ -4,21 +4,21 @@ import type { ReservationStatus } from './reservation-status.enum';
 
 export interface AdmissionDto extends FullAuditedEntityDto<string> {
   patientId?: string;
-  patientName?: string;
-  patientFileNumber?: string;
+  patientName?: string | null;
+  patientFileNumber?: string | null;
   roomId?: string;
-  roomNumber?: string;
-  roomTypeName?: string;
-  bedId?: string;
-  bedNumber?: string;
+  roomNumber?: string | null;
+  roomTypeName?: string | null;
+  bedId?: string | null;
+  bedNumber?: string | null;
   admissionDate?: string;
-  dischargeDate?: string;
+  dischargeDate?: string | null;
   numberOfDays?: number;
   insuranceCeiling?: number;
-  companionName?: string;
-  companionPhone?: string;
-  companionAddress?: string;
-  purpose?: string;
+  companionName?: string | null;
+  companionPhone?: string | null;
+  companionAddress?: string | null;
+  purpose?: string | null;
   pharmacyPercentage?: number;
   isServicesStopped?: boolean;
   status?: AdmissionStatus;
@@ -26,15 +26,20 @@ export interface AdmissionDto extends FullAuditedEntityDto<string> {
   paidAmount?: number;
   insuranceAmount?: number;
   dueAmount?: number;
-  notes?: string;
-  invoiceId?: string;
-  patientInsuranceId?: string;
+  notes?: string | null;
+  invoiceId?: string | null;
+  patientInsuranceId?: string | null;
+}
+
+export interface AdmissionLookupDto {
+  id?: string;
+  displayName?: string;
 }
 
 export interface CreatePatientTransferDto {
   toRoomId?: string;
-  toBedId?: string;
-  reason?: string;
+  toBedId?: string | null;
+  reason?: string | null;
 }
 
 export interface CreateUpdateAdmissionDto {
@@ -42,65 +47,60 @@ export interface CreateUpdateAdmissionDto {
   roomId?: string;
   bedId?: string;
   insuranceCeiling?: number;
-  companionName?: string;
-  companionPhone?: string;
-  companionAddress?: string;
-  purpose?: string;
+  companionName?: string | null;
+  companionPhone?: string | null;
+  companionAddress?: string | null;
+  purpose?: string | null;
   numberOfDays?: number;
   paidAmount?: number;
   pharmacyPercentage?: number;
   isServicesStopped?: boolean;
-  notes?: string;
-  patientInsuranceId?: string;
+  notes?: string | null;
+  patientInsuranceId?: string | null;
 }
 
 export interface CreateUpdateReservationDto {
   patientId?: string;
   roomId?: string;
-  bedId?: string;
+  bedId?: string | null;
   startDate?: string;
   endDate?: string;
   status?: ReservationStatus;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface DischargeAdmissionDto {
   dischargeDate?: string;
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface GetAdmissionsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  patientId?: string;
-  status?: AdmissionStatus;
-  roomId?: string;
-  roomTypeId?: number;
-  fromDate?: string;
-  toDate?: string;
+  searchText?: string | null;
+  patientId?: string | null;
+  status?: AdmissionStatus | null;
+  roomId?: string | null;
+  roomTypeId?: number | null;
+  fromDate?: string | null;
+  toDate?: string | null;
 }
 
 export interface GetReservationsInput extends PagedAndSortedResultRequestDto {
-  patientId?: string;
-  roomId?: string;
-  fromDate?: string;
-  toDate?: string;
-  status?: ReservationStatus;
+  patientId?: string | null;
+  roomId?: string | null;
+  fromDate?: string | null;
+  toDate?: string | null;
+  status?: ReservationStatus | null;
 }
 
 export interface ReservationDto extends FullAuditedEntityDto<string> {
   patientId?: string;
-  patientName?: string;
+  patientName?: string | null;
   roomId?: string;
-  roomNumber?: string;
-  bedId?: string;
-  bedNumber?: string;
+  roomNumber?: string | null;
+  bedId?: string | null;
+  bedNumber?: string | null;
   startDate?: string;
   endDate?: string;
   status?: ReservationStatus;
-  notes?: string;
-}
-
-export interface AdmissionLookupDto {
-  id: string;
-  displayName: string;
+  notes?: string | null;
 }

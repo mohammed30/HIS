@@ -13,8 +13,8 @@ export interface CarePlanDto extends AuditedEntityDto<string> {
   patientName?: string;
   diagnosis?: string;
   goal?: string;
-  interventions?: string;
-  evaluation?: string;
+  interventions?: string | null;
+  evaluation?: string | null;
   status?: CarePlanStatus;
   dateCreate?: string;
 }
@@ -23,7 +23,7 @@ export interface CreateCarePlanDto {
   patientId?: string;
   diagnosis?: string;
   goal?: string;
-  interventions?: string;
+  interventions?: string | null;
   status?: CarePlanStatus;
 }
 
@@ -52,8 +52,8 @@ export interface CreateMedicationAdministrationDto {
   medicalOrderId?: string;
   administrationTime?: string;
   status?: AdministrationStatus;
-  dosage?: string;
-  notes?: string;
+  dosage?: string | null;
+  notes?: string | null;
 }
 
 export interface CreatePainAssessmentDto {
@@ -130,11 +130,11 @@ export interface MedicationAdministrationDto extends AuditedEntityDto<string> {
   patientId?: string;
   patientName?: string;
   medicalOrderId?: string;
-  drugName?: string;
+  drugName?: string | null;
   administrationTime?: string;
   status?: AdministrationStatus;
-  dosage?: string;
-  notes?: string;
+  dosage?: string | null;
+  notes?: string | null;
 }
 
 export interface PainAssessmentDto extends FullAuditedEntityDto<string> {
@@ -149,7 +149,7 @@ export interface PainAssessmentDto extends FullAuditedEntityDto<string> {
 export interface PatientRoundDto extends FullAuditedEntityDto<string> {
   patientId?: string;
   note?: string;
-  nurseId?: string;
+  nurseId?: string | null;
 }
 
 export interface ShiftHandoverDto extends FullAuditedEntityDto<string> {

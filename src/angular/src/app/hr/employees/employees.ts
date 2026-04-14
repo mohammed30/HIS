@@ -7,7 +7,7 @@ import { HRService } from '../../proxy/hr/hr.service';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { JobTitleService } from '../../proxy/settings/job-title.service';
-import { JobTitleDto } from '../../proxy/settings/models';
+import { JobTitleDto } from '../../proxy/settings/dtos/models';
 
 @Component({
   selector: 'app-employees',

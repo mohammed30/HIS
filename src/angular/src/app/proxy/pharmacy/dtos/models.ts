@@ -12,37 +12,37 @@ export interface CreateDispensedItemDto {
 export interface CreateDispensingDto {
   medicalOrderId?: string;
   patientId?: string;
-  counselingNotes?: string;
+  counselingNotes?: string | null;
   items?: CreateDispensedItemDto[];
 }
 
 export interface CreateStockTransferDto {
   fromWarehouseId?: string;
   toWarehouseId?: string;
-  notes?: string;
+  notes?: string | null;
   items?: CreateStockTransferItemDto[];
 }
 
 export interface CreateStockTransferItemDto {
   drugId?: string;
   quantity?: number;
-  batchNumber?: string;
-  expiryDate?: string;
+  batchNumber?: string | null;
+  expiryDate?: string | null;
 }
 
 export interface CreateUpdateDrugDto {
   barcode: string;
   brandName: string;
   scientificName: string;
-  strength?: string;
-  form?: string;
-  manufacturer?: string;
-  batchNumberPrefix?: string;
+  strength?: string | null;
+  form?: string | null;
+  manufacturer?: string | null;
+  batchNumberPrefix?: string | null;
   minimumStockLevel?: number;
   reorderLevel?: number;
-  binLocation?: string;
+  binLocation?: string | null;
   isControlled?: boolean;
-  legalCategory?: string;
+  legalCategory?: string | null;
   price?: number;
 }
 
@@ -58,11 +58,11 @@ export interface DispensingLabelDto {
 
 export interface DispensingVerificationDto extends FullAuditedEntityDto<string> {
   medicalOrderId?: string;
-  pharmacistId?: string;
-  pharmacistName?: string;
+  pharmacistId?: string | null;
+  pharmacistName?: string | null;
   verificationTime?: string;
   isApproved?: boolean;
-  safetyCheckComments?: string;
+  safetyCheckComments?: string | null;
   status?: VerificationStatus;
 }
 
@@ -74,13 +74,13 @@ export interface DrugDto extends AuditedEntityDto<string> {
   form?: string;
   manufacturer?: string;
   batchNumberPrefix?: string;
-  serviceItemId?: string;
+  serviceItemId?: string | null;
   serviceItemName?: string;
   minimumStockLevel?: number;
   reorderLevel?: number;
   binLocation?: string;
   isControlled?: boolean;
-  legalCategory?: string;
+  legalCategory?: string | null;
 }
 
 export interface PosProductDto {
@@ -92,7 +92,7 @@ export interface PosProductDto {
 }
 
 export interface PosSaleDto {
-  patientId?: string;
+  patientId?: string | null;
   items?: PosSaleItemDto[];
   totalAmount?: number;
   paidAmount?: number;
@@ -113,8 +113,8 @@ export interface StockTransferDto extends FullAuditedEntityDto<string> {
   toWarehouseId?: string;
   toWarehouseName?: string;
   status?: TransferStatus;
-  transferDate?: string;
-  notes?: string;
+  transferDate?: string | null;
+  notes?: string | null;
   items?: StockTransferItemDto[];
 }
 
@@ -123,12 +123,12 @@ export interface StockTransferItemDto extends EntityDto<string> {
   drugId?: string;
   drugName?: string;
   quantity?: number;
-  batchNumber?: string;
-  expiryDate?: string;
+  batchNumber?: string | null;
+  expiryDate?: string | null;
 }
 
 export interface VerifyPrescriptionDto {
   medicalOrderId?: string;
   isApproved?: boolean;
-  safetyCheckComments?: string;
+  safetyCheckComments?: string | null;
 }

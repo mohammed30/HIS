@@ -13,40 +13,40 @@ export interface BedDto extends FullAuditedEntityDto<string> {
 
 export interface CreateUpdateRoomDto {
   roomNumber?: string;
-  name?: string;
+  name?: string | null;
   type?: RoomType;
   bedCount?: number;
   dailyRate?: number;
-  floor?: string;
+  floor?: string | null;
   status?: RoomStatus;
-  notes?: string;
-  amenities?: string;
+  notes?: string | null;
+  amenities?: string | null;
 }
 
 export interface GetRoomsInput extends PagedAndSortedResultRequestDto {
-  searchText?: string;
-  type?: RoomType;
-  status?: RoomStatus;
+  searchText?: string | null;
+  type?: RoomType | null;
+  status?: RoomStatus | null;
 }
 
 export interface RoomDto extends FullAuditedEntityDto<string> {
   roomNumber?: string;
-  name?: string;
+  name?: string | null;
   type?: RoomType;
   bedCount?: number;
   availableBeds?: number;
   dailyRate?: number;
-  floor?: string;
+  floor?: string | null;
   status?: RoomStatus;
-  notes?: string;
-  amenities?: string;
+  notes?: string | null;
+  amenities?: string | null;
   beds?: BedDto[];
 }
 
 export interface RoomLookupDto {
   id?: string;
   roomNumber?: string;
-  name?: string;
+  name?: string | null;
   type?: RoomType;
   availableBeds?: number;
   dailyRate?: number;

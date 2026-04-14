@@ -9,6 +9,7 @@ import { MedicalOrderService } from '../../proxy/clinical/medical-order.service'
 import { ServiceItemService } from '../../proxy/services/service-item.service';
 import { OrderType } from '../../proxy/clinical/order-type.enum';
 import { OrderStatus } from '../../proxy/clinical/order-status.enum';
+import { RadiologyService } from '../../proxy/radiology/radiology.service';
 
 @Component({
   selector: 'app-patient-medical-record',
@@ -166,6 +167,11 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
               <li class="nav-item">
                 <button class="nav-link" [class.active]="activeTab === 'notes'" (click)="activeTab = 'notes'">
                   <i class="fas fa-file-medical-alt me-2"></i> الملاحظات
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'radiology'" (click)="activeTab = 'radiology'">
+                  <i class="fas fa-x-ray me-2"></i> نتائج الأشعة
                 </button>
               </li>
             </ul>
@@ -340,6 +346,38 @@ import { OrderStatus } from '../../proxy/clinical/order-status.enum';
                             <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ n.content }}</p>
                          </div>
                       </div>
+                   </div>
+                </div>
+             </div>
+
+             <!-- Radiology Results -->
+             <div *ngIf="activeTab === 'radiology'">
+                <div class="row">
+                   <div class="col-12 mb-3" *ngFor="let r of radiologyResults">
+                      <div class="card border-0 shadow-sm border-start border-4 border-info">
+                         <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                               <h6 class="fw-bold text-primary mb-0">
+                                  <i class="fas fa-file-medical me-2"></i> {{ r.radiologyItemName }}
+                               </h6>
+                               <div class="text-end">
+                                 <small class="text-muted d-block">{{ r.reportDate | date:'yyyy-MM-dd' }}</small>
+                                 <small class="text-muted d-block" *ngIf="r.doctorName">بواسطة: {{ r.doctorName }}</small>
+                               </div>
+                            </div>
+                            <hr class="my-2 opacity-10">
+                            <div class="bg-light p-3 rounded" style="white-space: pre-wrap; font-family: 'Courier New', Courier, monospace;">
+                                {{ r.reportBody }}
+                            </div>
+                            <div class="mt-2 text-end" *ngIf="r.technicianNotes">
+                                <small class="text-muted"><strong>ملاحظات الفني:</strong> {{ r.technicianNotes }}</small>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                   <div class="col-12 text-center py-5 text-muted" *ngIf="radiologyResults.length === 0">
+                      <i class="fas fa-x-ray fa-3x mb-3 opacity-25"></i>
+                      <p>لا توجد نتائج أشعة معتمدة بعد.</p>
                    </div>
                 </div>
              </div>
@@ -860,6 +898,7 @@ export class PatientMedicalRecordComponent implements OnInit {
   allergies: any[] = [];
   medicalHistories: any[] = [];
   patientNotes: any[] = [];
+  radiologyResults: any[] = [];
 
   showVitalSignModal = false;
   newVitalSign: any = {};
@@ -881,6 +920,7 @@ export class PatientMedicalRecordComponent implements OnInit {
   private serviceItemService = inject(ServiceItemService);
 
   orders: any[] = [];
+  private radiologyService = inject(RadiologyService);
   radiologyItems: any[] = [];
   labItems: any[] = [];
   showOrderModal = false;
@@ -902,6 +942,7 @@ export class PatientMedicalRecordComponent implements OnInit {
       this.loadOrders();
       this.loadRadiologyItems();
       this.loadLabItems();
+      this.loadRadiologyResults();
     }
   }
 
@@ -912,6 +953,7 @@ export class PatientMedicalRecordComponent implements OnInit {
     this.loadAllergies();
     this.loadMedicalHistories();
     this.loadPatientNotes();
+    this.loadRadiologyResults();
   }
 
   loadSummary() {
@@ -934,6 +976,12 @@ export class PatientMedicalRecordComponent implements OnInit {
     this.medicalOrderService.getList({} as any).subscribe(res => {
       // Filter by patient locally or via API if supported
       this.orders = res.items.filter((o: any) => o.patientId === this.patientId);
+    });
+  }
+
+  loadRadiologyResults() {
+    this.radiologyService.getPatientResults(this.patientId).subscribe(res => {
+      this.radiologyResults = res;
     });
   }
 

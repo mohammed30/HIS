@@ -58,7 +58,7 @@ export class Reports implements OnInit {
     if (this.searchForm.invalid) return;
 
     const { payrollRunId, employeeId } = this.searchForm.value;
-    this.hrService.downloadPaySlipPdf(payrollRunId, employeeId).subscribe((blob: Blob) => {
+    this.hrService.getPaySlipPdf(payrollRunId, employeeId).subscribe((blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

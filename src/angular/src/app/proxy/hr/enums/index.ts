@@ -1,3 +1,4 @@
+export * from './attendance-status.enum';
 export * from './compensation-method.enum';
 export * from './compensation-nature.enum';
 export * from './compensation-value-type.enum';

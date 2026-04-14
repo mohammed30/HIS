@@ -171,7 +171,7 @@ export class Payroll implements OnInit {
   }
 
   printPaySlip(employeeId: string) {
-    this.hrService.downloadPaySlipPdf(this.selectedRunId, employeeId).subscribe((blob: Blob) => {
+    this.hrService.getPaySlipPdf(this.selectedRunId, employeeId).subscribe((blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

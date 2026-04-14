@@ -19,6 +19,7 @@ public class InternalRequest : FullAuditedAggregateRoot<Guid>
     public Guid? AdmissionId { get; set; }
 
     public DateTime RequestDate { get; set; }
+    public InternalRequestType RequestType { get; set; }
     public InternalRequestStatus Status { get; set; }
     public string? Notes { get; set; }
 

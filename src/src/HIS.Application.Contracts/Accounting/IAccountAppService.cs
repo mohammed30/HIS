@@ -26,4 +26,6 @@ public interface IAccountAppService : ICrudAppService<AccountDto, Guid, PagedAnd
     Task<AccountStatementDto> GetAccountStatementAsync(AccountStatementInputDto input);
 
     Task<List<AccountSummaryDto>> GetAccountSummaryAsync(DateRangeDto input);
+
+    Task<List<AccountLookupDto>> GetLookupAsync();
 }

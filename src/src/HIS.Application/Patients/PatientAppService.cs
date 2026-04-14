@@ -561,7 +561,7 @@ public class PatientAppService : ApplicationService, IPatientAppService
         var patient = await _patientRepository.GetAsync(patientId);
         
         var queryable = await _invoiceRepository.WithDetailsAsync(x => x.Items);
-        var invoicesQuery = queryable.Where(x => x.PatientId == patientId && x.Status != InvoiceStatus.Draft && x.Status != InvoiceStatus.Cancelled);
+        var invoicesQuery = queryable.Where(x => x.PatientId == patientId && x.Status != InvoiceStatus.Cancelled);
         
         var invoices = await AsyncExecuter.ToListAsync(invoicesQuery);
 
@@ -588,8 +588,8 @@ public class PatientAppService : ApplicationService, IPatientAppService
             report.TotalAmountPaid += invoice.PaidAmount;
             report.TotalAmountDue += invoice.DueAmount;
 
-            bool isPaid = invoice.DueAmount <= 0;
-            string statusStr = isPaid ? "مدفوعة" : "غير مدفوعة";
+            bool isPaid = invoice.DueAmount <= 0 && invoice.Status != InvoiceStatus.Draft;
+            string statusStr = invoice.Status == InvoiceStatus.Draft ? "مبدئي" : (isPaid ? "مدفوعة" : "غير مدفوعة");
 
             foreach (var item in invoice.Items)
             {

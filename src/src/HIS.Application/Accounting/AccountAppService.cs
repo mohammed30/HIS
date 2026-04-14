@@ -11,9 +11,13 @@ using HIS.Billing;
 using HIS.Patients;
 using Microsoft.AspNetCore.Hosting;
 using HIS.Accounting.Printing;
+using Microsoft.AspNetCore.Authorization;
+using HIS.Permissions;
+
 
 namespace HIS.Accounting;
 
+[Authorize(HISPermissions.Billing.ChartOfAccounts)]
 public class AccountAppService : CrudAppService<Account, AccountDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateAccountDto>, IAccountAppService
 {
     private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
@@ -881,5 +885,24 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
             result.AddRange(GetDescendantIds(child.Id, allAccounts));
         }
         return result;
+    }
+
+    public async Task<List<AccountLookupDto>> GetLookupAsync()
+    {
+        var accounts = await Repository.GetListAsync();
+        return accounts
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Code)
+            .Select(x => new AccountLookupDto
+            {
+                Id = x.Id,
+                Code = x.Code,
+                Name = x.Name,
+                NameAr = x.NameAr,
+                Type = x.Type,
+                ParentId = x.ParentId,
+                HasChildren = accounts.Any(a => a.ParentId == x.Id)
+            })
+            .ToList();
     }
 }
