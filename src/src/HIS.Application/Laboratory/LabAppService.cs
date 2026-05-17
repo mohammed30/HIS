@@ -7,6 +7,9 @@ using HIS.Laboratory.Dtos;
 using HIS.Patients;
 using HIS.Settings;
 using HIS.Services;
+using HIS.Inventory;
+using HIS.Inpatient;
+using HIS.Rooms;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
@@ -26,6 +29,10 @@ public class LabAppService : ApplicationService, ILabAppService
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<Doctor, Guid> _doctorRepository;
     private readonly IRepository<ServiceItem, Guid> _serviceItemRepository;
+    private readonly IRepository<InternalRequest, Guid> _internalRequestRepository;
+    private readonly IRepository<Department, Guid> _departmentRepository;
+    private readonly IRepository<Admission, Guid> _admissionRepository;
+    private readonly IRepository<Room, Guid> _roomRepository;
 
     public LabAppService(
         IRepository<LabTest, Guid> testRepository,
@@ -35,6 +42,10 @@ public class LabAppService : ApplicationService, ILabAppService
         IRepository<Patient, Guid> patientRepository,
         IRepository<Doctor, Guid> doctorRepository,
         IRepository<ServiceItem, Guid> serviceItemRepository,
+        IRepository<InternalRequest, Guid> internalRequestRepository,
+        IRepository<Department, Guid> departmentRepository,
+        IRepository<Admission, Guid> admissionRepository,
+        IRepository<Room, Guid> roomRepository,
         IWebHostEnvironment env)
     {
         _testRepository = testRepository;
@@ -44,6 +55,10 @@ public class LabAppService : ApplicationService, ILabAppService
         _patientRepository = patientRepository;
         _doctorRepository = doctorRepository;
         _serviceItemRepository = serviceItemRepository;
+        _internalRequestRepository = internalRequestRepository;
+        _departmentRepository = departmentRepository;
+        _admissionRepository = admissionRepository;
+        _roomRepository = roomRepository;
         _env = env;
     }
 
@@ -205,16 +220,18 @@ public class LabAppService : ApplicationService, ILabAppService
             requestQuery = requestQuery.Where(x => x.RequestDate < toDate);
         }
 
-        if (!string.IsNullOrEmpty(input.Filter))
+        if (input.Status.HasValue)
         {
-            requestQuery = requestQuery.Where(x => x.SampleNumber.Contains(input.Filter));
+            requestQuery = requestQuery.Where(x => x.Status == input.Status.Value);
         }
 
         var totalCount = await AsyncExecuter.CountAsync(requestQuery);
 
+        // Perform joins (Left join for doctor to handle non-doctor submitters)
         var combinedQuery = from request in requestQuery
                             join patient in patientQuery on request.PatientId equals patient.Id
-                            join doctor in doctorQuery on request.DoctorId equals doctor.Id
+                            join doctor in doctorQuery on request.DoctorId equals doctor.Id into doctorGroup
+                            from doctor in doctorGroup.DefaultIfEmpty()
                             join test in testQuery on request.ServiceItemId equals test.Id
                             select new { request, patient, doctor, test };
 
@@ -223,15 +240,41 @@ public class LabAppService : ApplicationService, ILabAppService
 
         var results = await AsyncExecuter.ToListAsync(combinedQuery);
 
-        var dtos = results.Select(x =>
+        var dtos = new List<LabRequestDto>();
+        foreach (var x in results)
         {
             var dto = ObjectMapper.Map<LabRequest, LabRequestDto>(x.request);
             dto.PatientName = $"{x.patient.FirstNameAr} {x.patient.LastNameAr}";
-            dto.DoctorName = x.doctor.NameAr ?? "Unknown";
+            dto.DoctorName = x.doctor?.NameAr ?? "N/A";
             dto.TestName = x.test.Name;
             dto.TestCode = x.test.Code;
-            return dto;
-        }).ToList();
+
+            // Enrich with Inpatient context if it's a nursing request
+            if (x.request.Notes != null && x.request.Notes.Contains("Nursing Req:"))
+            {
+                var reqPart = x.request.Notes.Split('.').First(); // Nursing Req: REQ-xxxx
+                var reqNumber = reqPart.Replace("Nursing Req: ", "").Trim();
+                
+                var internalRequest = await _internalRequestRepository.FirstOrDefaultAsync(ir => ir.RequestNumber == reqNumber);
+                if (internalRequest != null)
+                {
+                    var dept = await _departmentRepository.FindAsync(internalRequest.RequestingDepartmentId);
+                    dto.RequestingDepartmentName = dept?.NameAr ?? dept?.NameEn ?? "N/A";
+
+                    if (internalRequest.AdmissionId.HasValue)
+                    {
+                        var admission = await _admissionRepository.FindAsync(internalRequest.AdmissionId.Value);
+                        if (admission != null)
+                        {
+                            var room = await _roomRepository.FindAsync(admission.RoomId);
+                            dto.AdmissionRoom = room?.RoomNumber ?? "N/A";
+                        }
+                    }
+                }
+            }
+
+            dtos.Add(dto);
+        }
 
         return new PagedResultDto<LabRequestDto>(totalCount, dtos);
     }

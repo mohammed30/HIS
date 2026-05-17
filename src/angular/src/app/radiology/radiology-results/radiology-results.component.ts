@@ -1,6 +1,7 @@
 import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
-import { RadiologyRequestDto, RadiologyRequestStatus } from '../../proxy/radiology/models';
+import { RadiologyRequestDto } from '../../proxy/radiology/models';
+import { RadiologyRequestStatus } from '../../proxy/radiology/radiology-request-status.enum';
 import { RadiologyService } from '../../proxy/radiology/radiology.service';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';

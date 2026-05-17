@@ -5,12 +5,15 @@ using System.Threading.Tasks;
 using HIS.Patients;
 using HIS.Settings;
 using HIS.Services;
+using HIS.Rooms;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Content;
+using HIS.Inventory;
+using HIS.Inpatient;
 
 namespace HIS.Radiology;
 
@@ -19,6 +22,10 @@ public class RadiologyAppService : CrudAppService<RadiologyRequest, RadiologyReq
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<Doctor, Guid> _doctorRepository;
     private readonly IRepository<RadiologyItem, Guid> _radiologyItemRepository;
+    private readonly IRepository<InternalRequest, Guid> _internalRequestRepository;
+    private readonly IRepository<Department, Guid> _departmentRepository;
+    private readonly IRepository<Admission, Guid> _admissionRepository;
+    private readonly IRepository<Room, Guid> _roomRepository;
 
     private readonly IWebHostEnvironment _env;
 
@@ -27,12 +34,20 @@ public class RadiologyAppService : CrudAppService<RadiologyRequest, RadiologyReq
         IRepository<Patient, Guid> patientRepository,
         IRepository<Doctor, Guid> doctorRepository,
         IRepository<RadiologyItem, Guid> radiologyItemRepository,
+        IRepository<InternalRequest, Guid> internalRequestRepository,
+        IRepository<Department, Guid> departmentRepository,
+        IRepository<Admission, Guid> admissionRepository,
+        IRepository<Room, Guid> roomRepository,
         IWebHostEnvironment env) 
         : base(repository)
     {
         _patientRepository = patientRepository;
         _doctorRepository = doctorRepository;
         _radiologyItemRepository = radiologyItemRepository;
+        _internalRequestRepository = internalRequestRepository;
+        _departmentRepository = departmentRepository;
+        _admissionRepository = admissionRepository;
+        _roomRepository = roomRepository;
         _env = env;
     }
 
@@ -48,7 +63,9 @@ public class RadiologyAppService : CrudAppService<RadiologyRequest, RadiologyReq
 
         // Basic filtering example (can be extended)
         query = query.WhereIf(!string.IsNullOrWhiteSpace(input.Filter),
-            x => x.RequestNumber.Contains(input.Filter));
+            x => x.RequestNumber.Contains(input.Filter) || x.ReportBody.Contains(input.Filter));
+            
+        query = query.WhereIf(input.Status.HasValue, x => x.Status == input.Status.Value);
 
         var totalCount = await AsyncExecuter.CountAsync(query);
 
@@ -81,6 +98,29 @@ public class RadiologyAppService : CrudAppService<RadiologyRequest, RadiologyReq
 
         var radItem = await _radiologyItemRepository.FindAsync(entity.RadiologyItemId);
         dto.RadiologyItemName = radItem?.Name ?? "N/A";
+
+        // Enrichment from Nursing Request
+        if (!string.IsNullOrEmpty(entity.RequestNumber))
+        {
+            var internalRequest = (await _internalRequestRepository.GetQueryableAsync())
+                .FirstOrDefault(x => x.RequestNumber == entity.RequestNumber);
+                
+            if (internalRequest != null)
+            {
+                var dept = await _departmentRepository.FindAsync(internalRequest.RequestingDepartmentId);
+                dto.RequestingDepartmentName = dept?.NameAr ?? dept?.NameEn ?? "Unknown Ward";
+                
+                if (internalRequest.AdmissionId.HasValue)
+                {
+                    var admission = await _admissionRepository.FindAsync(internalRequest.AdmissionId.Value);
+                    if (admission != null)
+                    {
+                        var room = await _roomRepository.FindAsync(admission.RoomId);
+                        dto.AdmissionRoom = room?.RoomNumber ?? "N/A";
+                    }
+                }
+            }
+        }
 
         return dto;
     }

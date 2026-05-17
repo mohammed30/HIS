@@ -59,6 +59,8 @@ public class LabRequestDto : AuditedEntityDto<Guid>
     public string? SampleNumber { get; set; }
     public string Result { get; set; }
     public string Notes { get; set; }
+    public string? RequestingDepartmentName { get; set; }
+    public string? AdmissionRoom { get; set; }
 }
 
 public class CreateLabRequestDto
@@ -80,6 +82,7 @@ public class GetLabRequestsInput : PagedAndSortedResultRequestDto
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
     public string? Filter { get; set; }
+    public LabRequestStatus? Status { get; set; }
 }
 
 // --- Lab Appointments DTOs ---

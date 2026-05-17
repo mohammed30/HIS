@@ -40,6 +40,8 @@ public class AdmissionAppService : CrudAppService<
     private readonly IRepository<InsuranceServicePrice, Guid> _insurancePriceRepository;
     private readonly IRepository<MedicalOrder, Guid> _medicalOrderRepository;
     private readonly HIS.Billing.IInvoiceAppService _invoiceAppService;
+    private readonly IRepository<HIS.Billing.Invoice, Guid> _invoiceRepository;
+    private readonly IRepository<HIS.Billing.InvoiceItem, Guid> _invoiceItemRepository;
 
     public AdmissionAppService(
         IRepository<Admission, Guid> repository,
@@ -55,7 +57,9 @@ public class AdmissionAppService : CrudAppService<
         IRepository<InsurancePlan, Guid> insurancePlanRepository,
         IRepository<InsuranceServicePrice, Guid> insurancePriceRepository,
         IRepository<MedicalOrder, Guid> medicalOrderRepository,
-        HIS.Billing.IInvoiceAppService invoiceAppService) : base(repository)
+        HIS.Billing.IInvoiceAppService invoiceAppService,
+        IRepository<HIS.Billing.Invoice, Guid> invoiceRepository,
+        IRepository<HIS.Billing.InvoiceItem, Guid> invoiceItemRepository) : base(repository)
     {
         _patientRepository = patientRepository;
         _roomRepository = roomRepository;
@@ -70,6 +74,8 @@ public class AdmissionAppService : CrudAppService<
         _insurancePriceRepository = insurancePriceRepository;
         _medicalOrderRepository = medicalOrderRepository;
         _invoiceAppService = invoiceAppService;
+        _invoiceRepository = invoiceRepository;
+        _invoiceItemRepository = invoiceItemRepository;
     }
 
     public override async Task<AdmissionDto> CreateAsync(CreateUpdateAdmissionDto input)
@@ -182,7 +188,7 @@ public class AdmissionAppService : CrudAppService<
         // Calculate total based on days and room rate
         var room = await _roomRepository.GetAsync(admission.RoomId);
         int currentStayDays = (int)(input.DischargeDate - admission.LastTransferDate).TotalDays;
-        if (currentStayDays < 1 && admission.AccumulatedRoomCharges == 0) currentStayDays = 1; // Minimum 1 day total if no transfers
+        if (currentStayDays < 1 && admission.AccumulatedRoomCharges == 0) currentStayDays = 1; 
         
         decimal currentStayCharges = currentStayDays * room.DailyRate;
         admission.TotalAmount = admission.AccumulatedRoomCharges + currentStayCharges;
@@ -240,7 +246,6 @@ public class AdmissionAppService : CrudAppService<
         // Add Room Charges
         if (admission.TotalAmount > 0)
         {
-            // room is already fetched on line 182
             string roomServiceCode = GetRoomServiceCode(room.Type);
             decimal dailyRate = await GetServicePriceAsync(admission.PatientInsuranceId, roomServiceCode, room.DailyRate);
 
@@ -305,12 +310,45 @@ public class AdmissionAppService : CrudAppService<
             });
         }
 
-        admission.InsuranceAmount = totalInsuranceShare;
-        // Proceed with Invoice Creation
+        // --- Add Existing Items from ALL Draft Invoices for this Patient (Current Stay) ---
+        var draftInvoices = await _invoiceRepository.GetListAsync(x => 
+            x.PatientId == admission.PatientId && 
+            x.Status == HIS.Billing.InvoiceStatus.Draft &&
+            x.InvoiceDate >= admission.AdmissionDate);
+        foreach (var draftInvoice in draftInvoices)
+        {
+            var existingItems = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == draftInvoice.Id);
+            foreach (var item in existingItems)
+            {
+                if (invoiceInput.Items.Any(x => x.Description == item.Description && x.Quantity == item.Quantity && x.UnitPrice == item.UnitPrice))
+                {
+                    continue;
+                }
 
-        // Deduct Deposits as lines or apply immediately  
-        // We handle this by setting PaidAmount on the invoice directly, but since CreateAsync doesn't accept PaidAmount directly, 
-        // we'll fetch the created invoice and update it or create a payment record.
+                invoiceInput.Items.Add(new HIS.Billing.CreateUpdateInvoiceItemDto
+                {
+                    ServiceType = item.ServiceType,
+                    Description = item.Description,
+                    UnitPrice = item.UnitPrice,
+                    Quantity = item.Quantity,
+                    ServiceCode = item.ServiceCode,
+                    Notes = item.Notes,
+                    IsCoveredByInsurance = item.IsCoveredByInsurance,
+                    DiscountAmount = item.DiscountAmount
+                });
+            }
+        }
+
+        admission.InsuranceAmount = totalInsuranceShare;
+
+        // Cancel ALL draft invoices for this patient
+        foreach (var oldInvoice in draftInvoices)
+        {
+            oldInvoice.Status = HIS.Billing.InvoiceStatus.Cancelled;
+            oldInvoice.Notes += " - Consolidated into final discharge invoice";
+            await _invoiceRepository.UpdateAsync(oldInvoice);
+        }
+
         var invoice = await _invoiceAppService.CreateAsync(invoiceInput);
         admission.InvoiceId = invoice.Id;
         
@@ -322,24 +360,19 @@ public class AdmissionAppService : CrudAppService<
                 InvoiceId = invoice.Id,
                 PatientId = admission.PatientId,
                 Amount = admission.PaidAmount,
-                PaymentMethod = HIS.Billing.PaymentMethod.Cash, // Simplification for deposits
+                PaymentMethod = HIS.Billing.PaymentMethod.Cash,
                 Notes = "Applied from Inpatient Deposits"
             });
         }
 
         await Repository.UpdateAsync(admission);
 
-        // Free up the bed
-        room.AvailableBeds++; // Keep legacy counter in sync
-        if (room.Status == RoomStatus.Occupied)
-        {
-            room.Status = RoomStatus.Available;
-        }
+        room.AvailableBeds++; 
+        if (room.Status == RoomStatus.Occupied) room.Status = RoomStatus.Available;
         await _roomRepository.UpdateAsync(room);
 
-        // Update Bed status
         var bed = await _bedRepository.GetAsync(admission.BedId);
-        bed.Status = BedStatus.Cleaning; // Mark as cleaning before available
+        bed.Status = BedStatus.Cleaning;
         await _bedRepository.UpdateAsync(bed);
 
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
@@ -375,7 +408,6 @@ public class AdmissionAppService : CrudAppService<
         decimal currentStayCharges = currentStayDays * dailyRate;
         decimal totalRoomCharges = admission.AccumulatedRoomCharges + currentStayCharges;
 
-        // --- Insurance Calculation Logic ---
         decimal totalInsuranceShare = 0;
         InsurancePlan? plan = null;
         if (admission.PatientInsuranceId.HasValue)
@@ -387,7 +419,6 @@ public class AdmissionAppService : CrudAppService<
             }
         }
 
-        // 1. Room Charges
         if (totalRoomCharges > 0)
         {
             decimal insuranceShare = (plan != null && plan.IncludesInpatient) ? (totalRoomCharges * (plan.CoveragePercentage / 100)) : 0;
@@ -397,7 +428,7 @@ public class AdmissionAppService : CrudAppService<
             {
                 ServiceType = HIS.Billing.ServiceType.Inpatient, 
                 Description = $"رسوم إقامة الغرف ({room.RoomNumber}) - حتى تاريخه",
-                Quantity = currentStayDays, // Number of days including transfers
+                Quantity = currentStayDays > 0 ? currentStayDays : 1, 
                 UnitPrice = dailyRate,
                 TotalPrice = totalRoomCharges,
                 IsCoveredByInsurance = insuranceShare > 0,
@@ -407,10 +438,8 @@ public class AdmissionAppService : CrudAppService<
             invoiceDto.NetAmount += (totalRoomCharges - insuranceShare);
         }
 
-        // 2. Medical Orders (Lab, Radiology, Consumables, Medications)
-        var medicalOrderRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Clinical.MedicalOrder, Guid>>();
-        var orders = await medicalOrderRepo.GetListAsync(x => x.AdmissionId == id && x.Status != OrderStatus.Cancelled);
-        
+        // 2. Medical Orders
+        var orders = await _medicalOrderRepository.GetListAsync(x => x.AdmissionId == id && x.Status != OrderStatus.Cancelled);
         foreach (var order in orders)
         {
             decimal itemTotal = order.Price * order.Quantity;
@@ -463,7 +492,34 @@ public class AdmissionAppService : CrudAppService<
             invoiceDto.NetAmount += (itemTotal - insuranceShare);
         }
 
-        // 3. Paid Amount (Deposits)
+        // 4. ALL Draft Invoices for this Patient (Current Stay)
+        var draftInvoices = await _invoiceRepository.GetListAsync(x => 
+            x.PatientId == admission.PatientId && 
+            x.Status == HIS.Billing.InvoiceStatus.Draft &&
+            x.InvoiceDate >= admission.AdmissionDate);
+        foreach (var draftInvoice in draftInvoices)
+        {
+            var existingItems = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == draftInvoice.Id);
+            foreach (var item in existingItems)
+            {
+                if (invoiceDto.Items.Any(i => i.Description == item.Description && i.Quantity == item.Quantity && i.UnitPrice == item.UnitPrice)) continue;
+
+                invoiceDto.Items.Add(new HIS.Billing.InvoiceItemDto
+                {
+                    ServiceType = item.ServiceType,
+                    Description = item.Description,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    TotalPrice = item.TotalPrice,
+                    IsCoveredByInsurance = item.IsCoveredByInsurance,
+                    DiscountAmount = item.DiscountAmount
+                });
+                invoiceDto.TotalAmount += item.TotalPrice;
+                invoiceDto.NetAmount += (item.TotalPrice - item.DiscountAmount);
+            }
+        }
+
+        // 5. Deposits
         var activeDeposits = await _inpatientDepositRepository.GetListAsync(d => d.AdmissionId == id && d.Status == HIS.Billing.DepositStatus.Active);
         decimal totalDeposits = activeDeposits.Sum(d => d.Amount);
         
@@ -521,12 +577,9 @@ public class AdmissionAppService : CrudAppService<
 
         var transferDate = DateTime.Now;
         int daysInOldRoom = (int)(transferDate - admission.LastTransferDate).TotalDays;
-        // if transfer happens same day, we might charge 1 day or 0, let's say 0 to not overcharge if they move instantly
-        // but if they stayed overnight, it's 1 day.
         
         decimal chargesForOldRoom = daysInOldRoom * oldRoom.DailyRate;
         
-        // Create transfer log
         var transferLog = new PatientTransfer(
             GuidGenerator.Create(),
             CurrentTenant.Id,
@@ -545,34 +598,25 @@ public class AdmissionAppService : CrudAppService<
         };
         await _patientTransferRepository.InsertAsync(transferLog);
 
-        // Update Admission
         admission.AccumulatedRoomCharges += chargesForOldRoom;
         admission.LastTransferDate = transferDate;
         admission.RoomId = newRoom.Id;
         admission.BedId = newBed.Id;
         await Repository.UpdateAsync(admission);
 
-        // Free old bed
         oldBed.Status = BedStatus.Cleaning;
         await _bedRepository.UpdateAsync(oldBed);
         
         oldRoom.AvailableBeds++;
-        if (oldRoom.Status == RoomStatus.Occupied)
-        {
-            oldRoom.Status = RoomStatus.Available;
-        }
+        if (oldRoom.Status == RoomStatus.Occupied) oldRoom.Status = RoomStatus.Available;
         await _roomRepository.UpdateAsync(oldRoom);
 
-        // Occupy new bed
         newBed.Status = BedStatus.Occupied;
         await _bedRepository.UpdateAsync(newBed);
 
         newRoom.AvailableBeds--;
         if (newRoom.AvailableBeds < 0) newRoom.AvailableBeds = 0;
-        if (newRoom.AvailableBeds == 0)
-        {
-            newRoom.Status = RoomStatus.Occupied;
-        }
+        if (newRoom.AvailableBeds == 0) newRoom.Status = RoomStatus.Occupied;
         await _roomRepository.UpdateAsync(newRoom);
 
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);

@@ -26,29 +26,29 @@ public class PatientCategoryDataSeedContributor : IDataSeedContributor, ITransie
 
     public async Task SeedAsync(DataSeedContext context)
     {
-        // 1. Clean up Non-Payment Method Categories (Strict Sync)
+        // 1. Clean up unused categories
+        await DeleteIfExistsAsync("Card");
+        await DeleteIfExistsAsync("شبكة");
+        await DeleteIfExistsAsync("Bank Transfer");
+        await DeleteIfExistsAsync("تحويل بنكي");
+        await DeleteIfExistsAsync("Client Balance");
+        await DeleteIfExistsAsync("رصيد عميل");
+        await DeleteIfExistsAsync("Cheque");
+        await DeleteIfExistsAsync("شيك");
+        await DeleteIfExistsAsync("Insurance"); // Will be replaced by Contract
+        await DeleteIfExistsAsync("تأمين");
+        
+        // Remove other junk as requested
         await DeleteIfExistsAsync("One of us");
-        await DeleteIfExistsAsync("واحد منا");
         await DeleteIfExistsAsync("Poor");
-        await DeleteIfExistsAsync("فقير");
-        
-        // Remove categories that are NOT payment methods
         await DeleteIfExistsAsync("VIP");
-        await DeleteIfExistsAsync("كبار الشخصيات");
         await DeleteIfExistsAsync("Staff");
-        await DeleteIfExistsAsync("موظف");
         await DeleteIfExistsAsync("Charity");
-        await DeleteIfExistsAsync("جمعية خيرية");
 
-        // 2. Seed Only Payment Method Categories
+        // 2. Seed Hospital Specific Categories
         await CreateCategoryIfNotExistsAsync("نقدي", "Cash", "CASH");
-        await CreateCategoryIfNotExistsAsync("شبكة", "Card", "CARD");
-        await CreateCategoryIfNotExistsAsync("تأمين", "Insurance", "INSURANCE");
-        
-        // Add missing payment methods
-        await CreateCategoryIfNotExistsAsync("تحويل بنكي", "Bank Transfer", "TRANSFER");
-        await CreateCategoryIfNotExistsAsync("رصيد عميل", "Client Balance", "BALANCE");
-        await CreateCategoryIfNotExistsAsync("شيك", "Cheque", "CHEQUE");
+        await CreateCategoryIfNotExistsAsync("تعاقد", "Contract", "CONTRACT");
+        await CreateCategoryIfNotExistsAsync("ضمان اجتماعي", "Social Security", "SOCIAL_SECURITY");
     }
 
     private async Task DeleteIfExistsAsync(string name)

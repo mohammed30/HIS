@@ -35,6 +35,7 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     filterByDate = true;
     fromDate = new Date().toISOString().split('T')[0];
     toDate = new Date().toISOString().split('T')[0];
+    selectedStatus: LabRequestStatus | null = null;
 
     // Create modal
     isCreateModalOpen = false;
@@ -55,7 +56,11 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.list.hookToQuery(query => {
-            const params: any = { ...query, filter: this.searchText };
+            const params: any = { 
+                ...query, 
+                filter: this.searchText,
+                status: this.selectedStatus
+            };
             if (this.filterByDate) {
                 params.fromDate = this.fromDate;
                 params.toDate = this.toDate;
@@ -81,9 +86,9 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    onSearch(value: string) {
-        this.searchText = value;
-        this.searchSubject.next(value);
+    onSearch(value: string | any) {
+        this.searchText = typeof value === 'string' ? value : value.target.value;
+        this.searchSubject.next(this.searchText);
     }
 
     onFilterChange() {
@@ -92,6 +97,12 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
 
     toggleDateFilter() {
         this.filterByDate = !this.filterByDate;
+        this.list.get();
+    }
+
+    filterByStatus(status: LabRequestStatus | null) {
+        this.selectedStatus = status;
+        this.list.page = 0;
         this.list.get();
     }
 
@@ -108,6 +119,10 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
         this.labService.getTests({ maxResultCount: 1000 }).subscribe(res => {
             this.labTests = res.items;
         });
+    }
+
+    refresh() {
+        this.list.get();
     }
 
     openCreateModal() {
@@ -178,17 +193,13 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
             case LabRequestStatus.Requested: return 'bg-warning text-dark';
             case LabRequestStatus.SampleCollected: return 'bg-info text-dark';
             case LabRequestStatus.Completed: return 'bg-success';
+            case LabRequestStatus.Cancelled: return 'bg-danger';
             default: return 'bg-secondary';
         }
     }
 
     getStatusLabel(status: number) {
-        const labels: { [key: number]: string } = {
-            0: 'مطلوب',
-            1: 'تم جمع العينة',
-            2: 'قيد المعالجة',
-            3: 'مكتمل'
-        };
-        return labels[status] || 'غير معروف';
+        if (status === undefined || status === null) return '::Enum:LabRequestStatus.Unknown';
+        return '::Enum:LabRequestStatus.' + status;
     }
 }

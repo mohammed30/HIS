@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authorization;
 using HIS.General;
 using HIS.Permissions;
 using HIS.Billing;
+using HIS.Rooms;
+using HIS.Insurance;
 
 namespace HIS.Patients;
 
@@ -35,6 +37,14 @@ public class PatientAppService : ApplicationService, IPatientAppService
     private readonly ActivityLogManager _activityLogManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env;
+
+    private IRepository<HIS.Inpatient.Admission, Guid> AdmissionRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inpatient.Admission, Guid>>();
+    private IRepository<HIS.Clinical.MedicalOrder, Guid> MedicalOrderRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Clinical.MedicalOrder, Guid>>();
+    private IRepository<HIS.Inventory.InternalRequest, Guid> InternalRequestRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inventory.InternalRequest, Guid>>();
+    private IRepository<HIS.Inventory.InventoryItem, Guid> InventoryItemRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inventory.InventoryItem, Guid>>();
+    private IRepository<Room, Guid> RoomRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<Room, Guid>>();
+    private IRepository<InsurancePlan, Guid> InsurancePlanRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<InsurancePlan, Guid>>();
+    private IRepository<HIS.Services.ServiceItem, Guid> ServiceItemRepository => LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Services.ServiceItem, Guid>>();
 
     public PatientAppService(
         IRepository<Patient, Guid> patientRepository,
@@ -612,6 +622,150 @@ public class PatientAppService : ApplicationService, IPatientAppService
                 };
                 
                 report.Services.Add(serviceDto);
+            }
+        }
+
+        // --- Add Pending Clinical Services (Medical Orders) ---
+        var medicalOrders = await MedicalOrderRepository.GetListAsync(x => x.PatientId == patientId && x.Status != Clinical.OrderStatus.Cancelled);
+        foreach (var order in medicalOrders)
+        {
+            // Deduplicate: Check if this order is already in an invoice item (by name and quantity)
+            if (report.Services.Any(s => s.ServiceDescription.Contains(order.ServiceName) && s.Quantity == order.Quantity))
+            {
+                continue;
+            }
+
+            var serviceDto = new PatientServiceItemDto
+            {
+                Date = order.CreationTime,
+                InvoiceNumber = "---",
+                ServiceDescription = order.ServiceName,
+                Quantity = order.Quantity,
+                UnitPrice = order.Price,
+                TotalPrice = order.Price * order.Quantity,
+                Status = "مطلوب (طبي)",
+                IsPaid = false
+            };
+            report.Services.Add(serviceDto);
+            
+            if (!showUnpaidOnly)
+            {
+                report.TotalAmountInvoiced += serviceDto.TotalPrice;
+                report.TotalAmountDue += serviceDto.TotalPrice;
+            }
+        }
+
+        // --- Add Pending Inventory Requests (Medications / Consumables) ---
+        var activeAdmissions = await AdmissionRepository.GetListAsync(x => x.PatientId == patientId && x.Status == Inpatient.AdmissionStatus.Active);
+        if (activeAdmissions.Any())
+        {
+            var admissionIds = activeAdmissions.Select(a => a.Id).ToList();
+            var internalRequestsQuery = await InternalRequestRepository.WithDetailsAsync(x => x.Lines);
+            var internalRequests = await AsyncExecuter.ToListAsync(
+                internalRequestsQuery.Where(x => x.AdmissionId.HasValue && admissionIds.Contains(x.AdmissionId.Value) && x.Status != Inventory.InternalRequestStatus.Cancelled)
+            );
+
+            if (internalRequests.Any())
+            {
+                var itemIds = internalRequests.SelectMany(r => r.Lines).Select(l => l.InventoryItemId).Distinct().ToList();
+                var items = await InventoryItemRepository.GetListAsync(x => itemIds.Contains(x.Id));
+
+                foreach (var req in internalRequests)
+                {
+                    foreach (var line in req.Lines)
+                    {
+                        var inventoryItem = items.FirstOrDefault(i => i.Id == line.InventoryItemId);
+                        var itemName = inventoryItem?.ProductName ?? "صنف مخزني";
+                        
+                        // Deduplicate: Check if this request line is already in an invoice item
+                        // We check by RequestNumber in the notes or item name
+                        if (report.Services.Any(s => (s.ServiceDescription.Contains(req.RequestNumber) && s.ServiceDescription.Contains(itemName)) || 
+                                                     (s.ServiceDescription == itemName && s.Quantity == line.ApprovedQuantity)))
+                        {
+                            continue;
+                        }
+
+                        // We need a price for the inventory item to show in report
+                        // Fallback logic consistent with InternalRequestAppService
+                        decimal price = 0;
+                        if (inventoryItem != null)
+                        {
+                            var serviceItem = await ServiceItemRepository.FirstOrDefaultAsync(s => s.Id == inventoryItem.ProductId || s.Name == inventoryItem.ProductName);
+                            price = serviceItem?.Price ?? inventoryItem.AverageCost;
+                            if (price <= 0) price = 10.0m; // Ultimate fallback
+                        }
+
+                        var serviceDto = new PatientServiceItemDto
+                        {
+                            Date = req.RequestDate,
+                            InvoiceNumber = req.RequestNumber,
+                            ServiceDescription = $"{itemName} (طلب: {req.RequestNumber})",
+                            Quantity = line.ApprovedQuantity > 0 ? line.ApprovedQuantity : line.RequestedQuantity,
+                            UnitPrice = price,
+                            TotalPrice = price * (line.ApprovedQuantity > 0 ? line.ApprovedQuantity : line.RequestedQuantity),
+                            Status = req.Status == Inventory.InternalRequestStatus.Approved || req.Status == Inventory.InternalRequestStatus.Received ? "تم الصرف" : "قيد الطلب",
+                            IsPaid = false
+                        };
+                        report.Services.Add(serviceDto);
+
+                        if (!showUnpaidOnly)
+                        {
+                            report.TotalAmountInvoiced += serviceDto.TotalPrice;
+                            report.TotalAmountDue += serviceDto.TotalPrice;
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Add Room Charges (Inpatient Stay) ---
+        foreach (var admission in activeAdmissions)
+        {
+            var room = await RoomRepository.FindAsync(admission.RoomId);
+            if (room != null)
+            {
+                // Calculate current stay days
+                int currentStayDays = (int)(DateTime.Now - admission.LastTransferDate).TotalDays;
+                if (currentStayDays < 1 && admission.AccumulatedRoomCharges == 0) currentStayDays = 1;
+                
+                // Get service code for room type (basic mapping)
+                string serviceCode = room.Type switch
+                {
+                    RoomType.ICU => "RM-ICU",
+                    RoomType.Suite => "RM-SUITE",
+                    RoomType.Private => "RM-PRIVATE",
+                    _ => "RM-STD"
+                };
+
+                // Try to get insurance price or standard rate
+                decimal dailyRate = room.DailyRate;
+                var serviceItem = await ServiceItemRepository.FirstOrDefaultAsync(s => s.Code == serviceCode);
+                if (serviceItem != null) dailyRate = serviceItem.Price;
+
+                decimal currentCharges = currentStayDays * dailyRate;
+                decimal totalRoomCharges = admission.AccumulatedRoomCharges + currentCharges;
+
+                if (totalRoomCharges > 0)
+                {
+                    var serviceDto = new PatientServiceItemDto
+                    {
+                        Date = admission.AdmissionDate,
+                        InvoiceNumber = "STAY",
+                        ServiceDescription = $"رسوم إقامة الغرف ({room.RoomNumber})",
+                        Quantity = currentStayDays > 0 ? currentStayDays : 1, // simplified display
+                        UnitPrice = dailyRate,
+                        TotalPrice = totalRoomCharges,
+                        Status = "تنويم نشط",
+                        IsPaid = false
+                    };
+                    report.Services.Add(serviceDto);
+
+                    if (!showUnpaidOnly)
+                    {
+                        report.TotalAmountInvoiced += serviceDto.TotalPrice;
+                        report.TotalAmountDue += serviceDto.TotalPrice;
+                    }
+                }
             }
         }
 

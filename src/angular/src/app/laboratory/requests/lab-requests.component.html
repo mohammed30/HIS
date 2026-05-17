@@ -1,205 +1,285 @@
-<div class="card shadow-sm hover-lift">
-    <div class="card-header bg-primary text-white">
-        <div class="row align-items-center">
-            <div class="col col-md-6">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-list-check me-2"></i>
-                    {{ '::Menu:LabRequests' | abpLocalization }}
-                </h5>
-            </div>
-            <div class="text-end col col-md-6">
-                <button id="create-request" class="btn btn-light btn-premium shadow-sm" type="button"
-                    (click)="openCreateModal()">
-                    <i class="fas fa-calendar-plus me-1"></i>
-                    <span>طلب تحليل جديد</span>
-                </button>
-            </div>
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+        <div>
+            <h1 class="h3 mb-0 text-primary font-weight-bold">
+                <i class="fas fa-microscope me-2"></i> {{ '::LabRequests' | abpLocalization }}
+            </h1>
+            <p class="text-muted mb-0">{{ '::ManageClinicalLabOrders' | abpLocalization }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm" (click)="refresh()">
+                <i class="fas fa-sync-alt me-1"></i> {{ '::Refresh' | abpLocalization }}
+            </button>
+            <button class="btn btn-primary btn-sm px-4" (click)="openCreateModal()">
+                <i class="fas fa-plus me-1"></i> {{ '::NewLabRequest' | abpLocalization }}
+            </button>
         </div>
     </div>
-    <div class="card-body">
-        <!-- Filters & Search -->
-        <div class="row g-3 mb-4 align-items-end p-3 bg-light rounded border shadow-sm">
-            <div class="col-md-auto">
-                <div class="form-check form-switch mb-1">
-                    <input class="form-check-input" type="checkbox" id="filterByDate" [(ngModel)]="filterByDate" (change)="onFilterChange()">
-                    <label class="form-check-label fw-bold text-primary" for="filterByDate">
-                        <i class="fas fa-calendar-check me-1"></i> فلترة بالتاريخ
-                    </label>
+
+    <!-- Dashboard Tabs & Controls -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 pt-3">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <ul class="nav nav-pills card-header-pills custom-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" [class.active]="selectedStatus === null" (click)="filterByStatus(null)">
+                                {{ '::AllRequests' | abpLocalization }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [class.active]="selectedStatus === 0" (click)="filterByStatus(0)">
+                                <span class="badge bg-warning me-1">&nbsp;</span> {{ '::Requested' | abpLocalization }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [class.active]="selectedStatus === 1" (click)="filterByStatus(1)">
+                                <span class="badge bg-info me-1">&nbsp;</span> {{ '::SampleCollected' | abpLocalization }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [class.active]="selectedStatus === 3" (click)="filterByStatus(3)">
+                                <span class="badge bg-success me-1">&nbsp;</span> {{ '::Completed' | abpLocalization }}
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-            <div class="col-md-3" [hidden]="!filterByDate">
-                <label class="form-label small fw-bold text-muted">من تاريخ</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white"><i class="far fa-calendar-alt"></i></span>
-                    <input type="date" class="form-control" [(ngModel)]="fromDate" (change)="onFilterChange()">
-                </div>
-            </div>
-            <div class="col-md-3" [hidden]="!filterByDate">
-                <label class="form-label small fw-bold text-muted">إلى تاريخ</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white"><i class="far fa-calendar-alt"></i></span>
-                    <input type="date" class="form-control" [(ngModel)]="toDate" (change)="onFilterChange()">
-                </div>
-            </div>
-            <div class="col-md-3 ms-auto">
-                <label class="form-label small fw-bold text-muted">بحث سريع</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-primary"></i></span>
-                    <input type="text" class="form-control border-start-0" [placeholder]="'::Search' | abpLocalization"
-                        [ngModel]="searchText" (input)="onSearch($any($event.target).value)">
+                <div class="col-lg-6 mt-3 mt-lg-0">
+                    <div class="d-flex flex-wrap justify-content-lg-end gap-2 align-items-center">
+                        <div class="input-group input-group-sm search-box" style="width: 250px;">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" class="form-control border-start-0" 
+                                   [placeholder]="'::SearchPatient' | abpLocalization" 
+                                   [(ngModel)]="searchText" (input)="onSearch($event)">
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-2 date-filters ms-2 border-start ps-2">
+                             <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="dateToggle" [checked]="filterByDate" (change)="toggleDateFilter()">
+                            </div>
+                            <input type="date" class="form-control form-control-sm border-0 bg-light" 
+                                   [(ngModel)]="fromDate" (change)="onFilterChange()" [disabled]="!filterByDate">
+                            <span class="text-muted small">→</span>
+                            <input type="date" class="form-control form-control-sm border-0 bg-light" 
+                                   [(ngModel)]="toDate" (change)="onFilterChange()" [disabled]="!filterByDate">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default class="material"
-            [footerHeight]="50">
-            <ngx-datatable-column [name]="'::Date' | abpLocalization" prop="requestDate">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <span class="text-muted"><i class="far fa-clock me-1"></i>{{ row.requestDate | date:'short'
-                        }}</span>
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Patient' | abpLocalization" prop="patientName">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <strong>{{ row.patientName }}</strong>
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Test' | abpLocalization" prop="testName">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <div class="fw-bold">{{ row.testName }}</div>
-                    <code class="text-primary small">{{ row.testCode }}</code>
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Doctor' | abpLocalization" prop="doctorName"></ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="status">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <span class="badge shadow-sm" [ngClass]="getStatusClass(row.status)" style="padding: 0.5em 0.8em;">
-                        {{ getStatusLabel(row.status) }}
-                    </span>
-                </ng-template>
-            </ngx-datatable-column>
-
-            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="300" [sortable]="false">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <div class="btn-group">
-                        <button *ngIf="row.status === 0" class="btn btn-sm btn-info text-dark"
-                            (click)="collectSample(row.id)">
-                            <i class="fas fa-vial me-1"></i>جمع العينة
-                        </button>
-                        <button *ngIf="row.status !== 0 && row.status !== 3" class="btn btn-sm btn-primary"
-                            (click)="openResultModal(row)">
-                            <i class="fas fa-flask me-1"></i>النتيجة
-                        </button>
-                        <button *ngIf="row.status === 3" class="btn btn-sm btn-secondary"
-                            (click)="openResultModal(row)">
-                            <i class="fas fa-eye me-1"></i>عرض
-                        </button>
-                        <button *ngIf="row.status === 3" class="btn btn-sm btn-success ms-1" (click)="printResult(row)">
-                            <i class="fas fa-print me-1"></i>طباعة
-                        </button>
-                        <button *ngIf="row.status !== 0 && row.status !== 4" class="btn btn-sm btn-outline-dark ms-1"
-                            (click)="printBarcode(row.id)" title="طباعة باركود العينة">
-                            <i class="fas fa-barcode"></i>
-                        </button>
-                    </div>
-                </ng-template>
-            </ngx-datatable-column>
-        </ngx-datatable>
-
-        <!-- Total Count Badge -->
-        <div class="mt-2">
-            <span class="badge bg-secondary p-2">
-                {{ '::TotalRecords' | abpLocalization }}: {{ data.totalCount }}
-            </span>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 custom-table">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4" style="width: 140px;">{{ '::Date' | abpLocalization }}</th>
+                            <th>{{ '::Patient' | abpLocalization }}</th>
+                            <th>{{ '::LabTest' | abpLocalization }}</th>
+                            <th>{{ '::Doctor' | abpLocalization }}</th>
+                            <th>{{ '::Status' | abpLocalization }}</th>
+                            <th class="text-end pe-4">{{ '::Actions' | abpLocalization }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of data.items" class="request-row">
+                            <td class="ps-4">
+                                <div class="font-weight-bold text-dark">{{ row.requestDate | date:'mediumDate' }}</div>
+                                <div class="text-muted x-small">{{ row.requestDate | date:'shortTime' }}</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-3 bg-soft-primary text-primary rounded-circle d-flex align-items-center justify-content-center">
+                                        {{ row.patientName ? row.patientName.charAt(0) : 'P' }}
+                                    </div>
+                                    <div>
+                                        <div class="font-weight-bold text-dark">{{ row.patientName }}</div>
+                                        <div class="text-muted small d-flex align-items-center gap-1" *ngIf="row.requestingDepartmentName">
+                                            <i class="fas fa-hospital-alt x-small opacity-50"></i> 
+                                            {{ row.requestingDepartmentName }} 
+                                            <span class="badge bg-soft-info text-info border-info border-opacity-10 py-0 ms-1" *ngIf="row.admissionRoom">
+                                                <i class="fas fa-bed x-small"></i> {{ row.admissionRoom }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="badge bg-soft-secondary text-secondary mb-1 p-1 px-2 border border-secondary border-opacity-10">
+                                    {{ row.testCode }}
+                                </div>
+                                <div class="font-weight-bold text-dark">{{ row.testName }}</div>
+                                <div class="text-muted x-small text-truncate" style="max-width: 200px;" [title]="row.notes" *ngIf="row.notes">
+                                    <i class="fas fa-sticky-note me-1 opacity-50"></i> {{ row.notes }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-dark">{{ row.doctorName }}</div>
+                                <div class="text-muted x-small opacity-75">{{ '::Submitter' | abpLocalization }}</div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill px-3 py-2" [ngClass]="getStatusClass(row.status)">
+                                    {{ getStatusLabel(row.status) | abpLocalization }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <!-- Print Actions -->
+                                    <button class="btn btn-icon-only text-primary" (click)="printBarcode(row.id)" [title]="'::PrintBarcode' | abpLocalization">
+                                        <i class="fas fa-barcode"></i>
+                                    </button>
+                                    
+                                    <!-- Status Actions -->
+                                    <button class="btn btn-sm btn-outline-info" 
+                                            *ngIf="row.status === 0"
+                                            (click)="collectSample(row.id)">
+                                        <i class="fas fa-vial me-1"></i> {{ '::CollectSample' | abpLocalization }}
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" 
+                                            *ngIf="row.status === 1 || row.status === 2"
+                                            (click)="openResultModal(row)">
+                                        <i class="fas fa-file-signature me-1"></i> {{ '::EnterResult' | abpLocalization }}
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" 
+                                            *ngIf="row.status === 3"
+                                            (click)="printResult(row)">
+                                        <i class="fas fa-print me-1"></i> {{ '::PrintReport' | abpLocalization }}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="data.totalCount === 0">
+                            <td colspan="6" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="fas fa-search mb-3 text-muted opacity-25" style="font-size: 3rem;"></i>
+                                    <h5 class="text-muted">{{ '::NoRequestsFound' | abpLocalization }}</h5>
+                                    <p class="text-muted small">{{ '::TryChangingFilters' | abpLocalization }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                Showing <strong>{{ data.items.length }}</strong> of <strong>{{ data.totalCount }}</strong> requests
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Modal Styles (Embedded for now as the app uses vanilla Bootstrap) -->
+<style>
+    .custom-pills .nav-link {
+        color: #6c757d;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        padding: 0.5rem 1.25rem;
+        cursor: pointer;
+    }
+    .custom-pills .nav-link.active {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px rgba(13,110,253,.2);
+    }
+    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-soft-info { background-color: rgba(13, 202, 240, 0.1); }
+    .bg-soft-secondary { background-color: rgba(108, 117, 125, 0.1); }
+    .text-soft-info { color: #0dcaf0; }
+    .x-small { font-size: 0.75rem; }
+    .btn-icon-only {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        background: transparent;
+        border: none;
+        transition: 0.2s;
+    }
+    .btn-icon-only:hover { background: #f8f9fa; }
+    .custom-table tr { transition: 0.1s; border-bottom: 1px solid #f1f1f1; }
+    .request-row:hover { background-color: #fafbfc; }
+    .search-box .input-group-text { border-radius: 8px 0 0 8px; }
+    .search-box .form-control { border-radius: 0 8px 8px 0; }
+</style>
+
 <!-- Create Request Modal -->
 <abp-modal [(visible)]="isCreateModalOpen">
     <ng-template #abpHeader>
-        <h3>طلب تحليل جديد</h3>
+        <h3 class="mb-0"><i class="fas fa-plus-circle text-primary me-2"></i>{{ '::NewLabRequest' | abpLocalization }}</h3>
     </ng-template>
 
     <ng-template #abpBody>
-        <div class="form-group mb-3">
-            <label class="form-label">المريض <span class="text-danger">*</span></label>
-            <select class="form-control" [(ngModel)]="newRequest.patientId" required>
-                <option value="">-- اختر المريض --</option>
-                <option *ngFor="let patient of patients" [value]="patient.id">{{ patient.fullNameAr }}</option>
-            </select>
-        </div>
-        <div class="form-group mb-3">
-            <label class="form-label">الطبيب <span class="text-danger">*</span></label>
-            <select class="form-control" [(ngModel)]="newRequest.doctorId" required>
-                <option value="">-- اختر الطبيب --</option>
-                <option *ngFor="let doctor of doctors" [value]="doctor.id">{{ doctor.nameAr }}</option>
-            </select>
-        </div>
-        <div class="form-group mb-3">
-            <label class="form-label">التحليل <span class="text-danger">*</span></label>
-            <select class="form-control" [(ngModel)]="newRequest.serviceItemId" required>
-                <option value="">-- اختر التحليل --</option>
-                <option *ngFor="let test of labTests" [value]="test.id">{{ test.name }} ({{ test.code }})</option>
-            </select>
-        </div>
-        <div class="form-group mb-3">
-            <label class="form-label">ملاحظات</label>
-            <textarea class="form-control" [(ngModel)]="newRequest.notes" rows="2"
-                placeholder="ملاحظات إضافية..."></textarea>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label font-weight-bold">{{ '::Patient' | abpLocalization }} *</label>
+                <select class="form-select border-light-gray" [(ngModel)]="newRequest.patientId">
+                    <option value="">{{ '::SelectPatient' | abpLocalization }}</option>
+                    <option *ngFor="let p of patients" [value]="p.id">{{ p.fullNameAr }}</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label font-weight-bold">{{ '::RequestingDoctor' | abpLocalization }} *</label>
+                <select class="form-select border-light-gray" [(ngModel)]="newRequest.doctorId">
+                    <option value="">{{ '::SelectDoctor' | abpLocalization }}</option>
+                    <option *ngFor="let d of doctors" [value]="d.id">{{ d.nameAr }}</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label font-weight-bold">{{ '::LabTest' | abpLocalization }} *</label>
+                <select class="form-select border-light-gray" [(ngModel)]="newRequest.serviceItemId">
+                    <option value="">{{ '::SelectLabTest' | abpLocalization }}</option>
+                    <option *ngFor="let t of labTests" [value]="t.id">[{{ t.code }}] {{ t.name }}</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label font-weight-bold">{{ '::Notes' | abpLocalization }}</label>
+                <textarea class="form-control border-light-gray" [(ngModel)]="newRequest.notes" rows="2" [placeholder]="'::NotesPlaceholder' | abpLocalization"></textarea>
+            </div>
         </div>
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary shadow-sm" abpClose>
-            إغلاق
-        </button>
-        <button class="btn btn-primary btn-premium shadow-sm" (click)="saveRequest()">
-            <i class="fas fa-save me-1"></i>
-            حفظ الطلب
-        </button>
+        <button type="button" class="btn btn-light px-4" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button type="button" class="btn btn-primary px-4" (click)="saveRequest()">{{ '::Save' | abpLocalization }}</button>
     </ng-template>
 </abp-modal>
 
 <!-- Result Modal -->
 <abp-modal [(visible)]="isResultModalOpen">
     <ng-template #abpHeader>
-        <h3>{{ '::LabResult' | abpLocalization }}</h3>
+        <h3 class="mb-0"><i class="fas fa-file-signature text-primary me-2"></i>{{ '::EnterLabResult' | abpLocalization }}</h3>
     </ng-template>
 
     <ng-template #abpBody>
-        <div class="mb-3 d-flex justify-content-between p-3 bg-light rounded border">
-            <div><label class="fw-bold text-muted small d-block">التحليل</label> <strong>{{ selectedRequest?.testName
-                    }}</strong></div>
-            <div><label class="fw-bold text-muted small d-block">المريض</label> <strong>{{ selectedRequest?.patientName
-                    }}</strong></div>
+        <div *ngIf="selectedRequest" class="alert alert-info border-0 mb-4 bg-soft-primary">
+            <div class="row small g-2">
+                <div class="col-md-6"><strong>{{ '::Patient' | abpLocalization }}:</strong> {{ selectedRequest.patientName }}</div>
+                <div class="col-md-6"><strong>{{ '::Date' | abpLocalization }}:</strong> {{ selectedRequest.requestDate | date:'medium' }}</div>
+                <div class="col-md-12"><strong>{{ '::Test' | abpLocalization }}:</strong> {{ selectedRequest.testName }}</div>
+            </div>
         </div>
-
-        <div class="form-group mb-3 mt-3">
-            <label class="form-label fw-bold">النتيجة</label>
-            <textarea class="form-control shadow-sm" rows="5" [(ngModel)]="resultData.result"
-                placeholder="أدخل نتائج التحليل هنا..."></textarea>
+        
+        <div class="mb-3">
+            <label class="form-label font-weight-bold text-primary">{{ '::TheResult' | abpLocalization }} *</label>
+            <textarea class="form-control border-primary border-opacity-25" [(ngModel)]="resultData.result" rows="4" style="background:#fffcf5"></textarea>
+            <div class="form-text small opacity-75">Enter findings, values, and interpretations clearly.</div>
         </div>
-        <div class="form-group mb-3">
-            <label class="form-label fw-bold">ملاحظات الفني</label>
-            <textarea class="form-control shadow-sm" rows="2" [(ngModel)]="resultData.notes"
-                placeholder="ملاحظات إضافية للفني..."></textarea>
+        
+        <div class="mb-0">
+            <label class="form-label font-weight-bold text-muted small">{{ '::TechnicianNotes' | abpLocalization }}</label>
+            <textarea class="form-control bg-light border-0" [(ngModel)]="resultData.notes" rows="2"></textarea>
         </div>
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary shadow-sm" abpClose>
-            {{ '::Close' | abpLocalization }}
-        </button>
-        <button *ngIf="selectedRequest?.status !== 3" class="btn btn-primary btn-premium shadow-sm"
-            (click)="saveResult()">
-            <i class="fas fa-flask me-1"></i>
-            حفظ النتيجة وإكمال
-        </button>
-        <button *ngIf="selectedRequest?.status === 3" class="btn btn-success btn-premium shadow-sm"
-            (click)="printResult(selectedRequest)">
-            <i class="fas fa-print me-1"></i>
-            تحميل PDF للطباعة
+        <button type="button" class="btn btn-light px-4" abpClose>{{ '::Cancel' | abpLocalization }}</button>
+        <button type="button" class="btn btn-success px-4" (click)="saveResult()">
+            <i class="fas fa-check-circle me-1"></i> {{ '::CompleteAndSubmit' | abpLocalization }}
         </button>
     </ng-template>
 </abp-modal>

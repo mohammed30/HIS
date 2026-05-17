@@ -40,7 +40,7 @@ export class RadiologyService {
     this.restService.request<any, PagedResultDto<RadiologyRequestDto>>({
       method: 'GET',
       url: '/api/app/radiology',
-      params: { filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, status: input.status, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

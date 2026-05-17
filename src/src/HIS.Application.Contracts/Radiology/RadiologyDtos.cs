@@ -20,6 +20,8 @@ public class RadiologyRequestDto : FullAuditedEntityDto<Guid>
     public string TechnicianNotes { get; set; }
     public DateTime? ReportDate { get; set; }
     public string RequestNumber { get; set; }
+    public string RequestingDepartmentName { get; set; }
+    public string AdmissionRoom { get; set; }
 }
 
 public class CreateUpdateRadiologyRequestDto
@@ -35,6 +37,7 @@ public class CreateUpdateRadiologyRequestDto
 public class GetRadiologyRequestInput : PagedAndSortedResultRequestDto
 {
     public string? Filter { get; set; }
+    public RadiologyRequestStatus? Status { get; set; }
 }
 
 public interface IRadiologyAppService : ICrudAppService<RadiologyRequestDto, Guid, GetRadiologyRequestInput, CreateUpdateRadiologyRequestDto>

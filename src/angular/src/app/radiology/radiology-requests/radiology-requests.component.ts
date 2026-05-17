@@ -1,7 +1,8 @@
 import { ListService, PagedResultDto, CoreModule } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { RadiologyRequestDto, RadiologyRequestStatus } from '../../proxy/radiology/models';
+import { RadiologyRequestDto } from '../../proxy/radiology/models';
+import { RadiologyRequestStatus } from '../../proxy/radiology/radiology-request-status.enum';
 import { RadiologyService } from '../../proxy/radiology/radiology.service';
 import { ConfirmationService, ThemeSharedModule } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
@@ -28,6 +29,10 @@ export class RadiologyRequestsComponent implements OnInit {
   selectedItem = {} as RadiologyRequestDto;
 
   statusEnum = RadiologyRequestStatus;
+  
+  // Filters
+  filterText = '';
+  selectedStatus: number | null = null;
 
   constructor(
     public readonly list: ListService,
@@ -37,11 +42,28 @@ export class RadiologyRequestsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const streamCreator = (query) => this.radiologyService.getList(query);
+    const streamCreator = (query) => this.radiologyService.getList({
+      ...query,
+      filter: this.filterText,
+      status: this.selectedStatus as any
+    });
 
     this.list.hookToQuery(streamCreator).subscribe((response) => {
       this.items = response;
     });
+  }
+
+  changeStatus(status: number | null) {
+    this.selectedStatus = status;
+    this.list.get();
+  }
+
+  search() {
+    this.list.get();
+  }
+
+  refresh() {
+    this.list.get();
   }
 
   edit(id: string) {

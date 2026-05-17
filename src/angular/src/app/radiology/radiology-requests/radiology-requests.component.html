@@ -1,16 +1,54 @@
-<div class="card">
-  <div class="card-header">
-    <div class="row">
-      <div class="col col-md-6">
-        <h5 class="card-title">قائمة أعمال قسم الأشعة</h5>
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-primary text-white py-3">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h5 class="card-title mb-0"><i class="fa fa-radiation me-2"></i>قائمة أعمال قسم الأشعة</h5>
+        <small class="opacity-75">إدارة طلبات الأشعة والتقارير الطبية</small>
+      </div>
+      <div class="col-md-6 text-end">
+        <button class="btn btn-light btn-sm" (click)="refresh()" title="تحديث القائمة">
+          <i class="fa fa-sync-alt"></i> تحديث
+        </button>
       </div>
     </div>
   </div>
-  <div class="card-body">
+  
+  <div class="card-body p-0">
+    <!-- Toolbar & Tabs -->
+    <div class="bg-light border-bottom p-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <ul class="nav nav-pills small fw-bold">
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="selectedStatus === null" (click)="changeStatus(null)">الكل</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="selectedStatus === statusEnum.Requested" (click)="changeStatus(statusEnum.Requested)">مطلوب</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="selectedStatus === statusEnum.UnderProcedure" (click)="changeStatus(statusEnum.UnderProcedure)">قيد التنفيذ</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="selectedStatus === statusEnum.Reported" (click)="changeStatus(statusEnum.Reported)">تم التقرير</a>
+        </li>
+      </ul>
+
+      <div class="input-group input-group-sm mb-0" style="width: 300px;">
+        <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+        <input 
+          type="text" 
+          class="form-control border-start-0" 
+          placeholder="بحث بالاسم أو رقم الطلب..." 
+          [(ngModel)]="filterText"
+          (keyup.enter)="search()"
+        />
+        <button class="btn btn-primary" type="button" (click)="search()">بحث</button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
     <ngx-datatable [rows]="items.items" [count]="items.totalCount" [list]="list" default>
       <ngx-datatable-column
         [name]="'::Actions' | abpLocalization"
-        [maxWidth]="150"
+        [maxWidth]="130"
         [sortable]="false"
       >
         <ng-template let-row="row" ngx-datatable-cell-template>
@@ -18,30 +56,47 @@
             class="btn btn-primary btn-sm"
             (click)="edit(row.id)"
             *ngIf="row.status !== statusEnum.Reported"
+            title="إدخال التقرير"
           >
-            <i class="fa fa-edit me-1"></i> إدخال التقرير
+            <i class="fa fa-edit"></i>
           </button>
           <button
-            class="btn btn-outline-danger btn-sm"
+            class="btn btn-outline-danger btn-sm ms-1"
             (click)="printResult(row.id)"
             *ngIf="row.status === statusEnum.Reported"
+            title="طباعة التقرير"
           >
-            <i class="fa fa-print me-1"></i> طباعة PDF
+            <i class="fa fa-file-pdf"></i>
           </button>
         </ng-template>
       </ngx-datatable-column>
 
-      <ngx-datatable-column name="رقم الطلب" prop="requestNumber"></ngx-datatable-column>
-      <ngx-datatable-column name="المريض" prop="patientName"></ngx-datatable-column>
+      <ngx-datatable-column name="رقم الطلب" prop="requestNumber" [maxWidth]="150">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <b class="text-primary">{{ row.requestNumber }}</b>
+        </ng-template>
+      </ngx-datatable-column>
+      
+      <ngx-datatable-column name="المريض" prop="patientName">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <div class="fw-bold">{{ row.patientName }}</div>
+          <small class="text-muted" *ngIf="row.admissionRoom">
+            <i class="fa fa-bed me-1"></i> غرفة: {{ row.admissionRoom }} | {{ row.requestingDepartmentName }}
+          </small>
+        </ng-template>
+      </ngx-datatable-column>
+
       <ngx-datatable-column name="الفحص المطلوب" prop="radiologyItemName"></ngx-datatable-column>
-      <ngx-datatable-column name="تاريخ الطلب" prop="requestDate">
+      
+      <ngx-datatable-column name="تاريخ الطلب" prop="requestDate" [maxWidth]="150">
         <ng-template let-value="value" ngx-datatable-cell-template>
           {{ value | date:'short' }}
         </ng-template>
       </ngx-datatable-column>
-      <ngx-datatable-column name="الحالة">
+
+      <ngx-datatable-column name="الحالة" [maxWidth]="120">
         <ng-template let-row="row" ngx-datatable-cell-template>
-          <span class="badge" [ngClass]="{
+          <span class="badge w-100" [ngClass]="{
             'bg-secondary': row.status === statusEnum.Requested,
             'bg-info': row.status === statusEnum.UnderProcedure,
             'bg-success': row.status === statusEnum.Reported,
@@ -58,38 +113,50 @@
 <!-- Report Modal -->
 <abp-modal [(visible)]="isModalOpen" [options]="{ size: 'lg' }">
   <ng-template #abpHeader>
-    <h3>تقرير الأشعة: {{ selectedItem.radiologyItemName }}</h3>
-    <small class="text-muted">المريض: {{ selectedItem.patientName }}</small>
+    <h3><i class="fa fa-file-medical me-2"></i>تقرير الأشعة: {{ selectedItem.radiologyItemName }}</h3>
+    <div class="text-muted small">
+      <span class="me-3">المريض: <b>{{ selectedItem.patientName }}</b></span>
+      <span *ngIf="selectedItem.admissionRoom"><i class="fa fa-bed me-1"></i> غرفة: {{ selectedItem.admissionRoom }}</span>
+    </div>
   </ng-template>
 
   <ng-template #abpBody>
     <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
-      <div class="mb-3">
-        <label class="form-label fw-bold">حالة الطلب</label>
-        <select class="form-select" formControlName="status">
-          <option [ngValue]="statusEnum.Requested">مطلوب</option>
-          <option [ngValue]="statusEnum.UnderProcedure">قيد التنفيذ</option>
-          <option [ngValue]="statusEnum.Reported">تم التقرير</option>
-          <option [ngValue]="statusEnum.Cancelled">ملغي</option>
-        </select>
-      </div>
+      <div class="row g-3">
+        <div class="col-md-12">
+          <label class="form-label fw-bold">حالة الطلب الحالي</label>
+          <div class="d-flex gap-2">
+            <div class="btn-group w-100 shadow-sm" role="group">
+              <input type="radio" class="btn-check" formControlName="status" [value]="statusEnum.Requested" id="status_req">
+              <label class="btn btn-outline-secondary btn-sm" for="status_req">مطلوب</label>
 
-      <div class="mb-3">
-        <label class="form-label fw-bold">ملاحظات الفني</label>
-        <textarea class="form-control" formControlName="technicianNotes" rows="2" placeholder="أدخل أي ملاحظات فنيّة هنا..."></textarea>
-      </div>
+              <input type="radio" class="btn-check" formControlName="status" [value]="statusEnum.UnderProcedure" id="status_proc">
+              <label class="btn btn-outline-info btn-sm" for="status_proc">قيد التنفيذ</label>
 
-      <div class="mb-3">
-        <label class="form-label fw-bold">التقرير الطبي (Medical Report)</label>
-        <textarea class="form-control" formControlName="reportBody" rows="8" placeholder="اكتب نص التقرير الطبي هنا..."></textarea>
+              <input type="radio" class="btn-check" formControlName="status" [value]="statusEnum.Reported" id="status_rep">
+              <label class="btn btn-outline-success btn-sm" for="status_rep">تم التقرير</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 mt-3">
+          <label class="form-label fw-bold small text-muted">ملاحظات الفني</label>
+          <textarea class="form-control" formControlName="technicianNotes" rows="2" placeholder="أي ملاحظات حول التحضير أو إجراء الفحص..."></textarea>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label fw-bold border-bottom pb-1 w-100 mb-2">نص التقرير الطبي الكامل</label>
+          <textarea class="form-control font-monospace border-primary" formControlName="reportBody" rows="10" placeholder="اكتب التقرير الطبي النهائي هنا..."></textarea>
+          <small class="text-muted">سيظهر هذا النص في النسخة المطبوعة للمريض.</small>
+        </div>
       </div>
     </form>
   </ng-template>
 
   <ng-template #abpFooter>
-    <button type="button" class="btn btn-secondary" abpClose>إغلاق</button>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
-      <i class="fa fa-save me-1"></i> حفظ التقرير
+    <button type="button" class="btn btn-link text-decoration-none text-secondary" abpClose>إغلاق دون حفظ</button>
+    <button type="button" class="btn btn-primary px-4 shadow-sm" (click)="save()" [disabled]="form?.invalid">
+      <i class="fa fa-check-circle me-1"></i> اعتماد وحفظ التقرير
     </button>
   </ng-template>
 </abp-modal>

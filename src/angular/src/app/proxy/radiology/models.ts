@@ -1,4 +1,3 @@
-export * from './radiology-request-status.enum';
 import type { RadiologyRequestStatus } from './radiology-request-status.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
@@ -13,6 +12,7 @@ export interface CreateUpdateRadiologyRequestDto {
 
 export interface GetRadiologyRequestInput extends PagedAndSortedResultRequestDto {
   filter?: string | null;
+  status?: RadiologyRequestStatus | null;
 }
 
 export interface RadiologyRequestDto extends FullAuditedEntityDto<string> {
@@ -28,4 +28,6 @@ export interface RadiologyRequestDto extends FullAuditedEntityDto<string> {
   technicianNotes?: string;
   reportDate?: string | null;
   requestNumber?: string;
+  requestingDepartmentName?: string;
+  admissionRoom?: string;
 }

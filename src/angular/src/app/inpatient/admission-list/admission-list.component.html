@@ -253,6 +253,33 @@
                 <span class="fw-bold">{{ '::AccountStatus' | abpLocalization }}:</span>
                 <strong class="fs-5">{{ '::PaidInFull' | abpLocalization }}</strong>
             </div>
+
+            <!-- Detailed Items Table -->
+            <div class="table-responsive mt-3 bg-white p-2 rounded shadow-sm" style="max-height: 200px; overflow-y: auto;">
+                <table class="table table-bordered table-sm table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>{{ '::ServiceDescription' | abpLocalization }}</th>
+                            <th class="text-center">{{ '::Quantity' | abpLocalization }}</th>
+                            <th class="text-end">{{ '::TotalAmount' | abpLocalization }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of provisionalInvoice.items">
+                            <td>{{ item.description }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end fw-bold">
+                                <div [class.text-decoration-line-through]="item.discountAmount > 0" [class.text-muted]="item.discountAmount > 0">
+                                    {{ item.totalPrice | currency:'EGP':'symbol-narrow':'1.0-2' }}
+                                </div>
+                                <div class="text-success small" *ngIf="item.discountAmount > 0" style="font-size: 0.7rem;">
+                                    <i class="fa fa-shield-alt"></i> {{ '::Covered' | abpLocalization }}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="mb-3">

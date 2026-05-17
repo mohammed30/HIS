@@ -238,7 +238,9 @@ export class InternalRequestsComponent implements OnInit {
 
   getDepartments() {
     this.departmentService.getMedicalDepartmentsLookup().subscribe(res => {
-      this.requestingDepartments = res;
+      this.requestingDepartments = res.filter(d => 
+        d.name.includes('رجال') || d.name.includes('نساء')
+      );
     });
   }
 
