@@ -1,4 +1,4 @@
-USE [db_ac621c_his];
+USE [db_aca183_his];
 GO
 
 PRINT 'Syncing Lab Tests to Reception Service Catalog...';

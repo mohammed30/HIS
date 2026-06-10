@@ -1,5 +1,5 @@
 
-$connectionString = "Server=tcp:sql-asiahospital-we.database.windows.net,1433;Initial Catalog=HISDB;Persist Security Info=False;User ID=asiahospitaladmin;Password=Server@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+$connectionString = "Data Source=SQL1003.site4now.net;Initial Catalog=db_aca183_his;User Id=db_aca183_his_admin;Password=Oldlazy@123;Encrypt=True;TrustServerCertificate=True;"
 try {
     $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
     $connection.Open()
