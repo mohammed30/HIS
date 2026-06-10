@@ -114,13 +114,12 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         if (amount <= 0) return;
 
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
-        var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
         var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
 
         var patient = await _patientRepository.FindAsync(invoice.PatientId);
         var patientName = patient != null ? patient.FullNameAr : invoice.PatientId.ToString();
 
-        if (arAccount != null && revenueAccount != null)
+        if (arAccount != null)
         {
             var je = new HIS.Accounting.JournalEntry(
                 GuidGenerator.Create(),
@@ -132,9 +131,47 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             // Debit AR for Net Amount (Total + Tax - Discount)
             je.AddLine(GuidGenerator, arAccount.Id, invoice.NetAmount, 0);
             
-            // Credit Revenue for Subtotal (Total - Discount)
-            var revenueAmount = amount - invoice.DiscountAmount;
-            je.AddLine(GuidGenerator, revenueAccount.Id, 0, revenueAmount);
+            // Credit Revenue per ServiceType
+            var itemsQueryable = await _itemRepository.GetQueryableAsync();
+            var invoiceItems = await AsyncExecuter.ToListAsync(itemsQueryable.Where(x => x.InvoiceId == invoice.Id));
+            
+            // If there are items, we group them. If not (shouldn't happen), fallback to 4100
+            if (invoiceItems.Any())
+            {
+                var groupedItems = invoiceItems.GroupBy(x => x.ServiceType).Select(g => new
+                {
+                    ServiceType = g.Key,
+                    SubTotal = g.Sum(i => (i.Quantity * i.UnitPrice) - i.DiscountAmount)
+                }).ToList();
+
+                foreach (var group in groupedItems)
+                {
+                    string accountCode = group.ServiceType switch
+                    {
+                        ServiceType.Laboratory => "4120",
+                        ServiceType.Radiology => "4130",
+                        ServiceType.Surgery or ServiceType.Surgical => "4110",
+                        ServiceType.Medication => "4200",
+                        _ => "4100"
+                    };
+
+                    var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == accountCode);
+                    if (revenueAccount != null && group.SubTotal > 0)
+                    {
+                        je.AddLine(GuidGenerator, revenueAccount.Id, 0, group.SubTotal);
+                    }
+                }
+            }
+            else
+            {
+                // Fallback if no items found in DB yet (e.g. they weren't saved properly or we are in a transaction issue)
+                var fallbackRevenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
+                if (fallbackRevenueAccount != null)
+                {
+                    var revenueAmount = amount - invoice.DiscountAmount;
+                    je.AddLine(GuidGenerator, fallbackRevenueAccount.Id, 0, revenueAmount);
+                }
+            }
 
             // Credit Tax Liability 
             if (invoice.TaxAmount > 0 && taxAccount != null)

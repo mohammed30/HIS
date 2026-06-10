@@ -264,6 +264,12 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard],
     children: [
       {
+        path: 'dashboard',
+        loadComponent: () => import('./accounting/financial-dashboard/financial-dashboard').then(c => c.FinancialDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
+      },
+      {
         path: 'chart-of-accounts',
         loadComponent: () => import('./accounting/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent),
         canActivate: [permissionGuard],

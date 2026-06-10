@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -33,8 +34,19 @@ public class ServiceItemAppService : ApplicationService, IServiceItemAppService
         // but explicit implementation serves specific needs.
         // For brevity in this task, forwarding to repository.
         var queryable = await _serviceRepository.GetQueryableAsync();
-        var totalCount = await _serviceRepository.GetCountAsync();
-        var items = await _serviceRepository.GetPagedListAsync(input.SkipCount, input.MaxResultCount, input.Sorting ?? nameof(ServiceItem.Name));
+        
+        // Exclude Lab Tests, Radiology, Pharmacy, and Inpatient from the generic services list
+        queryable = queryable.Where(x => 
+            x.Category != ServiceCategory.LabTest && 
+            x.Category != ServiceCategory.Radiology &&
+            x.Category != ServiceCategory.Pharmacy &&
+            x.Category != ServiceCategory.Inpatient);
+
+        var totalCount = await AsyncExecuter.CountAsync(queryable);
+        var items = await AsyncExecuter.ToListAsync(
+            queryable.OrderBy(input.Sorting ?? nameof(ServiceItem.Name))
+                     .PageBy(input.SkipCount, input.MaxResultCount)
+        );
 
         return new PagedResultDto<ServiceItemDto>(
             totalCount,
