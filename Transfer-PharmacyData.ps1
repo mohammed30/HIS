@@ -4,7 +4,7 @@
 # ==============================================================================
 
 $LocalConnStr = "Server=.;Database=HIS;Trusted_Connection=True;TrustServerCertificate=True"
-$ProdConnStr = "Data Source=SQL8012.site4now.net;Initial Catalog=db_ac621c_his;User Id=db_ac621c_his_admin;Password=Server@123;Encrypt=True;TrustServerCertificate=True;"
+$ProdConnStr = "Data Source=SQL1003.site4now.net;Initial Catalog=db_aca183_his;User Id=db_aca183_his_admin;Password=Oldlazy@123;Encrypt=True;TrustServerCertificate=True;"
 
 $TablesToCopy = @(
     @{ Name = "AppWarehouses"; Query = "SELECT * FROM AppWarehouses" },

@@ -1,4 +1,4 @@
-USE [db_ac621c_his]; -- Update this only if your database name differs on production
+USE [db_aca183_his]; -- Update this only if your database name differs on production
 GO
 
 PRINT 'Starting to fix missing ABP columns...';

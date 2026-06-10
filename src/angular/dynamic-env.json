@@ -1,8 +1,8 @@
 {
     "production": true,
     "oAuthConfig": {
-        "issuer": "http://strategicmoves-001-site1.jtempurl.com/",
-        "redirectUri": "http://asiahospitalhis-001-site1.qtempurl.com",
+        "issuer": "http://asiahisbackend-001-site1.stempurl.com/",
+        "redirectUri": "http://asiahospitalt-001-site1.jtempurl.com",
         "clientId": "HIS_App",
         "responseType": "code",
         "scope": "offline_access HIS",
@@ -10,11 +10,11 @@
     },
     "apis": {
         "default": {
-            "url": "http://strategicmoves-001-site1.jtempurl.com/",
+            "url": "http://asiahisbackend-001-site1.stempurl.com/",
             "rootNamespace": "HIS"
         },
         "AbpAccountPublic": {
-            "url": "http://strategicmoves-001-site1.jtempurl.com/",
+            "url": "http://asiahisbackend-001-site1.stempurl.com/",
             "rootNamespace": "AbpAccountPublic"
         }
     }

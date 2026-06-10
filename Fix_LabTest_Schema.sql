@@ -1,4 +1,4 @@
-USE [db_ac621c_his];
+USE [db_aca183_his];
 GO
 
 -- 1. إضافة عمود CategoryId إلى جدول AppLabTests في حال لم يكن موجوداً
