@@ -99,6 +99,8 @@ public class HISDbContext :
 
     // Financial & Inventory
     public DbSet<HIS.Accounting.Account> Accounts { get; set; }
+    public DbSet<HIS.Accounting.CostCenter> CostCenters { get; set; }
+    public DbSet<HIS.Accounting.FinancialPeriod> FinancialPeriods { get; set; }
     public DbSet<HIS.Accounting.JournalEntry> JournalEntries { get; set; }
     public DbSet<HIS.Accounting.JournalEntryLine> JournalEntryLines { get; set; }
 
@@ -223,6 +225,28 @@ public class HISDbContext :
         builder.ConfigureBlobStoring();
         
         /* Configure your own tables/entities inside here */
+        
+        // Cost Center
+        builder.Entity<HIS.Accounting.CostCenter>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "CostCenters", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+            b.Property(x => x.NameAr).HasMaxLength(128).IsRequired();
+            b.Property(x => x.NameEn).HasMaxLength(128);
+            
+            b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        // Financial Period
+        builder.Entity<HIS.Accounting.FinancialPeriod>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "FinancialPeriods", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.Name).HasMaxLength(64).IsRequired();
+            
+            b.HasIndex(x => new { x.Year, x.Month }).IsUnique();
+        });
 
         // ActivityLog
         builder.Entity<ActivityLog>(b =>

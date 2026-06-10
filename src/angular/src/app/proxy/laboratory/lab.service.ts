@@ -150,7 +150,7 @@ export class LabService {
     this.restService.request<any, PagedResultDto<LabRequestDto>>({
       method: 'GET',
       url: '/api/app/lab/requests',
-      params: { fromDate: input.fromDate, toDate: input.toDate, filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { fromDate: input.fromDate, toDate: input.toDate, filter: input.filter, status: input.status, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

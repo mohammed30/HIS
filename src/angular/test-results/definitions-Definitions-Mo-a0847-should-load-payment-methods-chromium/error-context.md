@@ -1,0 +1,376 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - navigation [ref=e11]:
+      - generic [ref=e12]:
+        - link "Logo" [ref=e15] [cursor=pointer]:
+          - /url: /
+          - img "Logo" [ref=e16]
+        - generic [ref=e18] [cursor=pointer]: 
+      - list [ref=e20]:
+        - listitem [ref=e21]:
+          - link "Home" [ref=e23] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e25]: 
+            - generic [ref=e26]: Home
+        - listitem [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29] [cursor=pointer]:
+              - generic [ref=e31]: 
+              - generic [ref=e32]: Reception
+              - generic [ref=e34]: 
+            - text:  
+        - listitem [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37] [cursor=pointer]:
+              - generic [ref=e39]: 
+              - generic [ref=e40]: Appointments
+              - generic [ref=e42]: 
+            - text:    
+        - listitem [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45] [cursor=pointer]:
+              - generic [ref=e47]: 
+              - generic [ref=e48]: Laboratory
+              - generic [ref=e50]: 
+            - text:  
+        - listitem [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e53] [cursor=pointer]:
+              - generic [ref=e55]: 
+              - generic [ref=e56]: Radiology Dept
+              - generic [ref=e58]: 
+            - text:  
+        - listitem [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e61] [cursor=pointer]:
+              - generic [ref=e63]: 
+              - generic [ref=e64]: Pharmacy
+              - generic [ref=e66]: 
+            - text:      
+        - listitem [ref=e67]:
+          - generic [ref=e68]:
+            - generic [ref=e69] [cursor=pointer]:
+              - generic [ref=e71]: 
+              - generic [ref=e72]: Accounts
+              - generic [ref=e74]: 
+            - text:          %   
+        - listitem [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77] [cursor=pointer]:
+              - generic [ref=e79]: 
+              - generic [ref=e80]: Emergency
+              - generic [ref=e82]: 
+            - text: 
+        - listitem [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85] [cursor=pointer]:
+              - generic [ref=e87]: 
+              - generic [ref=e88]: Inventory
+              - generic [ref=e90]: 
+            - text:       
+        - listitem [ref=e91]:
+          - generic [ref=e92]:
+            - generic [ref=e93] [cursor=pointer]:
+              - generic [ref=e95]: 
+              - generic [ref=e96]: Insurance
+              - generic [ref=e98]: 
+            - text:  
+        - listitem [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101] [cursor=pointer]:
+              - generic [ref=e103]: 
+              - generic [ref=e104]: Billing
+              - generic [ref=e106]: 
+            - text:   
+        - listitem [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109] [cursor=pointer]:
+              - generic [ref=e111]: 
+              - generic [ref=e112]: Nursing
+              - generic [ref=e114]: 
+            - text:   
+        - listitem [ref=e115]:
+          - generic [ref=e116]:
+            - generic [ref=e117] [cursor=pointer]:
+              - generic [ref=e119]: 
+              - generic [ref=e120]: Inpatient Dept
+              - generic [ref=e122]: 
+            - text:    
+        - listitem [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125] [cursor=pointer]:
+              - generic [ref=e127]: 
+              - generic [ref=e128]: HR
+              - generic [ref=e130]: 
+            - text:         
+        - listitem [ref=e131]:
+          - generic [ref=e133] [cursor=pointer]:
+            - generic [ref=e135]: 
+            - generic [ref=e136]: العمليات
+            - generic [ref=e138]: 
+        - listitem [ref=e139]:
+          - generic [ref=e140]:
+            - generic [ref=e141] [cursor=pointer]:
+              - generic [ref=e143]: 
+              - generic [ref=e144]: Administration
+              - generic [ref=e146]: 
+            - text:   
+        - listitem [ref=e147]:
+          - generic [ref=e148]:
+            - generic [ref=e149] [cursor=pointer]:
+              - generic [ref=e151]: 
+              - generic [ref=e152]: Definitions
+              - generic [ref=e154]: 
+            - list [ref=e155]:
+              - listitem [ref=e156]:
+                - link "Departments" [ref=e158] [cursor=pointer]:
+                  - /url: /settings/departments
+                  - generic [ref=e160]: 
+                  - generic [ref=e161]: Departments
+              - listitem [ref=e162]:
+                - link "Specialties" [ref=e164] [cursor=pointer]:
+                  - /url: /settings/specialties
+                  - generic [ref=e166]: 
+                  - generic [ref=e167]: Specialties
+              - listitem [ref=e168]:
+                - link "Clinics" [ref=e170] [cursor=pointer]:
+                  - /url: /settings/clinics
+                  - generic [ref=e172]: 
+                  - generic [ref=e173]: Clinics
+              - listitem [ref=e174]:
+                - link "Doctors" [ref=e176] [cursor=pointer]:
+                  - /url: /settings/doctors
+                  - generic [ref=e178]: 
+                  - generic [ref=e179]: Doctors
+              - listitem [ref=e180]:
+                - link "Laboratories" [ref=e182] [cursor=pointer]:
+                  - /url: /settings/laboratories
+                  - generic [ref=e184]: 
+                  - generic [ref=e185]: Laboratories
+              - listitem [ref=e186]:
+                - link "Doctor Schedule" [ref=e188] [cursor=pointer]:
+                  - /url: /settings/doctor-schedule
+                  - generic [ref=e190]: 
+                  - generic [ref=e191]: Doctor Schedule
+              - listitem [ref=e192]:
+                - link "Services" [ref=e194] [cursor=pointer]:
+                  - /url: /services
+                  - generic [ref=e196]: 
+                  - generic [ref=e197]: Services
+              - listitem [ref=e198]:
+                - link "Radiology" [ref=e200] [cursor=pointer]:
+                  - /url: /services/radiology
+                  - generic [ref=e202]: 
+                  - generic [ref=e203]: Radiology
+              - listitem [ref=e204]:
+                - link "Price Lists" [ref=e206] [cursor=pointer]:
+                  - /url: /services/price-lists
+                  - generic [ref=e208]: 
+                  - generic [ref=e209]: Price Lists
+              - listitem [ref=e210]:
+                - link "Nationalities" [ref=e212] [cursor=pointer]:
+                  - /url: /definitions/nationalities
+                  - generic [ref=e214]: 
+                  - generic [ref=e215]: Nationalities
+              - listitem [ref=e216]:
+                - link "Payment Methods" [ref=e218] [cursor=pointer]:
+                  - /url: /definitions/payment-methods
+                  - generic [ref=e220]: 
+                  - generic [ref=e221]: Payment Methods
+              - listitem [ref=e222]:
+                - link "Professions" [ref=e224] [cursor=pointer]:
+                  - /url: /definitions/professions
+                  - generic [ref=e226]: 
+                  - generic [ref=e227]: Professions
+              - listitem [ref=e228]:
+                - link "Contracts" [ref=e230] [cursor=pointer]:
+                  - /url: /definitions/contracts
+                  - generic [ref=e232]: 
+                  - generic [ref=e233]: Contracts
+              - listitem [ref=e234]:
+                - link "Patient Categories" [ref=e236] [cursor=pointer]:
+                  - /url: /definitions/patient-categories
+                  - generic [ref=e238]: 
+                  - generic [ref=e239]: Patient Categories
+              - listitem [ref=e240]:
+                - link "Referral Sources" [ref=e242] [cursor=pointer]:
+                  - /url: /definitions/referral-sources
+                  - generic [ref=e244]: 
+                  - generic [ref=e245]: Referral Sources
+              - listitem [ref=e246]:
+                - link "المسميات الوظيفية" [ref=e248] [cursor=pointer]:
+                  - /url: /settings/job-titles
+                  - generic [ref=e250]: 
+                  - generic [ref=e251]: المسميات الوظيفية
+        - listitem [ref=e252]:
+          - link "User Management" [ref=e254] [cursor=pointer]:
+            - /url: /identity
+            - generic [ref=e256]: 
+            - generic [ref=e257]: User Management
+        - listitem [ref=e258]:
+          - link "Activity Logs" [ref=e260] [cursor=pointer]:
+            - /url: /admin/activity-logs
+            - generic [ref=e262]: 
+            - generic [ref=e263]: Activity Logs
+        - listitem [ref=e264]:
+          - generic [ref=e265]:
+            - generic [ref=e266] [cursor=pointer]:
+              - generic [ref=e268]: 
+              - generic [ref=e269]: Settings
+              - generic [ref=e271]: 
+            - text: 
+        - listitem [ref=e272]:
+          - generic [ref=e273]:
+            - generic [ref=e274] [cursor=pointer]:
+              - generic [ref=e276]: 
+              - generic [ref=e277]: Reports
+              - generic [ref=e279]: 
+            - text:        
+    - generic [ref=e280]:
+      - generic [ref=e282]:
+        - navigation "breadcrumb" [ref=e285]:
+          - list [ref=e286]:
+            - listitem [ref=e287] [cursor=pointer]:
+              - generic [ref=e289]: 
+              - text: Definitions
+            - listitem [ref=e290]:
+              - generic [ref=e292]: 
+            - listitem [ref=e293] [cursor=pointer]:
+              - generic [ref=e295]: 
+              - text: Payment Methods
+        - generic [ref=e299]:
+          - button "admin" [ref=e307] [cursor=pointer]:
+            - generic [ref=e311]: 
+            - generic [ref=e312]: admin
+          - button "en" [ref=e320] [cursor=pointer]:
+            - generic [ref=e322]: 
+            - text: en
+      - generic [ref=e323]:
+        - generic [ref=e326]:
+          - generic [ref=e327]:
+            - heading " Menu:PaymentMethods" [level=5] [ref=e328]:
+              - generic [ref=e329]: 
+              - text: Menu:PaymentMethods
+            - button "+ New" [ref=e330] [cursor=pointer]:
+              - generic [ref=e331]: +
+              - text: New
+          - generic [ref=e332]:
+            - generic [ref=e335]:
+              - generic [ref=e337]: 
+              - textbox "Search" [ref=e338]
+            - table [ref=e340]:
+              - rowgroup [ref=e341]:
+                - row "Code Name (Ar) Name (En) IsDefault Status Actions" [ref=e342]:
+                  - columnheader "Code" [ref=e343]
+                  - columnheader "Name (Ar)" [ref=e344]
+                  - columnheader "Name (En)" [ref=e345]
+                  - columnheader "IsDefault" [ref=e346]
+                  - columnheader "Status" [ref=e347]
+                  - columnheader "Actions" [ref=e348]
+              - rowgroup [ref=e349]:
+                - row "INSURANCE تأمين Insurance Active  " [ref=e350]:
+                  - cell "INSURANCE" [ref=e351]
+                  - cell "تأمين" [ref=e352]
+                  - cell "Insurance" [ref=e353]
+                  - cell [ref=e354]
+                  - cell "Active" [ref=e355]:
+                    - generic [ref=e356]: Active
+                  - cell " " [ref=e357]:
+                    - button "" [ref=e358] [cursor=pointer]:
+                      - generic [ref=e359]: 
+                    - button "" [ref=e360] [cursor=pointer]:
+                      - generic [ref=e361]: 
+                - row "CHEQUE شيك Cheque Active  " [ref=e362]:
+                  - cell "CHEQUE" [ref=e363]
+                  - cell "شيك" [ref=e364]
+                  - cell "Cheque" [ref=e365]
+                  - cell [ref=e366]
+                  - cell "Active" [ref=e367]:
+                    - generic [ref=e368]: Active
+                  - cell " " [ref=e369]:
+                    - button "" [ref=e370] [cursor=pointer]:
+                      - generic [ref=e371]: 
+                    - button "" [ref=e372] [cursor=pointer]:
+                      - generic [ref=e373]: 
+                - row "BALANCE رصيد عميل Client Balance Active  " [ref=e374]:
+                  - cell "BALANCE" [ref=e375]
+                  - cell "رصيد عميل" [ref=e376]
+                  - cell "Client Balance" [ref=e377]
+                  - cell [ref=e378]
+                  - cell "Active" [ref=e379]:
+                    - generic [ref=e380]: Active
+                  - cell " " [ref=e381]:
+                    - button "" [ref=e382] [cursor=pointer]:
+                      - generic [ref=e383]: 
+                    - button "" [ref=e384] [cursor=pointer]:
+                      - generic [ref=e385]: 
+                - row "TRANSFER تحويل بنكي Bank Transfer Active  " [ref=e386]:
+                  - cell "TRANSFER" [ref=e387]
+                  - cell "تحويل بنكي" [ref=e388]
+                  - cell "Bank Transfer" [ref=e389]
+                  - cell [ref=e390]
+                  - cell "Active" [ref=e391]:
+                    - generic [ref=e392]: Active
+                  - cell " " [ref=e393]:
+                    - button "" [ref=e394] [cursor=pointer]:
+                      - generic [ref=e395]: 
+                    - button "" [ref=e396] [cursor=pointer]:
+                      - generic [ref=e397]: 
+                - row "CARD شبكة Card Active  " [ref=e398]:
+                  - cell "CARD" [ref=e399]
+                  - cell "شبكة" [ref=e400]
+                  - cell "Card" [ref=e401]
+                  - cell [ref=e402]
+                  - cell "Active" [ref=e403]:
+                    - generic [ref=e404]: Active
+                  - cell " " [ref=e405]:
+                    - button "" [ref=e406] [cursor=pointer]:
+                      - generic [ref=e407]: 
+                    - button "" [ref=e408] [cursor=pointer]:
+                      - generic [ref=e409]: 
+                - row "CASH نقدي Cash  Active  " [ref=e410]:
+                  - cell "CASH" [ref=e411]
+                  - cell "نقدي" [ref=e412]
+                  - cell "Cash" [ref=e413]
+                  - cell "" [ref=e414]:
+                    - generic [ref=e416]: 
+                  - cell "Active" [ref=e417]:
+                    - generic [ref=e418]: Active
+                  - cell " " [ref=e419]:
+                    - button "" [ref=e420] [cursor=pointer]:
+                      - generic [ref=e421]: 
+                    - button "" [ref=e422] [cursor=pointer]:
+                      - generic [ref=e423]: 
+            - generic [ref=e424]:
+              - navigation [ref=e425]:
+                - list [ref=e426]:
+                  - listitem [ref=e427]:
+                    - link "First" [disabled]:
+                      - /url: ""
+                      - text: ««
+                  - listitem [ref=e428]:
+                    - link "Previous" [disabled]:
+                      - /url: ""
+                      - text: «
+                  - listitem [ref=e429]:
+                    - link "1" [ref=e430] [cursor=pointer]:
+                      - /url: ""
+                  - listitem [ref=e431]:
+                    - link "Next" [disabled]:
+                      - /url: ""
+                      - text: »
+                  - listitem [ref=e432]:
+                    - link "Last" [disabled]:
+                      - /url: ""
+                      - text: »»
+              - generic [ref=e433]: "Total: 6"
+        - generic [ref=e436]:
+          - text: 2026©
+          - link "Asia Hospital" [ref=e437] [cursor=pointer]:
+            - /url: https://asiahospital.com/
+  - button "" [ref=e438] [cursor=pointer]:
+    - generic [ref=e439]: 
+```

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
@@ -16,6 +16,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 {
     private readonly IRepository<Account, Guid> _accountRepository;
     private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
+    private readonly IRepository<FinancialPeriod, Guid> _financialPeriodRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     public ILogger<FinancialDataSeedContributor> Logger { get; set; }
@@ -23,11 +24,13 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
     public FinancialDataSeedContributor(
         IRepository<Account, Guid> accountRepository,
         IRepository<JournalEntry, Guid> journalEntryRepository,
+        IRepository<FinancialPeriod, Guid> financialPeriodRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant)
     {
         _accountRepository = accountRepository;
         _journalEntryRepository = journalEntryRepository;
+        _financialPeriodRepository = financialPeriodRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         Logger = NullLogger<FinancialDataSeedContributor>.Instance;
@@ -44,7 +47,31 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
             return;
         }
 
+        await SeedFinancialPeriodsAsync();
+
         await CreateStandardAccountsAsync();
+    }
+
+    private async Task SeedFinancialPeriodsAsync()
+    {
+        Logger.LogInformation("Seeding Financial Periods...");
+        int startYear = 2015;
+        int endYear = 2030;
+
+        for (int year = startYear; year <= endYear; year++)
+        {
+            for (int month = 1; month <= 12; month++)
+            {
+                var periodExists = await _financialPeriodRepository.FirstOrDefaultAsync(p => p.Year == year && p.Month == month);
+                if (periodExists == null)
+                {
+                    var startDate = new DateTime(year, month, 1);
+                    var endDate = startDate.AddMonths(1).AddDays(-1);
+                    var period = new FinancialPeriod(_guidGenerator.Create(), year, month, startDate, endDate);
+                    await _financialPeriodRepository.InsertAsync(period);
+                }
+            }
+        }
     }
 
     private async Task PatchArabicNamesAsync()
@@ -76,6 +103,10 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
         await UpdateNameArAsync("4100", "إيرادات خدمات طبية", true);
         await UpdateNameArAsync("4110", "إيرادات العمليات", true);
+        await EnsureAccountExistsAsync("4120", "Laboratory Revenue", "إيرادات المختبر", AccountType.Revenue, revenue.Id);
+        await UpdateNameArAsync("4120", "إيرادات المختبر", true);
+        await EnsureAccountExistsAsync("4130", "Radiology Revenue", "إيرادات الأشعة", AccountType.Revenue, revenue.Id);
+        await UpdateNameArAsync("4130", "إيرادات الأشعة", true);
         await UpdateNameArAsync("4200", "إيرادات صيدلية", true);
 
         await UpdateNameArAsync("5100", "مصروفات الرواتب", true);
@@ -175,6 +206,8 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         var revenue = await CreateAccountAsync("4000", "Revenue", "الإيرادات", AccountType.Revenue, null);
         await CreateAccountAsync("4100", "Medical Services Revenue", "إيرادات خدمات طبية", AccountType.Revenue, revenue.Id);
         await CreateAccountAsync("4110", "Surgery Revenue", "إيرادات العمليات", AccountType.Revenue, revenue.Id);
+        await CreateAccountAsync("4120", "Laboratory Revenue", "إيرادات المختبر", AccountType.Revenue, revenue.Id);
+        await CreateAccountAsync("4130", "Radiology Revenue", "إيرادات الأشعة", AccountType.Revenue, revenue.Id);
         await CreateAccountAsync("4200", "Pharmacy Revenue", "إيرادات صيدلية", AccountType.Revenue, revenue.Id);
 
         // 5. Expenses (المصروفات)

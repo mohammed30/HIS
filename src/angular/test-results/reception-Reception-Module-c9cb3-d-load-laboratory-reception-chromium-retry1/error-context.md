@@ -1,0 +1,442 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - navigation [ref=e11]:
+      - generic [ref=e12]:
+        - link "Logo" [ref=e15] [cursor=pointer]:
+          - /url: /
+          - img "Logo" [ref=e16]
+        - generic [ref=e18] [cursor=pointer]: 
+      - list [ref=e20]:
+        - listitem [ref=e21]:
+          - link "Home" [ref=e23] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e25]: 
+            - generic [ref=e26]: Home
+        - listitem [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29] [cursor=pointer]:
+              - generic [ref=e31]: 
+              - generic [ref=e32]: Reception
+              - generic [ref=e34]: 
+            - list [ref=e35]:
+              - listitem [ref=e36]:
+                - link "Tickets" [ref=e38] [cursor=pointer]:
+                  - /url: /reception/laboratory-reception
+                  - generic [ref=e40]: 
+                  - generic [ref=e41]: Tickets
+              - listitem [ref=e42]:
+                - link "Patients" [ref=e44] [cursor=pointer]:
+                  - /url: /patients
+                  - generic [ref=e46]: 
+                  - generic [ref=e47]: Patients
+        - listitem [ref=e48]:
+          - generic [ref=e49]:
+            - generic [ref=e50] [cursor=pointer]:
+              - generic [ref=e52]: 
+              - generic [ref=e53]: Appointments
+              - generic [ref=e55]: 
+            - text:    
+        - listitem [ref=e56]:
+          - generic [ref=e57]:
+            - generic [ref=e58] [cursor=pointer]:
+              - generic [ref=e60]: 
+              - generic [ref=e61]: Laboratory
+              - generic [ref=e63]: 
+            - text:  
+        - listitem [ref=e64]:
+          - generic [ref=e65]:
+            - generic [ref=e66] [cursor=pointer]:
+              - generic [ref=e68]: 
+              - generic [ref=e69]: Radiology Dept
+              - generic [ref=e71]: 
+            - text:  
+        - listitem [ref=e72]:
+          - generic [ref=e73]:
+            - generic [ref=e74] [cursor=pointer]:
+              - generic [ref=e76]: 
+              - generic [ref=e77]: Pharmacy
+              - generic [ref=e79]: 
+            - text:      
+        - listitem [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82] [cursor=pointer]:
+              - generic [ref=e84]: 
+              - generic [ref=e85]: Accounts
+              - generic [ref=e87]: 
+            - text:          %   
+        - listitem [ref=e88]:
+          - generic [ref=e89]:
+            - generic [ref=e90] [cursor=pointer]:
+              - generic [ref=e92]: 
+              - generic [ref=e93]: Emergency
+              - generic [ref=e95]: 
+            - text: 
+        - listitem [ref=e96]:
+          - generic [ref=e97]:
+            - generic [ref=e98] [cursor=pointer]:
+              - generic [ref=e100]: 
+              - generic [ref=e101]: Inventory
+              - generic [ref=e103]: 
+            - text:       
+        - listitem [ref=e104]:
+          - generic [ref=e105]:
+            - generic [ref=e106] [cursor=pointer]:
+              - generic [ref=e108]: 
+              - generic [ref=e109]: Insurance
+              - generic [ref=e111]: 
+            - text:  
+        - listitem [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e114] [cursor=pointer]:
+              - generic [ref=e116]: 
+              - generic [ref=e117]: Billing
+              - generic [ref=e119]: 
+            - text:   
+        - listitem [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122] [cursor=pointer]:
+              - generic [ref=e124]: 
+              - generic [ref=e125]: Nursing
+              - generic [ref=e127]: 
+            - text:   
+        - listitem [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130] [cursor=pointer]:
+              - generic [ref=e132]: 
+              - generic [ref=e133]: Inpatient Dept
+              - generic [ref=e135]: 
+            - text:    
+        - listitem [ref=e136]:
+          - generic [ref=e137]:
+            - generic [ref=e138] [cursor=pointer]:
+              - generic [ref=e140]: 
+              - generic [ref=e141]: HR
+              - generic [ref=e143]: 
+            - text:         
+        - listitem [ref=e144]:
+          - generic [ref=e146] [cursor=pointer]:
+            - generic [ref=e148]: 
+            - generic [ref=e149]: العمليات
+            - generic [ref=e151]: 
+        - listitem [ref=e152]:
+          - generic [ref=e153]:
+            - generic [ref=e154] [cursor=pointer]:
+              - generic [ref=e156]: 
+              - generic [ref=e157]: Administration
+              - generic [ref=e159]: 
+            - text:   
+        - listitem [ref=e160]:
+          - generic [ref=e161]:
+            - generic [ref=e162] [cursor=pointer]:
+              - generic [ref=e164]: 
+              - generic [ref=e165]: Definitions
+              - generic [ref=e167]: 
+            - text:                
+        - listitem [ref=e168]:
+          - link "User Management" [ref=e170] [cursor=pointer]:
+            - /url: /identity
+            - generic [ref=e172]: 
+            - generic [ref=e173]: User Management
+        - listitem [ref=e174]:
+          - link "Activity Logs" [ref=e176] [cursor=pointer]:
+            - /url: /admin/activity-logs
+            - generic [ref=e178]: 
+            - generic [ref=e179]: Activity Logs
+        - listitem [ref=e180]:
+          - generic [ref=e181]:
+            - generic [ref=e182] [cursor=pointer]:
+              - generic [ref=e184]: 
+              - generic [ref=e185]: Settings
+              - generic [ref=e187]: 
+            - text: 
+        - listitem [ref=e188]:
+          - generic [ref=e189]:
+            - generic [ref=e190] [cursor=pointer]:
+              - generic [ref=e192]: 
+              - generic [ref=e193]: Reports
+              - generic [ref=e195]: 
+            - text:        
+    - generic [ref=e196]:
+      - generic [ref=e198]:
+        - navigation "breadcrumb" [ref=e201]:
+          - list [ref=e202]:
+            - listitem [ref=e203] [cursor=pointer]:
+              - generic [ref=e205]: 
+              - text: Reception
+            - listitem [ref=e206]:
+              - generic [ref=e208]: 
+            - listitem [ref=e209] [cursor=pointer]:
+              - generic [ref=e211]: 
+              - text: Tickets
+        - generic [ref=e215]:
+          - button "admin" [ref=e223] [cursor=pointer]:
+            - generic [ref=e227]: 
+            - generic [ref=e228]: admin
+          - button "en" [ref=e236] [cursor=pointer]:
+            - generic [ref=e238]: 
+            - text: en
+      - generic [ref=e239]:
+        - generic [ref=e241]:
+          - generic [ref=e244]:
+            - generic [ref=e246]:
+              - generic [ref=e247]:
+                - generic [ref=e248]: MRN
+                - textbox "New" [ref=e249]
+              - generic [ref=e250]:
+                - generic [ref=e251]: Name (Arabic) *
+                - generic [ref=e252]:
+                  - textbox [ref=e253]
+                  - button "" [ref=e254] [cursor=pointer]:
+                    - generic [ref=e255]: 
+              - generic [ref=e256]:
+                - generic [ref=e257]: الجنس
+                - combobox [ref=e258]:
+                  - option "ذكر" [selected]
+                  - option "أنثى"
+              - generic [ref=e259]:
+                - generic [ref=e260]: الجنسية
+                - combobox [ref=e261]:
+                  - option "-- اختر --" [selected]
+                  - option "فلسطيني -"
+                  - option "كويتي -"
+                  - option "مصري -"
+              - generic [ref=e262]:
+                - generic [ref=e263]: تاريخ الميلاد
+                - textbox [ref=e264]
+              - generic [ref=e266]:
+                - generic [ref=e267]:
+                  - generic [ref=e268]: العمر
+                  - generic [ref=e269]:
+                    - textbox [ref=e270]: "0"
+                    - generic [ref=e271]: سنة
+                - generic [ref=e273]:
+                  - textbox [ref=e274]: "0"
+                  - generic [ref=e275]: شهر
+                - generic [ref=e277]:
+                  - textbox [ref=e278]: "0"
+                  - generic [ref=e279]: يوم
+              - generic [ref=e280]:
+                - generic [ref=e281]: المهنة
+                - combobox [ref=e282]:
+                  - option "-- اختر --" [selected]
+                  - option "محاسب"
+              - generic [ref=e284]:
+                - checkbox "تأمين اجتماعي" [ref=e285]
+                - generic [ref=e286]: تأمين اجتماعي
+              - generic [ref=e287]:
+                - generic [ref=e288]: نوع الهوية
+                - combobox [ref=e289]:
+                  - option "هوية وطنية" [selected]
+                  - option "إقامة"
+                  - option "جواز سفر"
+                  - option "أخرى"
+              - generic [ref=e290]:
+                - generic [ref=e291]: رقم الهوية
+                - textbox [ref=e292]
+              - generic [ref=e293]:
+                - generic [ref=e294]: تاريخ الانتهاء
+                - textbox [ref=e295]
+              - generic [ref=e296]:
+                - generic [ref=e297]: مكان الإصدار
+                - textbox [ref=e298]
+              - generic [ref=e299]:
+                - generic [ref=e300]: رقم الجوال *
+                - textbox [ref=e301]
+              - generic [ref=e302]:
+                - generic [ref=e303]: رقم الهاتف
+                - textbox [ref=e304]
+              - generic [ref=e305]:
+                - generic [ref=e306]: رقم الجواز
+                - textbox [ref=e307]
+              - generic [ref=e308]:
+                - generic [ref=e309]: تاريخ الإصدار
+                - textbox [ref=e310]
+              - generic [ref=e311]:
+                - generic [ref=e312]: تاريخ الانتهاء
+                - textbox [ref=e313]
+              - generic [ref=e314]:
+                - generic [ref=e315]: العنوان
+                - textbox [ref=e316]
+              - generic [ref=e317]:
+                - generic [ref=e318]: رقم التأشيرة
+                - textbox [ref=e319]
+              - generic [ref=e320]:
+                - generic [ref=e321]: تاريخ الانتهاء
+                - textbox [ref=e322]
+              - generic [ref=e323]:
+                - generic [ref=e324]: جهة الاتصال في الطوارئ
+                - textbox "Name" [ref=e325]
+              - generic [ref=e326]:
+                - generic [ref=e327]: هاتف الطوارئ
+                - textbox [ref=e328]
+              - generic [ref=e329]:
+                - generic [ref=e330]: البريد الإلكتروني
+                - textbox [ref=e331]
+              - generic [ref=e332]:
+                - generic [ref=e333]: Payment Method *
+                - combobox [ref=e334]:
+                  - option "-- اختر --"
+                  - option "نقدي" [selected]
+                  - option "تأمين"
+                  - option "شيك"
+                  - option "رصيد عميل"
+                  - option "تحويل بنكي"
+                  - option "شبكة"
+              - generic [ref=e335]:
+                - generic [ref=e336]: التعاقد
+                - combobox [ref=e337]:
+                  - option "-- اختر --" [selected]
+                  - option "شركة الخليج"
+              - generic [ref=e338]:
+                - generic [ref=e339]: رقم بطاقة التأمين
+                - textbox [ref=e340]
+              - generic [ref=e341]:
+                - generic [ref=e342]: مصدر التحويل
+                - combobox [ref=e343]:
+                  - option "-- اختر --" [selected]
+                  - option "مستشفى اكتوبر"
+            - generic [ref=e344]:
+              - button " حفظ" [ref=e345] [cursor=pointer]:
+                - generic [ref=e346]: 
+                - text: حفظ
+              - button " تعديل" [ref=e347] [cursor=pointer]:
+                - generic [ref=e348]: 
+                - text: تعديل
+              - button " المستندات" [ref=e349] [cursor=pointer]:
+                - generic [ref=e350]: 
+                - text: المستندات
+              - button " مريض جديد" [ref=e351] [cursor=pointer]:
+                - generic [ref=e352]: 
+                - text: مريض جديد
+          - list [ref=e354]:
+            - listitem [ref=e355]:
+              - generic [ref=e356] [cursor=pointer]: المعمل
+            - listitem [ref=e357]:
+              - generic [ref=e358] [cursor=pointer]: الحسابات
+            - listitem [ref=e359]:
+              - generic [ref=e360] [cursor=pointer]: العيادات
+            - listitem [ref=e361]:
+              - generic [ref=e362] [cursor=pointer]: الخدمات الطبية
+            - listitem [ref=e363]:
+              - generic [ref=e364] [cursor=pointer]: إدارة التنويم
+            - listitem [ref=e365]:
+              - generic [ref=e366] [cursor=pointer]: العمليات
+          - generic [ref=e367]:
+            - generic [ref=e369]:
+              - generic [ref=e370]: الحسابات
+              - generic [ref=e371]:
+                - generic [ref=e372]:
+                  - generic [ref=e373]:
+                    - generic [ref=e374]: نقداً
+                    - spinbutton [ref=e376]: "0"
+                  - generic [ref=e377]:
+                    - generic [ref=e378]: شبكة
+                    - spinbutton [ref=e380]: "0"
+                  - generic [ref=e381]:
+                    - generic [ref=e382]: تحويل
+                    - spinbutton [ref=e384]: "0"
+                  - generic [ref=e385]:
+                    - generic [ref=e386]: رصيد العميل
+                    - spinbutton [ref=e388]: "0"
+                - generic [ref=e389]:
+                  - generic [ref=e390]:
+                    - generic [ref=e391]: المبلغ المدفوع
+                    - textbox "0" [ref=e393]
+                  - generic [ref=e394]:
+                    - generic [ref=e395]: المبلغ المتبقي
+                    - textbox "0" [ref=e397]
+                  - generic [ref=e398]:
+                    - generic [ref=e399]: تخفيض
+                    - spinbutton [ref=e401]: "0"
+                  - generic [ref=e402]:
+                    - generic [ref=e403]: تصديق من
+                    - combobox [ref=e405]:
+                      - option "-- اختر --" [selected]
+                  - generic [ref=e406]:
+                    - generic [ref=e407]: الاجمالي
+                    - textbox "0" [ref=e409]
+                  - generic [ref=e410]:
+                    - generic [ref=e411]: التعاقد
+                    - textbox "0" [ref=e413]
+                  - generic [ref=e414]:
+                    - generic [ref=e415]: الاجمالي
+                    - textbox "0" [ref=e417]
+            - generic [ref=e419]:
+              - generic [ref=e420]: الطلبات
+              - table [ref=e422]:
+                - rowgroup [ref=e423]:
+                  - row "Service السعر سعر التعاقد الإجراء" [ref=e424]:
+                    - columnheader "Service" [ref=e425]
+                    - columnheader "السعر" [ref=e426]
+                    - columnheader "سعر التعاقد" [ref=e427]
+                    - columnheader "الإجراء" [ref=e428]
+                - rowgroup
+              - generic [ref=e429]:
+                - button " حفظ الفاتورة" [ref=e430] [cursor=pointer]:
+                  - generic [ref=e431]: 
+                  - text: حفظ الفاتورة
+                - button " إضافة فحص" [ref=e432] [cursor=pointer]:
+                  - generic [ref=e433]: 
+                  - text: إضافة فحص
+              - generic [ref=e435]:
+                - generic [ref=e437]:
+                  - checkbox "طباعة أمر التشغيل" [ref=e438]
+                  - generic [ref=e439]: طباعة أمر التشغيل
+                - generic [ref=e441]:
+                  - checkbox "طباعة باركود" [ref=e442]
+                  - generic [ref=e443]: طباعة باركود
+                - generic [ref=e445]:
+                  - checkbox "طباعة تذكرة" [checked] [ref=e446]
+                  - generic [ref=e447]: طباعة تذكرة
+                - generic [ref=e448]:
+                  - generic [ref=e449]: عدد نسخة التذكرة
+                  - spinbutton [ref=e450]: "1"
+            - generic [ref=e452]:
+              - generic [ref=e453]: information
+              - generic [ref=e454]:
+                - generic [ref=e455]:
+                  - generic [ref=e456]: الطبيب المحول *
+                  - combobox [ref=e457]:
+                    - option "-- اختر الطبيب --" [selected]
+                    - option "د. أحمد علي"
+                    - option "د. أمل الحربي"
+                    - option "د. باسمة السعيد"
+                    - option "د. حصة العمري"
+                    - option "د. خالد محمود"
+                    - option "د. ريم الماجد"
+                    - option "د. سارة إبراهيم"
+                    - option "د. سامي القحطاني"
+                    - option "د. صالح العبد"
+                    - option "د. طارق الحبيب"
+                    - option "د. عماد الدين"
+                    - option "د. عمر فاروق"
+                    - option "د. فهد العتيبي"
+                    - option "د. فيصل بن علي"
+                    - option "د. ليلى عبد الله"
+                    - option "د. محمد حسن"
+                    - option "د. محمد يوسف"
+                    - option "د. مريم حسن"
+                    - option "د. منى الصواف"
+                    - option "د. منيرة الفاضل"
+                    - option "د. نورا جاسم"
+                    - option "د. يحيى الشهري"
+                - generic [ref=e458]:
+                  - generic [ref=e459]:
+                    - radio "بحث برمز التحليل" [checked] [ref=e460]
+                    - generic [ref=e461]: بحث برمز التحليل
+                  - generic [ref=e462]:
+                    - radio "بحث باسم التحليل" [ref=e463]
+                    - generic [ref=e464]: بحث باسم التحليل
+                - textbox "اكتب للبحث..." [ref=e465]
+                - generic [ref=e466]:
+                  - list
+        - generic [ref=e469]:
+          - text: 2026©
+          - link "Asia Hospital" [ref=e470] [cursor=pointer]:
+            - /url: https://asiahospital.com/
+  - button "" [ref=e471] [cursor=pointer]:
+    - generic [ref=e472]: 
+```

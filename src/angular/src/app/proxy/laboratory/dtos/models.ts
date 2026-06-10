@@ -1,6 +1,6 @@
 import type { AuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
-import type { LabAppointmentStatus } from '../lab-appointment-status.enum';
 import type { LabRequestStatus } from '../lab-request-status.enum';
+import type { LabAppointmentStatus } from '../lab-appointment-status.enum';
 
 export interface CreateLabAppointmentDto {
   patientId?: string;
@@ -33,6 +33,7 @@ export interface GetLabRequestsInput extends PagedAndSortedResultRequestDto {
   fromDate?: string | null;
   toDate?: string | null;
   filter?: string | null;
+  status?: LabRequestStatus | null;
 }
 
 export interface LabAppointmentDto extends AuditedEntityDto<string> {
@@ -62,6 +63,8 @@ export interface LabRequestDto extends AuditedEntityDto<string> {
   sampleNumber?: string | null;
   result?: string;
   notes?: string;
+  requestingDepartmentName?: string | null;
+  admissionRoom?: string | null;
 }
 
 export interface LabTestCategoryDto extends AuditedEntityDto<string> {

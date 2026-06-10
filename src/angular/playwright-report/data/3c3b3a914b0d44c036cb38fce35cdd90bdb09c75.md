@@ -1,0 +1,332 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e6]:
+    - navigation [ref=e10]:
+      - generic [ref=e11]:
+        - link "Logo" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img "Logo" [ref=e15]
+        - generic [ref=e17] [cursor=pointer]: 
+      - list [ref=e19]:
+        - listitem [ref=e20]:
+          - link "Home" [ref=e22] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e24]: 
+            - generic [ref=e25]: Home
+        - listitem [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28] [cursor=pointer]:
+              - generic [ref=e30]: 
+              - generic [ref=e31]: Reception
+              - generic [ref=e33]: 
+            - text:  
+        - listitem [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36] [cursor=pointer]:
+              - generic [ref=e38]: 
+              - generic [ref=e39]: Appointments
+              - generic [ref=e41]: 
+            - text:    
+        - listitem [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44] [cursor=pointer]:
+              - generic [ref=e46]: 
+              - generic [ref=e47]: Laboratory
+              - generic [ref=e49]: 
+            - text:  
+        - listitem [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52] [cursor=pointer]:
+              - generic [ref=e54]: 
+              - generic [ref=e55]: Radiology Dept
+              - generic [ref=e57]: 
+            - list [ref=e58]:
+              - listitem [ref=e59]:
+                - link "Radiology Worklist" [ref=e61] [cursor=pointer]:
+                  - /url: /radiology/requests
+                  - generic [ref=e63]: 
+                  - generic [ref=e64]: Radiology Worklist
+              - listitem [ref=e65]:
+                - link "Radiology Archives" [ref=e67] [cursor=pointer]:
+                  - /url: /radiology/results
+                  - generic [ref=e69]: 
+                  - generic [ref=e70]: Radiology Archives
+        - listitem [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73] [cursor=pointer]:
+              - generic [ref=e75]: 
+              - generic [ref=e76]: Pharmacy
+              - generic [ref=e78]: 
+            - text:      
+        - listitem [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81] [cursor=pointer]:
+              - generic [ref=e83]: 
+              - generic [ref=e84]: Accounts
+              - generic [ref=e86]: 
+            - text:          %   
+        - listitem [ref=e87]:
+          - generic [ref=e88]:
+            - generic [ref=e89] [cursor=pointer]:
+              - generic [ref=e91]: 
+              - generic [ref=e92]: Emergency
+              - generic [ref=e94]: 
+            - text: 
+        - listitem [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97] [cursor=pointer]:
+              - generic [ref=e99]: 
+              - generic [ref=e100]: Inventory
+              - generic [ref=e102]: 
+            - text:       
+        - listitem [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105] [cursor=pointer]:
+              - generic [ref=e107]: 
+              - generic [ref=e108]: Insurance
+              - generic [ref=e110]: 
+            - text:  
+        - listitem [ref=e111]:
+          - generic [ref=e112]:
+            - generic [ref=e113] [cursor=pointer]:
+              - generic [ref=e115]: 
+              - generic [ref=e116]: Billing
+              - generic [ref=e118]: 
+            - text:   
+        - listitem [ref=e119]:
+          - generic [ref=e120]:
+            - generic [ref=e121] [cursor=pointer]:
+              - generic [ref=e123]: 
+              - generic [ref=e124]: Nursing
+              - generic [ref=e126]: 
+            - text:   
+        - listitem [ref=e127]:
+          - generic [ref=e128]:
+            - generic [ref=e129] [cursor=pointer]:
+              - generic [ref=e131]: 
+              - generic [ref=e132]: Inpatient Dept
+              - generic [ref=e134]: 
+            - text:    
+        - listitem [ref=e135]:
+          - generic [ref=e136]:
+            - generic [ref=e137] [cursor=pointer]:
+              - generic [ref=e139]: 
+              - generic [ref=e140]: HR
+              - generic [ref=e142]: 
+            - text:         
+        - listitem [ref=e143]:
+          - generic [ref=e145] [cursor=pointer]:
+            - generic [ref=e147]: 
+            - generic [ref=e148]: العمليات
+            - generic [ref=e150]: 
+        - listitem [ref=e151]:
+          - generic [ref=e152]:
+            - generic [ref=e153] [cursor=pointer]:
+              - generic [ref=e155]: 
+              - generic [ref=e156]: Administration
+              - generic [ref=e158]: 
+            - text:   
+        - listitem [ref=e159]:
+          - generic [ref=e160]:
+            - generic [ref=e161] [cursor=pointer]:
+              - generic [ref=e163]: 
+              - generic [ref=e164]: Definitions
+              - generic [ref=e166]: 
+            - text:                
+        - listitem [ref=e167]:
+          - link "User Management" [ref=e169] [cursor=pointer]:
+            - /url: /identity
+            - generic [ref=e171]: 
+            - generic [ref=e172]: User Management
+        - listitem [ref=e173]:
+          - link "Activity Logs" [ref=e175] [cursor=pointer]:
+            - /url: /admin/activity-logs
+            - generic [ref=e177]: 
+            - generic [ref=e178]: Activity Logs
+        - listitem [ref=e179]:
+          - generic [ref=e180]:
+            - generic [ref=e181] [cursor=pointer]:
+              - generic [ref=e183]: 
+              - generic [ref=e184]: Settings
+              - generic [ref=e186]: 
+            - text: 
+        - listitem [ref=e187]:
+          - generic [ref=e188]:
+            - generic [ref=e189] [cursor=pointer]:
+              - generic [ref=e191]: 
+              - generic [ref=e192]: Reports
+              - generic [ref=e194]: 
+            - text:        
+    - generic [ref=e195]:
+      - generic [ref=e197]:
+        - navigation "breadcrumb" [ref=e200]:
+          - list [ref=e201]:
+            - listitem [ref=e202] [cursor=pointer]:
+              - generic [ref=e204]: 
+              - text: Radiology Dept
+            - listitem [ref=e205]:
+              - generic [ref=e207]: 
+            - listitem [ref=e208] [cursor=pointer]:
+              - generic [ref=e210]: 
+              - text: Radiology Worklist
+        - generic [ref=e214]:
+          - button "admin" [ref=e222] [cursor=pointer]:
+            - generic [ref=e226]: 
+            - generic [ref=e227]: admin
+          - button "en" [ref=e235] [cursor=pointer]:
+            - generic [ref=e237]: 
+            - text: en
+      - generic [ref=e238]:
+        - generic [ref=e240]:
+          - generic [ref=e242]:
+            - generic [ref=e243]:
+              - heading " قائمة أعمال قسم الأشعة" [level=5] [ref=e244]:
+                - generic [ref=e245]: 
+                - text: قائمة أعمال قسم الأشعة
+              - text: إدارة طلبات الأشعة والتقارير الطبية
+            - button " تحديث" [ref=e247] [cursor=pointer]:
+              - generic [ref=e248]: 
+              - text: تحديث
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - list [ref=e251]:
+                - listitem [ref=e252]:
+                  - generic [ref=e253]: الكل
+                - listitem [ref=e254]:
+                  - generic [ref=e255]: مطلوب
+                - listitem [ref=e256]:
+                  - generic [ref=e257]: قيد التنفيذ
+                - listitem [ref=e258]:
+                  - generic [ref=e259]: تم التقرير
+              - generic [ref=e260]:
+                - generic [ref=e262]: 
+                - textbox "بحث بالاسم أو رقم الطلب..." [ref=e263]
+                - button "بحث" [ref=e264] [cursor=pointer]
+            - generic [ref=e266]:
+              - table [ref=e267]:
+                - rowgroup [ref=e268]:
+                  - row "Actions رقم الطلب  المريض  الفحص المطلوب  تاريخ الطلب  الحالة " [ref=e269]:
+                    - generic [ref=e270]:
+                      - columnheader "Actions" [ref=e271]:
+                        - generic [ref=e273]: Actions
+                      - columnheader "رقم الطلب " [ref=e274]:
+                        - generic [ref=e275]:
+                          - generic [ref=e276] [cursor=pointer]: رقم الطلب
+                          - generic [ref=e277] [cursor=pointer]: 
+                      - columnheader "المريض " [ref=e278]:
+                        - generic [ref=e279]:
+                          - generic [ref=e280] [cursor=pointer]: المريض
+                          - generic [ref=e281] [cursor=pointer]: 
+                      - columnheader "الفحص المطلوب " [ref=e282]:
+                        - generic [ref=e283]:
+                          - generic [ref=e284] [cursor=pointer]: الفحص المطلوب
+                          - generic [ref=e285] [cursor=pointer]: 
+                      - columnheader "تاريخ الطلب " [ref=e286]:
+                        - generic [ref=e287]:
+                          - generic [ref=e288] [cursor=pointer]: تاريخ الطلب
+                          - generic [ref=e289] [cursor=pointer]: 
+                      - columnheader "الحالة " [ref=e290]:
+                        - generic [ref=e291]:
+                          - generic [ref=e292] [cursor=pointer]: الحالة
+                          - generic [ref=e293] [cursor=pointer]: 
+                - rowgroup [ref=e294]:
+                  - generic [ref=e296]:
+                    - 'row " REQ-20260418-4704 يوسف خليل  غرفة: 101 | قسم تنويم الرجال CT Abdomen 4/18/26, 11:41 PM تم التقرير" [ref=e298]':
+                      - generic [ref=e299]:
+                        - cell "" [ref=e300]:
+                          - button "" [ref=e302] [cursor=pointer]:
+                            - generic [ref=e303]: 
+                        - cell "REQ-20260418-4704" [ref=e304]:
+                          - generic [ref=e305]: REQ-20260418-4704
+                        - 'cell "يوسف خليل  غرفة: 101 | قسم تنويم الرجال" [ref=e306]':
+                          - generic [ref=e307]:
+                            - generic [ref=e308]: يوسف خليل
+                            - generic [ref=e309]:
+                              - generic [ref=e310]: 
+                              - text: "غرفة: 101 | قسم تنويم الرجال"
+                        - cell "CT Abdomen" [ref=e311]:
+                          - generic [ref=e312]: CT Abdomen
+                        - cell "4/18/26, 11:41 PM" [ref=e313]:
+                          - generic [ref=e314]: 4/18/26, 11:41 PM
+                        - cell "تم التقرير" [ref=e315]:
+                          - generic [ref=e317]: تم التقرير
+                    - 'row " REQ-20260414-7994 محمود علي  غرفة: 101 | قسم تنويم الرجال MRI Brain (Non-Contrast) 4/14/26, 4:14 PM تم التقرير" [ref=e319]':
+                      - generic [ref=e320]:
+                        - cell "" [ref=e321]:
+                          - button "" [ref=e323] [cursor=pointer]:
+                            - generic [ref=e324]: 
+                        - cell "REQ-20260414-7994" [ref=e325]:
+                          - generic [ref=e326]: REQ-20260414-7994
+                        - 'cell "محمود علي  غرفة: 101 | قسم تنويم الرجال" [ref=e327]':
+                          - generic [ref=e328]:
+                            - generic [ref=e329]: محمود علي
+                            - generic [ref=e330]:
+                              - generic [ref=e331]: 
+                              - text: "غرفة: 101 | قسم تنويم الرجال"
+                        - cell "MRI Brain (Non-Contrast)" [ref=e332]:
+                          - generic [ref=e333]: MRI Brain (Non-Contrast)
+                        - cell "4/14/26, 4:14 PM" [ref=e334]:
+                          - generic [ref=e335]: 4/14/26, 4:14 PM
+                        - cell "تم التقرير" [ref=e336]:
+                          - generic [ref=e338]: تم التقرير
+                    - row " RAD-001 جميل راتب Chest X-Ray (PA View) 4/14/26, 3:43 PM تم التقرير" [ref=e340]:
+                      - generic [ref=e341]:
+                        - cell "" [ref=e342]:
+                          - button "" [ref=e344] [cursor=pointer]:
+                            - generic [ref=e345]: 
+                        - cell "RAD-001" [ref=e346]:
+                          - generic [ref=e347]: RAD-001
+                        - cell "جميل راتب" [ref=e348]:
+                          - generic [ref=e350]: جميل راتب
+                        - cell "Chest X-Ray (PA View)" [ref=e351]:
+                          - generic [ref=e352]: Chest X-Ray (PA View)
+                        - cell "4/14/26, 3:43 PM" [ref=e353]:
+                          - generic [ref=e354]: 4/14/26, 3:43 PM
+                        - cell "تم التقرير" [ref=e355]:
+                          - generic [ref=e357]: تم التقرير
+                    - 'row " REQ-20260414-6168 محمود علي  غرفة: 101 | قسم تنويم الرجال Ultrasound Abdomen 4/14/26, 2:00 PM مطلوب" [ref=e359]':
+                      - generic [ref=e360]:
+                        - cell "" [ref=e361]:
+                          - button "" [ref=e363] [cursor=pointer]:
+                            - generic [ref=e364]: 
+                        - cell "REQ-20260414-6168" [ref=e365]:
+                          - generic [ref=e366]: REQ-20260414-6168
+                        - 'cell "محمود علي  غرفة: 101 | قسم تنويم الرجال" [ref=e367]':
+                          - generic [ref=e368]:
+                            - generic [ref=e369]: محمود علي
+                            - generic [ref=e370]:
+                              - generic [ref=e371]: 
+                              - text: "غرفة: 101 | قسم تنويم الرجال"
+                        - cell "Ultrasound Abdomen" [ref=e372]:
+                          - generic [ref=e373]: Ultrasound Abdomen
+                        - cell "4/14/26, 2:00 PM" [ref=e374]:
+                          - generic [ref=e375]: 4/14/26, 2:00 PM
+                        - cell "مطلوب" [ref=e376]:
+                          - generic [ref=e378]: مطلوب
+                    - row " RAD-002 جميل راتب Chest X-Ray (PA View) 4/13/26, 3:43 PM تم التقرير" [ref=e380]:
+                      - generic [ref=e381]:
+                        - cell "" [ref=e382]:
+                          - button "" [ref=e384] [cursor=pointer]:
+                            - generic [ref=e385]: 
+                        - cell "RAD-002" [ref=e386]:
+                          - generic [ref=e387]: RAD-002
+                        - cell "جميل راتب" [ref=e388]:
+                          - generic [ref=e390]: جميل راتب
+                        - cell "Chest X-Ray (PA View)" [ref=e391]:
+                          - generic [ref=e392]: Chest X-Ray (PA View)
+                        - cell "4/13/26, 3:43 PM" [ref=e393]:
+                          - generic [ref=e394]: 4/13/26, 3:43 PM
+                        - cell "تم التقرير" [ref=e395]:
+                          - generic [ref=e397]: تم التقرير
+              - generic [ref=e399]:
+                - generic [ref=e400]: 5 total
+                - text: r o p q
+        - generic [ref=e403]:
+          - text: 2026©
+          - link "Asia Hospital" [ref=e404] [cursor=pointer]:
+            - /url: https://asiahospital.com/
+  - button "" [ref=e405] [cursor=pointer]:
+    - generic [ref=e406]: 
+```

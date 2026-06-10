@@ -1,0 +1,302 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - navigation [ref=e11]:
+      - generic [ref=e12]:
+        - link "Logo" [ref=e15] [cursor=pointer]:
+          - /url: /
+          - img "Logo" [ref=e16]
+        - generic [ref=e18] [cursor=pointer]: 
+      - list [ref=e20]:
+        - listitem [ref=e21]:
+          - link "Home" [ref=e23] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e25]: 
+            - generic [ref=e26]: Home
+        - listitem [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29] [cursor=pointer]:
+              - generic [ref=e31]: 
+              - generic [ref=e32]: Reception
+              - generic [ref=e34]: 
+            - text:  
+        - listitem [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37] [cursor=pointer]:
+              - generic [ref=e39]: 
+              - generic [ref=e40]: Appointments
+              - generic [ref=e42]: 
+            - text:    
+        - listitem [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45] [cursor=pointer]:
+              - generic [ref=e47]: 
+              - generic [ref=e48]: Laboratory
+              - generic [ref=e50]: 
+            - text:  
+        - listitem [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e53] [cursor=pointer]:
+              - generic [ref=e55]: 
+              - generic [ref=e56]: Radiology Dept
+              - generic [ref=e58]: 
+            - text:  
+        - listitem [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e61] [cursor=pointer]:
+              - generic [ref=e63]: 
+              - generic [ref=e64]: Pharmacy
+              - generic [ref=e66]: 
+            - text:      
+        - listitem [ref=e67]:
+          - generic [ref=e68]:
+            - generic [ref=e69] [cursor=pointer]:
+              - generic [ref=e71]: 
+              - generic [ref=e72]: Accounts
+              - generic [ref=e74]: 
+            - text:          %   
+        - listitem [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77] [cursor=pointer]:
+              - generic [ref=e79]: 
+              - generic [ref=e80]: Emergency
+              - generic [ref=e82]: 
+            - text: 
+        - listitem [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85] [cursor=pointer]:
+              - generic [ref=e87]: 
+              - generic [ref=e88]: Inventory
+              - generic [ref=e90]: 
+            - text:       
+        - listitem [ref=e91]:
+          - generic [ref=e92]:
+            - generic [ref=e93] [cursor=pointer]:
+              - generic [ref=e95]: 
+              - generic [ref=e96]: Insurance
+              - generic [ref=e98]: 
+            - text:  
+        - listitem [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101] [cursor=pointer]:
+              - generic [ref=e103]: 
+              - generic [ref=e104]: Billing
+              - generic [ref=e106]: 
+            - text:   
+        - listitem [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109] [cursor=pointer]:
+              - generic [ref=e111]: 
+              - generic [ref=e112]: Nursing
+              - generic [ref=e114]: 
+            - text:   
+        - listitem [ref=e115]:
+          - generic [ref=e116]:
+            - generic [ref=e117] [cursor=pointer]:
+              - generic [ref=e119]: 
+              - generic [ref=e120]: Inpatient Dept
+              - generic [ref=e122]: 
+            - list [ref=e123]:
+              - listitem [ref=e124]:
+                - link "Inpatient Dashboard" [ref=e126] [cursor=pointer]:
+                  - /url: /inpatient/dashboard
+                  - generic [ref=e128]: 
+                  - generic [ref=e129]: Inpatient Dashboard
+              - listitem [ref=e130]:
+                - link "Rooms" [ref=e132] [cursor=pointer]:
+                  - /url: /inpatient/rooms
+                  - generic [ref=e134]: 
+                  - generic [ref=e135]: Rooms
+              - listitem [ref=e136]:
+                - link "Reservations" [ref=e138] [cursor=pointer]:
+                  - /url: /inpatient/reservations
+                  - generic [ref=e140]: 
+                  - generic [ref=e141]: Reservations
+              - listitem [ref=e142]:
+                - link "Admission Requests" [ref=e144] [cursor=pointer]:
+                  - /url: /inpatient/admissions
+                  - generic [ref=e146]: 
+                  - generic [ref=e147]: Admission Requests
+        - listitem [ref=e148]:
+          - generic [ref=e149]:
+            - generic [ref=e150] [cursor=pointer]:
+              - generic [ref=e152]: 
+              - generic [ref=e153]: HR
+              - generic [ref=e155]: 
+            - text:         
+        - listitem [ref=e156]:
+          - generic [ref=e158] [cursor=pointer]:
+            - generic [ref=e160]: 
+            - generic [ref=e161]: العمليات
+            - generic [ref=e163]: 
+        - listitem [ref=e164]:
+          - generic [ref=e165]:
+            - generic [ref=e166] [cursor=pointer]:
+              - generic [ref=e168]: 
+              - generic [ref=e169]: Administration
+              - generic [ref=e171]: 
+            - text:   
+        - listitem [ref=e172]:
+          - generic [ref=e173]:
+            - generic [ref=e174] [cursor=pointer]:
+              - generic [ref=e176]: 
+              - generic [ref=e177]: Definitions
+              - generic [ref=e179]: 
+            - text:                
+        - listitem [ref=e180]:
+          - link "User Management" [ref=e182] [cursor=pointer]:
+            - /url: /identity
+            - generic [ref=e184]: 
+            - generic [ref=e185]: User Management
+        - listitem [ref=e186]:
+          - link "Activity Logs" [ref=e188] [cursor=pointer]:
+            - /url: /admin/activity-logs
+            - generic [ref=e190]: 
+            - generic [ref=e191]: Activity Logs
+        - listitem [ref=e192]:
+          - generic [ref=e193]:
+            - generic [ref=e194] [cursor=pointer]:
+              - generic [ref=e196]: 
+              - generic [ref=e197]: Settings
+              - generic [ref=e199]: 
+            - text: 
+        - listitem [ref=e200]:
+          - generic [ref=e201]:
+            - generic [ref=e202] [cursor=pointer]:
+              - generic [ref=e204]: 
+              - generic [ref=e205]: Reports
+              - generic [ref=e207]: 
+            - text:        
+    - generic [ref=e208]:
+      - generic [ref=e210]:
+        - navigation "breadcrumb" [ref=e213]:
+          - list [ref=e214]:
+            - listitem [ref=e215] [cursor=pointer]:
+              - generic [ref=e217]: 
+              - text: Inpatient Dept
+            - listitem [ref=e218]:
+              - generic [ref=e220]: 
+            - listitem [ref=e221] [cursor=pointer]:
+              - generic [ref=e223]: 
+              - text: Inpatient Dashboard
+        - generic [ref=e227]:
+          - button "admin" [ref=e235] [cursor=pointer]:
+            - generic [ref=e239]: 
+            - generic [ref=e240]: admin
+          - button "en" [ref=e248] [cursor=pointer]:
+            - generic [ref=e250]: 
+            - text: en
+      - generic [ref=e251]:
+        - generic [ref=e253]:
+          - generic [ref=e254]:
+            - heading " Inpatient Dept" [level=2] [ref=e255]:
+              - generic [ref=e256]: 
+              - text: Inpatient Dept
+            - button "" [ref=e257] [cursor=pointer]:
+              - generic [ref=e258]: 
+          - generic [ref=e259]:
+            - generic [ref=e261]:
+              - generic [ref=e262]:
+                - heading "101" [level=5] [ref=e263]
+                - generic [ref=e264]: Available
+              - generic [ref=e265]:
+                - generic [ref=e266]:
+                  - generic [ref=e267]: "Type:"
+                  - generic [ref=e268]: Private
+                - generic [ref=e269]:
+                  - generic [ref=e270]: "Beds:"
+                  - generic [ref=e271]: 1 / 4
+                - generic [ref=e272]:
+                  - generic [ref=e273]: "Rate:"
+                  - generic [ref=e274]: EGP500.00
+              - generic [ref=e275]:
+                - button "Details" [ref=e276] [cursor=pointer]
+                - button "Assign" [ref=e277] [cursor=pointer]
+            - generic [ref=e279]:
+              - generic [ref=e280]:
+                - heading "102" [level=5] [ref=e281]
+                - generic [ref=e282]: Available
+              - generic [ref=e283]:
+                - generic [ref=e284]:
+                  - generic [ref=e285]: "Type:"
+                  - generic [ref=e286]: Private
+                - generic [ref=e287]:
+                  - generic [ref=e288]: "Beds:"
+                  - generic [ref=e289]: 4 / 4
+                - generic [ref=e290]:
+                  - generic [ref=e291]: "Rate:"
+                  - generic [ref=e292]: EGP500.00
+              - generic [ref=e293]:
+                - button "Details" [ref=e294] [cursor=pointer]
+                - button "Assign" [ref=e295] [cursor=pointer]
+            - generic [ref=e297]:
+              - generic [ref=e298]:
+                - heading "201" [level=5] [ref=e299]
+                - generic [ref=e300]: Available
+              - generic [ref=e301]:
+                - generic [ref=e302]:
+                  - generic [ref=e303]: "Type:"
+                  - generic [ref=e304]: Semi-Private
+                - generic [ref=e305]:
+                  - generic [ref=e306]: "Beds:"
+                  - generic [ref=e307]: 1 / 1
+                - generic [ref=e308]:
+                  - generic [ref=e309]: "Rate:"
+                  - generic [ref=e310]: EGP1,200.00
+              - generic [ref=e311]:
+                - button "Details" [ref=e312] [cursor=pointer]
+                - button "Assign" [ref=e313] [cursor=pointer]
+            - generic [ref=e315]:
+              - generic [ref=e316]:
+                - heading "301" [level=5] [ref=e317]
+                - generic [ref=e318]: Available
+              - generic [ref=e319]:
+                - generic [ref=e320]:
+                  - generic [ref=e321]: "Type:"
+                  - generic [ref=e322]: ICU
+                - generic [ref=e323]:
+                  - generic [ref=e324]: "Beds:"
+                  - generic [ref=e325]: 1 / 1
+                - generic [ref=e326]:
+                  - generic [ref=e327]: "Rate:"
+                  - generic [ref=e328]: EGP2,500.00
+              - generic [ref=e329]:
+                - button "Details" [ref=e330] [cursor=pointer]
+                - button "Assign" [ref=e331] [cursor=pointer]
+            - generic [ref=e333]:
+              - generic [ref=e334]:
+                - heading "ICU-01" [level=5] [ref=e335]
+                - generic [ref=e336]: Available
+              - generic [ref=e337]:
+                - generic [ref=e338]:
+                  - generic [ref=e339]: "Type:"
+                  - generic [ref=e340]: Ward
+                - generic [ref=e341]:
+                  - generic [ref=e342]: "Beds:"
+                  - generic [ref=e343]: 1 / 1
+                - generic [ref=e344]:
+                  - generic [ref=e345]: "Rate:"
+                  - generic [ref=e346]: EGP3,000.00
+              - generic [ref=e347]:
+                - button "Details" [ref=e348] [cursor=pointer]
+                - button "Assign" [ref=e349] [cursor=pointer]
+        - generic [ref=e351]:
+          - generic [ref=e352]:
+            - text: 2026©
+            - link "Lepton Theme" [ref=e353] [cursor=pointer]:
+              - /url: https://leptontheme.com/
+            - text: by
+            - link "Volosoft" [ref=e354] [cursor=pointer]:
+              - /url: https://volosoft.com/
+          - generic [ref=e355]:
+            - link "About" [ref=e356] [cursor=pointer]:
+              - /url: ""
+            - link "Privacy" [ref=e357] [cursor=pointer]:
+              - /url: ""
+            - link "Contact" [ref=e358] [cursor=pointer]:
+              - /url: ""
+  - button "" [ref=e359] [cursor=pointer]:
+    - generic [ref=e360]: 
+```

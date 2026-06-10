@@ -25,8 +25,8 @@ public class JournalEntry : FullAuditedAggregateRoot<Guid>
         Lines = new List<JournalEntryLine>();
     }
 
-    public void AddLine(IGuidGenerator guidGenerator, Guid accountId, decimal debit, decimal credit)
+    public void AddLine(IGuidGenerator guidGenerator, Guid accountId, decimal debit, decimal credit, Guid? costCenterId = null)
     {
-        Lines.Add(new JournalEntryLine(guidGenerator.Create(), Id, accountId, debit, credit));
+        Lines.Add(new JournalEntryLine(guidGenerator.Create(), Id, accountId, debit, credit, costCenterId));
     }
 }

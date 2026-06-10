@@ -60,9 +60,11 @@ public class Department : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// هل هو قسم طبي؟ إذا كان true يظهر في قائمة تعريف الأطباء
     /// </summary>
     /// <summary>
-    /// مركز التكلفة (الحساب المالي)
+    /// مركز التكلفة (Cost Center) - تم ربطه الآن بكيان CostCenter المستقل
     /// </summary>
     public Guid? CostCenterId { get; set; }
+    
+    public virtual HIS.Accounting.CostCenter CostCenter { get; set; }
 
     public bool IsMedical { get; set; } = false;
 

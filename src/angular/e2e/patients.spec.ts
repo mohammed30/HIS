@@ -2,22 +2,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Patients Management UI', () => {
 
-    test.beforeEach(async ({ page }) => {
-        await page.goto('/account/login');
-        if (page.url().includes('/account/login')) {
-            await page.fill('input[name="userNameOrEmailAddress"]', 'admin');
-            await page.fill('input[name="password"]', '1q2w3E*');
-            await page.click('button[type="submit"]');
-            await page.waitForURL('/', { timeout: 15000 });
-        }
-    });
+    // Authentication state is managed globally via auth.setup.ts
 
     test('should create and search for a new patient', async ({ page }) => {
         await page.goto('/patients');
 
         // 1. Open Create Modal
         await page.click('button.btn-primary:has-text("New"), button.btn-primary:has-text("جديد")');
-        await expect(page.locator('abp-modal')).toBeVisible();
+        await expect(page.locator('.modal-content').first()).toBeVisible();
 
         // 2. Fill Form
         const uniqueId = Math.floor(Math.random() * 10000);
@@ -31,8 +23,8 @@ test.describe('Patients Management UI', () => {
         await page.fill('input[name="mobileNumber"]', `050000${uniqueId}`);
 
         // 3. Save
-        await page.click('abp-modal button.btn-primary:has-text("Save"), abp-modal button.btn-primary:has-text("حفظ")');
-        await expect(page.locator('abp-modal')).not.toBeVisible();
+        await page.click('.modal-footer .btn-primary');
+        await expect(page.locator('.modal-content')).not.toBeVisible();
 
         // 4. Search
         await page.fill('input[placeholder="Search..."], input[placeholder="بحث..."]', firstName);
@@ -54,15 +46,15 @@ test.describe('Patients Management UI', () => {
 
         // Click Edit (blue pencil button)
         await firstRow.locator('.btn-outline-primary').click();
-        await expect(page.locator('abp-modal')).toBeVisible();
+        await expect(page.locator('.modal-content').first()).toBeVisible();
 
         // Change Middle Name (to avoid breaking constraints on primary names)
         const newMiddleName = `Updated${Math.floor(Math.random() * 100)}`;
         await page.fill('input[name="middleNameAr"]', newMiddleName);
 
         // Save
-        await page.click('abp-modal button.btn-primary');
-        await expect(page.locator('abp-modal')).not.toBeVisible();
+        await page.click('.modal-footer .btn-primary');
+        await expect(page.locator('.modal-content')).not.toBeVisible();
 
         // Use backend refresh or UI wait
         await page.waitForTimeout(1000);

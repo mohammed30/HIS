@@ -1,4 +1,4 @@
-﻿{
+{
   "culture": "en",
   "texts": {
     "AppName": "Asia Hospital",
@@ -157,6 +157,7 @@
     "Menu:BookNewAppointment": "Book Appointment",
     "Menu:MyAppointments": "My Appointments",
     "Menu:Accounts": "Accounts",
+    "Menu:FinancialDashboard": "Financial Dashboard",
     "Menu:ChartOfAccounts": "Chart of Accounts",
     "Menu:ActivityLogs": "Activity Logs",
     "Menu:DailyAccountsReport": "Daily Accounts Report",

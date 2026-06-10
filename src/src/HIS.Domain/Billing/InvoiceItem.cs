@@ -17,6 +17,11 @@ public class InvoiceItem : FullAuditedEntity<Guid>, IMultiTenant
     public Guid InvoiceId { get; set; }
 
     /// <summary>
+    /// القسم المانح للخدمة (لتوجيه الإيراد لمركز التكلفة الصحيح)
+    /// </summary>
+    public Guid? DepartmentId { get; set; }
+
+    /// <summary>
     /// نوع الخدمة
     /// </summary>
     public ServiceType ServiceType { get; set; }

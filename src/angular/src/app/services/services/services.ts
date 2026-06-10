@@ -23,9 +23,16 @@ export class ServicesComponent implements OnInit {
   form: FormGroup;
   selectedItem: ServiceItemDto = {} as ServiceItemDto;
 
-  categories = Object.keys(ServiceCategory)
-    .filter(k => !isNaN(Number(k)))
-    .map(k => ({ key: Number(k), value: ServiceCategory[k as any] }));
+  categories = [
+    { key: 0, value: 'Consultation' },
+    { key: 1, value: 'Procedure' },
+    // 2 (Lab) and 3 (Radiology) omitted intentionally
+    { key: 4, value: 'Surgery' },
+    { key: 5, value: 'Other' },
+    // 6 (Pharmacy) omitted intentionally
+    { key: 7, value: 'Consumable' }
+    // 8 (Inpatient) omitted intentionally
+  ];
 
   constructor(
     public readonly list: ListService,
@@ -104,7 +111,8 @@ export class ServicesComponent implements OnInit {
       4: 'Surgery',
       5: 'Other',
       6: 'Pharmacy',
-      7: 'Consumable'
+      7: 'Consumable',
+      8: 'Inpatient'
     };
     const key = keyMap[category] || 'Other';
     return this.localizationService.instant(`::ServiceCategory:${key}`);

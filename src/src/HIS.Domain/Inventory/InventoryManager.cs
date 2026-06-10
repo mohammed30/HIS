@@ -153,20 +153,13 @@ public class InventoryManager : DomainService
         // Integration Point: Accounting (Dr Expense, Cr Inventory)
         // Integration Point: Accounting (Dr Expense, Cr Inventory)
         var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
-        Account expenseAccount = null;
+        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");   // Supplies Expense (Default)
+        Guid? costCenterId = null;
 
         if (departmentId.HasValue)
         {
              var department = await _departmentRepository.GetAsync(departmentId.Value);
-             if (department.CostCenterId.HasValue)
-             {
-                 expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == department.CostCenterId.Value);
-             }
-        }
-
-        if (expenseAccount == null)
-        {
-             expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");   // Supplies Expense (Default)
+             costCenterId = department.CostCenterId;
         }
 
         if (inventoryAccount != null && expenseAccount != null)
@@ -175,8 +168,8 @@ public class InventoryManager : DomainService
             var description = $"صرف مخزني: {item.ProductName} (مرجع: {reference})";
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description);
 
-            // Debit Expense
-            entry.AddLine(GuidGenerator, expenseAccount.Id, totalAmount, 0);
+            // Debit Expense with CostCenter
+            entry.AddLine(GuidGenerator, expenseAccount.Id, totalAmount, 0, costCenterId);
             // Credit Inventory
             entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalAmount);
 

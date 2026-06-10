@@ -24,6 +24,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
     private readonly IRepository<HIS.Patients.Patient, Guid> _patientRepository;
     private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
     private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
+    private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
     private readonly IWebHostEnvironment _env;
 
     public InvoiceAppService(
@@ -32,12 +33,14 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         IRepository<HIS.Patients.Patient, Guid> patientRepository,
         IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
         IRepository<HIS.Accounting.Account, Guid> accountRepository,
+        IRepository<HIS.Settings.Department, Guid> departmentRepository,
         IWebHostEnvironment env) : base(repository)
     {
         _itemRepository = itemRepository;
         _patientRepository = patientRepository;
         _journalEntryRepository = journalEntryRepository;
         _accountRepository = accountRepository;
+        _departmentRepository = departmentRepository;
         _env = env;
         
         GetPolicyName = HISPermissions.Billing.Default;
@@ -114,13 +117,12 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         if (amount <= 0) return;
 
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
-        var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
         var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
 
         var patient = await _patientRepository.FindAsync(invoice.PatientId);
         var patientName = patient != null ? patient.FullNameAr : invoice.PatientId.ToString();
 
-        if (arAccount != null && revenueAccount != null)
+        if (arAccount != null)
         {
             var je = new HIS.Accounting.JournalEntry(
                 GuidGenerator.Create(),
@@ -132,9 +134,57 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             // Debit AR for Net Amount (Total + Tax - Discount)
             je.AddLine(GuidGenerator, arAccount.Id, invoice.NetAmount, 0);
             
-            // Credit Revenue for Subtotal (Total - Discount)
-            var revenueAmount = amount - invoice.DiscountAmount;
-            je.AddLine(GuidGenerator, revenueAccount.Id, 0, revenueAmount);
+            // Credit Revenue per ServiceType
+            var itemsQueryable = await _itemRepository.GetQueryableAsync();
+            var invoiceItems = await AsyncExecuter.ToListAsync(itemsQueryable.Where(x => x.InvoiceId == invoice.Id));
+            
+            // If there are items, we group them. If not (shouldn't happen), fallback to 4100
+            if (invoiceItems.Any())
+            {
+                var groupedItems = invoiceItems.GroupBy(x => new { x.ServiceType, x.DepartmentId }).Select(g => new
+                {
+                    ServiceType = g.Key.ServiceType,
+                    DepartmentId = g.Key.DepartmentId,
+                    SubTotal = g.Sum(i => (i.Quantity * i.UnitPrice) - i.DiscountAmount)
+                }).ToList();
+
+                foreach (var group in groupedItems)
+                {
+                    string accountCode = group.ServiceType switch
+                    {
+                        ServiceType.Laboratory => "4120",
+                        ServiceType.Radiology => "4130",
+                        ServiceType.Surgery or ServiceType.Surgical => "4110",
+                        ServiceType.Medication => "4200",
+                        _ => "4100"
+                    };
+
+                    var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == accountCode);
+                    if (revenueAccount != null && group.SubTotal > 0)
+                    {
+                        Guid? costCenterId = null;
+                        if (group.DepartmentId.HasValue)
+                        {
+                            var dept = await _departmentRepository.FindAsync(group.DepartmentId.Value);
+                            if (dept != null)
+                            {
+                                costCenterId = dept.CostCenterId;
+                            }
+                        }
+                        je.AddLine(GuidGenerator, revenueAccount.Id, 0, group.SubTotal, costCenterId);
+                    }
+                }
+            }
+            else
+            {
+                // Fallback if no items found in DB yet (e.g. they weren't saved properly or we are in a transaction issue)
+                var fallbackRevenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
+                if (fallbackRevenueAccount != null)
+                {
+                    var revenueAmount = amount - invoice.DiscountAmount;
+                    je.AddLine(GuidGenerator, fallbackRevenueAccount.Id, 0, revenueAmount);
+                }
+            }
 
             // Credit Tax Liability 
             if (invoice.TaxAmount > 0 && taxAccount != null)

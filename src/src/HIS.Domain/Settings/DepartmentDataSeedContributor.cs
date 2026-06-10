@@ -12,15 +12,18 @@ namespace HIS.Settings;
 public class DepartmentDataSeedContributor : IDataSeedContributor, ITransientDependency
 {
     private readonly IRepository<Department, Guid> _departmentRepository;
+    private readonly IRepository<HIS.Accounting.CostCenter, Guid> _costCenterRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
 
     public DepartmentDataSeedContributor(
         IRepository<Department, Guid> departmentRepository,
+        IRepository<HIS.Accounting.CostCenter, Guid> costCenterRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant)
     {
         _departmentRepository = departmentRepository;
+        _costCenterRepository = costCenterRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
     }
@@ -81,6 +84,15 @@ public class DepartmentDataSeedContributor : IDataSeedContributor, ITransientDep
     {
         if (await _departmentRepository.FirstOrDefaultAsync(d => d.Code == code) == null)
         {
+            // Auto-create Cost Center
+            var costCenter = new HIS.Accounting.CostCenter(
+                _guidGenerator.Create(),
+                code,
+                nameAr,
+                nameEn
+            );
+            await _costCenterRepository.InsertAsync(costCenter);
+
             var department = new Department(
                 _guidGenerator.Create(),
                 _currentTenant.Id,
@@ -89,7 +101,8 @@ public class DepartmentDataSeedContributor : IDataSeedContributor, ITransientDep
             )
             {
                 NameEn = nameEn,
-                IsMedical = isMedical
+                IsMedical = isMedical,
+                CostCenterId = costCenter.Id
             };
 
             await _departmentRepository.InsertAsync(department);
