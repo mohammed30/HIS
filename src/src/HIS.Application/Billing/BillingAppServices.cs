@@ -12,6 +12,7 @@ using HIS.Permissions;
 
 using HIS.Accounting;
 using HIS.General;
+using HIS.Services;
 
 namespace HIS.Billing;
 
@@ -25,6 +26,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
     private readonly IRepository<HIS.Accounting.JournalEntry, Guid> _journalEntryRepository;
     private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
     private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
+    private readonly IRepository<ServiceItem, Guid> _serviceItemRepository;
     private readonly IWebHostEnvironment _env;
 
     public InvoiceAppService(
@@ -34,6 +36,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
         IRepository<HIS.Accounting.Account, Guid> accountRepository,
         IRepository<HIS.Settings.Department, Guid> departmentRepository,
+        IRepository<ServiceItem, Guid> serviceItemRepository,
         IWebHostEnvironment env) : base(repository)
     {
         _itemRepository = itemRepository;
@@ -41,6 +44,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         _journalEntryRepository = journalEntryRepository;
         _accountRepository = accountRepository;
         _departmentRepository = departmentRepository;
+        _serviceItemRepository = serviceItemRepository;
         _env = env;
         
         GetPolicyName = HISPermissions.Billing.Default;
@@ -85,6 +89,39 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             {
                 var itemId = GuidGenerator.Create();
                 var discountAmount = (itemDto.Quantity * itemDto.UnitPrice) * (itemDto.DiscountPercentage / 100);
+                
+                Guid? departmentId = null;
+                if (!string.IsNullOrEmpty(itemDto.ServiceCode))
+                {
+                    ServiceItem service = null;
+                    if (Guid.TryParse(itemDto.ServiceCode, out var serviceId))
+                    {
+                        service = await _serviceItemRepository.FindAsync(serviceId);
+                    }
+                    else
+                    {
+                        service = await _serviceItemRepository.FirstOrDefaultAsync(x => x.Code == itemDto.ServiceCode);
+                    }
+
+                    if (service != null)
+                    {
+                        departmentId = service.DepartmentId;
+                    }
+                }
+
+                if (departmentId == null && !string.IsNullOrEmpty(itemDto.Description))
+                {
+                    var desc = itemDto.Description.ToLower();
+                    if (desc.Contains("علاج طبيعي") || desc.Contains("physiotherapy") || desc.Contains("physical therapy"))
+                    {
+                        var ptDept = await _departmentRepository.FirstOrDefaultAsync(x => x.Code == "DEP-PT");
+                        if (ptDept != null)
+                        {
+                            departmentId = ptDept.Id;
+                        }
+                    }
+                }
+
                 var item = new InvoiceItem(itemId, CurrentTenant.Id, invoiceId, itemDto.Description, itemDto.UnitPrice)
                 {
                     ServiceType = itemDto.ServiceType,
@@ -93,7 +130,8 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                     DiscountPercentage = itemDto.DiscountPercentage,
                     DiscountAmount = discountAmount,
                     IsCoveredByInsurance = itemDto.IsCoveredByInsurance,
-                    Notes = itemDto.Notes
+                    Notes = itemDto.Notes,
+                    DepartmentId = departmentId
                 };
                 await _itemRepository.InsertAsync(item);
                 totalAmount += item.TotalPrice;
@@ -118,6 +156,9 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
         var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
+
+        arAccount = await GetLeafAccountAsync(arAccount);
+        taxAccount = await GetLeafAccountAsync(taxAccount);
 
         var patient = await _patientRepository.FindAsync(invoice.PatientId);
         var patientName = patient != null ? patient.FullNameAr : invoice.PatientId.ToString();
@@ -169,8 +210,21 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                             if (dept != null)
                             {
                                 costCenterId = dept.CostCenterId;
+                                
+                                // For generic medical services (4100), check if there is a specific sub-account created for this department under 4100
+                                if (accountCode == "4100")
+                                {
+                                    var specificAccount = await _accountRepository.FirstOrDefaultAsync(x => 
+                                        x.ParentId == revenueAccount.Id && 
+                                        (x.NameAr.Contains(dept.NameAr) || x.Name.Contains(dept.NameAr)));
+                                    if (specificAccount != null)
+                                    {
+                                        revenueAccount = specificAccount;
+                                    }
+                                }
                             }
                         }
+                        revenueAccount = await GetLeafAccountAsync(revenueAccount);
                         je.AddLine(GuidGenerator, revenueAccount.Id, 0, group.SubTotal, costCenterId);
                     }
                 }
@@ -181,6 +235,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 var fallbackRevenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
                 if (fallbackRevenueAccount != null)
                 {
+                    fallbackRevenueAccount = await GetLeafAccountAsync(fallbackRevenueAccount);
                     var revenueAmount = amount - invoice.DiscountAmount;
                     je.AddLine(GuidGenerator, fallbackRevenueAccount.Id, 0, revenueAmount);
                 }
@@ -252,6 +307,10 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
         var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100"); // Medical Services Revenue
         var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200"); // VAT Payable
+
+        arAccount = await GetLeafAccountAsync(arAccount);
+        revenueAccount = await GetLeafAccountAsync(revenueAccount);
+        taxAccount = await GetLeafAccountAsync(taxAccount);
 
         if (arAccount == null || revenueAccount == null)
         {
@@ -359,6 +418,34 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         return queryable;
     }
 
+    private async Task<Account> GetLeafAccountAsync(Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
+    }
+
     protected override IQueryable<Invoice> ApplyDefaultSorting(IQueryable<Invoice> query)
     {
         return query.OrderByDescending(x => x.InvoiceDate);
@@ -445,6 +532,9 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Name.Contains("Bank") || x.NameAr.Contains("بنك")); 
         
         var debitAccount = (methodType == HIS.Billing.PaymentMethod.Cash) ? cashAccount : (bankAccount ?? cashAccount);
+
+        arAccount = await GetLeafAccountAsync(arAccount);
+        debitAccount = await GetLeafAccountAsync(debitAccount);
 
         if (arAccount != null && debitAccount != null)
         {
@@ -653,6 +743,9 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         string creditAccountCode = "1110"; // Default Cash
         var creditAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == creditAccountCode);
 
+        arAccount = await GetLeafAccountAsync(arAccount);
+        creditAccount = await GetLeafAccountAsync(creditAccount);
+
         if (arAccount == null || creditAccount == null) return;
 
         var je = new JournalEntry(
@@ -669,6 +762,34 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         
         var accountingManager = LazyServiceProvider.LazyGetRequiredService<AccountingManager>();
         await accountingManager.PostEntryAsync(je);
+    }
+
+    private async Task<Account> GetLeafAccountAsync(Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 }
 

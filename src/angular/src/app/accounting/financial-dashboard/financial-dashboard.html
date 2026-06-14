@@ -51,7 +51,7 @@
         <div class="col-12">
           <div class="card shadow-sm">
             <div class="card-body">
-              <div echarts [options]="profitabilityChartOptions" style="height: 400px;"></div>
+              <div echarts [options]="profitabilityChartOptions" (chartInit)="onChartInit($event)" style="height: 400px;"></div>
             </div>
           </div>
         </div>
@@ -66,7 +66,14 @@
                 <li [ngbNavItem]="1">
                   <a ngbNavLink>ربحية الأقسام (مراكز التكلفة)</a>
                   <ng-template ngbNavContent>
-                    <div class="table-responsive mt-3">
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                      <h5 class="mb-0 text-primary">تحليل ربحية الأقسام</h5>
+                      <button class="btn btn-sm btn-outline-success" (click)="downloadProfitabilityReport()" [disabled]="isDownloading">
+                        <i class="fas mr-1" [class.fa-file-pdf]="!isDownloading" [class.fa-spinner]="isDownloading" [class.fa-spin]="isDownloading"></i>
+                        تحميل تقرير PDF المطبوع
+                      </button>
+                    </div>
+                    <div class="table-responsive mt-2">
                       <table class="table table-hover table-striped">
                         <thead class="table-light">
                           <tr>

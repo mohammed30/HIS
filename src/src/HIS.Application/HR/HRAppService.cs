@@ -528,8 +528,8 @@ public class HRAppService : ApplicationService
         payrollRun.NetSalary = totalEarnings - totalDeductions;
         payrollRun.Status = PayrollRunStatus.Processed;
 
-        // Create Journal Entry (Account 4100 Debit = Salary Expense, Account 2200 Credit = Employee Payables)
-        var salaryExpenseAccount = await _accountRepository.FirstOrDefaultAsync(a => a.Code == "4100");
+        // Create Journal Entry (Account 5100 Debit = Salary Expense, Account 2200 Credit = Employee Payables)
+        var salaryExpenseAccount = await _accountRepository.FirstOrDefaultAsync(a => a.Code == "5100");
         var employeePayableAccount = await _accountRepository.FirstOrDefaultAsync(a => a.Code == "2200");
 
         if (salaryExpenseAccount != null && employeePayableAccount != null)
@@ -539,6 +539,9 @@ public class HRAppService : ApplicationService
                 DateTime.Now,
                 $"PAY-{input.PeriodStart:yyyyMMdd}",
                 $"مرتبات الفترة من {input.PeriodStart:yyyy/MM/dd} إلى {input.PeriodEnd:yyyy/MM/dd}");
+            
+            salaryExpenseAccount = await GetLeafAccountAsync(salaryExpenseAccount);
+            employeePayableAccount = await GetLeafAccountAsync(employeePayableAccount);
             je.AddLine(_guidGenerator, salaryExpenseAccount.Id, totalEarnings, 0);
             je.AddLine(_guidGenerator, employeePayableAccount.Id, 0, payrollRun.NetSalary);
             je.IsPosted = true;
@@ -832,4 +835,32 @@ public class HRAppService : ApplicationService
 
     [Authorize(HISPermissions.HR.Attendance)]
     public async Task DeleteDailyAttendanceAsync(Guid id) => await _dailyAttendanceRepository.DeleteAsync(id);
+
+    private async Task<HIS.Accounting.Account> GetLeafAccountAsync(HIS.Accounting.Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
+    }
 }

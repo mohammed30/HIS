@@ -78,7 +78,7 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Billing',
     },
-    {
+    /* {
       path: '/accounting/dashboard',
       name: '::Menu:FinancialDashboard', // Trigger rebuild
       parentName: '::Menu:Accounts',
@@ -86,7 +86,7 @@ function configureRoutes() {
       order: 30,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Billing.FinancialReports',
-    },
+    }, */
     {
       path: '/accounting/chart-of-accounts',
       name: '::Menu:ChartOfAccounts',

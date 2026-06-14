@@ -17,6 +17,8 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
     private readonly IRepository<Account, Guid> _accountRepository;
     private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
     private readonly IRepository<FinancialPeriod, Guid> _financialPeriodRepository;
+    private readonly IRepository<CostCenter, Guid> _costCenterRepository;
+    private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     public ILogger<FinancialDataSeedContributor> Logger { get; set; }
@@ -25,12 +27,16 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         IRepository<Account, Guid> accountRepository,
         IRepository<JournalEntry, Guid> journalEntryRepository,
         IRepository<FinancialPeriod, Guid> financialPeriodRepository,
+        IRepository<CostCenter, Guid> costCenterRepository,
+        IRepository<HIS.Settings.Department, Guid> departmentRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant)
     {
         _accountRepository = accountRepository;
         _journalEntryRepository = journalEntryRepository;
         _financialPeriodRepository = financialPeriodRepository;
+        _costCenterRepository = costCenterRepository;
+        _departmentRepository = departmentRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         Logger = NullLogger<FinancialDataSeedContributor>.Instance;
@@ -44,12 +50,15 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         if (allAccounts.Count > 0)
         {
             await PatchArabicNamesAsync();
+            // await SeedSampleDashboardDataAsync();
             return;
         }
 
         await SeedFinancialPeriodsAsync();
 
         await CreateStandardAccountsAsync();
+
+        // await SeedSampleDashboardDataAsync();
     }
 
     private async Task SeedFinancialPeriodsAsync()
@@ -240,5 +249,123 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         var account = new Account(_guidGenerator.Create(), code, name, nameAr, type, parentId);
         await _accountRepository.InsertAsync(account);
         return account;
+    }
+
+    private async Task<CostCenter> GetOrCreateCostCenterAsync(string code, string nameAr, string nameEn)
+    {
+        var cc = await _costCenterRepository.FirstOrDefaultAsync(x => x.Code == code);
+        if (cc == null)
+        {
+            cc = new CostCenter(_guidGenerator.Create(), code, nameAr, nameEn);
+            await _costCenterRepository.InsertAsync(cc);
+        }
+
+        var dept = await _departmentRepository.FirstOrDefaultAsync(x => x.Code == code);
+        if (dept != null && dept.CostCenterId == null)
+        {
+            dept.CostCenterId = cc.Id;
+            await _departmentRepository.UpdateAsync(dept);
+        }
+
+        return cc;
+    }
+
+    private async Task SeedSampleDashboardDataAsync()
+    {
+        var today = DateTime.Today;
+
+        // Delete any existing DASH-JE entries to re-seed with older dates
+        var existingTestEntries = await _journalEntryRepository.GetListAsync(x => x.ReferenceNumber.StartsWith("DASH-JE-"));
+        if (existingTestEntries.Any())
+        {
+            await _journalEntryRepository.DeleteManyAsync(existingTestEntries);
+        }
+
+        Logger.LogInformation("Seeding sample financial dashboard data...");
+
+        // Fetch accounts
+        var cash = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+        var capital = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "3100");
+        var labRevenue = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4120");
+        var radRevenue = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4130");
+        var medRevenue = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
+        var salaries = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5100");
+        var supplies = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");
+        var utilities = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5300");
+
+        if (cash == null || labRevenue == null || salaries == null)
+        {
+            Logger.LogWarning("Required accounts for dashboard seeding are missing.");
+            return;
+        }
+
+        // Fetch or create cost centers
+        var ccLab = await GetOrCreateCostCenterAsync("DEP-LAB", "المختبر / المعمل", "Laboratory Department");
+        var ccRad = await GetOrCreateCostCenterAsync("DEP-RAD", "قسم الأشعة والتصوير", "Radiology / Imaging Department");
+        var ccOpd = await GetOrCreateCostCenterAsync("DEP-OPD", "العيادات الخارجية", "Outpatient Department (OPD)");
+        var ccEr = await GetOrCreateCostCenterAsync("DEP-ER", "قسم الطوارئ والاستقبال", "Emergency Room (ER)");
+        var ccPt = await GetOrCreateCostCenterAsync("DEP-PT", "قسم العلاج الطبيعي", "Physiotherapy Department");
+
+        // 1. Initial Capital Entry (Balanced) - May 11
+        var capitalEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-30), "DASH-JE-001", "زيادة رأس المال نقداً") { IsPosted = true };
+        capitalEntry.AddLine(_guidGenerator, cash.Id, 250000m, 0m);
+        capitalEntry.AddLine(_guidGenerator, capital.Id, 0m, 250000m);
+        await _journalEntryRepository.InsertAsync(capitalEntry);
+
+        // 2. Outpatient Revenue Entry (Balanced) - May 16
+        var opdRevEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-25), "DASH-JE-002", "إيرادات عيادات خارجية نقدية") { IsPosted = true };
+        opdRevEntry.AddLine(_guidGenerator, cash.Id, 45000m, 0m);
+        opdRevEntry.AddLine(_guidGenerator, medRevenue.Id, 0m, 45000m, ccOpd.Id);
+        await _journalEntryRepository.InsertAsync(opdRevEntry);
+
+        // 3. Emergency Room Revenue Entry (Balanced) - May 19
+        var erRevEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-22), "DASH-JE-003", "إيرادات الطوارئ نقدية") { IsPosted = true };
+        erRevEntry.AddLine(_guidGenerator, cash.Id, 30000m, 0m);
+        erRevEntry.AddLine(_guidGenerator, medRevenue.Id, 0m, 30000m, ccEr.Id);
+        await _journalEntryRepository.InsertAsync(erRevEntry);
+
+        // 4. Lab Revenue Entry (Balanced) - May 21
+        var labRevEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-20), "DASH-JE-004", "إيرادات خدمات المختبر") { IsPosted = true };
+        labRevEntry.AddLine(_guidGenerator, cash.Id, 25000m, 0m);
+        labRevEntry.AddLine(_guidGenerator, labRevenue.Id, 0m, 25000m, ccLab.Id);
+        await _journalEntryRepository.InsertAsync(labRevEntry);
+
+        // 5. Radiology Revenue Entry (Balanced) - May 22
+        var radRevEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-19), "DASH-JE-005", "إيرادات خدمات الأشعة") { IsPosted = true };
+        radRevEntry.AddLine(_guidGenerator, cash.Id, 35000m, 0m);
+        radRevEntry.AddLine(_guidGenerator, radRevenue.Id, 0m, 35000m, ccRad.Id);
+        await _journalEntryRepository.InsertAsync(radRevEntry);
+
+        // 6. Salaries Expense Entry (Balanced) - May 23
+        var salEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-18), "DASH-JE-006", "رواتب موظفي الأقسام") { IsPosted = true };
+        salEntry.AddLine(_guidGenerator, salaries.Id, 15000m, 0m, ccOpd.Id);
+        salEntry.AddLine(_guidGenerator, salaries.Id, 12000m, 0m, ccEr.Id);
+        salEntry.AddLine(_guidGenerator, salaries.Id, 8000m, 0m, ccLab.Id);
+        salEntry.AddLine(_guidGenerator, salaries.Id, 10000m, 0m, ccRad.Id);
+        salEntry.AddLine(_guidGenerator, salaries.Id, 11000m, 0m, ccPt.Id);
+        salEntry.AddLine(_guidGenerator, cash.Id, 0m, 56000m);
+        await _journalEntryRepository.InsertAsync(salEntry);
+
+        // 7. Supplies Expense Entry (Balanced) - May 24
+        var supEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-17), "DASH-JE-007", "مستلزمات طبية مستهلكة") { IsPosted = true };
+        supEntry.AddLine(_guidGenerator, supplies.Id, 5000m, 0m, ccLab.Id);
+        supEntry.AddLine(_guidGenerator, supplies.Id, 7000m, 0m, ccRad.Id);
+        supEntry.AddLine(_guidGenerator, supplies.Id, 4000m, 0m, ccPt.Id);
+        supEntry.AddLine(_guidGenerator, cash.Id, 0m, 16000m);
+        await _journalEntryRepository.InsertAsync(supEntry);
+
+        // 8. Utilities Expense (Balanced, general - no Cost Center) - May 25
+        var utilEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-16), "DASH-JE-008", "مصروف كهرباء ومياه عمومي") { IsPosted = true };
+        utilEntry.AddLine(_guidGenerator, utilities.Id, 8000m, 0m);
+        utilEntry.AddLine(_guidGenerator, cash.Id, 0m, 8000m);
+        await _journalEntryRepository.InsertAsync(utilEntry);
+
+        // 9. Physiotherapy Revenue Entry (Balanced) - May 26
+        var ptRevEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-15), "DASH-JE-009", "إيرادات قسم العلاج الطبيعي") { IsPosted = true };
+        ptRevEntry.AddLine(_guidGenerator, cash.Id, 25000m, 0m);
+        ptRevEntry.AddLine(_guidGenerator, medRevenue.Id, 0m, 25000m, ccPt.Id);
+        await _journalEntryRepository.InsertAsync(ptRevEntry);
+
+        Logger.LogInformation("Sample financial dashboard data seeded successfully.");
     }
 }

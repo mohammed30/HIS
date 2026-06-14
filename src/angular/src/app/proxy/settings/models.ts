@@ -43,6 +43,8 @@ export interface CreateUpdateDepartmentDto {
   sortOrder?: number;
   isMedical?: boolean;
   costCenterId?: string | null;
+  createCostCenterAccount?: boolean;
+  parentAccountId?: string | null;
 }
 
 export interface CreateUpdateDoctorDto {
@@ -103,6 +105,8 @@ export interface DepartmentDto extends FullAuditedEntityDto<string> {
   sortOrder?: number;
   isMedical?: boolean;
   costCenterId?: string | null;
+  createCostCenterAccount?: boolean;
+  parentAccountId?: string | null;
 }
 
 export interface DoctorDto extends FullAuditedEntityDto<string> {

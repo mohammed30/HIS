@@ -42,6 +42,7 @@ public class DepartmentDataSeedContributor : IDataSeedContributor, ITransientDep
         await CreateDepartmentAsync("DEP-PHARM", "قسم الصيدلية", "Pharmacy", true);
         await CreateDepartmentAsync("DEP-INP", "قسم التنويم / الأقسام الداخلية", "Inpatient Wards", true);
         await CreateDepartmentAsync("DEP-CSSD", "قسم التعقيم المركزي", "Central Sterile Supply Department (CSSD)", true);
+        await CreateDepartmentAsync("DEP-PT", "قسم العلاج الطبيعي", "Physiotherapy Department", true);
 
         /*
          * Medical Specialties

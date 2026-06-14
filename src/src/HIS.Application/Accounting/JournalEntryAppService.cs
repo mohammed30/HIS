@@ -223,11 +223,34 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
             throw new UserFriendlyException("This journal entry is already posted.");
         }
 
-        // Validate leaf-only accounts
-        var accountIds = entry.Lines.Select(x => x.AccountId).Distinct().ToList();
+        // Validate leaf-only accounts, automatically convert parent to leaf accounts for existing drafts
         var allAccounts = await _accountRepository.GetListAsync();
         var parentIds = allAccounts.Where(x => x.ParentId.HasValue).Select(x => x.ParentId.Value).Distinct().ToHashSet();
 
+        bool entryModified = false;
+        foreach (var line in entry.Lines)
+        {
+            if (parentIds.Contains(line.AccountId))
+            {
+                var account = allAccounts.FirstOrDefault(x => x.Id == line.AccountId);
+                if (account != null)
+                {
+                    var leafAccount = await GetLeafAccountAsync(account);
+                    if (leafAccount != null && leafAccount.Id != line.AccountId)
+                    {
+                        line.AccountId = leafAccount.Id;
+                        entryModified = true;
+                    }
+                }
+            }
+        }
+
+        if (entryModified)
+        {
+            await _journalEntryRepository.UpdateAsync(entry);
+        }
+
+        var accountIds = entry.Lines.Select(x => x.AccountId).Distinct().ToList();
         foreach (var accountId in accountIds)
         {
             if (parentIds.Contains(accountId))
@@ -241,6 +264,34 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
         await _accountingManager.PostEntryAsync(entry);
 
         return await GetAsync(entry.Id);
+    }
+
+    private async Task<Account> GetLeafAccountAsync(Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 
     public async Task<List<AccountLookupDto>> GetAccountLookupAsync()

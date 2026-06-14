@@ -171,6 +171,9 @@ public class PosAppService : HISAppService, IPosAppService
         var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
         var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
 
+        cashAccount = await GetLeafAccountAsync(cashAccount);
+        revenueAccount = await GetLeafAccountAsync(revenueAccount);
+
         if (cashAccount != null && revenueAccount != null)
         {
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مبيعات صيدلية: {invoice.InvoiceNumber}");
@@ -215,6 +218,9 @@ public class PosAppService : HISAppService, IPosAppService
         // Dr Pharmacy Revenue (4200) / Cr Cash (1110)
         var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
         var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
+
+        cashAccount = await GetLeafAccountAsync(cashAccount);
+        revenueAccount = await GetLeafAccountAsync(revenueAccount);
 
         if (cashAccount != null && revenueAccount != null)
         {
@@ -273,5 +279,33 @@ public class PosAppService : HISAppService, IPosAppService
             model.GeneratePdf(ms);
             return new RemoteStreamContent(new MemoryStream(ms.ToArray()), $"Invoice_{invoice.InvoiceNumber}.pdf", "application/pdf");
         }
+    }
+
+    private async Task<Account> GetLeafAccountAsync(Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 }

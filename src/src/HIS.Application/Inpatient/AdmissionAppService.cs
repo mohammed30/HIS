@@ -133,12 +133,15 @@ public class AdmissionAppService : CrudAppService<
         var patientName = !string.IsNullOrWhiteSpace(patient.FullNameAr) ? patient.FullNameAr : patient.MRN;
         
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
+        arAccount = await GetLeafAccountAsync(arAccount);
         var checkAmount = input.NumberOfDays > 0 ? (input.NumberOfDays * room.DailyRate) : (input.PaidAmount > 0 ? input.PaidAmount : 1000m); // Default fallback
 
         if (arAccount != null)
         {
             var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
             var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+            cashAccount = await GetLeafAccountAsync(cashAccount);
+
             var jeNumber = $"ADM-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
             
             var je = new HIS.Accounting.JournalEntry(
@@ -157,6 +160,7 @@ public class AdmissionAppService : CrudAppService<
             else if (revenueAccount != null)
             {
                 // Standard Booking: Debit AR, Credit Revenue
+                revenueAccount = await GetLeafAccountAsync(revenueAccount);
                 je.AddLine(GuidGenerator, arAccount.Id, checkAmount, 0);
                 je.AddLine(GuidGenerator, revenueAccount.Id, 0, checkAmount);
             }
@@ -752,5 +756,33 @@ public class AdmissionAppService : CrudAppService<
             });
         }
         return lookup;
+    }
+
+    private async Task<HIS.Accounting.Account> GetLeafAccountAsync(HIS.Accounting.Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 }

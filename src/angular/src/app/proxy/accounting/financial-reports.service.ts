@@ -29,8 +29,9 @@ export class FinancialReportsService {
   
 
   getDepartmentProfitabilityReport = (startDate: string, endDate: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, number[]>({
+    this.restService.request<any, Blob>({
       method: 'GET',
+      responseType: 'blob',
       url: '/api/app/financial-reports/department-profitability-report',
       params: { startDate, endDate },
     },

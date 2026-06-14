@@ -188,6 +188,8 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         var arAccount = await AccountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
         var revenueAccount = await AccountRepository.FirstOrDefaultAsync(x => x.Code == "4100"); // Revenue
 
+        arAccount = await GetLeafAccountAsync(arAccount);
+
         var admission = await AdmissionRepository.GetAsync(request.AdmissionId.Value);
         var patient = await PatientRepository.FindAsync(admission.PatientId);
         var patientName = patient != null ? patient.FullNameAr : "Unknown";
@@ -201,6 +203,7 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
                 $"طلب خدمات طبية رقم {request.RequestNumber} - المريض: {patientName}"
             );
             
+            revenueAccount = await GetLeafAccountAsync(revenueAccount);
             je.AddLine(GuidGenerator, arAccount.Id, amount, 0); // Debit AR
             je.AddLine(GuidGenerator, revenueAccount.Id, 0, amount); // Credit Revenue
 
@@ -281,6 +284,8 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         var arAccount = await AccountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
         var revenueAccount = await AccountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
 
+        arAccount = await GetLeafAccountAsync(arAccount);
+
         if (arAccount != null && revenueAccount != null)
         {
             var je = new HIS.Accounting.JournalEntry(
@@ -290,6 +295,7 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
                 $"إلغاء طلب رقم {request.RequestNumber}"
             );
             
+            revenueAccount = await GetLeafAccountAsync(revenueAccount);
             je.AddLine(GuidGenerator, revenueAccount.Id, amount, 0); // Debit Revenue (Reverse)
             je.AddLine(GuidGenerator, arAccount.Id, 0, amount); // Credit AR (Reverse)
 
@@ -597,5 +603,33 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
     protected override async Task<InternalRequestDto> MapToGetListOutputDtoAsync(InternalRequest entity)
     {
         return await MapToGetOutputDtoAsync(entity);
+    }
+
+    private async Task<HIS.Accounting.Account> GetLeafAccountAsync(HIS.Accounting.Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await AccountRepository.AnyAsync(x => x.ParentId == account.Id);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await AccountRepository.GetListAsync(x => x.ParentId == account.Id);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 }

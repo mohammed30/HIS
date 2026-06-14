@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 
+using Volo.Abp.Content;
+
 namespace HIS.Accounting;
 
 public interface IFinancialReportsAppService : IApplicationService
 {
-    Task<byte[]> GetDepartmentProfitabilityReportAsync(DateTime startDate, DateTime endDate);
+    Task<IRemoteStreamContent> GetDepartmentProfitabilityReportAsync(DateTime startDate, DateTime endDate);
     
     Task<FinancialDashboardSummaryDto> GetDashboardSummaryAsync(DateTime startDate, DateTime endDate);
     Task<DashboardIncomeStatementDto> GetIncomeStatementAsync(DateTime startDate, DateTime endDate);

@@ -7,6 +7,8 @@ using Volo.Abp.Domain.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using QuestPDF.Fluent;
 
+using Volo.Abp.Content;
+
 namespace HIS.Accounting;
 
 /// <summary>
@@ -32,8 +34,11 @@ public class FinancialReportsAppService : ApplicationService, IFinancialReportsA
     }
 
     [Authorize] // Should have specific permission, but using default Authorize for now
-    public async Task<byte[]> GetDepartmentProfitabilityReportAsync(DateTime startDate, DateTime endDate)
+    public async Task<IRemoteStreamContent> GetDepartmentProfitabilityReportAsync(DateTime startDate, DateTime endDate)
     {
+        startDate = startDate.Date;
+        endDate = endDate.Date.AddDays(1).AddTicks(-1);
+
         // Join Lines with Entries to filter by Date
         var entries = await _journalEntryRepository.GetQueryableAsync();
         var lines = await _journalEntryLineRepository.GetQueryableAsync();
@@ -77,11 +82,16 @@ public class FinancialReportsAppService : ApplicationService, IFinancialReportsA
             Items = groupedData
         };
 
-        return document.GeneratePdf();
+        var pdfBytes = document.GeneratePdf();
+        var stream = new System.IO.MemoryStream(pdfBytes);
+        return new RemoteStreamContent(stream, "تقرير_ربحية_الأقسام.pdf", "application/pdf");
     }
 
     public async Task<FinancialDashboardSummaryDto> GetDashboardSummaryAsync(DateTime startDate, DateTime endDate)
     {
+        startDate = startDate.Date;
+        endDate = endDate.Date.AddDays(1).AddTicks(-1);
+
         var incomeStatement = await GetIncomeStatementAsync(startDate, endDate);
         var balanceSheet = await GetBalanceSheetAsync(endDate);
         
@@ -130,6 +140,9 @@ public class FinancialReportsAppService : ApplicationService, IFinancialReportsA
 
     public async Task<DashboardIncomeStatementDto> GetIncomeStatementAsync(DateTime startDate, DateTime endDate)
     {
+        startDate = startDate.Date;
+        endDate = endDate.Date.AddDays(1).AddTicks(-1);
+
         var entries = await _journalEntryRepository.GetQueryableAsync();
         var lines = await _journalEntryLineRepository.GetQueryableAsync();
         var accounts = await _accountRepository.GetQueryableAsync();
@@ -180,6 +193,8 @@ public class FinancialReportsAppService : ApplicationService, IFinancialReportsA
 
     public async Task<DashboardBalanceSheetDto> GetBalanceSheetAsync(DateTime asOfDate)
     {
+        asOfDate = asOfDate.Date.AddDays(1).AddTicks(-1);
+
         var entries = await _journalEntryRepository.GetQueryableAsync();
         var lines = await _journalEntryLineRepository.GetQueryableAsync();
         var accounts = await _accountRepository.GetQueryableAsync();
