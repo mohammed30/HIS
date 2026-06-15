@@ -422,13 +422,13 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
     {
         if (account == null) return null;
 
-        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
         if (!hasChildren)
         {
             return account;
         }
 
-        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
         if (!children.Any())
         {
             return account;
@@ -768,13 +768,13 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
     {
         if (account == null) return null;
 
-        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
         if (!hasChildren)
         {
             return account;
         }
 
-        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
         if (!children.Any())
         {
             return account;

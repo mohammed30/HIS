@@ -10,6 +10,10 @@ namespace HIS.Accounting.Dtos
         public string Description { get; set; }
         public decimal Amount { get; set; }
         public BankTransactionType TransactionType { get; set; }
+        public Guid? BankAccountId { get; set; }
+        public string BankAccountName { get; set; }
+        public Guid? OppositeAccountId { get; set; }
+        public string OppositeAccountName { get; set; }
         public Guid? RelatedJournalEntryId { get; set; }
     }
 
@@ -20,5 +24,7 @@ namespace HIS.Accounting.Dtos
         public string Description { get; set; }
         public decimal Amount { get; set; }
         public BankTransactionType TransactionType { get; set; }
+        public Guid BankAccountId { get; set; }
+        public Guid OppositeAccountId { get; set; }
     }
 }

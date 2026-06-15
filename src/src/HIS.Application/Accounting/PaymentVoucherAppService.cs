@@ -128,7 +128,7 @@ namespace HIS.Accounting
                     GuidGenerator.Create(),
                     voucher.Date,
                     voucher.VoucherNumber,
-                    $"سند صرف رقم {voucher.VoucherNumber} - {(string.IsNullOrEmpty(payeeName) ? "جهات أخرى" : payeeName)}"
+                    $"سند صرف رقم {voucher.VoucherNumber} - {(string.IsNullOrEmpty(payeeName) ? "جهات أخرى" : payeeName)}" + (string.IsNullOrEmpty(voucher.Description) ? "" : $" - {voucher.Description}")
                 );
 
                 // Debit the accounts from lines

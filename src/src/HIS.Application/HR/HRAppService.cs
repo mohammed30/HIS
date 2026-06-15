@@ -840,13 +840,13 @@ public class HRAppService : ApplicationService
     {
         if (account == null) return null;
 
-        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
         if (!hasChildren)
         {
             return account;
         }
 
-        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
         if (!children.Any())
         {
             return account;

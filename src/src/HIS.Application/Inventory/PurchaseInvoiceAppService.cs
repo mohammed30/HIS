@@ -19,18 +19,21 @@ public class PurchaseInvoiceAppService : CrudAppService<
 {
     private readonly IRepository<PurchaseOrder, Guid> _purchaseOrderRepository;
     private readonly IRepository<Supplier, Guid> _supplierRepository;
+    private readonly IRepository<HIS.Services.ServiceItem, Guid> _serviceItemRepository;
     private readonly IRepository<InventoryItem, Guid> _inventoryItemRepository;
 
     public PurchaseInvoiceAppService(
         IRepository<PurchaseInvoice, Guid> repository,
         IRepository<PurchaseOrder, Guid> purchaseOrderRepository,
         IRepository<Supplier, Guid> supplierRepository,
-        IRepository<InventoryItem, Guid> inventoryItemRepository) 
+        IRepository<InventoryItem, Guid> inventoryItemRepository,
+        IRepository<HIS.Services.ServiceItem, Guid> serviceItemRepository) 
         : base(repository)
     {
         _purchaseOrderRepository = purchaseOrderRepository;
         _supplierRepository = supplierRepository;
         _inventoryItemRepository = inventoryItemRepository;
+        _serviceItemRepository = serviceItemRepository;
     }
 
     public override async Task<PurchaseInvoiceDto> GetAsync(Guid id)
@@ -90,5 +93,24 @@ public class PurchaseInvoiceAppService : CrudAppService<
 
         invoice.Status = PurchaseInvoiceStatus.Posted;
         await Repository.UpdateAsync(invoice);
+
+        // Update Sale Prices in ServiceItem
+        var drugRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Pharmacy.Drug, Guid>>();
+        foreach (var line in invoice.Lines)
+        {
+            if (line.SalePrice > 0)
+            {
+                var drug = await drugRepo.FirstOrDefaultAsync(x => x.Id == line.ProductId);
+                if (drug != null && drug.ServiceItemId.HasValue)
+                {
+                    var serviceItem = await _serviceItemRepository.FirstOrDefaultAsync(x => x.Id == drug.ServiceItemId.Value);
+                    if (serviceItem != null)
+                    {
+                        serviceItem.Price = line.SalePrice;
+                        await _serviceItemRepository.UpdateAsync(serviceItem);
+                    }
+                }
+            }
+        }
     }
 }

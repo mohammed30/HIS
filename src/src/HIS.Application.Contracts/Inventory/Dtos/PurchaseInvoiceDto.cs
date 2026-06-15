@@ -28,6 +28,8 @@ public class PurchaseInvoiceLineDto : EntityDto<Guid>
     public decimal Quantity { get; set; }
     public decimal UnitCost { get; set; }
     public decimal Discount { get; set; }
+    public decimal Margin { get; set; }
+    public decimal SalePrice { get; set; }
     public decimal TotalLineAmount { get; set; }
     public string BatchNumber { get; set; }
     public DateTime? ExpiryDate { get; set; }
@@ -49,6 +51,8 @@ public class CreateUpdatePurchaseInvoiceLineDto
     public decimal Quantity { get; set; }
     public decimal UnitCost { get; set; }
     public decimal Discount { get; set; }
+    public decimal Margin { get; set; }
+    public decimal SalePrice { get; set; }
     public string BatchNumber { get; set; }
     public DateTime? ExpiryDate { get; set; }
 }

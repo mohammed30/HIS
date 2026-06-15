@@ -63,7 +63,8 @@ export class AccountStatementComponent implements OnInit {
 
     accounts: AccountLookup[] = [];
     leafAccounts: AccountLookup[] = [];
-    selectedAccountId: string = '';
+    selectedAccountId: string | null = null;
+    searchAccountText = '';
 
     statement: AccountStatement | null = null;
     summary: AccountSummary[] = [];
@@ -74,6 +75,16 @@ export class AccountStatementComponent implements OnInit {
     ngOnInit() {
         this.buildForm();
         this.loadAccounts();
+    }
+
+    onAccountChange() {
+        const val = this.searchAccountText;
+        const match = this.leafAccounts.find(a => (a.code + ' - ' + (a.nameAr || a.name)) === val);
+        if (match) {
+            this.selectedAccountId = match.id;
+        } else {
+            this.selectedAccountId = null;
+        }
     }
 
     buildForm() {

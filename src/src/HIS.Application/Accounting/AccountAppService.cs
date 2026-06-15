@@ -281,6 +281,48 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
 
         dto.TotalAssets = dto.AssetLines.Sum(x => x.Amount);
         dto.TotalLiabilities = dto.LiabilityLines.Sum(x => x.Amount);
+
+        // Calculate Net Income for the current period
+        var incomeStatement = await GetIncomeStatementAsync(input);
+        
+        // Calculate accumulated Net Income for previous periods (before start date)
+        var prevIncomeLines = await AsyncExecuter.ToListAsync(
+            from l in prevLines
+            join a in accountQuery on l.AccountId equals a.Id
+            where a.Code.StartsWith("4") || a.Code.StartsWith("5")
+            select new { a.Code, Amount = l.Credit - l.Debit } // Revenue(Cr) - Expense(Dr)
+        );
+        var prevNetIncome = prevIncomeLines.Sum(x => x.Amount);
+
+        // Add Current Period Net Income to Equity
+        var currentNetIncomeLine = new FinancialReportLineDto
+        {
+            AccountCode = "3999",
+            AccountName = "صافي ربح (خسارة) الفترة",
+            Amount = incomeStatement.NetIncome,
+            PreviousAmount = 0
+        };
+        dto.EquityLines.Add(currentNetIncomeLine);
+
+        // Add Previous Periods Net Income to Retained Earnings (or as a separate line if RE doesn't exist)
+        var retainedEarningsLine = dto.EquityLines.FirstOrDefault(x => x.AccountCode == "32" || x.AccountCode == "3200" || x.AccountName.Contains("ارباح محتجزة") || x.AccountName.Contains("أرباح محتجزة") || x.AccountName.Contains("Retained Earnings"));
+        if (retainedEarningsLine != null)
+        {
+            retainedEarningsLine.Amount += prevNetIncome;
+            retainedEarningsLine.PreviousAmount += prevNetIncome;
+        }
+        else
+        {
+            var prevNetIncomeLine = new FinancialReportLineDto
+            {
+                AccountCode = "3998",
+                AccountName = "أرباح مبقاة (متراكمة)",
+                Amount = prevNetIncome,
+                PreviousAmount = prevNetIncome
+            };
+            dto.EquityLines.Add(prevNetIncomeLine);
+        }
+
         dto.TotalEquity = dto.EquityLines.Sum(x => x.Amount);
         
         dto.TotalPreviousAssets = dto.AssetLines.Sum(x => x.PreviousAmount);

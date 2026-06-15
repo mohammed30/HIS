@@ -19,6 +19,8 @@
             <thead>
                 <tr>
                     <th>{{ '::Date' | abpLocalization }}</th>
+                    <th>حساب البنك</th>
+                    <th>الحساب المقابل</th>
                     <th>{{ '::ReferenceNumber' | abpLocalization }}</th>
                     <th>{{ '::Description' | abpLocalization }}</th>
                     <th>{{ '::Amount' | abpLocalization }}</th>
@@ -29,6 +31,8 @@
             <tbody>
                 <tr *ngFor="let item of items">
                     <td>{{ item.date | date }}</td>
+                    <td>{{ item.bankAccountName || item.bankAccountId }}</td>
+                    <td>{{ item.oppositeAccountName || item.oppositeAccountId }}</td>
                     <td>{{ item.referenceNumber }}</td>
                     <td>{{ item.description }}</td>
                     <td>{{ item.amount | currency }}</td>
@@ -85,6 +89,22 @@
                     <option [ngValue]="option.value" *ngFor="let option of bankTransactionTypeOptions">{{
                         '::Enum:BankTransactionType.' + option.value | abpLocalization }}</option>
                 </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">حساب البنك</label>
+                <input class="form-control" list="bankOptions" formControlName="bankAccountText" placeholder="-- اختر حساب البنك --" (change)="onBankAccountChange($event)">
+                <datalist id="bankOptions">
+                    <option *ngFor="let acc of leafAccounts" [value]="acc.code + ' - ' + (acc.nameAr || acc.name)"></option>
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">الحساب المقابل</label>
+                <input class="form-control" list="oppOptions" formControlName="oppositeAccountText" placeholder="-- اختر الحساب المقابل --" (change)="onOppositeAccountChange($event)">
+                <datalist id="oppOptions">
+                    <option *ngFor="let acc of leafAccounts" [value]="acc.code + ' - ' + (acc.nameAr || acc.name)"></option>
+                </datalist>
             </div>
 
             <div class="mb-3">

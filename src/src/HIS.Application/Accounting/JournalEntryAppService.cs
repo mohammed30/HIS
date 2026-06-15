@@ -225,7 +225,7 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
 
         // Validate leaf-only accounts, automatically convert parent to leaf accounts for existing drafts
         var allAccounts = await _accountRepository.GetListAsync();
-        var parentIds = allAccounts.Where(x => x.ParentId.HasValue).Select(x => x.ParentId.Value).Distinct().ToHashSet();
+        var parentIds = allAccounts.Where(x => x.ParentId.HasValue && x.IsActive).Select(x => x.ParentId.Value).Distinct().ToHashSet();
 
         bool entryModified = false;
         foreach (var line in entry.Lines)
@@ -235,7 +235,7 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
                 var account = allAccounts.FirstOrDefault(x => x.Id == line.AccountId);
                 if (account != null)
                 {
-                    var leafAccount = await GetLeafAccountAsync(account);
+                    var leafAccount = GetLeafAccount(account, allAccounts, parentIds);
                     if (leafAccount != null && leafAccount.Id != line.AccountId)
                     {
                         line.AccountId = leafAccount.Id;
@@ -266,25 +266,19 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
         return await GetAsync(entry.Id);
     }
 
-    private async Task<Account> GetLeafAccountAsync(Account account)
+    private Account GetLeafAccount(Account account, List<Account> allAccounts, HashSet<Guid> parentIds)
     {
         if (account == null) return null;
 
-        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
-        if (!hasChildren)
+        if (!parentIds.Contains(account.Id))
         {
             return account;
         }
 
-        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
-        if (!children.Any())
+        var children = allAccounts.Where(x => x.ParentId == account.Id && x.IsActive).OrderBy(x => x.Code).ToList();
+        foreach (var child in children)
         {
-            return account;
-        }
-
-        foreach (var child in children.OrderBy(x => x.Code))
-        {
-            var leaf = await GetLeafAccountAsync(child);
+            var leaf = GetLeafAccount(child, allAccounts, parentIds);
             if (leaf != null)
             {
                 return leaf;

@@ -14,6 +14,7 @@ namespace HIS.Accounting;
 /// <summary>
 /// خدمة التقارير المالية (قائمة الدخل و ربحية الأقسام)
 /// </summary>
+[Volo.Abp.RemoteService(IsEnabled = false)]
 public class FinancialReportsAppService : ApplicationService, IFinancialReportsAppService
 {
     private readonly IRepository<JournalEntryLine, Guid> _journalEntryLineRepository;
