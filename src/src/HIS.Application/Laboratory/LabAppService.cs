@@ -225,8 +225,6 @@ public class LabAppService : ApplicationService, ILabAppService
             requestQuery = requestQuery.Where(x => x.Status == input.Status.Value);
         }
 
-        var totalCount = await AsyncExecuter.CountAsync(requestQuery);
-
         // Perform joins (Left join for doctor to handle non-doctor submitters)
         var combinedQuery = from request in requestQuery
                             join patient in patientQuery on request.PatientId equals patient.Id
@@ -234,6 +232,18 @@ public class LabAppService : ApplicationService, ILabAppService
                             from doctor in doctorGroup.DefaultIfEmpty()
                             join test in testQuery on request.ServiceItemId equals test.Id
                             select new { request, patient, doctor, test };
+
+        if (!string.IsNullOrWhiteSpace(input.Filter))
+        {
+            var filter = input.Filter.ToLower();
+            combinedQuery = combinedQuery.Where(x => 
+                (x.patient.FirstNameAr != null && x.patient.FirstNameAr.ToLower().Contains(filter)) || 
+                (x.patient.LastNameAr != null && x.patient.LastNameAr.ToLower().Contains(filter)) ||
+                (x.test.Name != null && x.test.Name.ToLower().Contains(filter)) ||
+                (x.request.SampleNumber != null && x.request.SampleNumber.ToLower().Contains(filter)));
+        }
+
+        var totalCount = await AsyncExecuter.CountAsync(combinedQuery);
 
         combinedQuery = combinedQuery.OrderBy(input.Sorting != null ? "request." + input.Sorting : "request.RequestDate DESC")
                                      .PageBy(input);
@@ -245,7 +255,7 @@ public class LabAppService : ApplicationService, ILabAppService
         {
             var dto = ObjectMapper.Map<LabRequest, LabRequestDto>(x.request);
             dto.PatientName = $"{x.patient.FirstNameAr} {x.patient.LastNameAr}";
-            dto.DoctorName = x.doctor?.NameAr ?? "N/A";
+            dto.DoctorName = x.doctor?.NameAr ?? "غير محدد";
             dto.TestName = x.test.Name;
             dto.TestCode = x.test.Code;
 
@@ -259,7 +269,7 @@ public class LabAppService : ApplicationService, ILabAppService
                 if (internalRequest != null)
                 {
                     var dept = await _departmentRepository.FindAsync(internalRequest.RequestingDepartmentId);
-                    dto.RequestingDepartmentName = dept?.NameAr ?? dept?.NameEn ?? "N/A";
+                    dto.RequestingDepartmentName = dept?.NameAr ?? dept?.NameEn ?? "غير محدد";
 
                     if (internalRequest.AdmissionId.HasValue)
                     {
@@ -267,7 +277,7 @@ public class LabAppService : ApplicationService, ILabAppService
                         if (admission != null)
                         {
                             var room = await _roomRepository.FindAsync(admission.RoomId);
-                            dto.AdmissionRoom = room?.RoomNumber ?? "N/A";
+                            dto.AdmissionRoom = room?.RoomNumber ?? "غير محدد";
                         }
                     }
                 }

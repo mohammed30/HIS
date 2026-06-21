@@ -298,4 +298,97 @@ public class InventoryManager : DomainService
             await _accountingManager.PostEntryAsync(entry);
         }
     }
+
+    public async Task TransferStockAsync(Guid fromWarehouseId, Guid toWarehouseId, Guid productId, decimal quantity, string reference)
+    {
+        if (fromWarehouseId == toWarehouseId)
+            throw new Volo.Abp.BusinessException("Inventory:CannotTransferToSameWarehouse");
+
+        var sourceItem = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == fromWarehouseId && x.ProductId == productId);
+        if (sourceItem == null || sourceItem.Quantity < quantity)
+        {
+            throw new Volo.Abp.BusinessException("Inventory:InsufficientStock");
+        }
+
+        decimal remainingQtyToIssue = quantity;
+        decimal totalCostOfIssue = 0;
+
+        // Deduct from source batches
+        var batches = await _batchRepository.GetListAsync(x => x.InventoryItemId == sourceItem.Id && x.Quantity > 0);
+        batches = batches.OrderByDescending(x => x.ReceivedDate).ToList();
+
+        foreach (var sourceBatch in batches)
+        {
+            if (remainingQtyToIssue <= 0) break;
+
+            decimal qtyTaken = Math.Min(sourceBatch.Quantity, remainingQtyToIssue);
+            sourceBatch.Quantity -= qtyTaken;
+            remainingQtyToIssue -= qtyTaken;
+            totalCostOfIssue += (qtyTaken * sourceBatch.UnitCost);
+
+            await _batchRepository.UpdateAsync(sourceBatch);
+        }
+
+        if (remainingQtyToIssue > 0)
+        {
+            totalCostOfIssue += (remainingQtyToIssue * sourceItem.AverageCost);
+        }
+
+        sourceItem.Quantity -= quantity;
+        await _inventoryItemRepository.UpdateAsync(sourceItem);
+
+        var effectiveUnitCost = quantity > 0 ? totalCostOfIssue / quantity : 0;
+
+        var issueTransaction = new InventoryTransaction(
+            GuidGenerator.Create(),
+            sourceItem.Id,
+            TransactionType.Issue,
+            quantity,
+            effectiveUnitCost,
+            DateTime.Now,
+            "Transfer Out: " + reference
+        );
+        await _transactionRepository.InsertAsync(issueTransaction);
+
+        // Add to destination
+        var destItem = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == toWarehouseId && x.ProductId == productId);
+        if (destItem == null)
+        {
+            destItem = new InventoryItem(GuidGenerator.Create(), toWarehouseId, productId, sourceItem.ProductName, sourceItem.Type, 0, 0);
+            await _inventoryItemRepository.InsertAsync(destItem);
+        }
+
+        var destTotalValue = (destItem.Quantity * destItem.AverageCost) + totalCostOfIssue;
+        var destNewQuantity = destItem.Quantity + quantity;
+        destItem.AverageCost = destNewQuantity > 0 ? destTotalValue / destNewQuantity : 0;
+        destItem.Quantity = destNewQuantity;
+
+        await _inventoryItemRepository.UpdateAsync(destItem);
+
+        var newBatch = new InventoryBatch(
+            GuidGenerator.Create(),
+            destItem.Id,
+            "TR-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(),
+            quantity,
+            effectiveUnitCost,
+            DateTime.Now,
+            "Transfer In: " + reference,
+            null
+        );
+        await _batchRepository.InsertAsync(newBatch);
+
+        var receiptTransaction = new InventoryTransaction(
+            GuidGenerator.Create(),
+            destItem.Id,
+            TransactionType.Receipt,
+            quantity,
+            effectiveUnitCost,
+            DateTime.Now,
+            "Transfer In: " + reference
+        );
+        await _transactionRepository.InsertAsync(receiptTransaction);
+
+        // Note: For internal transfers between warehouses sharing the same inventory GL account, 
+        // no accounting journal entry is needed unless they use different sub-ledgers or cost centers.
+    }
 }

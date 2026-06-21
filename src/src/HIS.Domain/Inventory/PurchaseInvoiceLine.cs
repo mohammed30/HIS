@@ -11,6 +11,8 @@ public class PurchaseInvoiceLine : FullAuditedEntity<Guid>
     public decimal UnitCost { get; set; }
     public decimal Discount { get; set; }
     public decimal TotalLineAmount { get; set; }
+    public decimal Margin { get; set; }
+    public decimal SalePrice { get; set; }
     
     public string BatchNumber { get; set; }
     public DateTime? ExpiryDate { get; set; }

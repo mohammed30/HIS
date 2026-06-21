@@ -10,9 +10,11 @@ import { PurchaseOrderService } from '../../../proxy/inventory/purchase-order.se
 import { SupplierService } from '../../../proxy/inventory/supplier.service';
 import { ServiceItemService } from '../../../proxy/services/service-item.service';
 import { InventoryService } from '../../../proxy/inventory/inventory.service';
+import { PurchaseRequisitionService, PurchaseRequisitionStatus } from '../../../proxy/inventory';
 import { PurchaseOrderDto, PurchaseOrderLineDto, SupplierDto } from '../../../proxy/inventory/dtos/models';
 import { PurchaseOrderStatus } from '../../../proxy/inventory/purchase-order-status.enum';
-import { ServiceItemDto } from '../../../proxy/services/models';
+import { DrugService } from '../../../proxy/pharmacy/drug.service';
+import { DrugDto } from '../../../proxy/pharmacy/dtos/models';
 
 @Component({
     selector: 'app-purchase-order-detail',
@@ -25,8 +27,9 @@ export class PurchaseOrderDetailComponent implements OnInit {
     private fb = inject(FormBuilder);
     private service = inject(PurchaseOrderService);
     private supplierService = inject(SupplierService);
-    private productService = inject(ServiceItemService);
+    private productService = inject(DrugService);
     private inventoryService = inject(InventoryService);
+    private requisitionService = inject(PurchaseRequisitionService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private toaster = inject(ToasterService);
@@ -34,10 +37,11 @@ export class PurchaseOrderDetailComponent implements OnInit {
 
     form: FormGroup;
     id: string | null = null;
+    requisitionId: string | null = null;
     order: PurchaseOrderDto | null = null;
 
     suppliers: SupplierDto[] = [];
-    products: ServiceItemDto[] = [];
+    products: DrugDto[] = [];
 
     isSaving = false;
     PurchaseOrderStatus = PurchaseOrderStatus;
@@ -59,8 +63,15 @@ export class PurchaseOrderDetailComponent implements OnInit {
             if (this.id) {
                 this.loadOrder(this.id);
             } else {
-                // Default values for new order
-                this.addLine();
+                this.route.queryParamMap.subscribe(queryParams => {
+                    this.requisitionId = queryParams.get('requisitionId');
+                    if (this.requisitionId) {
+                        this.loadFromRequisition(this.requisitionId);
+                    } else {
+                        // Default values for new order
+                        this.addLine();
+                    }
+                });
             }
         });
     }
@@ -112,13 +123,30 @@ export class PurchaseOrderDetailComponent implements OnInit {
         });
     }
 
+    loadFromRequisition(reqId: string) {
+        this.requisitionService.get(reqId).subscribe(res => {
+            this.lines.clear();
+            if (res.lines && res.lines.length > 0) {
+                res.lines.forEach(l => {
+                    this.lines.push(this.createLineGroup({ productId: l.productId, quantity: l.quantity }));
+                });
+            } else {
+                this.addLine();
+            }
+            this.form.patchValue({
+                notes: 'Generated from Requisition: ' + res.requisitionNumber
+            });
+            this.toaster.info('Items loaded from Purchase Requisition', 'Info');
+        });
+    }
+
     createLineGroup(line: any = null) {
         return this.fb.group({
-            productId: [line ? line.productId : null, Validators.required],
-            quantity: [line ? line.quantity : 1, [Validators.required, Validators.min(0.0001)]],
-            unitPrice: [line ? line.unitPrice : 0, [Validators.required, Validators.min(0)]],
-            discount: [line ? line.discount : 0, [Validators.min(0)]],
-            description: [line ? line.description : '']
+            productId: [line?.productId || null, Validators.required],
+            quantity: [line?.quantity ?? 1, [Validators.required, Validators.min(0.0001)]],
+            unitPrice: [line?.unitPrice ?? 0, [Validators.required, Validators.min(0)]],
+            discount: [line?.discount ?? 0, [Validators.min(0)]],
+            description: [line?.description || '']
         });
     }
 
@@ -155,9 +183,14 @@ export class PurchaseOrderDetailComponent implements OnInit {
         this.isSaving = true;
         const model = {
             ...this.form.value,
-            // Date handling if needed, ng-bootstrap usually gives Date object if using Native adapter
-            // but ensure string format for API if needed. ABP handles ISO string usually.
         };
+        
+        if (model.purchaseOrderLines) {
+            model.purchaseOrderLines.forEach((l: any) => {
+                l.discount = l.discount || 0;
+                l.unitPrice = l.unitPrice || 0;
+            });
+        }
 
         const req = this.id
             ? this.service.update(this.id, model)
@@ -165,6 +198,9 @@ export class PurchaseOrderDetailComponent implements OnInit {
 
         req.subscribe({
             next: (res) => {
+                if (this.requisitionId) {
+                    this.requisitionService.updateStatus(this.requisitionId, PurchaseRequisitionStatus.ConvertedToPO).subscribe();
+                }
                 this.toaster.success('::SuccessfullySaved');
                 this.isSaving = false;
                 if (!this.id) {

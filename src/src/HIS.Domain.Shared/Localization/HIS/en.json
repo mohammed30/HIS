@@ -988,6 +988,20 @@
     "ExpectedDays": "Expected Days",
     "SelectAdmissionToViewDetails": "Select an admission from the list to view details",
     "AdmissionsList": "Admissions List",
-    "SearchPatient": "Search Patient"
+    "SearchPatient": "Search Patient",
+    "NewRequisition": "New Requisition",
+    "EditRequisition": "Edit Requisition",
+    "RequiredDate": "Required Date",
+    "RequestedItems": "Requested Items",
+    "SaveRequisition": "Save Requisition",
+    "Back": "Back",
+    "NewRequest": "New Request",
+    "Number": "Number",
+    "Requestor": "Requestor",
+    "Enum:RequisitionStatus.0": "Draft",
+    "Enum:RequisitionStatus.1": "Pending",
+    "Enum:RequisitionStatus.2": "Approved",
+    "Enum:RequisitionStatus.3": "Rejected",
+    "Enum:RequisitionStatus.4": "Converted to PO"
   }
 }

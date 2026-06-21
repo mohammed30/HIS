@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
+import { SessionStateService } from '@abp/ng.core';
 import { environment } from '../../../environments/environment';
 
 interface Department {
@@ -17,6 +18,8 @@ interface Department {
   sortOrder: number;
   isMedical: boolean;
   costCenterId?: string;
+  createCostCenterAccount?: boolean;
+  parentAccountId?: string;
 }
 
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -149,7 +152,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
                   <select class="form-select" [(ngModel)]="formData.costCenterId">
                     <option [ngValue]="null">-- اختر مركز التكلفة --</option>
                     @for (acc of accounts; track acc.id) {
-                      <option [ngValue]="acc.id">{{ acc.code }} - {{ acc.name }}</option>
+                      <option [ngValue]="acc.id">{{ acc.code }} - {{ getLocalizedName(acc) }}</option>
                     }
                   </select>
                 </div>
@@ -161,6 +164,23 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
                   <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isMedical" id="isMedical">
                   <label class="form-check-label" for="isMedical">قسم طبي (يظهر في تعريف الأطباء)</label>
                 </div>
+                @if (!editingItem) {
+                  <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" [(ngModel)]="formData.createCostCenterAccount" id="createCostCenterAccount">
+                    <label class="form-check-label" for="createCostCenterAccount">إنشاء حساب فرعي تلقائياً في شجرة الحسابات</label>
+                  </div>
+                  @if (formData.createCostCenterAccount) {
+                    <div class="mb-3">
+                      <label class="form-label">الحساب الأب *</label>
+                      <select class="form-select" [(ngModel)]="formData.parentAccountId" required>
+                        <option [ngValue]="null">-- اختر الحساب الأب --</option>
+                        @for (acc of accounts; track acc.id) {
+                          <option [ngValue]="acc.id">{{ acc.code }} - {{ getLocalizedName(acc) }}</option>
+                        }
+                      </select>
+                    </div>
+                  }
+                }
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="showForm = false">إلغاء</button>
@@ -183,6 +203,7 @@ export class DepartmentsComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apis.default.url + '/api/app/department';
   private confirmation = inject(ConfirmationService);
+  private sessionState = inject(SessionStateService);
 
   items: Department[] = [];
   accounts: any[] = [];
@@ -201,8 +222,16 @@ export class DepartmentsComponent implements OnInit {
     this.loadAccounts();
   }
 
+  getLocalizedName(acc: any): string {
+    const currentLang = this.sessionState.getLanguage();
+    if (currentLang && currentLang.startsWith('ar') && acc.nameAr) {
+      return acc.nameAr;
+    }
+    return acc.name || '';
+  }
+
   getEmptyForm(): Partial<Department> {
-    return { code: '', nameAr: '', nameEn: '', description: '', location: '', extensionNumber: '', isActive: true, sortOrder: 0, isMedical: false, costCenterId: null };
+    return { code: '', nameAr: '', nameEn: '', description: '', location: '', extensionNumber: '', isActive: true, sortOrder: 0, isMedical: false, costCenterId: null, createCostCenterAccount: false, parentAccountId: null };
   }
 
   resetForm() {

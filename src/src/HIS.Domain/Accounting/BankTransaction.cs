@@ -10,6 +10,8 @@ namespace HIS.Accounting
         public string Description { get; set; }
         public decimal Amount { get; set; } // Positive for deposit, negative for withdrawal
         public BankTransactionType TransactionType { get; set; }
+        public Guid BankAccountId { get; set; }
+        public Guid OppositeAccountId { get; set; }
         public Guid? RelatedJournalEntryId { get; set; }
     }
 

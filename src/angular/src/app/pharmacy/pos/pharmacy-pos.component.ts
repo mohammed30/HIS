@@ -18,10 +18,23 @@ import { PharmacySettingsService } from '../../proxy/settings/pharmacy-settings.
         <div class="col-md-8">
             <div class="card mb-3">
                 <div class="card-body">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text"><i class="fas fa-barcode"></i></span>
-                        <input type="text" class="form-control" [(ngModel)]="barcodeInput" (keyup.enter)="scanBarcode()" [placeholder]="'::ScanBarcodeOrSearch' | abpLocalization" autofocus>
-                        <button class="btn btn-primary" (click)="scanBarcode()">{{ '::Add' | abpLocalization }}</button>
+                    <div class="position-relative">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" [(ngModel)]="barcodeInput" (ngModelChange)="onSearchInput()" (keyup.enter)="scanBarcode()" [placeholder]="'::ScanBarcodeOrSearch' | abpLocalization" autofocus>
+                            <button class="btn btn-primary" (click)="scanBarcode()">{{ '::Add' | abpLocalization }}</button>
+                        </div>
+                        <div class="list-group position-absolute w-100 shadow" style="z-index: 1000; top: 100%;" *ngIf="searchResults.length > 0">
+                            <button *ngFor="let p of searchResults" type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" (click)="selectProduct(p)">
+                                <div>
+                                    <strong>{{ p.name }}</strong><br>
+                                    <small class="text-muted">{{ p.barcode }} - {{ p.price | currency }}</small>
+                                </div>
+                                <span class="badge rounded-pill" [ngClass]="p.currentStock > 0 ? 'bg-success' : 'bg-danger'">
+                                    {{ p.currentStock }}
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -131,6 +144,8 @@ import { PharmacySettingsService } from '../../proxy/settings/pharmacy-settings.
 })
 export class PharmacyPosComponent implements OnInit {
     barcodeInput = '';
+    searchResults: PosProductDto[] = [];
+    searchTimeout: any;
     cartItems: any[] = [];
     totalAmount = 0;
     paidAmount = 0;
@@ -155,18 +170,43 @@ export class PharmacyPosComponent implements OnInit {
         });
     }
 
+    onSearchInput() {
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+        
+        if (!this.barcodeInput || this.barcodeInput.length < 2) {
+            this.searchResults = [];
+            return;
+        }
+
+        this.searchTimeout = setTimeout(() => {
+            this.posService.searchProducts(this.barcodeInput).subscribe({
+                next: (products) => {
+                    this.searchResults = products;
+                }
+            });
+        }, 300); // 300ms debounce
+    }
+
+    selectProduct(product: PosProductDto) {
+        this.addToCart(product);
+        this.barcodeInput = '';
+        this.searchResults = [];
+    }
+
     scanBarcode() {
         if (!this.barcodeInput) return;
 
+        // If there's an exact match in search results, just pick the first one
+        if (this.searchResults.length === 1) {
+             this.selectProduct(this.searchResults[0]);
+             return;
+        }
+
         this.posService.getProductByBarcode(this.barcodeInput).subscribe({
             next: (product) => {
-                if (product.currentStock <= 0 && !this.allowNegativeStock) {
-                    this.toaster.error('::InsufficientStock', '::Error');
-                    this.barcodeInput = '';
-                    return;
-                }
-                this.addToCart(product);
-                this.barcodeInput = '';
+                this.selectProduct(product);
             },
             error: () => {
                 this.toaster.error('::ProductNotFound', '::Error');

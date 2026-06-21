@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
 using QuestPDF.Fluent;
 using HIS.Inventory.Printing;
+using HIS.Pharmacy;
+using HIS.Services;
 
 namespace HIS.Inventory;
 
@@ -25,6 +27,8 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
     private readonly IRepository<InventoryItem, Guid> _inventoryItemRepository;
     private readonly IRepository<InventoryTransaction, Guid> _inventoryTransactionRepository;
     private readonly IRepository<Department, Guid> _departmentRepository;
+    private readonly IRepository<Drug, Guid> _drugRepository;
+    private readonly IRepository<ServiceItem, Guid> _serviceItemRepository;
     private readonly InventoryManager _inventoryManager;
 
     public InventoryAppService(
@@ -32,12 +36,16 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         IRepository<InventoryItem, Guid> inventoryItemRepository,
         IRepository<InventoryTransaction, Guid> inventoryTransactionRepository,
         IRepository<Department, Guid> departmentRepository,
+        IRepository<Drug, Guid> drugRepository,
+        IRepository<ServiceItem, Guid> serviceItemRepository,
         InventoryManager inventoryManager)
     {
         _warehouseRepository = warehouseRepository;
         _inventoryItemRepository = inventoryItemRepository;
         _inventoryTransactionRepository = inventoryTransactionRepository;
         _departmentRepository = departmentRepository;
+        _drugRepository = drugRepository;
+        _serviceItemRepository = serviceItemRepository;
         _inventoryManager = inventoryManager;
     }
 
@@ -91,24 +99,51 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
 
     // Stock Operations
     [HttpGet("stock-levels")]
-    public async Task<PagedResultDto<InventoryItemDto>> GetStockLevelsAsync(Guid warehouseId)
+    public async Task<PagedResultDto<InventoryItemDto>> GetStockLevelsAsync(Guid warehouseId, string? filter = null, InventoryItemType? type = null)
     {
         var query = await _inventoryItemRepository.GetQueryableAsync();
-        var items = query.Where(x => x.WarehouseId == warehouseId).ToList();
-        
-        // Note: Ideally join with Product/ServiceItems to get names
-        // For now returning basic DTOs
-        
+        var q = query.Where(x => x.WarehouseId == warehouseId);
+
+        if (type.HasValue)
+        {
+            q = q.Where(x => x.Type == type.Value);
+        }
+
+        var items = await AsyncExecuter.ToListAsync(q);
+
+        var drugIds = items.Where(x => x.Type == InventoryItemType.Medication).Select(x => x.ProductId).Distinct().ToList();
+        var serviceItemIds = items.Where(x => x.Type != InventoryItemType.Medication).Select(x => x.ProductId).Distinct().ToList();
+
+        var drugs = drugIds.Any() ? await _drugRepository.GetListAsync(x => drugIds.Contains(x.Id)) : new List<Drug>();
+        var serviceItems = serviceItemIds.Any() ? await _serviceItemRepository.GetListAsync(x => serviceItemIds.Contains(x.Id)) : new List<ServiceItem>();
+
         var dtos = ObjectMapper.Map<List<InventoryItem>, List<InventoryItemDto>>(items);
-        
-        // Manual mapping for new properties if AutoMapper is not configured to map them automatically
-        // Assuming AutoMapper maps by name convention, but let's be safe or just trust the mapper if names match.
-        // Since names match (MinStockLevel -> MinStockLevel), AutoMapper should handle it if invalid cache is not an issue.
-        // But to be sure:
-        // foreach(var dto in dtos) { ... } -- Not needed if names match.
-        
+
+        foreach (var dto in dtos)
+        {
+            if (dto.Type == InventoryItemType.Medication)
+            {
+                var drug = drugs.FirstOrDefault(d => d.Id == dto.ProductId);
+                dto.ProductCode = drug?.Barcode ?? $"MED-{dto.ProductId.ToString().Substring(0,4).ToUpper()}";
+            }
+            else
+            {
+                var svc = serviceItems.FirstOrDefault(s => s.Id == dto.ProductId);
+                dto.ProductCode = svc?.Code ?? $"ITM-{dto.ProductId.ToString().Substring(0,4).ToUpper()}";
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            var lowerFilter = filter.ToLower();
+            dtos = dtos.Where(x => 
+                (x.ProductName != null && x.ProductName.ToLower().Contains(lowerFilter)) || 
+                (x.ProductCode != null && x.ProductCode.ToLower().Contains(lowerFilter))
+            ).ToList();
+        }
+
         return new PagedResultDto<InventoryItemDto>(
-            items.Count,
+            dtos.Count,
             dtos
         );
     }

@@ -72,24 +72,12 @@ public class InventoryAppService : HISAppService, IInventoryAppService
         var transfer = await _stockTransferRepository.GetAsync(id);
         if (transfer.Status != TransferStatus.Draft) return;
 
-        // Execute Stock Movement using InventoryManager (Domain Service)
-        // Assuming InventoryManager has TransferStockAsync(from, to, itemId, qty) logic.
-        // Since Logic might be complex (matching batches), we'll simulate basic deduction/addition here or call a domain method.
-        // Ideally: _inventoryManager.ProcessTransfer(transfer);
-        
         foreach (var item in transfer.Items)
         {
-             // Simplified logic: Just get InventoryItem(DrugId, FromWarehouse) and reduce
-             // The DrugId links to InventoryItem via mapping or Name?
-             // Drug entity has ServiceItemId. InventoryItem links to Inventory? No.
-             // Usually InventoryItem links to Product/Service.
-             
-             // We need to resolve ServiceItemId from DrugId
              var drug = await _drugRepository.GetAsync(item.DrugId);
              if (drug.ServiceItemId.HasValue)
              {
-                 // Move Stock
-                 // await _inventoryManager.MoveStockAsync(...)
+                 await _inventoryManager.TransferStockAsync(transfer.FromWarehouseId, transfer.ToWarehouseId, drug.ServiceItemId.Value, item.Quantity, transfer.TransferNumber);
              }
         }
         
@@ -109,9 +97,10 @@ public class InventoryAppService : HISAppService, IInventoryAppService
         var drugs = await _drugRepository.GetListAsync(x => x.MinimumStockLevel > 0);
         var serviceItemIds = drugs.Where(x => x.ServiceItemId.HasValue).Select(x => x.ServiceItemId.Value).ToList();
         
-        // Get Inventory for these items (in Pharmacy/Main Warehouse)
-        // Let's check Pharmacy only for now
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+        // Get Inventory for these items        
+        var mainWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Main Warehouse" || x.Name == "المستودع الرئيسي");
+        
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
         if (pharmacy == null) return new PagedResultDto<InventoryItemDto>();
 
         var inventoryItems = await _inventoryItemRepository.GetListAsync(x => x.WarehouseId == pharmacy.Id && serviceItemIds.Contains(x.ProductId));

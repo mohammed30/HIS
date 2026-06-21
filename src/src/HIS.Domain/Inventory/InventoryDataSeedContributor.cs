@@ -32,17 +32,36 @@ public class InventoryDataSeedContributor : IDataSeedContributor, ITransientDepe
         // 1. Warehouses
         if (await _warehouseRepository.GetCountAsync() <= 0)
         {
-            await CreateWarehouseAsync("Main Warehouse", "Building A - Ground Floor");
-            await CreateWarehouseAsync("Pharmacy Warehouse", "Building B - 1st Floor");
-            await CreateWarehouseAsync("Lab Warehouse", "Building C - Basement");
+            await CreateWarehouseAsync("المستودع الرئيسي", "المبنى أ - الدور الأرضي");
+            await CreateWarehouseAsync("مستودع الصيدلية", "المبنى ب - الدور الأول");
+            await CreateWarehouseAsync("مستودع المختبر", "المبنى ج - القبو");
+        }
+        else
+        {
+            // Update existing to Arabic
+            var oldMain = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Main Warehouse");
+            if (oldMain != null) { oldMain.Name = "المستودع الرئيسي"; oldMain.Location = "المبنى أ - الدور الأرضي"; await _warehouseRepository.UpdateAsync(oldMain); }
+            
+            var oldPharm = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+            if (oldPharm != null) { oldPharm.Name = "مستودع الصيدلية"; oldPharm.Location = "المبنى ب - الدور الأول"; await _warehouseRepository.UpdateAsync(oldPharm); }
+            
+            var oldLab = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Lab Warehouse");
+            if (oldLab != null) { oldLab.Name = "مستودع المختبر"; oldLab.Location = "المبنى ج - القبو"; await _warehouseRepository.UpdateAsync(oldLab); }
         }
 
-        // 2. Inventory Items (Stock)
+        // 2. Cleanup Corrupted Data
+        var unknownItems = await _inventoryItemRepository.GetListAsync(x => x.ProductName == "Unknown Product" || x.ProductName == null);
+        if (unknownItems.Count > 0)
+        {
+            await _inventoryItemRepository.DeleteManyAsync(unknownItems);
+        }
+
+        // 3. Inventory Items (Stock)
         if (await _inventoryItemRepository.GetCountAsync() <= 0)
         {
-            var mainWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Main Warehouse");
-            var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
-            var labWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Lab Warehouse");
+            var mainWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Main Warehouse" || x.Name == "المستودع الرئيسي");
+            var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
+            var labWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Lab Warehouse" || x.Name == "مستودع المختبر");
 
             if (mainWarehouse != null)
             {

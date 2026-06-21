@@ -1155,7 +1155,7 @@ export class LaboratoryReceptionComponent implements OnInit {
             discountAmount: this.medicalServicesPayment.discount,
             taxPercentage: 0, // Should be from config
             items: this.selectedMedicalServices.map(x => ({
-                serviceItemId: x.id,
+                serviceCode: x.code || x.id,
                 serviceType: x.serviceType,
                 description: x.name,
                 quantity: 1,

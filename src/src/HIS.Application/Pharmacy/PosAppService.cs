@@ -92,7 +92,7 @@ public class PosAppService : HISAppService, IPosAppService
 
     private async Task<PosProductDto> MapToPosProduct(Drug drug)
     {
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
         int stock = 0;
         decimal price = 0;
 
@@ -120,7 +120,7 @@ public class PosAppService : HISAppService, IPosAppService
 
     public async Task<Guid> ProcessSaleAsync(PosSaleDto input)
     {
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
         if (pharmacy == null) throw new UserFriendlyException("Pharmacy Warehouse not found");
 
         // 1. Create Invoice
@@ -171,6 +171,9 @@ public class PosAppService : HISAppService, IPosAppService
         var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
         var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
 
+        cashAccount = await GetLeafAccountAsync(cashAccount);
+        revenueAccount = await GetLeafAccountAsync(revenueAccount);
+
         if (cashAccount != null && revenueAccount != null)
         {
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مبيعات صيدلية: {invoice.InvoiceNumber}");
@@ -194,7 +197,7 @@ public class PosAppService : HISAppService, IPosAppService
         
         if (invoice.Status == Billing.InvoiceStatus.Refunded) throw new UserFriendlyException("Invoice already refunded");
 
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
         if (pharmacy == null) throw new UserFriendlyException("Pharmacy Warehouse not found");
 
         // 1. Mark as Refunded
@@ -216,6 +219,9 @@ public class PosAppService : HISAppService, IPosAppService
         var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
         var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
 
+        cashAccount = await GetLeafAccountAsync(cashAccount);
+        revenueAccount = await GetLeafAccountAsync(revenueAccount);
+
         if (cashAccount != null && revenueAccount != null)
         {
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مرتجع مبيعات صيدلية: {invoice.InvoiceNumber}");
@@ -229,19 +235,27 @@ public class PosAppService : HISAppService, IPosAppService
     [Microsoft.AspNetCore.Mvc.Route("api/app/pos/generate-doc/{idOrNumber}")]
     public async Task<IRemoteStreamContent> GetInvoicePdfAsync(string idOrNumber)
     {
+        idOrNumber = idOrNumber?.Trim('"', '\'');
         Invoice invoice;
         if (Guid.TryParse(idOrNumber, out Guid invoiceId))
         {
-            invoice = await _invoiceRepository.GetAsync(invoiceId, true);
+            invoice = await _invoiceRepository.FirstOrDefaultAsync(x => x.Id == invoiceId);
         }
         else
         {
             invoice = await _invoiceRepository.FirstOrDefaultAsync(x => x.InvoiceNumber == idOrNumber);
-            if (invoice != null)
+        }
+
+        if (invoice != null)
+        {
+            var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
+            invoice.Items ??= new List<InvoiceItem>();
+            foreach (var item in items)
             {
-                // Explicitly load items if found by number
-                var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
-                foreach (var item in items) invoice.Items.Add(item);
+                if (!invoice.Items.Any(i => i.Id == item.Id))
+                {
+                    invoice.Items.Add(item);
+                }
             }
         }
 
@@ -273,5 +287,33 @@ public class PosAppService : HISAppService, IPosAppService
             model.GeneratePdf(ms);
             return new RemoteStreamContent(new MemoryStream(ms.ToArray()), $"Invoice_{invoice.InvoiceNumber}.pdf", "application/pdf");
         }
+    }
+
+    private async Task<Account> GetLeafAccountAsync(Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 }

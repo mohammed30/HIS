@@ -34,6 +34,7 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
   isLoading = false;
   destroy$ = new Subject<void>();
   activeTab = 1;
+  private themeObserver: MutationObserver;
 
   startDate: NgbDateStruct;
   endDate: NgbDateStruct;
@@ -50,12 +51,32 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadData();
+    this.observeThemeChanges();
+  }
+
+  observeThemeChanges(): void {
+    if (typeof MutationObserver === 'undefined') return;
+
+    this.themeObserver = new MutationObserver(() => {
+      if (this.summary) {
+        this.initChart();
+      }
+    });
+
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class']
+    });
+    this.themeObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class']
+    });
   }
 
   loadData(): void {
     this.isLoading = true;
-    const start = new Date(this.startDate.year, this.startDate.month - 1, this.startDate.day).toISOString();
-    const end = new Date(this.endDate.year, this.endDate.month - 1, this.endDate.day).toISOString();
+    const start = `${this.startDate.year}-${String(this.startDate.month).padStart(2, '0')}-${String(this.startDate.day).padStart(2, '0')}`;
+    const end = `${this.endDate.year}-${String(this.endDate.month).padStart(2, '0')}-${String(this.endDate.day).padStart(2, '0')}`;
 
     this.reportsService.getDashboardSummary(start, end)
       .pipe(takeUntil(this.destroy$))
@@ -71,8 +92,83 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  isDownloading = false;
+  downloadProfitabilityReport(): void {
+    this.isDownloading = true;
+    const start = `${this.startDate.year}-${String(this.startDate.month).padStart(2, '0')}-${String(this.startDate.day).padStart(2, '0')}`;
+    const end = `${this.endDate.year}-${String(this.endDate.month).padStart(2, '0')}-${String(this.endDate.day).padStart(2, '0')}`;
+
+    this.reportsService.getDepartmentProfitabilityReport(start, end)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `تقرير_ربحية_الأقسام.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.isDownloading = false;
+        },
+        error: () => {
+          this.isDownloading = false;
+        }
+      });
+  }
+
+  checkIsDark(): boolean {
+    if (typeof window === 'undefined') return false;
+    
+    // 1. Check data-theme attributes
+    const docTheme = document.documentElement.getAttribute('data-theme');
+    const bodyTheme = document.body.getAttribute('data-theme');
+    if (docTheme === 'dark' || bodyTheme === 'dark') return true;
+    if (docTheme === 'light' || bodyTheme === 'light') return false;
+    
+    // 2. Check classes
+    const darkClasses = ['dark', 'lpx-theme-dark', 'theme-dark'];
+    const hasDarkClass = darkClasses.some(cls => 
+      document.documentElement.classList.contains(cls) || 
+      document.body.classList.contains(cls)
+    );
+    if (hasDarkClass) return true;
+
+    // 3. Fallback to computed styles
+    try {
+      const bodyStyles = window.getComputedStyle(document.body);
+      const bgColor = bodyStyles.backgroundColor;
+      const textColor = bodyStyles.color;
+
+      if (textColor.includes('255') || textColor.includes('248') || textColor.includes('250')) {
+        return true;
+      }
+
+      const rgb = bgColor.match(/\d+/g);
+      if (rgb && rgb.length >= 3) {
+        const r = parseInt(rgb[0], 10);
+        const g = parseInt(rgb[1], 10);
+        const b = parseInt(rgb[2], 10);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+      }
+    } catch (e) {
+      // Ignore styles check if failed
+    }
+
+    return false;
+  }
+
+  chartInstance: any;
+  onChartInit(ec: any): void {
+    this.chartInstance = ec;
+  }
+
   initChart(): void {
     if (!this.summary || !this.summary.departmentProfitability) return;
+
+    const isDark = this.checkIsDark();
+    const textColor = isDark ? '#ffffff' : '#212529';
+    const subTextColor = isDark ? '#ced4da' : '#6c757d';
 
     const data = this.summary.departmentProfitability.map(d => ({
       name: d.costCenterName || 'غير محدد',
@@ -80,10 +176,14 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
     }));
 
     this.profitabilityChartOptions = {
+      backgroundColor: 'transparent',
       title: {
         text: 'أرباح مراكز التكلفة (الأقسام)',
         left: 'center',
-        textStyle: { fontFamily: 'Tajawal, sans-serif' }
+        textStyle: { 
+          fontFamily: 'Tajawal, sans-serif',
+          color: textColor
+        }
       },
       tooltip: {
         trigger: 'item',
@@ -91,7 +191,11 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
       },
       legend: {
         orient: 'horizontal',
-        bottom: 'bottom'
+        bottom: 'bottom',
+        textStyle: {
+          color: subTextColor,
+          fontFamily: 'Tajawal, sans-serif'
+        }
       },
       series: [
         {
@@ -99,6 +203,11 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
           type: 'pie',
           radius: '50%',
           data: data,
+          label: {
+            show: true,
+            color: textColor,
+            fontFamily: 'Tajawal, sans-serif'
+          },
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
@@ -109,9 +218,16 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy {
         }
       ]
     };
+
+    if (this.chartInstance) {
+      this.chartInstance.setOption(this.profitabilityChartOptions, true);
+    }
   }
 
   ngOnDestroy(): void {
+    if (this.themeObserver) {
+      this.themeObserver.disconnect();
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }

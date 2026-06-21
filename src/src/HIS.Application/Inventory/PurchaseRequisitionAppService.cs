@@ -9,6 +9,8 @@ using Volo.Abp.Domain.Repositories;
 using HIS.Inventory.Dtos;
 using HIS.Settings;
 using Volo.Abp.Identity;
+using Volo.Abp.Domain.Entities;
+
 
 namespace HIS.Inventory;
 
@@ -63,6 +65,32 @@ public class PurchaseRequisitionAppService : CrudAppService<
         return await MapToGetOutputDtoAsync(entity);
     }
 
+    public override async Task<PurchaseRequisitionDto> UpdateAsync(Guid id, CreateUpdatePurchaseRequisitionDto input)
+    {
+        var entity = await GetEntityByIdAsync(id);
+        
+        entity.DepartmentId = input.DepartmentId;
+        entity.RequiredDate = input.RequiredDate;
+        entity.Notes = input.Notes;
+        
+        entity.Lines.Clear();
+        foreach (var lineDto in input.Lines)
+        {
+            entity.Lines.Add(new PurchaseRequisitionLine(
+                GuidGenerator.Create(),
+                entity.Id,
+                lineDto.ProductId,
+                lineDto.Quantity
+            )
+            {
+                Description = lineDto.Description
+            });
+        }
+        
+        await Repository.UpdateAsync(entity);
+        return await MapToGetOutputDtoAsync(entity);
+    }
+
     public async Task UpdateStatusAsync(Guid id, PurchaseRequisitionStatus status)
     {
         var entity = await Repository.GetAsync(id);
@@ -100,6 +128,17 @@ public class PurchaseRequisitionAppService : CrudAppService<
         }
 
         return dto;
+    }
+
+    protected override async Task<PurchaseRequisition> GetEntityByIdAsync(Guid id)
+    {
+        var query = await Repository.WithDetailsAsync(x => x.Lines);
+        var entity = await AsyncExecuter.FirstOrDefaultAsync(query.Where(x => x.Id == id));
+        if (entity == null)
+        {
+            throw new EntityNotFoundException(typeof(PurchaseRequisition), id);
+        }
+        return entity;
     }
 }
 

@@ -2,19 +2,20 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CoreModule } from '@abp/ng.core';
 import { PurchaseRequisitionService, Dtos } from '../../../proxy/inventory';
 type PurchaseRequisitionDto = Dtos.PurchaseRequisitionDto;
 
 @Component({
   selector: 'app-purchase-requisition-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ThemeSharedModule],
+  imports: [CommonModule, RouterModule, ThemeSharedModule, CoreModule],
   template: `
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="m-0"><i class="fas fa-file-invoice me-2"></i>Purchase Requisitions</h5>
+        <h5 class="m-0"><i class="fas fa-file-invoice me-2"></i>{{ '::Menu:PurchaseRequisitions' | abpLocalization }}</h5>
         <button class="btn btn-primary" routerLink="create">
-            <i class="fas fa-plus me-1"></i> New Request
+            <i class="fas fa-plus me-1"></i> {{ '::NewRequest' | abpLocalization }}
         </button>
       </div>
       <div class="card-body">
@@ -22,12 +23,12 @@ type PurchaseRequisitionDto = Dtos.PurchaseRequisitionDto;
           <table class="table table-hover table-premium">
             <thead>
               <tr>
-                <th>Number</th>
-                <th>Dept</th>
-                <th>Requestor</th>
-                <th>Required Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ '::Number' | abpLocalization }}</th>
+                <th>{{ '::Department' | abpLocalization }}</th>
+                <th>{{ '::Requestor' | abpLocalization }}</th>
+                <th>{{ '::RequiredDate' | abpLocalization }}</th>
+                <th>{{ '::Status' | abpLocalization }}</th>
+                <th>{{ '::Actions' | abpLocalization }}</th>
               </tr>
             </thead>
             <tbody>
@@ -44,7 +45,7 @@ type PurchaseRequisitionDto = Dtos.PurchaseRequisitionDto;
                     'bg-danger': req.status === 3,
                     'bg-info': req.status === 4
                   }">
-                    {{ req.status === 0 ? 'Draft' : req.status === 1 ? 'Pending' : req.status === 2 ? 'Approved' : req.status === 3 ? 'Rejected' : 'Converted to PO' }}
+                    {{ '::Enum:RequisitionStatus.' + req.status | abpLocalization }}
                   </span>
                 </td>
                 <td>

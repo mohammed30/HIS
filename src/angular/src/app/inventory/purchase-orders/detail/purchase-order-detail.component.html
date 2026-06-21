@@ -98,7 +98,7 @@
                                 <div class="input-group input-group-sm">
                                     <select class="form-select" formControlName="productId">
                                         <option [ngValue]="null">{{ '::SelectProduct' | abpLocalization }}</option>
-                                        <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
+                                        <option *ngFor="let p of products" [value]="p.serviceItemId">{{ p.scientificName }} ({{ p.brandName }})</option>
                                     </select>
                                     <button class="btn btn-outline-info" type="button" (click)="showPriceComparison(i)"
                                         [disabled]="!lines.at(i).get('productId')?.value">

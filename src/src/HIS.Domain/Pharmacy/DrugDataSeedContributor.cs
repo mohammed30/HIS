@@ -58,7 +58,7 @@ public class DrugDataSeedContributor : IDataSeedContributor, ITransientDependenc
         var crestor = await CreateDrugAsync("6280000010", "Crestor", "Rosuvastatin", "10mg", "Tablet", "AstraZeneca", 60.0m);
 
         // 2. Add Stock to Pharmacy Warehouse
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
         if (pharmacy != null)
         {
             await AddStockAsync(pharmacy.Id, panadol.ServiceItemId.Value, panadol.BrandName, InventoryItemType.Medication, 1000, 10);

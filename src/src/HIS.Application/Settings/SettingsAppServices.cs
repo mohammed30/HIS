@@ -9,6 +9,8 @@ using Volo.Abp.Domain.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
 
+using HIS.Accounting;
+
 namespace HIS.Settings;
 
 /// <summary>
@@ -17,8 +19,72 @@ namespace HIS.Settings;
 [Authorize(HISPermissions.Settings.Default)]
 public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Guid, GetDepartmentsInput, CreateUpdateDepartmentDto>, IDepartmentAppService
 {
-    public DepartmentAppService(IRepository<Department, Guid> repository) : base(repository)
+    private readonly IRepository<Account, Guid> _accountRepository;
+    private readonly IRepository<CostCenter, Guid> _costCenterRepository;
+
+    public DepartmentAppService(
+        IRepository<Department, Guid> repository,
+        IRepository<Account, Guid> accountRepository,
+        IRepository<CostCenter, Guid> costCenterRepository) : base(repository)
     {
+        _accountRepository = accountRepository;
+        _costCenterRepository = costCenterRepository;
+    }
+
+    private string GenerateNextAccountCode(string parentCode, List<string> existingChildCodes)
+    {
+        if (parentCode.Length == 4)
+        {
+            if (parentCode.EndsWith("000"))
+            {
+                int step = 100;
+                int start = int.Parse(parentCode) + step;
+                while (existingChildCodes.Contains(start.ToString()))
+                {
+                    start += step;
+                }
+                return start.ToString();
+            }
+            else if (parentCode.EndsWith("00"))
+            {
+                int step = 10;
+                int start = int.Parse(parentCode) + step;
+                while (existingChildCodes.Contains(start.ToString()))
+                {
+                    start += step;
+                }
+                return start.ToString();
+            }
+            else if (parentCode.EndsWith("0"))
+            {
+                int step = 1;
+                int start = int.Parse(parentCode) + step;
+                while (existingChildCodes.Contains(start.ToString()))
+                {
+                    start += step;
+                }
+                return start.ToString();
+            }
+            else
+            {
+                int start = int.Parse(parentCode) + 1;
+                while (existingChildCodes.Contains(start.ToString()))
+                {
+                    start += 1;
+                }
+                return start.ToString();
+            }
+        }
+        
+        if (existingChildCodes.Any())
+        {
+            var maxCode = existingChildCodes.OrderByDescending(c => c).First();
+            if (int.TryParse(maxCode, out int val))
+            {
+                return (val + 1).ToString();
+            }
+        }
+        return parentCode + "1";
     }
 
     public override async Task<DepartmentDto> CreateAsync(CreateUpdateDepartmentDto input)
@@ -27,6 +93,44 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
         {
             input.Code = $"DEP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
         }
+
+        if (input.CreateCostCenterAccount && input.ParentAccountId.HasValue)
+        {
+            var parentAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == input.ParentAccountId.Value);
+            if (parentAccount != null)
+            {
+                var allAccounts = await _accountRepository.GetListAsync();
+                var childCodes = allAccounts.Select(x => x.Code).ToList();
+                
+                string nextAccountCode = GenerateNextAccountCode(parentAccount.Code, childCodes);
+
+                string prefixNameEn = parentAccount.Type == AccountType.Expense ? "Expense" : "Revenue";
+                string prefixNameAr = parentAccount.Type == AccountType.Expense ? "مصروفات" : "إيرادات";
+
+                var accountId = GuidGenerator.Create();
+                var account = new Account(
+                    accountId,
+                    nextAccountCode,
+                    $"{prefixNameEn} - {input.NameAr}",
+                    $"{prefixNameAr} - {input.NameAr}",
+                    parentAccount.Type,
+                    parentAccount.Id
+                );
+                await _accountRepository.InsertAsync(account, autoSave: true);
+
+                var costCenterId = GuidGenerator.Create();
+                var costCenter = new CostCenter(
+                    costCenterId,
+                    input.Code,
+                    input.NameAr,
+                    input.NameEn ?? input.NameAr
+                );
+                await _costCenterRepository.InsertAsync(costCenter, autoSave: true);
+
+                input.CostCenterId = costCenterId;
+            }
+        }
+
         return await base.CreateAsync(input);
     }
 

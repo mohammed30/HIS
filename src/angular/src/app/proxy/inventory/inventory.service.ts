@@ -99,11 +99,11 @@ export class InventoryService {
     { apiName: this.apiName,...config });
   
 
-  getStockLevels = (warehouseId: string, config?: Partial<Rest.Config>) =>
+  getStockLevels = (warehouseId: string, filter?: string, type?: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<InventoryItemDto>>({
       method: 'GET',
       url: '/api/app/inventory/stock-levels',
-      params: { warehouseId },
+      params: { warehouseId, filter, type },
     },
     { apiName: this.apiName,...config });
   

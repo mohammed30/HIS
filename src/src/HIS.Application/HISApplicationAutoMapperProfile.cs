@@ -224,6 +224,14 @@ public class HISApplicationAutoMapperProfile : Profile
              .IgnoreFullAuditedObjectProperties();
         CreateMap<Inventory.Dtos.CreateUpdatePurchaseInvoiceLineDto, Inventory.PurchaseInvoiceLine>();
 
+        CreateMap<Pharmacy.StockTransfer, Pharmacy.Dtos.StockTransferDto>()
+            .ForMember(x => x.FromWarehouseName, opt => opt.Ignore())
+            .ForMember(x => x.ToWarehouseName, opt => opt.Ignore());
+        CreateMap<Pharmacy.StockTransferItem, Pharmacy.Dtos.StockTransferItemDto>()
+            .ForMember(x => x.DrugName, opt => opt.Ignore());
+
+        CreateMap<Inventory.InventoryTransaction, Inventory.Dtos.InventoryTransactionDto>();
+
         // General Master Data (Definitions)
         CreateMap<General.Nationality, General.NationalityDto>();
         CreateMap<General.CreateUpdateNationalityDto, General.Nationality>();

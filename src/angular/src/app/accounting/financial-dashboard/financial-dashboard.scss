@@ -1,0 +1,58 @@
+:host {
+  display: block;
+}
+
+::ng-deep {
+  /* LeptonX Dark Theme & General Dark Mode Support */
+  .lpx-theme-dark, [data-theme="dark"] {
+    .card {
+      background-color: #1a1d20 !important;
+      border-color: #2d3238 !important;
+      color: #f8f9fa !important;
+    }
+    
+    .card-header {
+      background-color: #111315 !important;
+      border-bottom-color: #2d3238 !important;
+    }
+    
+    .nav-tabs {
+      border-bottom-color: #2d3238 !important;
+      
+      .nav-link {
+        color: #b0b5bc !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        
+        &:hover {
+          color: #fff !important;
+          border-color: #2d3238 #2d3238 transparent !important;
+        }
+        
+        &.active {
+          color: #3898EC !important;
+          background-color: #1a1d20 !important;
+          border-color: #2d3238 #2d3238 #1a1d20 !important;
+        }
+      }
+    }
+    
+    .table {
+      color: #f8f9fa !important;
+      --bs-table-color: #f8f9fa !important;
+      --bs-table-hover-color: #fff !important;
+      --bs-table-hover-bg: #2d3238 !important;
+      
+      thead.table-light {
+        background-color: #25282c !important;
+        color: #f8f9fa !important;
+        --bs-table-bg: #25282c !important;
+        --bs-table-color: #f8f9fa !important;
+      }
+      
+      tr {
+        border-bottom-color: #2d3238 !important;
+      }
+    }
+  }
+}
