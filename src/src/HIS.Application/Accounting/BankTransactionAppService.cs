@@ -74,14 +74,16 @@ namespace HIS.Accounting
         {
             var dto = await base.MapToGetOutputDtoAsync(entity);
             
-            if (dto.BankAccountId != Guid.Empty)
+            if (dto.BankAccountId.HasValue && dto.BankAccountId.Value != Guid.Empty)
             {
-                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == dto.BankAccountId);
+                var bankAccountId = dto.BankAccountId.Value;
+                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == bankAccountId);
                 dto.BankAccountName = bankAccount?.Name;
             }
-            if (dto.OppositeAccountId != Guid.Empty)
+            if (dto.OppositeAccountId.HasValue && dto.OppositeAccountId.Value != Guid.Empty)
             {
-                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == dto.OppositeAccountId);
+                var oppositeAccountId = dto.OppositeAccountId.Value;
+                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == oppositeAccountId);
                 dto.OppositeAccountName = oppAccount?.Name;
             }
 
@@ -92,14 +94,16 @@ namespace HIS.Accounting
         {
             var dto = await base.MapToGetListOutputDtoAsync(entity);
             
-            if (dto.BankAccountId != Guid.Empty)
+            if (dto.BankAccountId.HasValue && dto.BankAccountId.Value != Guid.Empty)
             {
-                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == dto.BankAccountId);
+                var bankAccountId = dto.BankAccountId.Value;
+                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == bankAccountId);
                 dto.BankAccountName = bankAccount?.Name;
             }
-            if (dto.OppositeAccountId != Guid.Empty)
+            if (dto.OppositeAccountId.HasValue && dto.OppositeAccountId.Value != Guid.Empty)
             {
-                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == dto.OppositeAccountId);
+                var oppositeAccountId = dto.OppositeAccountId.Value;
+                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == oppositeAccountId);
                 dto.OppositeAccountName = oppAccount?.Name;
             }
 
