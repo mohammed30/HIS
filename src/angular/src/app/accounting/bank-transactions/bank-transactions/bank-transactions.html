@@ -2,13 +2,13 @@
     <div class="card-header">
         <div class="row">
             <div class="col col-md-6">
-                <h5 class="card-title">{{ '::BankTransactions' | abpLocalization }}</h5>
+                <h5 class="card-title">المعاملات البنكية</h5>
             </div>
             <div class="text-end col col-md-6">
                 <div class="text-lg-end pt-2">
                     <button id="create" class="btn btn-primary" type="button" (click)="create()">
                         <i class="fa fa-plus me-1"></i>
-                        <span>{{ '::NewBankTransaction' | abpLocalization }}</span>
+                        <span>معاملة بنكية جديدة</span>
                     </button>
                 </div>
             </div>
@@ -18,41 +18,32 @@
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>{{ '::Date' | abpLocalization }}</th>
+                    <th>التاريخ</th>
                     <th>حساب البنك</th>
                     <th>الحساب المقابل</th>
-                    <th>{{ '::ReferenceNumber' | abpLocalization }}</th>
-                    <th>{{ '::Description' | abpLocalization }}</th>
-                    <th>{{ '::Amount' | abpLocalization }}</th>
-                    <th>{{ '::TransactionType' | abpLocalization }}</th>
-                    <th>{{ '::Actions' | abpLocalization }}</th>
+                    <th>رقم المرجع</th>
+                    <th>الوصف</th>
+                    <th>المبلغ</th>
+                    <th>نوع المعاملة</th>
+                    <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of items">
                     <td>{{ item.date | date }}</td>
-                    <td>{{ item.bankAccountName || item.bankAccountId }}</td>
-                    <td>{{ item.oppositeAccountName || item.oppositeAccountId }}</td>
+                    <td>{{ item.bankAccountNameAr || item.bankAccountName || item.bankAccountId }}</td>
+                    <td>{{ item.oppositeAccountNameAr || item.oppositeAccountName || item.oppositeAccountId }}</td>
                     <td>{{ item.referenceNumber }}</td>
                     <td>{{ item.description }}</td>
                     <td>{{ item.amount | currency }}</td>
                     <td>{{ '::Enum:BankTransactionType.' + item.transactionType | abpLocalization }}</td>
                     <td>
-                        <div ngbDropdown container="body" class="d-inline-block">
-                            <button class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown"
-                                aria-haspopup="true" ngbDropdownToggle>
-                                <i class="fa fa-cog me-1"></i>
-                                {{ '::Actions' | abpLocalization }}
-                            </button>
-                            <div ngbDropdownMenu>
-                                <button ngbDropdownItem (click)="edit(item.id)">
-                                    {{ '::Edit' | abpLocalization }}
-                                </button>
-                                <button ngbDropdownItem (click)="delete(item.id)">
-                                    {{ '::Delete' | abpLocalization }}
-                                </button>
-                            </div>
-                        </div>
+                        <button class="btn btn-primary btn-sm me-1" (click)="edit(item.id)">
+                            <i class="fa fa-edit"></i> تعديل
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="delete(item.id)">
+                            <i class="fa fa-trash"></i> حذف
+                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -68,7 +59,7 @@
     <ng-template #abpBody>
         <form [formGroup]="form" (ngSubmit)="save()">
             <div class="mb-3">
-                <label class="form-label">{{ '::Date' | abpLocalization }}</label>
+                <label class="form-label">التاريخ</label>
                 <div class="input-group">
                     <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
                         formControlName="date">
@@ -78,14 +69,14 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">{{ '::Amount' | abpLocalization }}</label>
+                <label class="form-label">المبلغ</label>
                 <input type="number" class="form-control" formControlName="amount">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">{{ '::TransactionType' | abpLocalization }}</label>
+                <label class="form-label">نوع المعاملة</label>
                 <select class="form-select" formControlName="transactionType">
-                    <option [ngValue]="null">Select Type</option>
+                    <option [ngValue]="null">اختر النوع</option>
                     <option [ngValue]="option.value" *ngFor="let option of bankTransactionTypeOptions">{{
                         '::Enum:BankTransactionType.' + option.value | abpLocalization }}</option>
                 </select>
@@ -108,12 +99,12 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">{{ '::ReferenceNumber' | abpLocalization }}</label>
+                <label class="form-label">رقم المرجع</label>
                 <input type="text" class="form-control" formControlName="referenceNumber">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">{{ '::Description' | abpLocalization }}</label>
+                <label class="form-label">الوصف</label>
                 <textarea class="form-control" formControlName="description"></textarea>
             </div>
         </form>
@@ -121,11 +112,11 @@
 
     <ng-template #abpFooter>
         <button type="button" class="btn btn-secondary" abpClose>
-            {{ '::Cancel' | abpLocalization }}
+            إلغاء
         </button>
         <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
             <i class="fa fa-check me-1"></i>
-            {{ '::Save' | abpLocalization }}
+            حفظ
         </button>
     </ng-template>
 </abp-modal>
