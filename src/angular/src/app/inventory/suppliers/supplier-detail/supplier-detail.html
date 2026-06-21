@@ -1,47 +1,47 @@
 <div class="modal-header">
-    <h5 class="modal-title">{{ id ? 'Edit Supplier' : 'New Supplier' }}</h5>
+    <h5 class="modal-title">{{ id ? ('::EditSupplier' | abpLocalization) : ('::NewSupplier' | abpLocalization) }}</h5>
     <button type="button" class="btn-close" aria-label="Close" (click)="dismiss()"></button>
 </div>
 <div class="modal-body">
     <form [formGroup]="form">
         <div class="mb-3">
-            <label class="form-label">Name *</label>
+            <label class="form-label">{{ '::Supplier:Name' | abpLocalization }} *</label>
             <input type="text" class="form-control" formControlName="name"
                 [class.is-invalid]="form.get('name').invalid && form.get('name').touched">
-            <div class="invalid-feedback" *ngIf="form.get('name').errors?.['required']">Name is required.</div>
+            <div class="invalid-feedback" *ngIf="form.get('name').errors?.['required']">مطلوب</div>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label">Contact Person</label>
+                <label class="form-label">{{ '::Supplier:ContactPerson' | abpLocalization }}</label>
                 <input type="text" class="form-control" formControlName="contactPerson">
             </div>
             <div class="col-md-6 mb-3">
-                <label class="form-label">Phone</label>
+                <label class="form-label">{{ '::Supplier:Phone' | abpLocalization }}</label>
                 <input type="text" class="form-control" formControlName="phone">
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label">Email</label>
+                <label class="form-label">{{ '::Supplier:Email' | abpLocalization }}</label>
                 <input type="email" class="form-control" formControlName="email">
             </div>
             <div class="col-md-6 mb-3">
-                <label class="form-label">Tax ID</label>
+                <label class="form-label">{{ '::Supplier:TaxId' | abpLocalization }}</label>
                 <input type="text" class="form-control" formControlName="taxId">
             </div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Address</label>
+            <label class="form-label">{{ '::Supplier:Address' | abpLocalization }}</label>
             <textarea class="form-control" formControlName="address" rows="3"></textarea>
         </div>
     </form>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="dismiss()">Cancel</button>
+    <button type="button" class="btn btn-secondary" (click)="dismiss()">{{ '::Cancel' | abpLocalization }}</button>
     <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid || isSaving">
-        <i class="fa fa-save me-1"></i> Save
+        <i class="fa fa-save me-1"></i> {{ '::Save' | abpLocalization }}
     </button>
 </div>

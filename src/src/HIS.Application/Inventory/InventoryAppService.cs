@@ -76,6 +76,28 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         var code = "WH-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
         var warehouse = new Warehouse(GuidGenerator.Create(), input.Name, input.Location, code);
         await _warehouseRepository.InsertAsync(warehouse);
+
+        var accountRepository = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Accounting.Account, Guid>>();
+        var inventoryAccount = await accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
+        if (inventoryAccount != null)
+        {
+            var whAccount = await accountRepository.FirstOrDefaultAsync(x => x.ParentId == inventoryAccount.Id && x.NameAr == input.Name);
+            if (whAccount == null)
+            {
+                var codeSuffix = input.Name.Replace(" ", "");
+                if (codeSuffix.Length > 3) codeSuffix = codeSuffix.Substring(0, 3);
+                var newAccount = new HIS.Accounting.Account(
+                    GuidGenerator.Create(), 
+                    inventoryAccount.Code + "-" + codeSuffix, 
+                    input.Name, 
+                    input.Name, 
+                    inventoryAccount.Type, 
+                    inventoryAccount.Id
+                );
+                await accountRepository.InsertAsync(newAccount);
+            }
+        }
+
         return ObjectMapper.Map<Warehouse, WarehouseDto>(warehouse);
     }
 

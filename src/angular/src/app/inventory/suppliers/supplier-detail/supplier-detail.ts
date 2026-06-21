@@ -2,13 +2,14 @@ import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { CoreModule } from '@abp/ng.core';
 import { SupplierService } from '../../../proxy/inventory/supplier.service';
 import { SupplierDto } from '../../../proxy/inventory/dtos/models';
 
 @Component({
   selector: 'app-supplier-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CoreModule],
   templateUrl: './supplier-detail.html',
   styleUrls: ['./supplier-detail.scss']
 })

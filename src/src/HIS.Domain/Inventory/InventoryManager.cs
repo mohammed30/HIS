@@ -37,7 +37,7 @@ public class InventoryManager : DomainService
         SettingProvider = settingProvider;
     }
 
-    public async Task ReceiveStockAsync(Guid warehouseId, Guid productId, string productName, InventoryItemType type, decimal quantity, decimal unitCost, string reference, string batchNumber = null, DateTime? expiryDate = null)
+    public async Task ReceiveStockAsync(Guid warehouseId, Guid productId, string productName, InventoryItemType type, decimal quantity, decimal unitCost, string reference, string batchNumber = null, DateTime? expiryDate = null, Guid? supplierId = null)
     {
         // 1. Update Inventory Item (Total Qty Only)
         var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
@@ -87,6 +87,35 @@ public class InventoryManager : DomainService
 
         if (inventoryAccount != null && payableAccount != null)
         {
+            var warehouseRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<Warehouse, Guid>>();
+            var warehouse = await warehouseRepo.FindAsync(warehouseId);
+            if (warehouse != null)
+            {
+                var whAccount = await _accountRepository.FirstOrDefaultAsync(x => x.ParentId == inventoryAccount.Id && x.NameAr == warehouse.Name);
+                if (whAccount == null)
+                {
+                    whAccount = new Account(GuidGenerator.Create(), inventoryAccount.Code + "-" + warehouse.Name.Replace(" ", "").Substring(0, Math.Min(3, warehouse.Name.Length)), warehouse.Name, warehouse.Name, inventoryAccount.Type, inventoryAccount.Id);
+                    await _accountRepository.InsertAsync(whAccount);
+                }
+                inventoryAccount = whAccount;
+            }
+
+            if (supplierId.HasValue)
+            {
+                var supplierRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<Supplier, Guid>>();
+                var supplier = await supplierRepo.FindAsync(supplierId.Value);
+                if (supplier != null)
+                {
+                    var suppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.ParentId == payableAccount.Id && x.NameAr == supplier.Name);
+                    if (suppAccount == null)
+                    {
+                        suppAccount = new Account(GuidGenerator.Create(), payableAccount.Code + "-" + supplier.Name.Replace(" ", "").Substring(0, Math.Min(3, supplier.Name.Length)), supplier.Name, supplier.Name, payableAccount.Type, payableAccount.Id);
+                        await _accountRepository.InsertAsync(suppAccount);
+                    }
+                    payableAccount = suppAccount;
+                }
+            }
+
             var totalAmount = quantity * unitCost;
             var description = $"توريد مخزني: {productName} (مرجع: {reference})";
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description);

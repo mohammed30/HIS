@@ -609,21 +609,13 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
     {
         if (account == null) return null;
 
-<<<<<<< HEAD
-        var hasChildren = await AccountRepository.AnyAsync(x => x.ParentId == account.Id);
-=======
         var hasChildren = await AccountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
->>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         if (!hasChildren)
         {
             return account;
         }
 
-<<<<<<< HEAD
-        var children = await AccountRepository.GetListAsync(x => x.ParentId == account.Id);
-=======
         var children = await AccountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
->>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         if (!children.Any())
         {
             return account;

@@ -87,7 +87,8 @@ public class PurchaseInvoiceAppService : CrudAppService<
                 line.UnitCost,
                 invoice.InvoiceNumber,
                 line.BatchNumber,
-                line.ExpiryDate
+                line.ExpiryDate,
+                invoice.SupplierId
             );
         }
 

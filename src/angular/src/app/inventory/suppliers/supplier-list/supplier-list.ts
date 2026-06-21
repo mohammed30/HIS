@@ -5,11 +5,12 @@ import { SupplierDto } from '../../../proxy/inventory/dtos/models';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { SupplierDetailComponent } from '../supplier-detail/supplier-detail';
 import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { CoreModule } from '@abp/ng.core';
 
 @Component({
   selector: 'app-supplier-list',
   standalone: true,
-  imports: [CommonModule, NgbPaginationModule, ThemeSharedModule],
+  imports: [CommonModule, NgbPaginationModule, ThemeSharedModule, CoreModule],
   // Note: SupplierDetailComponent in imports only if it's standalone and used in template. 
   // If used via NgbModal.open, it might not need to be in imports if not used in template directly.
   // Actually, NgbModal.open needs the component class.
