@@ -65,9 +65,10 @@ export class PurchaseInvoicesComponent implements OnInit {
   addLine() {
     this.lines.push(this.fb.group({
       productId: [null, Validators.required],
-      quantity: [1, [Validators.required, Validators.min(0.01)]],
+      quantity: [1, [Validators.required, Validators.min(1)]],
       unitCost: [0, [Validators.required, Validators.min(0)]],
-      discount: [0],
+      margin: [0, Validators.min(0)],
+      salePrice: [{value: 0, disabled: true}],
       batchNumber: [''],
       expiryDate: [null]
     }));
@@ -84,8 +85,11 @@ export class PurchaseInvoicesComponent implements OnInit {
   }
 
   save() {
-    if (this.form.invalid) return;
-    this.service.create(this.form.value).subscribe(() => {
+    // Enable disabled fields before getting value so they are included
+    this.form.enable();
+    const request = this.form.value;
+
+    this.service.create(request).subscribe(() => {
       this.isModalOpen = false;
       this.getList();
     });

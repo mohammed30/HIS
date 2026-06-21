@@ -133,12 +133,15 @@ public class AdmissionAppService : CrudAppService<
         var patientName = !string.IsNullOrWhiteSpace(patient.FullNameAr) ? patient.FullNameAr : patient.MRN;
         
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
+        arAccount = await GetLeafAccountAsync(arAccount);
         var checkAmount = input.NumberOfDays > 0 ? (input.NumberOfDays * room.DailyRate) : (input.PaidAmount > 0 ? input.PaidAmount : 1000m); // Default fallback
 
         if (arAccount != null)
         {
             var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
             var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+            cashAccount = await GetLeafAccountAsync(cashAccount);
+
             var jeNumber = $"ADM-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
             
             var je = new HIS.Accounting.JournalEntry(
@@ -759,13 +762,21 @@ public class AdmissionAppService : CrudAppService<
     {
         if (account == null) return null;
 
+<<<<<<< HEAD
         var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id);
+=======
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         if (!hasChildren)
         {
             return account;
         }
 
+<<<<<<< HEAD
         var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id);
+=======
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         if (!children.Any())
         {
             return account;

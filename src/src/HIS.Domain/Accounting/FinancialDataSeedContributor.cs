@@ -50,7 +50,11 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         if (allAccounts.Count > 0)
         {
             await PatchArabicNamesAsync();
+<<<<<<< HEAD
             await SeedSampleDashboardDataAsync();
+=======
+            // await SeedSampleDashboardDataAsync();
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
             return;
         }
 
@@ -58,7 +62,11 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
         await CreateStandardAccountsAsync();
 
+<<<<<<< HEAD
         await SeedSampleDashboardDataAsync();
+=======
+        // await SeedSampleDashboardDataAsync();
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
     }
 
     private async Task SeedFinancialPeriodsAsync()
@@ -304,6 +312,10 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         var ccRad = await GetOrCreateCostCenterAsync("DEP-RAD", "قسم الأشعة والتصوير", "Radiology / Imaging Department");
         var ccOpd = await GetOrCreateCostCenterAsync("DEP-OPD", "العيادات الخارجية", "Outpatient Department (OPD)");
         var ccEr = await GetOrCreateCostCenterAsync("DEP-ER", "قسم الطوارئ والاستقبال", "Emergency Room (ER)");
+<<<<<<< HEAD
+=======
+        var ccPt = await GetOrCreateCostCenterAsync("DEP-PT", "قسم العلاج الطبيعي", "Physiotherapy Department");
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
 
         // 1. Initial Capital Entry (Balanced) - May 11
         var capitalEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-30), "DASH-JE-001", "زيادة رأس المال نقداً") { IsPosted = true };
@@ -341,14 +353,24 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         salEntry.AddLine(_guidGenerator, salaries.Id, 12000m, 0m, ccEr.Id);
         salEntry.AddLine(_guidGenerator, salaries.Id, 8000m, 0m, ccLab.Id);
         salEntry.AddLine(_guidGenerator, salaries.Id, 10000m, 0m, ccRad.Id);
+<<<<<<< HEAD
         salEntry.AddLine(_guidGenerator, cash.Id, 0m, 45000m);
+=======
+        salEntry.AddLine(_guidGenerator, salaries.Id, 11000m, 0m, ccPt.Id);
+        salEntry.AddLine(_guidGenerator, cash.Id, 0m, 56000m);
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         await _journalEntryRepository.InsertAsync(salEntry);
 
         // 7. Supplies Expense Entry (Balanced) - May 24
         var supEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-17), "DASH-JE-007", "مستلزمات طبية مستهلكة") { IsPosted = true };
         supEntry.AddLine(_guidGenerator, supplies.Id, 5000m, 0m, ccLab.Id);
         supEntry.AddLine(_guidGenerator, supplies.Id, 7000m, 0m, ccRad.Id);
+<<<<<<< HEAD
         supEntry.AddLine(_guidGenerator, cash.Id, 0m, 12000m);
+=======
+        supEntry.AddLine(_guidGenerator, supplies.Id, 4000m, 0m, ccPt.Id);
+        supEntry.AddLine(_guidGenerator, cash.Id, 0m, 16000m);
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         await _journalEntryRepository.InsertAsync(supEntry);
 
         // 8. Utilities Expense (Balanced, general - no Cost Center) - May 25
@@ -357,6 +379,15 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         utilEntry.AddLine(_guidGenerator, cash.Id, 0m, 8000m);
         await _journalEntryRepository.InsertAsync(utilEntry);
 
+<<<<<<< HEAD
+=======
+        // 9. Physiotherapy Revenue Entry (Balanced) - May 26
+        var ptRevEntry = new JournalEntry(_guidGenerator.Create(), today.AddDays(-15), "DASH-JE-009", "إيرادات قسم العلاج الطبيعي") { IsPosted = true };
+        ptRevEntry.AddLine(_guidGenerator, cash.Id, 25000m, 0m);
+        ptRevEntry.AddLine(_guidGenerator, medRevenue.Id, 0m, 25000m, ccPt.Id);
+        await _journalEntryRepository.InsertAsync(ptRevEntry);
+
+>>>>>>> e13898f2b35a3a8419d073a4378cb81bc374fc49
         Logger.LogInformation("Sample financial dashboard data seeded successfully.");
     }
 }

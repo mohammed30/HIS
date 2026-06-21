@@ -149,6 +149,11 @@ public class SurgicalOperationAppService : CrudAppService<
             var doctorExpenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Name == "Doctor Expenses" || x.Name == "مصروفات الأطباء");
             var doctorPayableAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Name == "Doctor Payables" || x.Name == "ذمم الأطباء الدائنة");
 
+            receivablesAccount = await GetLeafAccountAsync(receivablesAccount);
+            revenueAccount = await GetLeafAccountAsync(revenueAccount);
+            doctorExpenseAccount = await GetLeafAccountAsync(doctorExpenseAccount);
+            doctorPayableAccount = await GetLeafAccountAsync(doctorPayableAccount);
+
             if (receivablesAccount != null && revenueAccount != null)
             {
                 var je = await _accountingManager.CreateEntryAsync(
@@ -387,5 +392,33 @@ public class SurgicalOperationAppService : CrudAppService<
                 dto.OperationName = serviceItem.Name;
             }
         }
+    }
+
+    private async Task<Account> GetLeafAccountAsync(Account account)
+    {
+        if (account == null) return null;
+
+        var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
+        if (!hasChildren)
+        {
+            return account;
+        }
+
+        var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
+        if (!children.Any())
+        {
+            return account;
+        }
+
+        foreach (var child in children.OrderBy(x => x.Code))
+        {
+            var leaf = await GetLeafAccountAsync(child);
+            if (leaf != null)
+            {
+                return leaf;
+            }
+        }
+
+        return account;
     }
 }

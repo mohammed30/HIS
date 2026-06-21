@@ -25,12 +25,10 @@
                 <!-- Account selector (only for detailed tab) -->
                 <div class="col-md-3 form-group" *ngIf="activeTab === 1">
                     <label>{{ '::AccountStatement:SelectAccount' | abpLocalization }}</label>
-                    <select class="form-select" [(ngModel)]="selectedAccountId" [ngModelOptions]="{standalone: true}">
-                        <option value="">-- {{ '::AccountStatement:SelectAccount' | abpLocalization }} --</option>
-                        <option *ngFor="let acc of leafAccounts" [value]="acc.id">
-                            {{ acc.code }} - {{ acc.nameAr || acc.name }}
-                        </option>
-                    </select>
+                    <input class="form-control" list="accountOptions" [(ngModel)]="searchAccountText" (change)="onAccountChange()" placeholder="-- {{ '::AccountStatement:SelectAccount' | abpLocalization }} --" [ngModelOptions]="{standalone: true}">
+                    <datalist id="accountOptions">
+                        <option *ngFor="let acc of leafAccounts" [value]="acc.code + ' - ' + (acc.nameAr || acc.name)"></option>
+                    </datalist>
                 </div>
                 <div class="col-md-3 form-group">
                     <label>{{ '::StartDate' | abpLocalization }}</label>

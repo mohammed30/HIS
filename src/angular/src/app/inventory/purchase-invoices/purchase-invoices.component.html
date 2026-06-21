@@ -96,13 +96,21 @@
                       <label>الصنف (GUID)</label>
                       <input type="text" class="form-control form-control-sm" formControlName="productId" placeholder="مثلاً: 00000000-..." />
                   </div>
-                  <div class="col-md-3 mb-2">
+                  <div class="col-md-2 mb-2">
                       <label>الكمية</label>
                       <input type="number" class="form-control form-control-sm" formControlName="quantity" />
                   </div>
-                  <div class="col-md-3 mb-2">
+                  <div class="col-md-2 mb-2">
                       <label>التكلفة للوحدة</label>
                       <input type="number" class="form-control form-control-sm" formControlName="unitCost" />
+                  </div>
+                  <div class="col-md-2 mb-2">
+                      <label>هامش الربح %</label>
+                      <input type="number" class="form-control form-control-sm" formControlName="margin" />
+                  </div>
+                  <div class="col-md-3 mb-2">
+                      <label>سعر البيع (تلقائي)</label>
+                      <input type="number" class="form-control form-control-sm" formControlName="salePrice" readonly />
                   </div>
                   <div class="col-md-6 mb-2">
                       <label>رقم التشغيلة (Batch)</label>
