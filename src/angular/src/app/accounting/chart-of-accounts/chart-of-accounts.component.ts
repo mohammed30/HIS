@@ -30,6 +30,7 @@ interface TreeAccountDto extends AccountDto {
 })
 export class ChartOfAccountsComponent implements OnInit {
     flatAccounts: TreeAccountDto[] = []; // The ordered flattened tree for display
+    filteredParentAccounts: TreeAccountDto[] = []; // For the parent account dropdown
     allAccounts: AccountDto[] = []; // Raw data
     isModalOpen = false;
     form: FormGroup;
@@ -115,6 +116,8 @@ export class ChartOfAccountsComponent implements OnInit {
             });
         };
         flatten(roots, 0);
+        
+        this.filteredParentAccounts = [...this.flatAccounts];
 
         this.updateVisibility();
     }
@@ -197,6 +200,19 @@ export class ChartOfAccountsComponent implements OnInit {
         };
 
         matches.forEach(match => reveal(match));
+    }
+
+    filterParentAccounts(event: any) {
+        const term = event.target.value.toLowerCase();
+        if (!term) {
+            this.filteredParentAccounts = [...this.flatAccounts];
+            return;
+        }
+        this.filteredParentAccounts = this.flatAccounts.filter(x => 
+            x.name.toLowerCase().includes(term) ||
+            x.code.toLowerCase().includes(term) ||
+            (x.nameAr && x.nameAr.toLowerCase().includes(term))
+        );
     }
 
     createAccount() {

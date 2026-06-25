@@ -15,4 +15,5 @@ public class InventoryItemDto : EntityDto<Guid>
     public decimal AverageCost { get; set; }
     public decimal MinStockLevel { get; set; }
     public decimal ReorderLevel { get; set; }
+    public string Barcode { get; set; }
 }

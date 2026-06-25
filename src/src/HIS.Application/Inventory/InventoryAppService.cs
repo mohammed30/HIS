@@ -136,7 +136,7 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         var drugIds = items.Where(x => x.Type == InventoryItemType.Medication).Select(x => x.ProductId).Distinct().ToList();
         var serviceItemIds = items.Where(x => x.Type != InventoryItemType.Medication).Select(x => x.ProductId).Distinct().ToList();
 
-        var drugs = drugIds.Any() ? await _drugRepository.GetListAsync(x => drugIds.Contains(x.Id)) : new List<Drug>();
+        var drugs = drugIds.Any() ? await _drugRepository.GetListAsync(x => x.ServiceItemId.HasValue && drugIds.Contains(x.ServiceItemId.Value)) : new List<Drug>();
         var serviceItems = serviceItemIds.Any() ? await _serviceItemRepository.GetListAsync(x => serviceItemIds.Contains(x.Id)) : new List<ServiceItem>();
 
         var dtos = ObjectMapper.Map<List<InventoryItem>, List<InventoryItemDto>>(items);
@@ -145,13 +145,15 @@ public class InventoryAppService : ApplicationService, IInventoryAppService
         {
             if (dto.Type == InventoryItemType.Medication)
             {
-                var drug = drugs.FirstOrDefault(d => d.Id == dto.ProductId);
+                var drug = drugs.FirstOrDefault(d => d.ServiceItemId == dto.ProductId);
                 dto.ProductCode = drug?.Barcode ?? $"MED-{dto.ProductId.ToString().Substring(0,4).ToUpper()}";
+                dto.Barcode = dto.ProductCode;
             }
             else
             {
                 var svc = serviceItems.FirstOrDefault(s => s.Id == dto.ProductId);
                 dto.ProductCode = svc?.Code ?? $"ITM-{dto.ProductId.ToString().Substring(0,4).ToUpper()}";
+                dto.Barcode = dto.ProductCode;
             }
         }
 

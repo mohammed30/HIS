@@ -87,6 +87,7 @@
 
         <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
             <ngx-datatable-column [name]="'::ProductCode' | abpLocalization" prop="productCode"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'الباركود'" prop="barcode"></ngx-datatable-column>
             <ngx-datatable-column [name]="'::ProductName' | abpLocalization" prop="productName"></ngx-datatable-column>
 
             <ngx-datatable-column [name]="'::InventoryItemType' | abpLocalization" prop="type">
