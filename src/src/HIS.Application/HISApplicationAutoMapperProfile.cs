@@ -75,6 +75,11 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Accounting.BankTransaction, Accounting.Dtos.BankTransactionDto>();
         CreateMap<Accounting.Dtos.CreateUpdateBankTransactionDto, Accounting.BankTransaction>();
 
+        CreateMap<Accounting.AccountMapping, Accounting.Dtos.AccountMappingDto>()
+            .ForMember(x => x.AccountCode, opt => opt.MapFrom(src => src.Account != null ? src.Account.Code : null))
+            .ForMember(x => x.AccountName, opt => opt.MapFrom(src => src.Account != null ? src.Account.Name : null))
+            .ForMember(x => x.AccountNameAr, opt => opt.MapFrom(src => src.Account != null ? src.Account.NameAr : null));
+
         // Inventory
         CreateMap<Inventory.Warehouse, Inventory.Dtos.WarehouseDto>();
         CreateMap<Inventory.Dtos.CreateUpdateWarehouseDto, Inventory.Warehouse>();

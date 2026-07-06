@@ -124,10 +124,14 @@
                 </select>
             </div>
 
-            <div class="form-group mt-2" *ngIf="form.get('parentId').value">
-                <div class="alert alert-info py-2">
-                    <small><i class="fa fa-info-circle me-1"></i> Creating Sub-Account</small>
-                </div>
+            <div class="form-group mt-2">
+                <label for="parent-account">{{ '::ParentAccount' | abpLocalization }}</label>
+                <select class="form-control" id="parent-account" formControlName="parentId">
+                    <option [ngValue]="null">-- حساب رئيسي (بدون حساب أب) --</option>
+                    <option *ngFor="let acc of flatAccounts" [ngValue]="acc.id" [disabled]="acc.id === selectedAccount.id">
+                        {{ getLocalizedName(acc) }} ({{ acc.code }})
+                    </option>
+                </select>
             </div>
 
         </form>

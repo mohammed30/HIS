@@ -7,6 +7,10 @@
                 </h5>
             </div>
             <div class="text-end col col-md-6">
+                <button class="btn btn-info me-2 text-white" type="button" (click)="openTransferModal()">
+                    <i class="fa fa-exchange-alt me-1"></i>
+                    <span>{{ '::TransferStock' | abpLocalization }}</span>
+                </button>
                 <button class="btn btn-secondary me-2" type="button" routerLink="/inventory/issue-stock">
                     <i class="fa fa-minus me-1"></i>
                     <span>{{ '::IssueStock' | abpLocalization }}</span>
@@ -24,6 +28,25 @@
                 <label>{{ '::SelectedWarehouse' | abpLocalization }}</label>
                 <select class="form-control" [(ngModel)]="selectedWarehouseId" (change)="onWarehouseChange()">
                     <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>{{ '::Search' | abpLocalization }}</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" [placeholder]="'::SearchByNameOrCode' | abpLocalization" />
+                    <button class="btn btn-outline-secondary" type="button" (click)="onSearch()">{{ '::Search' | abpLocalization }}</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label>{{ '::ItemType' | abpLocalization }}</label>
+                <select class="form-control" [(ngModel)]="selectedType" (change)="onTypeChange()">
+                    <option [ngValue]="null">{{ '::All' | abpLocalization }}</option>
+                    <option [ngValue]="0">{{ '::Enum:Medication' | abpLocalization }}</option>
+                    <option [ngValue]="1">{{ '::Enum:Consumable' | abpLocalization }}</option>
+                    <option [ngValue]="2">{{ '::Enum:Asset' | abpLocalization }}</option>
+                    <option [ngValue]="3">{{ '::Enum:Reagent' | abpLocalization }}</option>
+                    <option [ngValue]="4">{{ '::Enum:Other' | abpLocalization }}</option>
                 </select>
             </div>
         </div>
@@ -63,6 +86,8 @@
         </div>
 
         <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
+            <ngx-datatable-column [name]="'::ProductCode' | abpLocalization" prop="productCode"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'الباركود'" prop="barcode"></ngx-datatable-column>
             <ngx-datatable-column [name]="'::ProductName' | abpLocalization" prop="productName"></ngx-datatable-column>
 
             <ngx-datatable-column [name]="'::InventoryItemType' | abpLocalization" prop="type">
@@ -105,5 +130,59 @@
                 </ng-template>
             </ngx-datatable-column>
         </ngx-datatable>
+    </div>
+</div>
+
+<!-- Transfer Stock Modal -->
+<div class="modal fade show" tabindex="-1" role="dialog" style="display: block; background: rgba(0,0,0,0.5);" *ngIf="isTransferModalOpen">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ '::TransferStock' | abpLocalization }}</h5>
+                <button type="button" class="btn-close" aria-label="Close" (click)="closeTransferModal()"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="transferForm">
+                    <div class="mb-3">
+                        <label class="form-label">{{ '::FromWarehouse' | abpLocalization }}</label>
+                        <select class="form-select" formControlName="fromWarehouseId" disabled>
+                            <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ '::ToWarehouse' | abpLocalization }}</label>
+                        <select class="form-select" formControlName="toWarehouseId">
+                            <option value="">{{ '::SelectWarehouse' | abpLocalization }}</option>
+                            <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ '::Product' | abpLocalization }}</label>
+                        <select class="form-select" formControlName="productId">
+                            <option value="">{{ '::SelectProduct' | abpLocalization }}</option>
+                            <option *ngFor="let item of drugs" [value]="item.productId">
+                                {{ item.productName }} ({{ '::Available' | abpLocalization }}: {{ item.quantity }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ '::Quantity' | abpLocalization }}</label>
+                        <input type="number" class="form-control" formControlName="quantity" min="1" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
+                        <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeTransferModal()">{{ '::Cancel' | abpLocalization }}</button>
+                <button type="button" class="btn btn-primary" [disabled]="transferForm.invalid" (click)="submitTransfer()">{{ '::Confirm' | abpLocalization }}</button>
+            </div>
+        </div>
     </div>
 </div>

@@ -154,7 +154,7 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
             entry.AddLine(_guidGenerator, line.AccountId, line.Debit, line.Credit);
         }
 
-        await _journalEntryRepository.InsertAsync(entry);
+        await _journalEntryRepository.InsertAsync(entry, autoSave: true);
 
         return await GetAsync(entry.Id);
     }
@@ -191,7 +191,7 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
             entry.AddLine(_guidGenerator, line.AccountId, line.Debit, line.Credit);
         }
 
-        await _journalEntryRepository.UpdateAsync(entry);
+        await _journalEntryRepository.UpdateAsync(entry, autoSave: true);
 
         return await GetAsync(entry.Id);
     }

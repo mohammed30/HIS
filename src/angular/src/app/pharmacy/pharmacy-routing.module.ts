@@ -14,7 +14,8 @@ const routes: Routes = [
     { path: 'stock', component: StockDashboardComponent },
     { path: 'dispensing', component: DispensingComponent },
     { path: 'pos', component: PharmacyPosComponent },
-    { path: 'drugs', component: DrugsComponent }
+    { path: 'drugs', component: DrugsComponent },
+    { path: 'inpatient-requests', loadComponent: () => import('../inventory/internal-requests/internal-requests').then(c => c.InternalRequestsComponent) }
 ];
 
 @NgModule({

@@ -12,8 +12,10 @@ namespace HIS.Accounting.Dtos
         public BankTransactionType TransactionType { get; set; }
         public Guid? BankAccountId { get; set; }
         public string BankAccountName { get; set; }
+        public string BankAccountNameAr { get; set; }
         public Guid? OppositeAccountId { get; set; }
         public string OppositeAccountName { get; set; }
+        public string OppositeAccountNameAr { get; set; }
         public Guid? RelatedJournalEntryId { get; set; }
     }
 

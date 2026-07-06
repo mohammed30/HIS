@@ -16,6 +16,7 @@ public class InventoryManager : DomainService
     private readonly IRepository<InventoryBatch, Guid> _batchRepository;
     private readonly IRepository<Account, Guid> _accountRepository;
     private readonly IRepository<Department, Guid> _departmentRepository;
+    private readonly IRepository<AccountMapping, Guid> _accountMappingRepository;
     private readonly AccountingManager _accountingManager;
     protected ISettingProvider SettingProvider { get; }
 
@@ -25,6 +26,7 @@ public class InventoryManager : DomainService
         IRepository<InventoryBatch, Guid> batchRepository,
         IRepository<Account, Guid> accountRepository,
         IRepository<Department, Guid> departmentRepository,
+        IRepository<AccountMapping, Guid> accountMappingRepository,
         AccountingManager accountingManager,
         ISettingProvider settingProvider)
     {
@@ -33,6 +35,7 @@ public class InventoryManager : DomainService
         _batchRepository = batchRepository;
         _accountRepository = accountRepository;
         _departmentRepository = departmentRepository;
+        _accountMappingRepository = accountMappingRepository;
         _accountingManager = accountingManager;
         SettingProvider = settingProvider;
     }
@@ -82,14 +85,17 @@ public class InventoryManager : DomainService
 
         // 4. Post to Accounting
         // Look up default accounts (In a real app, these would be in Settings or Warehouse/Supplier config)
-        var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
+        var inventoryMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Inventory);
+        var inventoryAccount = inventoryMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == inventoryMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
         var payableAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2110");   // Accounts Payable
 
         if (inventoryAccount != null && payableAccount != null)
         {
             var totalAmount = quantity * unitCost;
             var description = $"توريد مخزني: {productName} (مرجع: {reference})";
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description);
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description, isAutomatic: true);
 
             // Debit Inventory
             entry.AddLine(GuidGenerator, inventoryAccount.Id, totalAmount, 0);
@@ -100,10 +106,10 @@ public class InventoryManager : DomainService
         }
     }
 
-    public async Task IssueStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference, Guid? departmentId = null)
+    public async Task IssueStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference, Guid? departmentId = null, bool force = false)
     {
         var item = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == warehouseId && x.ProductId == productId);
-        if (item == null || item.Quantity < quantity)
+        if (item == null || (!force && item.Quantity < quantity))
         {
             throw new Volo.Abp.BusinessException("Inventory:InsufficientStock");
         }
@@ -151,9 +157,15 @@ public class InventoryManager : DomainService
         await _transactionRepository.InsertAsync(transaction);
         
         // Integration Point: Accounting (Dr Expense, Cr Inventory)
-        // Integration Point: Accounting (Dr Expense, Cr Inventory)
-        var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
-        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");   // Supplies Expense (Default)
+        var inventoryMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Inventory);
+        var inventoryAccount = inventoryMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == inventoryMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
+
+        var cogsMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.COGS);
+        var expenseAccount = cogsMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cogsMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");   // Supplies Expense (Default)
         Guid? costCenterId = null;
 
         if (departmentId.HasValue)
@@ -166,7 +178,7 @@ public class InventoryManager : DomainService
         {
             var totalAmount = totalCostOfIssue;
             var description = $"صرف مخزني: {item.ProductName} (مرجع: {reference})";
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description);
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description, isAutomatic: true);
 
             // Debit Expense with CostCenter
             entry.AddLine(GuidGenerator, expenseAccount.Id, totalAmount, 0, costCenterId);
@@ -243,12 +255,19 @@ public class InventoryManager : DomainService
         await _transactionRepository.InsertAsync(transaction);
         
         // Accounting: Dr Expense, Cr Inventory
-        var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
-        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200"); 
+        var inventoryMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Inventory);
+        var inventoryAccount = inventoryMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == inventoryMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
+
+        var cogsMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.COGS);
+        var expenseAccount = cogsMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cogsMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200"); 
 
         if (inventoryAccount != null && expenseAccount != null)
         {
-             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"صرف علاج: {item.ProductName}");
+             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"صرف علاج: {item.ProductName}", isAutomatic: true);
              entry.AddLine(GuidGenerator, expenseAccount.Id, totalCostOfIssue, 0);
              entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalCostOfIssue);
              await _accountingManager.PostEntryAsync(entry);
@@ -282,13 +301,20 @@ public class InventoryManager : DomainService
         await _transactionRepository.InsertAsync(transaction);
 
         // Reverse Accounting: Dr Inventory, Cr Expense
-        var inventoryAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
-        var expenseAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");
+        var inventoryMapping2 = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Inventory);
+        var inventoryAccount = inventoryMapping2?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == inventoryMapping2.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
+
+        var cogsMapping2 = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.COGS);
+        var expenseAccount = cogsMapping2?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cogsMapping2.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5200");
 
         if (inventoryAccount != null && expenseAccount != null)
         {
             var totalAmount = quantity * item.AverageCost;
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"مرتجع علاج: {item.ProductName}");
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"مرتجع علاج: {item.ProductName}", isAutomatic: true);
             
             // Debit Inventory
             entry.AddLine(GuidGenerator, inventoryAccount.Id, totalAmount, 0);

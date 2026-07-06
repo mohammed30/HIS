@@ -947,4 +947,35 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
             })
             .ToList();
     }
+
+    [AllowAnonymous]
+    [HttpGet]
+    [Route("api/app/account/fix-parents")]
+    public async Task<string> FixParentsAsync()
+    {
+        var accounts = await Repository.GetListAsync();
+        int fixedCount = 0;
+
+        foreach (var account in accounts)
+        {
+            if (string.IsNullOrEmpty(account.Code)) continue;
+
+            // Find the parent by finding the longest code that is a prefix of the current code
+            var parent = accounts
+                .Where(x => account.Code.StartsWith(x.Code) && x.Id != account.Id)
+                .OrderByDescending(x => x.Code.Length)
+                .FirstOrDefault();
+
+            var correctParentId = parent?.Id;
+
+            if (account.ParentId != correctParentId)
+            {
+                account.ParentId = correctParentId;
+                await Repository.UpdateAsync(account);
+                fixedCount++;
+            }
+        }
+
+        return $"Successfully fixed {fixedCount} accounts.";
+    }
 }

@@ -1,0 +1,101 @@
+<div class="card account-mapping-card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h3 class="card-title text-primary"><i class="fa fa-exchange-alt me-2"></i>توجيه الحسابات المحاسبية</h3>
+      <p class="text-muted mb-0">تحديد وتوجيه الحسابات ذات الطبيعة الخاصة لشجرة الحسابات لمنع توقف القيود التلقائية</p>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 custom-table">
+        <thead>
+          <tr>
+            <th>النوع</th>
+            <th>الوصف</th>
+            <th>الحساب المربوط</th>
+            <th class="text-center">إلزامي</th>
+            <th class="text-end">العمليات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of mappings" [class.table-warning]="m.isMandatory && !m.accountId">
+            <td>
+              <span class="badge bg-secondary font-monospace">{{ typeTranslations[m.mappingTypeName] || m.mappingTypeName }}</span>
+            </td>
+            <td>
+              <div class="fw-bold">{{ m.descriptionAr }}</div>
+              <small class="text-muted d-block">{{ m.description }}</small>
+            </td>
+            <td>
+              <div *ngIf="m.accountId; else noAccount" class="d-flex align-items-center">
+                <span class="account-code-badge me-2">{{ m.accountCode }}</span>
+                <span>{{ m.accountNameAr || m.accountName }}</span>
+              </div>
+              <ng-template #noAccount>
+                <span class="text-danger fw-bold"><i class="fa fa-exclamation-triangle me-1"></i> غير معين</span>
+              </ng-template>
+            </td>
+            <td class="text-center">
+              <span class="badge" [class.bg-danger]="m.isMandatory" [class.bg-info]="!m.isMandatory">
+                {{ m.isMandatory ? 'نعم' : 'لا' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary action-btn" (click)="editMapping(m)">
+                <i class="fa fa-edit me-1"></i> ربط الحساب
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="mappings.length === 0 && !isLoading">
+            <td colspan="5" class="text-center text-muted py-4">
+              لا توجد توجيهات معرفة حالياً
+            </td>
+          </tr>
+          <tr *ngIf="isLoading">
+            <td colspan="5" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">جاري التحميل...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dialog -->
+<div class="modal fade show" tabindex="-1" [class.d-block]="editingMapping" *ngIf="editingMapping" (click)="onModalClick($event)" style="background: rgba(15, 23, 42, 0.55); overflow-y: auto;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa fa-link me-2 text-primary"></i>تعديل توجيه: {{ editingMapping.descriptionAr }}</h5>
+        <button type="button" class="btn-close" (click)="cancelEdit()"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="form">
+          <div class="mb-3">
+            <label class="form-label fw-bold">اختر الحساب من الشجرة</label>
+            <select formControlName="accountId" class="form-select custom-select">
+              <option [ngValue]="null">-- اختر حساباً --</option>
+              <option *ngFor="let acc of accounts" [ngValue]="acc.id">
+                [{{ acc.code }}] - {{ acc.nameAr || acc.name }}
+              </option>
+            </select>
+            <div class="form-text text-muted">
+              يرجى التأكد من اختيار حساب فرعي (Leaf) مناسب لطبيعة البند الموجه.
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light" (click)="cancelEdit()">إلغاء</button>
+        <button type="button" class="btn btn-primary px-4" [disabled]="isSaving" (click)="saveMapping()">
+          <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+          حفظ التغييرات
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

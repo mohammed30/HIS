@@ -17,7 +17,7 @@ public interface IInventoryAppService : IApplicationService
     Task DeleteWarehouseAsync(Guid id);
 
     // Stock Management
-    Task<PagedResultDto<InventoryItemDto>> GetStockLevelsAsync(Guid warehouseId);
+    Task<PagedResultDto<InventoryItemDto>> GetStockLevelsAsync(Guid warehouseId, string filter = null, InventoryItemType? type = null);
     Task ReceiveStockAsync(ReceiveStockDto input);
     Task IssueStockAsync(IssueStockDto input);
     Task<List<DepartmentConsumptionReportDto>> GetConsumptionReportAsync(GetConsumptionReportInput input);

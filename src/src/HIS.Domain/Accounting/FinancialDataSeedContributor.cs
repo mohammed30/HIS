@@ -19,6 +19,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
     private readonly IRepository<FinancialPeriod, Guid> _financialPeriodRepository;
     private readonly IRepository<CostCenter, Guid> _costCenterRepository;
     private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
+    private readonly IRepository<AccountMapping, Guid> _accountMappingRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     public ILogger<FinancialDataSeedContributor> Logger { get; set; }
@@ -29,6 +30,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         IRepository<FinancialPeriod, Guid> financialPeriodRepository,
         IRepository<CostCenter, Guid> costCenterRepository,
         IRepository<HIS.Settings.Department, Guid> departmentRepository,
+        IRepository<AccountMapping, Guid> accountMappingRepository,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant)
     {
@@ -37,6 +39,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         _financialPeriodRepository = financialPeriodRepository;
         _costCenterRepository = costCenterRepository;
         _departmentRepository = departmentRepository;
+        _accountMappingRepository = accountMappingRepository;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         Logger = NullLogger<FinancialDataSeedContributor>.Instance;
@@ -50,6 +53,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         if (allAccounts.Count > 0)
         {
             await PatchArabicNamesAsync();
+            await SeedAccountMappingsAsync();
             // await SeedSampleDashboardDataAsync();
             return;
         }
@@ -58,6 +62,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
 
         await CreateStandardAccountsAsync();
 
+        await SeedAccountMappingsAsync();
         // await SeedSampleDashboardDataAsync();
     }
 
@@ -367,5 +372,31 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         await _journalEntryRepository.InsertAsync(ptRevEntry);
 
         Logger.LogInformation("Sample financial dashboard data seeded successfully.");
+    }
+
+    private async Task SeedAccountMappingsAsync()
+    {
+        Logger.LogInformation("Seeding Account Mappings...");
+
+        var mappings = new[]
+        {
+            new { Type = AccountMappingType.SalesRevenue, Code = "4200", IsMandatory = true },
+            new { Type = AccountMappingType.CashAccount, Code = "1110", IsMandatory = true },
+            new { Type = AccountMappingType.VATOutput, Code = "2200", IsMandatory = true },
+            new { Type = AccountMappingType.VATInput, Code = "1120", IsMandatory = true },
+            new { Type = AccountMappingType.Inventory, Code = "1130", IsMandatory = true },
+            new { Type = AccountMappingType.COGS, Code = "5200", IsMandatory = true }
+        };
+
+        foreach (var m in mappings)
+        {
+            var existing = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == m.Type);
+            if (existing == null)
+            {
+                var account = await _accountRepository.FirstOrDefaultAsync(x => x.Code == m.Code);
+                var mapping = new AccountMapping(_guidGenerator.Create(), m.Type, account?.Id, m.IsMandatory);
+                await _accountMappingRepository.InsertAsync(mapping);
+            }
+        }
     }
 }

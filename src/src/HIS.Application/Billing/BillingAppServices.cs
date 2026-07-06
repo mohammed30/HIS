@@ -27,6 +27,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
     private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
     private readonly IRepository<HIS.Settings.Department, Guid> _departmentRepository;
     private readonly IRepository<ServiceItem, Guid> _serviceItemRepository;
+    private readonly IRepository<AccountMapping, Guid> _accountMappingRepository;
     private readonly IWebHostEnvironment _env;
 
     public InvoiceAppService(
@@ -37,6 +38,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         IRepository<HIS.Accounting.Account, Guid> accountRepository,
         IRepository<HIS.Settings.Department, Guid> departmentRepository,
         IRepository<ServiceItem, Guid> serviceItemRepository,
+        IRepository<AccountMapping, Guid> accountMappingRepository,
         IWebHostEnvironment env) : base(repository)
     {
         _itemRepository = itemRepository;
@@ -45,6 +47,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         _accountRepository = accountRepository;
         _departmentRepository = departmentRepository;
         _serviceItemRepository = serviceItemRepository;
+        _accountMappingRepository = accountMappingRepository;
         _env = env;
         
         GetPolicyName = HISPermissions.Billing.Default;
@@ -155,7 +158,11 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         if (amount <= 0) return;
 
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
-        var taxAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
+        
+        var vatOutputMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.VATOutput);
+        var taxAccount = vatOutputMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == vatOutputMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
 
         arAccount = await GetLeafAccountAsync(arAccount);
         taxAccount = await GetLeafAccountAsync(taxAccount);
@@ -169,7 +176,8 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 GuidGenerator.Create(),
                 invoice.InvoiceDate,
                 invoice.InvoiceNumber,
-                $"فاتورة رقم {invoice.InvoiceNumber} - المريض: {patientName}"
+                $"فاتورة رقم {invoice.InvoiceNumber} - المريض: {patientName}",
+                isAutomatic: true
             );
             
             // Debit AR for Net Amount (Total + Tax - Discount)
@@ -191,16 +199,30 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
                 foreach (var group in groupedItems)
                 {
-                    string accountCode = group.ServiceType switch
+                    string accountCode = "4100";
+                    Account revenueAccount = null;
+                    if (group.ServiceType == ServiceType.Medication)
                     {
-                        ServiceType.Laboratory => "4120",
-                        ServiceType.Radiology => "4130",
-                        ServiceType.Surgery or ServiceType.Surgical => "4110",
-                        ServiceType.Medication => "4200",
-                        _ => "4100"
-                    };
+                        var salesRevMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.SalesRevenue);
+                        if (salesRevMapping?.AccountId != null)
+                        {
+                            revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == salesRevMapping.AccountId.Value);
+                            accountCode = revenueAccount.Code;
+                        }
+                    }
 
-                    var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == accountCode);
+                    if (revenueAccount == null)
+                    {
+                        accountCode = group.ServiceType switch
+                        {
+                            ServiceType.Laboratory => "4120",
+                            ServiceType.Radiology => "4130",
+                            ServiceType.Surgery or ServiceType.Surgical => "4110",
+                            ServiceType.Medication => "4200",
+                            _ => "4100"
+                        };
+                        revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == accountCode);
+                    }
                     if (revenueAccount != null && group.SubTotal > 0)
                     {
                         Guid? costCenterId = null;
@@ -463,6 +485,7 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
     private readonly IRepository<HIS.Accounting.Account, Guid> _accountRepository;
     private readonly IRepository<HIS.General.PaymentMethod, Guid> _paymentMethodRepository;
     private readonly IRepository<HIS.Patients.Patient, Guid> _patientRepository;
+    private readonly IRepository<AccountMapping, Guid> _accountMappingRepository;
 
     public PaymentAppService(
         IRepository<Payment, Guid> repository,
@@ -471,7 +494,8 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         IRepository<HIS.Accounting.JournalEntry, Guid> journalEntryRepository,
         IRepository<HIS.Accounting.Account, Guid> accountRepository,
         IRepository<HIS.General.PaymentMethod, Guid> paymentMethodRepository,
-        IRepository<HIS.Patients.Patient, Guid> patientRepository) : base(repository)
+        IRepository<HIS.Patients.Patient, Guid> patientRepository,
+        IRepository<AccountMapping, Guid> accountMappingRepository) : base(repository)
     {
         _invoiceRepository = invoiceRepository;
         _receiptVoucherRepository = receiptVoucherRepository;
@@ -479,6 +503,7 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
         _accountRepository = accountRepository;
         _paymentMethodRepository = paymentMethodRepository;
         _patientRepository = patientRepository;
+        _accountMappingRepository = accountMappingRepository;
         
         GetPolicyName = HISPermissions.Billing.Default;
         GetListPolicyName = HISPermissions.Billing.Default;
@@ -528,7 +553,12 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
     private async Task CreatePaymentAccountingEntriesAsync(Payment payment, Invoice invoice, HIS.Billing.PaymentMethod methodType)
     {
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
-        var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+        
+        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.CashAccount);
+        var cashAccount = cashMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+
         var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Name.Contains("Bank") || x.NameAr.Contains("بنك")); 
         
         var debitAccount = (methodType == HIS.Billing.PaymentMethod.Cash) ? cashAccount : (bankAccount ?? cashAccount);
@@ -571,7 +601,8 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
                 GuidGenerator.Create(),
                 payment.PaymentDate,
                 payment.PaymentNumber,
-                $"سند قبض رقم {payment.PaymentNumber} - المريض: {payerName}"
+                $"سند قبض رقم {payment.PaymentNumber} - المريض: {payerName}",
+                isAutomatic: true
             );
 
             // Debit Cash/Bank
@@ -740,8 +771,10 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
     {
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
         
-        string creditAccountCode = "1110"; // Default Cash
-        var creditAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == creditAccountCode);
+        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.CashAccount);
+        var creditAccount = cashMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
 
         arAccount = await GetLeafAccountAsync(arAccount);
         creditAccount = await GetLeafAccountAsync(creditAccount);
@@ -752,7 +785,8 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
             GuidGenerator.Create(),
             DateTime.Now,
             $"REF-{payment.PaymentNumber}",
-            $"Reversal for Refunded Payment: {payment.PaymentNumber}"
+            $"Reversal for Refunded Payment: {payment.PaymentNumber}",
+            isAutomatic: true
         );
 
         je.AddLine(GuidGenerator, arAccount.Id, payment.Amount, 0); // Debit AR

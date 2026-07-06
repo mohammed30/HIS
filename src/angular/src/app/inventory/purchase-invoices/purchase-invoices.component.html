@@ -64,7 +64,7 @@
   </div>
 </div>
 
-<abp-modal [(visible)]="isModalOpen">
+<abp-modal [(visible)]="isModalOpen" [options]="{ size: 'xl' }">
   <ng-template #abpHeader>
     <h3>إضافة فاتورة مشتريات جديدة</h3>
   </ng-template>
@@ -90,38 +90,45 @@
 
       <h5 class="mt-4">الأصناف والتكاليف</h5>
       <div formArrayName="lines">
-          <div class="border p-2 mb-2 rounded bg-light" *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
-              <div class="row">
-                  <div class="col-md-6 mb-2">
-                      <label>الصنف (GUID)</label>
-                      <input type="text" class="form-control form-control-sm" formControlName="productId" placeholder="مثلاً: 00000000-..." />
+          <div class="border p-3 mb-3 rounded bg-light" *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
+              <div class="row align-items-end">
+                  <div class="col-md-4 mb-2">
+                      <label class="form-label mb-1 fw-bold">الصنف</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="productDisplay" list="productsList" (change)="onProductSelect($event, i)" placeholder="ابحث بالاسم أو الكود..." />
+                      <input type="hidden" formControlName="productId" />
+                  </div>
+                  <div class="col-md-3 mb-2">
+                      <label class="form-label mb-1 fw-bold">رقم التشغيلة (Batch)</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="batchNumber" />
+                  </div>
+                  <div class="col-md-3 mb-2">
+                      <label class="form-label mb-1 fw-bold">تاريخ الانتهاء</label>
+                      <input type="date" class="form-control form-control-sm" formControlName="expiryDate" />
                   </div>
                   <div class="col-md-2 mb-2">
-                      <label>الكمية</label>
+                      <label class="form-label mb-1 fw-bold">الكمية</label>
                       <input type="number" class="form-control form-control-sm" formControlName="quantity" />
                   </div>
-                  <div class="col-md-2 mb-2">
-                      <label>التكلفة للوحدة</label>
+              </div>
+              <div class="row align-items-end">
+                  <div class="col-md-3 mb-2">
+                      <label class="form-label mb-1 fw-bold">التكلفة للوحدة</label>
                       <input type="number" class="form-control form-control-sm" formControlName="unitCost" />
                   </div>
-                  <div class="col-md-2 mb-2">
-                      <label>هامش الربح %</label>
+                  <div class="col-md-3 mb-2">
+                      <label class="form-label mb-1 fw-bold">هامش الربح %</label>
                       <input type="number" class="form-control form-control-sm" formControlName="margin" />
                   </div>
                   <div class="col-md-3 mb-2">
-                      <label>سعر البيع (تلقائي)</label>
-                      <input type="number" class="form-control form-control-sm" formControlName="salePrice" readonly />
+                      <label class="form-label mb-1 fw-bold">سعر البيع (تلقائي)</label>
+                      <input type="number" class="form-control form-control-sm bg-white" formControlName="salePrice" readonly />
                   </div>
-                  <div class="col-md-6 mb-2">
-                      <label>رقم التشغيلة (Batch)</label>
-                      <input type="text" class="form-control form-control-sm" formControlName="batchNumber" />
-                  </div>
-                  <div class="col-md-6 mb-2">
-                      <label>تاريخ الانتهاء</label>
-                      <input type="date" class="form-control form-control-sm" formControlName="expiryDate" />
+                  <div class="col-md-3 mb-2 text-end">
+                      <button type="button" class="btn btn-outline-danger btn-sm w-100" (click)="removeLine(i)">
+                          <i class="fa fa-trash me-1"></i> حذف الصنف
+                      </button>
                   </div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm mt-1" (click)="removeLine(i)">حذف الصنف</button>
           </div>
       </div>
       
@@ -133,6 +140,10 @@
         <label>ملاحظات</label>
         <textarea class="form-control" formControlName="notes" rows="2"></textarea>
       </div>
+
+      <datalist id="productsList">
+          <option *ngFor="let p of products" [value]="p.name + ' - ' + p.code"></option>
+      </datalist>
     </form>
   </ng-template>
 

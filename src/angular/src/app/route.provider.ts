@@ -97,6 +97,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Billing.ChartOfAccounts',
     },
     {
+      path: '/accounting/account-mapping',
+      name: 'توجيه الحسابات المحاسبية',
+      parentName: '::Menu:Accounts',
+      iconClass: 'fas fa-exchange-alt',
+      order: 31,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.ChartOfAccounts',
+    },
+    {
       path: '/accounting/journal-entries',
       name: '::Menu:JournalEntries',
       parentName: '::Menu:Accounts',
@@ -539,6 +548,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Pharmacy.POS',
     },
     {
+      path: '/pharmacy/inpatient-requests',
+      name: '::Menu:InpatientRequests',
+      parentName: '::Menu:Pharmacy',
+      iconClass: 'fas fa-bed',
+      order: 6,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Pharmacy',
+    },
+    {
       path: '/emergency/dashboard',
       name: '::Menu:EmergencyDashboard',
       parentName: '::Menu:Emergency',
@@ -652,15 +670,7 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Inventory.PurchaseOrders',
     },
-    {
-      path: '/inventory/internal-requests',
-      name: '::Menu:InventoryInternalRequests',
-      parentName: '::Menu:Pharmacy',
-      iconClass: 'fas fa-exchange-alt',
-      order: 6,
-      layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Inventory.StockOperations',
-    },
+
     {
       path: '/inventory/inventory-counting',
       name: '::Menu:InventoryCounting',

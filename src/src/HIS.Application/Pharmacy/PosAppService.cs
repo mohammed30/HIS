@@ -28,6 +28,7 @@ public class PosAppService : HISAppService, IPosAppService
     private readonly IRepository<Account, Guid> _accountRepository;
     private readonly IRepository<Patient, Guid> _patientRepository;
     private readonly IRepository<InvoiceItem, Guid> _invoiceItemRepository;
+    private readonly IRepository<AccountMapping, Guid> _accountMappingRepository;
     private readonly InventoryManager _inventoryManager;
     private readonly AccountingManager _accountingManager;
     private readonly IGuidGenerator _guidGenerator;
@@ -41,6 +42,7 @@ public class PosAppService : HISAppService, IPosAppService
         IRepository<Account, Guid> accountRepository,
         IRepository<Patient, Guid> patientRepository,
         IRepository<InvoiceItem, Guid> invoiceItemRepository,
+        IRepository<AccountMapping, Guid> accountMappingRepository,
         InventoryManager inventoryManager,
         AccountingManager accountingManager,
         IGuidGenerator guidGenerator)
@@ -53,6 +55,7 @@ public class PosAppService : HISAppService, IPosAppService
         _accountRepository = accountRepository;
         _patientRepository = patientRepository;
         _invoiceItemRepository = invoiceItemRepository;
+        _accountMappingRepository = accountMappingRepository;
         _inventoryManager = inventoryManager;
         _accountingManager = accountingManager;
         _guidGenerator = guidGenerator;
@@ -167,16 +170,23 @@ public class PosAppService : HISAppService, IPosAppService
         await _invoiceRepository.InsertAsync(invoice);
 
         // 4. Accounting Entry (Revenue Side)
-        // Dr Cash (1110) / Cr Pharmacy Revenue (4200)
-        var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
-        var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
+        // Dr Cash / Cr Pharmacy Revenue
+        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.CashAccount);
+        var cashAccount = cashMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+
+        var revenueMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.SalesRevenue);
+        var revenueAccount = revenueMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == revenueMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
 
         cashAccount = await GetLeafAccountAsync(cashAccount);
         revenueAccount = await GetLeafAccountAsync(revenueAccount);
 
         if (cashAccount != null && revenueAccount != null)
         {
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مبيعات صيدلية: {invoice.InvoiceNumber}");
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مبيعات صيدلية: {invoice.InvoiceNumber}", isAutomatic: true);
             entry.AddLine(_guidGenerator, cashAccount.Id, invoice.TotalAmount, 0);
             entry.AddLine(_guidGenerator, revenueAccount.Id, 0, invoice.TotalAmount);
             await _accountingManager.PostEntryAsync(entry);
@@ -215,16 +225,23 @@ public class PosAppService : HISAppService, IPosAppService
         }
 
         // 3. Accounting Entry (Revenue Reversal)
-        // Dr Pharmacy Revenue (4200) / Cr Cash (1110)
-        var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
-        var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
+        // Dr Pharmacy Revenue / Cr Cash
+        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.CashAccount);
+        var cashAccount = cashMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+
+        var revenueMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.SalesRevenue);
+        var revenueAccount = revenueMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == revenueMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
 
         cashAccount = await GetLeafAccountAsync(cashAccount);
         revenueAccount = await GetLeafAccountAsync(revenueAccount);
 
         if (cashAccount != null && revenueAccount != null)
         {
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مرتجع مبيعات صيدلية: {invoice.InvoiceNumber}");
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مرتجع مبيعات صيدلية: {invoice.InvoiceNumber}", isAutomatic: true);
             entry.AddLine(_guidGenerator, revenueAccount.Id, invoice.TotalAmount, 0); // Reverse Revenue
             entry.AddLine(_guidGenerator, cashAccount.Id, 0, invoice.TotalAmount); // Reverse Cash
             await _accountingManager.PostEntryAsync(entry);

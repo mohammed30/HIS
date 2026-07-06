@@ -12,3 +12,4 @@ export * from './models';
 export * from './payment-voucher.service';
 export * from './receipt-voucher.service';
 export { Dtos };
+export * from './account-mapping.service';

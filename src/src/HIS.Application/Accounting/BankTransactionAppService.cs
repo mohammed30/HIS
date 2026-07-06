@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HIS.Accounting.Dtos;
 using HIS.Permissions;
@@ -70,44 +71,67 @@ namespace HIS.Accounting
             return entity;
         }
 
-        protected override async Task<BankTransactionDto> MapToGetOutputDtoAsync(BankTransaction entity)
+        public override async Task<BankTransactionDto> GetAsync(Guid id)
         {
-            var dto = await base.MapToGetOutputDtoAsync(entity);
+            var entity = await Repository.GetAsync(id);
+            var dto = ObjectMapper.Map<BankTransaction, BankTransactionDto>(entity);
             
             if (dto.BankAccountId.HasValue && dto.BankAccountId.Value != Guid.Empty)
             {
-                var bankAccountId = dto.BankAccountId.Value;
-                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == bankAccountId);
+                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == dto.BankAccountId.Value);
                 dto.BankAccountName = bankAccount?.Name;
             }
             if (dto.OppositeAccountId.HasValue && dto.OppositeAccountId.Value != Guid.Empty)
             {
-                var oppositeAccountId = dto.OppositeAccountId.Value;
-                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == oppositeAccountId);
+                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == dto.OppositeAccountId.Value);
                 dto.OppositeAccountName = oppAccount?.Name;
             }
 
             return dto;
         }
 
-        protected override async Task<BankTransactionDto> MapToGetListOutputDtoAsync(BankTransaction entity)
+        public override async Task<PagedResultDto<BankTransactionDto>> GetListAsync(PagedAndSortedResultRequestDto input)
         {
-            var dto = await base.MapToGetListOutputDtoAsync(entity);
-            
-            if (dto.BankAccountId.HasValue && dto.BankAccountId.Value != Guid.Empty)
+            try
             {
-                var bankAccountId = dto.BankAccountId.Value;
-                var bankAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == bankAccountId);
-                dto.BankAccountName = bankAccount?.Name;
-            }
-            if (dto.OppositeAccountId.HasValue && dto.OppositeAccountId.Value != Guid.Empty)
-            {
-                var oppositeAccountId = dto.OppositeAccountId.Value;
-                var oppAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == oppositeAccountId);
-                dto.OppositeAccountName = oppAccount?.Name;
-            }
+                var query = await CreateFilteredQueryAsync(input);
+                var totalCount = await AsyncExecuter.CountAsync(query);
+                
+                query = ApplySorting(query, input);
+                query = ApplyPaging(query, input);
+                
+                var entities = await AsyncExecuter.ToListAsync(query);
 
-            return dto;
+                var dtos = ObjectMapper.Map<List<BankTransaction>, List<BankTransactionDto>>(entities);
+
+                var accountIds = new HashSet<Guid>();
+                foreach (var e in entities)
+                {
+                    if (e.BankAccountId != Guid.Empty) accountIds.Add(e.BankAccountId);
+                    if (e.OppositeAccountId != Guid.Empty) accountIds.Add(e.OppositeAccountId);
+                }
+
+                if (accountIds.Count > 0)
+                {
+                    var accounts = await _accountRepository.GetListAsync(x => accountIds.Contains(x.Id));
+                    var accountDict = accounts.ToDictionary(x => x.Id, x => x.Name);
+
+                    foreach (var dto in dtos)
+                    {
+                        if (dto.BankAccountId.HasValue && accountDict.TryGetValue(dto.BankAccountId.Value, out var bankName))
+                            dto.BankAccountName = bankName;
+
+                        if (dto.OppositeAccountId.HasValue && accountDict.TryGetValue(dto.OppositeAccountId.Value, out var oppName))
+                            dto.OppositeAccountName = oppName;
+                    }
+                }
+
+                return new PagedResultDto<BankTransactionDto>(totalCount, dtos);
+            }
+            catch (Exception ex)
+            {
+                throw new Volo.Abp.UserFriendlyException($"Debug Error: {ex.Message} | Inner: {ex.InnerException?.Message} | Stack: {ex.StackTrace}");
+            }
         }
     }
 }

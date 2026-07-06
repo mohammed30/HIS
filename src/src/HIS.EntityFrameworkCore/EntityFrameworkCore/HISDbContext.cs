@@ -99,6 +99,7 @@ public class HISDbContext :
 
     // Financial & Inventory
     public DbSet<HIS.Accounting.Account> Accounts { get; set; }
+    public DbSet<HIS.Accounting.AccountMapping> AccountMappings { get; set; }
     public DbSet<HIS.Accounting.CostCenter> CostCenters { get; set; }
     public DbSet<HIS.Accounting.FinancialPeriod> FinancialPeriods { get; set; }
     public DbSet<HIS.Accounting.JournalEntry> JournalEntries { get; set; }
@@ -870,6 +871,15 @@ public class HISDbContext :
             b.HasIndex(x => x.Code).IsUnique();
         });
 
+        builder.Entity<HIS.Accounting.AccountMapping>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "AccountMappings", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            b.Property(x => x.MappingType).HasConversion<string>().HasMaxLength(64).IsRequired();
+            b.HasIndex(x => x.MappingType).IsUnique();
+            b.HasOne(x => x.Account).WithMany().HasForeignKey(x => x.AccountId).IsRequired(false);
+        });
+
         builder.Entity<HIS.Accounting.JournalEntry>(b =>
         {
             b.ToTable(HISConsts.DbTablePrefix + "JournalEntries", HISConsts.DbSchema);
@@ -1464,6 +1474,7 @@ public class HISDbContext :
                 b.ToTable("DailyAttendances", HISConsts.DbSchema);
                 b.ConfigureByConvention();
                 b.Property(x => x.WorkedHours).HasColumnType("decimal(18,2)");
+                b.Property(x => x.OvertimeHours).HasColumnType("decimal(18,2)");
                 b.Property(x => x.Notes).HasMaxLength(1024);
                 b.HasIndex(x => x.EmployeeId);
                 b.HasIndex(x => x.Date);
@@ -1514,6 +1525,14 @@ public class HISDbContext :
                 
                 b.HasIndex(x => x.InventoryCountId);
                 b.HasIndex(x => x.InventoryItemId);
+            });
+
+            builder.Entity<HIS.Inventory.PurchaseInvoiceLine>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "PurchaseInvoiceLines", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Margin).HasColumnType("decimal(18,2)");
+                b.Property(x => x.SalePrice).HasColumnType("decimal(18,2)");
             });
 
     }

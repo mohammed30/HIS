@@ -162,7 +162,8 @@ public class InventoryCountAppService : ApplicationService, IInventoryCountAppSe
                     invItem.WarehouseId, 
                     invItem.ProductId, 
                     Math.Abs(item.Difference), 
-                    $"Inventory Count Ref: {entity.Id.ToString().Substring(0, 8)}"
+                    $"Inventory Count Ref: {entity.Id.ToString().Substring(0, 8)}",
+                    force: true
                 );
             }
         }

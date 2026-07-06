@@ -42,6 +42,7 @@ public class AdmissionAppService : CrudAppService<
     private readonly HIS.Billing.IInvoiceAppService _invoiceAppService;
     private readonly IRepository<HIS.Billing.Invoice, Guid> _invoiceRepository;
     private readonly IRepository<HIS.Billing.InvoiceItem, Guid> _invoiceItemRepository;
+    private readonly IRepository<HIS.Accounting.AccountMapping, Guid> _accountMappingRepository;
 
     public AdmissionAppService(
         IRepository<Admission, Guid> repository,
@@ -59,7 +60,8 @@ public class AdmissionAppService : CrudAppService<
         IRepository<MedicalOrder, Guid> medicalOrderRepository,
         HIS.Billing.IInvoiceAppService invoiceAppService,
         IRepository<HIS.Billing.Invoice, Guid> invoiceRepository,
-        IRepository<HIS.Billing.InvoiceItem, Guid> invoiceItemRepository) : base(repository)
+        IRepository<HIS.Billing.InvoiceItem, Guid> invoiceItemRepository,
+        IRepository<HIS.Accounting.AccountMapping, Guid> accountMappingRepository) : base(repository)
     {
         _patientRepository = patientRepository;
         _roomRepository = roomRepository;
@@ -76,6 +78,7 @@ public class AdmissionAppService : CrudAppService<
         _invoiceAppService = invoiceAppService;
         _invoiceRepository = invoiceRepository;
         _invoiceItemRepository = invoiceItemRepository;
+        _accountMappingRepository = accountMappingRepository;
     }
 
     public override async Task<AdmissionDto> CreateAsync(CreateUpdateAdmissionDto input)
@@ -139,7 +142,12 @@ public class AdmissionAppService : CrudAppService<
         if (arAccount != null)
         {
             var revenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
-            var cashAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+            
+            var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == HIS.Accounting.AccountMappingType.CashAccount);
+            var cashAccount = cashMapping?.AccountId.HasValue == true
+                ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+                : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+
             cashAccount = await GetLeafAccountAsync(cashAccount);
 
             var jeNumber = $"ADM-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
@@ -148,7 +156,8 @@ public class AdmissionAppService : CrudAppService<
                 GuidGenerator.Create(),
                 DateTime.Now,
                 jeNumber,
-                $"حجز تنويم - المريض: {patientName}"
+                $"حجز تنويم - المريض: {patientName}",
+                isAutomatic: true
             );
 
             if (input.PaidAmount > 0 && cashAccount != null)

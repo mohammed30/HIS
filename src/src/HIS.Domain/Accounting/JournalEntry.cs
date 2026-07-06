@@ -11,17 +11,19 @@ public class JournalEntry : FullAuditedAggregateRoot<Guid>
     public string ReferenceNumber { get; set; }
     public string Description { get; set; }
     public bool IsPosted { get; set; }
+    public bool IsAutomatic { get; set; }
     
     public ICollection<JournalEntryLine> Lines { get; set; }
 
     protected JournalEntry() { }
 
-    public JournalEntry(Guid id, DateTime date, string referenceNumber, string description)
+    public JournalEntry(Guid id, DateTime date, string referenceNumber, string description, bool isAutomatic = false)
         : base(id)
     {
         Date = date;
         ReferenceNumber = referenceNumber;
         Description = description;
+        IsAutomatic = isAutomatic;
         Lines = new List<JournalEntryLine>();
     }
 

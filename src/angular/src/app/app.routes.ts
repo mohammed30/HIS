@@ -276,6 +276,12 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Billing.ChartOfAccounts' }
       },
       {
+        path: 'account-mapping',
+        loadComponent: () => import('./accounting/account-mapping/account-mapping.component').then(c => c.AccountMappingComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing.ChartOfAccounts' }
+      },
+      {
         path: 'journal-entries',
         loadComponent: () => import('./accounting/journal-entries/journal-entries').then(c => c.JournalEntriesComponent),
         canActivate: [permissionGuard],
@@ -380,12 +386,6 @@ export const APP_ROUTES: Routes = [
       {
         path: 'issue-stock',
         loadComponent: () => import('./inventory/issue-stock/issue-stock.component').then(c => c.IssueStockComponent),
-        canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
-      },
-      {
-        path: 'internal-requests',
-        loadComponent: () => import('./inventory/internal-requests/internal-requests').then(c => c.InternalRequestsComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
       },
