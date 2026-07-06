@@ -59,98 +59,105 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
     public override async Task<InvoiceDto> CreateAsync(CreateUpdateInvoiceDto input)
     {
-        // ... implementation (this override will automatically be protected by CreatePolicyName check in base) ...
-        await CheckCreatePolicyAsync(); // Good practice to call this or rely on base. But since we have logic before base insert, we should check.
-        // Actually base.CreateAsync calls CheckCreatePolicyAsync() then MapToEntity then Repository.Insert.
-        // Ease permissions: Allow anyone with Billing.Default or LaboratoryReception or ManageInvoices
-        if (!await AuthorizationService.IsGrantedAsync(HISPermissions.Billing.ManageInvoices) && 
-            !await AuthorizationService.IsGrantedAsync(HISPermissions.Reception.LaboratoryReception) &&
-            !await AuthorizationService.IsGrantedAsync(HISPermissions.Billing.Default))
+        try
         {
-            await CheckCreatePolicyAsync(); // This will throw the standard AbpAuthorizationException if none granted
-        }
-
-        var invoiceId = GuidGenerator.Create();
-        var invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
-        
-        var invoice = new Invoice(invoiceId, CurrentTenant.Id, input.PatientId, invoiceNumber)
-        {
-            DueDate = input.DueDate,
-            DiscountAmount = input.DiscountAmount,
-            TaxPercentage = input.TaxPercentage,
-            PatientInsuranceId = input.PatientInsuranceId,
-            AppointmentId = input.AppointmentId,
-            Notes = input.Notes,
-            Status = InvoiceStatus.Issued
-        };
-
-        // Calculate totals from items
-        decimal totalAmount = 0;
-        if (input.Items != null)
-        {
-            foreach (var itemDto in input.Items)
+            // ... implementation (this override will automatically be protected by CreatePolicyName check in base) ...
+            await CheckCreatePolicyAsync(); // Good practice to call this or rely on base. But since we have logic before base insert, we should check.
+            // Actually base.CreateAsync calls CheckCreatePolicyAsync() then MapToEntity then Repository.Insert.
+            // Ease permissions: Allow anyone with Billing.Default or LaboratoryReception or ManageInvoices
+            if (!await AuthorizationService.IsGrantedAsync(HISPermissions.Billing.ManageInvoices) && 
+                !await AuthorizationService.IsGrantedAsync(HISPermissions.Reception.LaboratoryReception) &&
+                !await AuthorizationService.IsGrantedAsync(HISPermissions.Billing.Default))
             {
-                var itemId = GuidGenerator.Create();
-                var discountAmount = (itemDto.Quantity * itemDto.UnitPrice) * (itemDto.DiscountPercentage / 100);
-                
-                Guid? departmentId = null;
-                if (!string.IsNullOrEmpty(itemDto.ServiceCode))
-                {
-                    ServiceItem service = null;
-                    if (Guid.TryParse(itemDto.ServiceCode, out var serviceId))
-                    {
-                        service = await _serviceItemRepository.FindAsync(serviceId);
-                    }
-                    else
-                    {
-                        service = await _serviceItemRepository.FirstOrDefaultAsync(x => x.Code == itemDto.ServiceCode);
-                    }
+                await CheckCreatePolicyAsync(); // This will throw the standard AbpAuthorizationException if none granted
+            }
 
-                    if (service != null)
-                    {
-                        departmentId = service.DepartmentId;
-                    }
-                }
+            var invoiceId = GuidGenerator.Create();
+            var invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+            
+            var invoice = new Invoice(invoiceId, CurrentTenant.Id, input.PatientId, invoiceNumber)
+            {
+                DueDate = input.DueDate,
+                DiscountAmount = input.DiscountAmount,
+                TaxPercentage = input.TaxPercentage,
+                PatientInsuranceId = input.PatientInsuranceId,
+                AppointmentId = input.AppointmentId,
+                Notes = input.Notes,
+                Status = InvoiceStatus.Issued
+            };
 
-                if (departmentId == null && !string.IsNullOrEmpty(itemDto.Description))
+            // Calculate totals from items
+            decimal totalAmount = 0;
+            if (input.Items != null)
+            {
+                foreach (var itemDto in input.Items)
                 {
-                    var desc = itemDto.Description.ToLower();
-                    if (desc.Contains("علاج طبيعي") || desc.Contains("physiotherapy") || desc.Contains("physical therapy"))
+                    var itemId = GuidGenerator.Create();
+                    var discountAmount = (itemDto.Quantity * itemDto.UnitPrice) * (itemDto.DiscountPercentage / 100);
+                    
+                    Guid? departmentId = null;
+                    if (!string.IsNullOrEmpty(itemDto.ServiceCode))
                     {
-                        var ptDept = await _departmentRepository.FirstOrDefaultAsync(x => x.Code == "DEP-PT");
-                        if (ptDept != null)
+                        ServiceItem service = null;
+                        if (Guid.TryParse(itemDto.ServiceCode, out var serviceId))
                         {
-                            departmentId = ptDept.Id;
+                            service = await _serviceItemRepository.FindAsync(serviceId);
+                        }
+                        else
+                        {
+                            service = await _serviceItemRepository.FirstOrDefaultAsync(x => x.Code == itemDto.ServiceCode);
+                        }
+
+                        if (service != null)
+                        {
+                            departmentId = service.DepartmentId;
                         }
                     }
+
+                    if (departmentId == null && !string.IsNullOrEmpty(itemDto.Description))
+                    {
+                        var desc = itemDto.Description.ToLower();
+                        if (desc.Contains("علاج طبيعي") || desc.Contains("physiotherapy") || desc.Contains("physical therapy"))
+                        {
+                            var ptDept = await _departmentRepository.FirstOrDefaultAsync(x => x.Code == "DEP-PT");
+                            if (ptDept != null)
+                            {
+                                departmentId = ptDept.Id;
+                            }
+                        }
+                    }
+
+                    var item = new InvoiceItem(itemId, CurrentTenant.Id, invoiceId, itemDto.Description, itemDto.UnitPrice)
+                    {
+                        ServiceType = itemDto.ServiceType,
+                        ServiceCode = itemDto.ServiceCode,
+                        Quantity = itemDto.Quantity,
+                        DiscountPercentage = itemDto.DiscountPercentage,
+                        DiscountAmount = discountAmount,
+                        IsCoveredByInsurance = itemDto.IsCoveredByInsurance,
+                        Notes = itemDto.Notes,
+                        DepartmentId = departmentId
+                    };
+                    await _itemRepository.InsertAsync(item);
+                    totalAmount += item.TotalPrice;
                 }
-
-                var item = new InvoiceItem(itemId, CurrentTenant.Id, invoiceId, itemDto.Description, itemDto.UnitPrice)
-                {
-                    ServiceType = itemDto.ServiceType,
-                    ServiceCode = itemDto.ServiceCode,
-                    Quantity = itemDto.Quantity,
-                    DiscountPercentage = itemDto.DiscountPercentage,
-                    DiscountAmount = discountAmount,
-                    IsCoveredByInsurance = itemDto.IsCoveredByInsurance,
-                    Notes = itemDto.Notes,
-                    DepartmentId = departmentId
-                };
-                await _itemRepository.InsertAsync(item);
-                totalAmount += item.TotalPrice;
             }
+
+            invoice.TotalAmount = totalAmount;
+            invoice.TaxAmount = (totalAmount - input.DiscountAmount) * (input.TaxPercentage / 100);
+            invoice.NetAmount = totalAmount - input.DiscountAmount + invoice.TaxAmount;
+
+            await Repository.InsertAsync(invoice);
+
+            // Auto-Create Journal Entry (Debit AR 1120, Credit Revenue 4100)
+            await CreateInvoiceJournalEntryAsync(invoice, totalAmount);
+
+            return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
         }
-
-        invoice.TotalAmount = totalAmount;
-        invoice.TaxAmount = (totalAmount - input.DiscountAmount) * (input.TaxPercentage / 100);
-        invoice.NetAmount = totalAmount - input.DiscountAmount + invoice.TaxAmount;
-
-        await Repository.InsertAsync(invoice);
-
-        // Auto-Create Journal Entry (Debit AR 1120, Credit Revenue 4100)
-        await CreateInvoiceJournalEntryAsync(invoice, totalAmount);
-
-        return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
+        catch (Exception ex)
+        {
+            throw new Volo.Abp.UserFriendlyException("API EXCEPTION TRACE: " + ex.Message, details: ex.ToString());
+        }
     }
 
     private async Task CreateInvoiceJournalEntryAsync(Invoice invoice, decimal amount)
