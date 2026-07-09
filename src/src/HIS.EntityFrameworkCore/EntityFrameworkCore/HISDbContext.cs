@@ -531,7 +531,6 @@ public class HISDbContext :
             b.ToTable(HISConsts.DbTablePrefix + "RadiologyRequests", HISConsts.DbSchema);
             b.ConfigureByConvention();
             
-            b.Property(x => x.ReportBody).HasColumnType("nvarchar(max)");
             b.Property(x => x.TechnicianNotes).HasMaxLength(2048);
             b.Property(x => x.RequestNumber).HasMaxLength(32);
             

@@ -385,7 +385,16 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
             new { Type = AccountMappingType.VATOutput, Code = "2200", IsMandatory = true },
             new { Type = AccountMappingType.VATInput, Code = "1120", IsMandatory = true },
             new { Type = AccountMappingType.Inventory, Code = "1130", IsMandatory = true },
-            new { Type = AccountMappingType.COGS, Code = "5200", IsMandatory = true }
+            new { Type = AccountMappingType.COGS, Code = "5200", IsMandatory = true },
+            
+            // New mappings (some are optional/mandatory)
+            new { Type = AccountMappingType.PatientsReceivable, Code = "1120", IsMandatory = true },
+            new { Type = AccountMappingType.InsuranceReceivable, Code = "1120", IsMandatory = true },
+            new { Type = AccountMappingType.InsuranceDiscounts, Code = "5400", IsMandatory = false },
+            new { Type = AccountMappingType.InventoryAdjustment, Code = "5200", IsMandatory = false },
+            new { Type = AccountMappingType.AccruedInventory, Code = "2110", IsMandatory = false },
+            new { Type = AccountMappingType.CardPaymentBank, Code = "1110", IsMandatory = true },
+            new { Type = AccountMappingType.PatientDeposits, Code = "2110", IsMandatory = false }
         };
 
         foreach (var m in mappings)

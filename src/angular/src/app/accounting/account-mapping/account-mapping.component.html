@@ -77,14 +77,70 @@
         <form [formGroup]="form">
           <div class="mb-3">
             <label class="form-label fw-bold">اختر الحساب من الشجرة</label>
-            <select formControlName="accountId" class="form-select custom-select">
-              <option [ngValue]="null">-- اختر حساباً --</option>
-              <option *ngFor="let acc of accounts" [ngValue]="acc.id">
-                [{{ acc.code }}] - {{ acc.nameAr || acc.name }}
-              </option>
-            </select>
-            <div class="form-text text-muted">
-              يرجى التأكد من اختيار حساب فرعي (Leaf) مناسب لطبيعة البند الموجه.
+
+            <!-- Search Input -->
+            <div class="account-search-wrapper" style="position: relative;">
+              <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary">
+                  <i class="fa fa-search text-muted"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control custom-search-input"
+                  placeholder="ابحث بالكود أو الاسم العربي..."
+                  [(ngModel)]="searchTerm"
+                  [ngModelOptions]="{standalone: true}"
+                  (input)="onSearchChange()"
+                  (focus)="onSearchFocus()"
+                  (blur)="closeDropdown()"
+                  autocomplete="off"
+                  dir="rtl"
+                />
+                <button
+                  *ngIf="searchTerm"
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="clearAccount()"
+                  title="مسح الاختيار"
+                >
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+
+              <!-- Dropdown Results -->
+              <div
+                *ngIf="showDropdown"
+                class="account-dropdown-list"
+              >
+                <div
+                  *ngIf="filteredAccounts.length === 0"
+                  class="account-dropdown-empty"
+                >
+                  <i class="fa fa-info-circle me-1"></i> لا توجد نتائج
+                </div>
+                <div
+                  *ngFor="let acc of filteredAccounts | slice:0:50"
+                  class="account-dropdown-item"
+                  [class.selected]="form.value.accountId === acc.id"
+                  (mousedown)="selectAccount(acc)"
+                >
+                  <span class="acc-code-badge">{{ acc.code }}</span>
+                  <span class="acc-name">{{ acc.nameAr || acc.name }}</span>
+                </div>
+                <div *ngIf="filteredAccounts.length > 50" class="account-dropdown-more">
+                  <i class="fa fa-ellipsis-h me-1"></i> {{ filteredAccounts.length - 50 }} نتيجة أخرى — حدّد بحثك أكثر
+                </div>
+              </div>
+            </div>
+
+            <!-- Selected Account Preview -->
+            <div *ngIf="form.value.accountId" class="mt-2 selected-account-preview">
+              <i class="fa fa-check-circle text-success me-1"></i>
+              <strong>الحساب المختار:</strong>
+              <span class="ms-1 text-primary">{{ getSelectedAccountLabel() }}</span>
+            </div>
+            <div *ngIf="!form.value.accountId" class="mt-2 text-muted" style="font-size:0.82rem;">
+              يرجى البحث واختيار حساب مناسب لطبيعة البند الموجه.
             </div>
           </div>
         </form>

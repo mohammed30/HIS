@@ -97,6 +97,7 @@ export interface PosSaleDto {
   totalAmount?: number;
   paidAmount?: number;
   paymentMethod?: PaymentMethod;
+  notes?: string | null;
 }
 
 export interface PosSaleItemDto {
@@ -104,6 +105,54 @@ export interface PosSaleItemDto {
   quantity?: number;
   unitPrice?: number;
   discount?: number;
+}
+
+export interface PosInvoiceItemDto {
+  id?: string;
+  description?: string;
+  quantity?: number;
+  unitPrice?: number;
+  totalPrice?: number;
+  serviceCode?: string;
+}
+
+export interface PosInvoiceListDto {
+  id?: string;
+  invoiceNumber?: string;
+  invoiceDate?: string;
+  patientName?: string;
+  totalAmount?: number;
+  paidAmount?: number;
+  status?: number; // InvoiceStatus
+  invoiceType?: number; // InvoiceType 0=Sale 1=Return
+  rejectionReason?: string | null;
+  originalInvoiceNumber?: string | null;
+  items?: PosInvoiceItemDto[];
+}
+
+export interface PosApproveDto {
+  paidAmount?: number;
+  paymentMethod?: PaymentMethod;
+  notes?: string | null;
+}
+
+export interface PosRejectDto {
+  rejectionReason?: string;
+}
+
+export interface PosPartialRefundDto {
+  items?: PosRefundItemDto[];
+}
+
+export interface PosRefundItemDto {
+  invoiceItemId?: string;
+  returnQuantity?: number;
+}
+
+export interface PosRefundResultDto {
+  refundInvoiceId?: string;
+  refundInvoiceNumber?: string;
+  refundAmount?: number;
 }
 
 export interface StockTransferDto extends FullAuditedEntityDto<string> {

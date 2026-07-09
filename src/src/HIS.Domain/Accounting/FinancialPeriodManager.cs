@@ -32,7 +32,7 @@ public class FinancialPeriodManager : DomainService
             var startDate = new DateTime(year, month, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
             period = new FinancialPeriod(_guidGenerator.Create(), year, month, startDate, endDate);
-            await _financialPeriodRepository.InsertAsync(period);
+            await _financialPeriodRepository.InsertAsync(period, autoSave: true);
         }
         else if (period.IsClosed)
         {

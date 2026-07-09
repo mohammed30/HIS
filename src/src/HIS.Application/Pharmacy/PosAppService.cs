@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using HIS.Accounting;
 using HIS.Billing;
+using HIS.Billing.Printing;
 using HIS.Inventory;
-using HIS.Services;
+using HIS.Patients;
 using HIS.Pharmacy.Dtos;
+using HIS.Services;
+using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Fluent;
 using Volo.Abp;
+using Volo.Abp.Content;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
-using HIS.Accounting;
-using Volo.Abp.Content;
-using System.IO;
-using QuestPDF.Fluent;
-using HIS.Billing.Printing;
-using HIS.Patients;
 
 namespace HIS.Pharmacy;
 
@@ -61,41 +62,42 @@ public class PosAppService : HISAppService, IPosAppService
         _guidGenerator = guidGenerator;
     }
 
+    // ─────────────────────────────────────────────────────────
+    //  Product Lookup
+    // ─────────────────────────────────────────────────────────
+
     public async Task<PosProductDto> GetProductByBarcodeAsync(string barcode)
     {
         var drug = await _drugRepository.FirstOrDefaultAsync(x => x.Barcode == barcode);
         if (drug == null) throw new UserFriendlyException("Product not found");
-
         return await MapToPosProduct(drug);
     }
 
     public async Task<PosProductDto> GetProductByIdAsync(Guid id)
     {
-         var drug = await _drugRepository.GetAsync(id);
-         return await MapToPosProduct(drug);
+        var drug = await _drugRepository.GetAsync(id);
+        return await MapToPosProduct(drug);
     }
 
     public async Task<List<PosProductDto>> SearchProductsAsync(string query)
     {
         if (string.IsNullOrWhiteSpace(query)) return new List<PosProductDto>();
 
-        var drugs = await _drugRepository.GetListAsync(x => 
-            x.BrandName.Contains(query) || 
-            x.ScientificName.Contains(query) || 
+        var drugs = await _drugRepository.GetListAsync(x =>
+            x.BrandName.Contains(query) ||
+            x.ScientificName.Contains(query) ||
             x.Barcode.Contains(query));
 
         var dtos = new List<PosProductDto>();
         foreach (var drug in drugs)
-        {
             dtos.Add(await MapToPosProduct(drug));
-        }
 
         return dtos;
     }
 
     private async Task<PosProductDto> MapToPosProduct(Drug drug)
     {
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
         int stock = 0;
         decimal price = 0;
 
@@ -106,7 +108,8 @@ public class PosAppService : HISAppService, IPosAppService
 
             if (pharmacy != null)
             {
-                var invItem = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == pharmacy.Id && x.ProductId == drug.ServiceItemId.Value);
+                var invItem = await _inventoryItemRepository.FirstOrDefaultAsync(
+                    x => x.WarehouseId == pharmacy.Id && x.ProductId == drug.ServiceItemId.Value);
                 stock = (int)(invItem?.Quantity ?? 0);
             }
         }
@@ -121,135 +124,328 @@ public class PosAppService : HISAppService, IPosAppService
         };
     }
 
-    public async Task<Guid> ProcessSaleAsync(PosSaleDto input)
-    {
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
-        if (pharmacy == null) throw new UserFriendlyException("Pharmacy Warehouse not found");
+    // ─────────────────────────────────────────────────────────
+    //  Step 1: Create Draft
+    // ─────────────────────────────────────────────────────────
 
-        // 1. Create Invoice
+    [HttpPost]
+    [Route("api/app/pos/create-draft")]
+    public async Task<Guid> CreateDraftAsync(PosSaleDto input)
+    {
         var tenantId = CurrentTenant.Id;
-        var patientId = input.PatientId ?? Guid.Empty; // TODO: Handle Guest/Walk-in properly
-        var invoice = new Invoice(_guidGenerator.Create(), tenantId, patientId, "POS-" + DateTime.Now.Ticks);
+        var patientId = input.PatientId ?? Guid.Empty;
+        var invoiceNumber = "POS-" + DateTime.Now.Ticks;
+
+        var invoice = new Invoice(_guidGenerator.Create(), tenantId, patientId, invoiceNumber);
         invoice.InvoiceDate = DateTime.Now;
-        // ... Populate Invoice details
-        
-        // 2. Add Items & Deduct Stock
+        invoice.Status = InvoiceStatus.Draft;
+        invoice.InvoiceType = InvoiceType.Sale;
+        invoice.Notes = input.Notes;
+        invoice.PaymentMethod = input.PaymentMethod;
+
         foreach (var item in input.Items)
         {
             var drug = await _drugRepository.GetAsync(item.DrugId);
             if (!drug.ServiceItemId.HasValue) continue;
 
-            // Deduct Stock
-            await _inventoryManager.DispenseStockAsync(pharmacy.Id, drug.ServiceItemId.Value, item.Quantity, "POS Sale");
-
-            // Add to Invoice
             var invoiceItem = new InvoiceItem(
-                _guidGenerator.Create(),
-                tenantId,
-                invoice.Id,
-                $"{drug.BrandName} {drug.Strength}",
-                item.UnitPrice
-            );
-            invoiceItem.Quantity = item.Quantity;
-            invoiceItem.ServiceType = ServiceType.Medication;
-            invoiceItem.ServiceCode = drug.ServiceItemId.Value.ToString("N"); // Use "N" for 32 chars to fit in db
-            invoiceItem.DiscountAmount = item.Discount;
-            
+                _guidGenerator.Create(), tenantId, invoice.Id,
+                $"{drug.BrandName} {drug.Strength}", item.UnitPrice)
+            {
+                Quantity = item.Quantity,
+                ServiceType = ServiceType.Medication,
+                ServiceCode = drug.ServiceItemId.Value.ToString("N"),
+                DiscountAmount = item.Discount
+            };
+
             invoice.Items.Add(invoiceItem);
             await _invoiceItemRepository.InsertAsync(invoiceItem);
-            
-            invoice.TotalAmount += (item.Quantity * item.UnitPrice);
+
+            invoice.TotalAmount += item.Quantity * item.UnitPrice;
             invoice.DiscountAmount += item.Discount;
         }
-        
-        // 3. Mark Paid & Finalize
-        invoice.PaidAmount = input.PaidAmount;
+
         invoice.NetAmount = invoice.TotalAmount - invoice.DiscountAmount;
-        invoice.Status = Billing.InvoiceStatus.Paid; // Auto-pay in POS
-
         await _invoiceRepository.InsertAsync(invoice);
-
-        // 4. Accounting Entry (Revenue Side)
-        // Dr Cash / Cr Pharmacy Revenue
-        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.CashAccount);
-        var cashAccount = cashMapping?.AccountId.HasValue == true
-            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
-            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
-
-        var revenueMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.SalesRevenue);
-        var revenueAccount = revenueMapping?.AccountId.HasValue == true
-            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == revenueMapping.AccountId.Value)
-            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
-
-        cashAccount = await GetLeafAccountAsync(cashAccount);
-        revenueAccount = await GetLeafAccountAsync(revenueAccount);
-
-        if (cashAccount != null && revenueAccount != null)
-        {
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مبيعات صيدلية: {invoice.InvoiceNumber}", isAutomatic: true);
-            entry.AddLine(_guidGenerator, cashAccount.Id, invoice.TotalAmount, 0);
-            entry.AddLine(_guidGenerator, revenueAccount.Id, 0, invoice.TotalAmount);
-            await _accountingManager.PostEntryAsync(entry);
-        }
 
         return invoice.Id;
     }
 
-    [Microsoft.AspNetCore.Mvc.HttpPost]
-    [Microsoft.AspNetCore.Mvc.Route("api/app/pos/refund-sale/{invoiceNumber}")]
-    public async Task RefundSaleAsync(string invoiceNumber)
+    // ─────────────────────────────────────────────────────────
+    //  Step 3: Submit for Approval (Pharmacist → Accountant)
+    // ─────────────────────────────────────────────────────────
+
+    [HttpPost]
+    [Route("api/app/pos/{invoiceId}/submit-for-approval")]
+    public async Task SubmitForApprovalAsync(Guid invoiceId)
     {
-        var invoice = await _invoiceRepository.FirstOrDefaultAsync(x => x.InvoiceNumber == invoiceNumber);
-        if (invoice == null) throw new UserFriendlyException("Invoice not found: " + invoiceNumber);
-        
-        // Include items for reversal
-        var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
-        
-        if (invoice.Status == Billing.InvoiceStatus.Refunded) throw new UserFriendlyException("Invoice already refunded");
+        var invoice = await _invoiceRepository.GetAsync(invoiceId);
 
-        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse");
-        if (pharmacy == null) throw new UserFriendlyException("Pharmacy Warehouse not found");
+        if (invoice.Status != InvoiceStatus.Draft && invoice.Status != InvoiceStatus.Rejected)
+            throw new UserFriendlyException("يمكن إرسال الفاتورة فقط عندما تكون في حالة مسودة أو مرفوضة");
 
-        // 1. Mark as Refunded
-        invoice.Status = Billing.InvoiceStatus.Refunded;
+        invoice.Status = InvoiceStatus.PendingApproval;
+        invoice.RejectionReason = null; // Clear previous rejection reason
+        await _invoiceRepository.UpdateAsync(invoice);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Step 4 (Reject): Accountant Rejects Invoice
+    // ─────────────────────────────────────────────────────────
+
+    [HttpPost]
+    [Route("api/app/pos/{invoiceId}/reject")]
+    public async Task RejectAsync(Guid invoiceId, PosRejectDto input)
+    {
+        var invoice = await _invoiceRepository.GetAsync(invoiceId);
+
+        if (invoice.Status != InvoiceStatus.PendingApproval)
+            throw new UserFriendlyException("يمكن رفض الفاتورة فقط عندما تكون في انتظار الاعتماد");
+
+        invoice.Status = InvoiceStatus.Rejected;
+        invoice.RejectionReason = input.RejectionReason;
+        await _invoiceRepository.UpdateAsync(invoice);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Step 5: Approve & Pay (Accountant)
+    // ─────────────────────────────────────────────────────────
+
+    [HttpPost]
+    [Route("api/app/pos/{invoiceId}/approve-and-pay")]
+    public async Task ApproveAndPayAsync(Guid invoiceId, PosApproveDto input)
+    {
+        var invoice = await _invoiceRepository.GetAsync(invoiceId);
+
+        if (invoice.Status != InvoiceStatus.PendingApproval)
+            throw new UserFriendlyException("يمكن اعتماد الفاتورة فقط عندما تكون في انتظار الاعتماد");
+
+        invoice.Status = InvoiceStatus.Paid;
+        invoice.PaidAmount = input.PaidAmount;
+        invoice.PaymentMethod = input.PaymentMethod;
+        if (!string.IsNullOrWhiteSpace(input.Notes))
+            invoice.Notes = (invoice.Notes ?? "") + " | " + input.Notes;
+
         await _invoiceRepository.UpdateAsync(invoice);
 
-        // 2. Reverse Inventory (Stock & COGS)
+        // Accounting Entry: Dr Cash / Cr Revenue
+        await CreateSaleAccountingEntryAsync(invoice);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Step 7: Dispense Items (Pharmacist)
+    // ─────────────────────────────────────────────────────────
+
+    [HttpPost]
+    [Route("api/app/pos/{invoiceId}/dispense")]
+    public async Task DispenseAsync(Guid invoiceId)
+    {
+        var invoice = await _invoiceRepository.GetAsync(invoiceId);
+
+        if (invoice.Status != InvoiceStatus.Paid)
+            throw new UserFriendlyException("يمكن صرف الأصناف فقط للفواتير المدفوعة");
+
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
+        if (pharmacy == null) throw new UserFriendlyException("Pharmacy Warehouse not found");
+
+        var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
+
         foreach (var item in items)
         {
-            // Resolve product (DrugId was used in POS, but ServiceCode holds Drug's ServiceItemId)
             if (Guid.TryParse(item.ServiceCode, out Guid productId))
             {
-                await _inventoryManager.ReturnStockAsync(pharmacy.Id, productId, item.Quantity, invoice.InvoiceNumber);
+                await _inventoryManager.DispenseStockAsync(pharmacy.Id, productId, item.Quantity, invoice.InvoiceNumber);
             }
         }
 
-        // 3. Accounting Entry (Revenue Reversal)
-        // Dr Pharmacy Revenue / Cr Cash
-        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.CashAccount);
-        var cashAccount = cashMapping?.AccountId.HasValue == true
-            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
-            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
-
-        var revenueMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.SalesRevenue);
-        var revenueAccount = revenueMapping?.AccountId.HasValue == true
-            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == revenueMapping.AccountId.Value)
-            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
-
-        cashAccount = await GetLeafAccountAsync(cashAccount);
-        revenueAccount = await GetLeafAccountAsync(revenueAccount);
-
-        if (cashAccount != null && revenueAccount != null)
-        {
-            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, invoice.InvoiceNumber, $"مرتجع مبيعات صيدلية: {invoice.InvoiceNumber}", isAutomatic: true);
-            entry.AddLine(_guidGenerator, revenueAccount.Id, invoice.TotalAmount, 0); // Reverse Revenue
-            entry.AddLine(_guidGenerator, cashAccount.Id, 0, invoice.TotalAmount); // Reverse Cash
-            await _accountingManager.PostEntryAsync(entry);
-        }
+        invoice.Status = InvoiceStatus.Dispensed;
+        await _invoiceRepository.UpdateAsync(invoice);
     }
 
-    [Microsoft.AspNetCore.Mvc.HttpGet]
-    [Microsoft.AspNetCore.Mvc.Route("api/app/pos/generate-doc/{idOrNumber}")]
+    // ─────────────────────────────────────────────────────────
+    //  Partial Refund
+    // ─────────────────────────────────────────────────────────
+
+    [HttpPost]
+    [Route("api/app/pos/{invoiceId}/partial-refund")]
+    public async Task<PosRefundResultDto> PartialRefundAsync(Guid invoiceId, PosPartialRefundDto input)
+    {
+        var originalInvoice = await _invoiceRepository.GetAsync(invoiceId);
+
+        if (originalInvoice.Status != InvoiceStatus.Paid && originalInvoice.Status != InvoiceStatus.Dispensed)
+            throw new UserFriendlyException("لا يمكن ارتجاع فاتورة غير مكتملة الدفع");
+
+        if (originalInvoice.InvoiceType == InvoiceType.Return)
+            throw new UserFriendlyException("لا يمكن ارتجاع فاتورة مرتجع");
+
+        var pharmacy = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy Warehouse" || x.Name == "مستودع الصيدلية");
+        if (pharmacy == null) throw new UserFriendlyException("Pharmacy Warehouse not found");
+
+        var originalItems = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == originalInvoice.Id);
+
+        var tenantId = CurrentTenant.Id;
+        var refundNumber = "RET-" + DateTime.Now.Ticks;
+        var refundInvoice = new Invoice(
+            _guidGenerator.Create(), tenantId, originalInvoice.PatientId, refundNumber)
+        {
+            InvoiceDate = DateTime.Now,
+            Status = InvoiceStatus.Refunded,
+            InvoiceType = InvoiceType.Return,
+            OriginalInvoiceId = originalInvoice.Id,
+            OriginalInvoiceNumber = originalInvoice.InvoiceNumber,
+            PaymentMethod = originalInvoice.PaymentMethod
+        };
+
+        decimal refundTotal = 0;
+
+        foreach (var refundItem in input.Items)
+        {
+            var originalItem = originalItems.FirstOrDefault(x => x.Id == refundItem.InvoiceItemId);
+            if (originalItem == null)
+                throw new UserFriendlyException($"بند الفاتورة غير موجود: {refundItem.InvoiceItemId}");
+
+            if (refundItem.ReturnQuantity <= 0 || refundItem.ReturnQuantity > originalItem.Quantity)
+                throw new UserFriendlyException(
+                    $"كمية الارتجاع غير صالحة للبند: {originalItem.Description}. الكمية الأصلية: {originalItem.Quantity}");
+
+            var invoiceItem = new InvoiceItem(
+                _guidGenerator.Create(), tenantId, refundInvoice.Id,
+                originalItem.Description, originalItem.UnitPrice)
+            {
+                Quantity = refundItem.ReturnQuantity,
+                ServiceType = originalItem.ServiceType,
+                ServiceCode = originalItem.ServiceCode,
+                DiscountAmount = 0
+            };
+
+            refundInvoice.Items.Add(invoiceItem);
+            await _invoiceItemRepository.InsertAsync(invoiceItem);
+
+            refundTotal += refundItem.ReturnQuantity * originalItem.UnitPrice;
+
+            // Return stock to pharmacy
+            if (Guid.TryParse(originalItem.ServiceCode, out Guid productId))
+            {
+                await _inventoryManager.ReturnStockAsync(
+                    pharmacy.Id, productId, refundItem.ReturnQuantity, refundNumber);
+            }
+        }
+
+        refundInvoice.TotalAmount = refundTotal;
+        refundInvoice.NetAmount = refundTotal;
+        refundInvoice.PaidAmount = refundTotal; // Refund amount to return to customer
+
+        await _invoiceRepository.InsertAsync(refundInvoice);
+
+        // If all items are returned, mark original as fully refunded
+        bool allReturned = input.Items.All(ri =>
+        {
+            var orig = originalItems.FirstOrDefault(x => x.Id == ri.InvoiceItemId);
+            return orig != null && ri.ReturnQuantity == orig.Quantity;
+        }) && input.Items.Count == originalItems.Count;
+
+        if (allReturned)
+        {
+            originalInvoice.Status = InvoiceStatus.Refunded;
+            await _invoiceRepository.UpdateAsync(originalInvoice);
+        }
+
+        // Accounting Entry: Dr Revenue / Cr Cash (reversal)
+        await CreateRefundAccountingEntryAsync(refundInvoice, refundTotal);
+
+        return new PosRefundResultDto
+        {
+            RefundInvoiceId = refundInvoice.Id,
+            RefundInvoiceNumber = refundInvoice.InvoiceNumber,
+            RefundAmount = refundTotal
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Queries
+    // ─────────────────────────────────────────────────────────
+
+    [HttpGet]
+    [Route("api/app/pos/invoices")]
+    public async Task<List<PosInvoiceListDto>> GetPosInvoicesAsync(InvoiceStatus? status = null)
+    {
+        var invoices = await _invoiceRepository.GetListAsync(x =>
+            (status == null || x.Status == status) &&
+            (x.InvoiceNumber.StartsWith("POS-") || x.InvoiceNumber.StartsWith("RET-")));
+
+        invoices = invoices.OrderByDescending(x => x.InvoiceDate).ToList();
+
+        var result = new List<PosInvoiceListDto>();
+        foreach (var inv in invoices)
+        {
+            var patient = await _patientRepository.FirstOrDefaultAsync(x => x.Id == inv.PatientId);
+            var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == inv.Id);
+
+            result.Add(new PosInvoiceListDto
+            {
+                Id = inv.Id,
+                InvoiceNumber = inv.InvoiceNumber,
+                InvoiceDate = inv.InvoiceDate,
+                PatientName = patient?.FullNameAr ?? "عميل نقدي",
+                TotalAmount = inv.TotalAmount,
+                PaidAmount = inv.PaidAmount,
+                Status = inv.Status,
+                InvoiceType = inv.InvoiceType,
+                RejectionReason = inv.RejectionReason,
+                OriginalInvoiceNumber = inv.OriginalInvoiceNumber,
+                Items = items.Select(i => new PosInvoiceItemDto
+                {
+                    Id = i.Id,
+                    Description = i.Description,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    TotalPrice = i.TotalPrice,
+                    ServiceCode = i.ServiceCode
+                }).ToList()
+            });
+        }
+
+        return result;
+    }
+
+    [HttpGet]
+    [Route("api/app/pos/invoices/{invoiceId}")]
+    public async Task<PosInvoiceListDto> GetInvoiceDetailsAsync(Guid invoiceId)
+    {
+        var inv = await _invoiceRepository.GetAsync(invoiceId);
+        var patient = await _patientRepository.FirstOrDefaultAsync(x => x.Id == inv.PatientId);
+        var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == inv.Id);
+
+        return new PosInvoiceListDto
+        {
+            Id = inv.Id,
+            InvoiceNumber = inv.InvoiceNumber,
+            InvoiceDate = inv.InvoiceDate,
+            PatientName = patient?.FullNameAr ?? "عميل نقدي",
+            TotalAmount = inv.TotalAmount,
+            PaidAmount = inv.PaidAmount,
+            Status = inv.Status,
+            InvoiceType = inv.InvoiceType,
+            RejectionReason = inv.RejectionReason,
+            OriginalInvoiceNumber = inv.OriginalInvoiceNumber,
+            Items = items.Select(i => new PosInvoiceItemDto
+            {
+                Id = i.Id,
+                Description = i.Description,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TotalPrice = i.TotalPrice,
+                ServiceCode = i.ServiceCode
+            }).ToList()
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Printing
+    // ─────────────────────────────────────────────────────────
+
+    [HttpGet]
+    [Route("api/app/pos/generate-doc/{idOrNumber}")]
     public async Task<IRemoteStreamContent> GetInvoicePdfAsync(string idOrNumber)
     {
         Invoice invoice;
@@ -262,13 +458,31 @@ public class PosAppService : HISAppService, IPosAppService
             invoice = await _invoiceRepository.FirstOrDefaultAsync(x => x.InvoiceNumber == idOrNumber);
             if (invoice != null)
             {
-                // Explicitly load items if found by number
                 var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
                 foreach (var item in items) invoice.Items.Add(item);
             }
         }
 
         if (invoice == null) throw new UserFriendlyException("Invoice not found: " + idOrNumber);
+        return await BuildInvoicePdfAsync(invoice, singleCopy: true);
+    }
+
+    [HttpGet]
+    [Route("api/app/pos/return-doc/{refundInvoiceId}")]
+    public async Task<IRemoteStreamContent> GetReturnInvoicePdfAsync(Guid refundInvoiceId)
+    {
+        var invoice = await _invoiceRepository.GetAsync(refundInvoiceId);
+        if (invoice.InvoiceType != InvoiceType.Return)
+            throw new UserFriendlyException("هذه ليست فاتورة مرتجع");
+
+        var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
+        foreach (var item in items) invoice.Items.Add(item);
+
+        return await BuildInvoicePdfAsync(invoice, singleCopy: false); // Two copies
+    }
+
+    private async Task<IRemoteStreamContent> BuildInvoicePdfAsync(Invoice invoice, bool singleCopy)
+    {
         var patient = await _patientRepository.FirstOrDefaultAsync(x => x.Id == invoice.PatientId);
 
         var model = new InvoiceDocument
@@ -282,6 +496,9 @@ public class PosAppService : HISAppService, IPosAppService
             Discount = invoice.DiscountAmount,
             Tax = invoice.TaxAmount,
             Total = invoice.NetAmount,
+            IsReturn = invoice.InvoiceType == InvoiceType.Return,
+            OriginalInvoiceNumber = invoice.OriginalInvoiceNumber,
+            PrintTwoCopies = !singleCopy,
             Items = invoice.Items.Select(i => new InvoiceDocument.InvoiceItemModel
             {
                 Service = i.Description,
@@ -294,35 +511,118 @@ public class PosAppService : HISAppService, IPosAppService
         using (var ms = new MemoryStream())
         {
             model.GeneratePdf(ms);
-            return new RemoteStreamContent(new MemoryStream(ms.ToArray()), $"Invoice_{invoice.InvoiceNumber}.pdf", "application/pdf");
+            var filename = invoice.InvoiceType == InvoiceType.Return
+                ? $"Return_{invoice.InvoiceNumber}.pdf"
+                : $"Invoice_{invoice.InvoiceNumber}.pdf";
+            return new RemoteStreamContent(new MemoryStream(ms.ToArray()), filename, "application/pdf");
         }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Legacy Compatibility
+    // ─────────────────────────────────────────────────────────
+
+    [HttpPost]
+    [Route("api/app/pos/process-sale")]
+    public async Task<Guid> ProcessSaleAsync(PosSaleDto input)
+    {
+        // Legacy: Create draft + submit + approve in one shot (backward compat)
+        var invoiceId = await CreateDraftAsync(input);
+
+        var invoice = await _invoiceRepository.GetAsync(invoiceId);
+        invoice.Status = InvoiceStatus.Paid;
+        invoice.PaidAmount = input.PaidAmount;
+        await _invoiceRepository.UpdateAsync(invoice);
+
+        await CreateSaleAccountingEntryAsync(invoice);
+        return invoiceId;
+    }
+
+    [HttpPost]
+    [Route("api/app/pos/refund-sale/{invoiceNumber}")]
+    public async Task RefundSaleAsync(string invoiceNumber)
+    {
+        var invoice = await _invoiceRepository.FirstOrDefaultAsync(x => x.InvoiceNumber == invoiceNumber);
+        if (invoice == null) throw new UserFriendlyException("Invoice not found: " + invoiceNumber);
+
+        var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
+        if (invoice.Status == InvoiceStatus.Refunded)
+            throw new UserFriendlyException("Invoice already refunded");
+
+        var allItems = items.Select(i => new PosRefundItemDto
+        {
+            InvoiceItemId = i.Id,
+            ReturnQuantity = i.Quantity
+        }).ToList();
+
+        await PartialRefundAsync(invoice.Id, new PosPartialRefundDto { Items = allItems });
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Helpers
+    // ─────────────────────────────────────────────────────────
+
+    private async Task CreateSaleAccountingEntryAsync(Invoice invoice)
+    {
+        var (cashAccount, revenueAccount) = await GetAccountingAccountsAsync();
+        if (cashAccount == null || revenueAccount == null) return;
+
+        var entry = await _accountingManager.CreateEntryAsync(
+            DateTime.Now, invoice.InvoiceNumber,
+            $"مبيعات صيدلية: {invoice.InvoiceNumber}", isAutomatic: true);
+
+        entry.AddLine(_guidGenerator, cashAccount.Id, invoice.TotalAmount, 0);
+        entry.AddLine(_guidGenerator, revenueAccount.Id, 0, invoice.TotalAmount);
+        await _accountingManager.PostEntryAsync(entry);
+    }
+
+    private async Task CreateRefundAccountingEntryAsync(Invoice refundInvoice, decimal amount)
+    {
+        var (cashAccount, revenueAccount) = await GetAccountingAccountsAsync();
+        if (cashAccount == null || revenueAccount == null) return;
+
+        var entry = await _accountingManager.CreateEntryAsync(
+            DateTime.Now, refundInvoice.InvoiceNumber,
+            $"مرتجع مبيعات صيدلية: {refundInvoice.OriginalInvoiceNumber} → {refundInvoice.InvoiceNumber}",
+            isAutomatic: true);
+
+        entry.AddLine(_guidGenerator, revenueAccount.Id, amount, 0); // Dr Revenue (reversal)
+        entry.AddLine(_guidGenerator, cashAccount.Id, 0, amount);    // Cr Cash (reversal)
+        await _accountingManager.PostEntryAsync(entry);
+    }
+
+    private async Task<(Account cashAccount, Account revenueAccount)> GetAccountingAccountsAsync()
+    {
+        var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(
+            x => x.MappingType == AccountMappingType.CashAccount);
+        var cashAccount = cashMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+
+        var revenueMapping = await _accountMappingRepository.FirstOrDefaultAsync(
+            x => x.MappingType == AccountMappingType.SalesRevenue);
+        var revenueAccount = revenueMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == revenueMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4200");
+
+        cashAccount = await GetLeafAccountAsync(cashAccount);
+        revenueAccount = await GetLeafAccountAsync(revenueAccount);
+
+        return (cashAccount, revenueAccount);
     }
 
     private async Task<Account> GetLeafAccountAsync(Account account)
     {
         if (account == null) return null;
-
         var hasChildren = await _accountRepository.AnyAsync(x => x.ParentId == account.Id && x.IsActive);
-        if (!hasChildren)
-        {
-            return account;
-        }
+        if (!hasChildren) return account;
 
         var children = await _accountRepository.GetListAsync(x => x.ParentId == account.Id && x.IsActive);
-        if (!children.Any())
-        {
-            return account;
-        }
-
         foreach (var child in children.OrderBy(x => x.Code))
         {
             var leaf = await GetLeafAccountAsync(child);
-            if (leaf != null)
-            {
-                return leaf;
-            }
+            if (leaf != null) return leaf;
         }
-
         return account;
     }
 }

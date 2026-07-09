@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, SlicePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
@@ -14,23 +14,33 @@ declare var abp: any;
   templateUrl: './account-mapping.component.html',
   styleUrls: ['./account-mapping.component.scss'],
   standalone: true,
-  imports: [CommonModule, CoreModule, ThemeSharedModule, ReactiveFormsModule, FormsModule]
+  imports: [CommonModule, CoreModule, ThemeSharedModule, ReactiveFormsModule, FormsModule, SlicePipe]
 })
 export class AccountMappingComponent implements OnInit {
   mappings: AccountMappingDto[] = [];
   accounts: AccountDto[] = [];
+  filteredAccounts: AccountDto[] = [];
   editingMapping: AccountMappingDto | null = null;
   form: FormGroup;
   isSaving = false;
   isLoading = false;
+  searchTerm = '';
+  showDropdown = false;
 
   typeTranslations: Record<string, string> = {
-    'SalesRevenue': 'إيرادات المبيعات',
-    'CashAccount': 'حساب النقدية',
-    'VATOutput': 'ضريبة المخرجات',
-    'VATInput': 'ضريبة المدخلات',
+    'SalesRevenue': 'حساب إيرادات المبيعات',
+    'CashAccount': 'حساب الخزينة الافتراضي',
+    'VATOutput': 'ضريبة مخرجات',
+    'VATInput': 'ضريبة مدخلات',
     'Inventory': 'المخزون',
-    'COGS': 'تكلفة المبيعات'
+    'COGS': 'تكلفة المبيعات',
+    'PatientsReceivable': 'حساب ذمم العملاء / المرضى',
+    'InsuranceReceivable': 'حساب ذمم شركات التأمين',
+    'InsuranceDiscounts': 'خصومات وفروقات التأمين',
+    'InventoryAdjustment': 'تسوية عجز وزيادة المخزون',
+    'AccruedInventory': 'البضاعة المستلمة غير المفوترة',
+    'CardPaymentBank': 'حساب البنك لشبكة نقاط البيع',
+    'PatientDeposits': 'أمانات ودفعات مقدمة للمرضى'
   };
 
   constructor(
@@ -59,10 +69,13 @@ export class AccountMappingComponent implements OnInit {
       }
     });
 
-    this.accountService.getList({ maxResultCount: 1000 }).subscribe({
+    this.accountService.getList({ maxResultCount: 5000, skipCount: 0 }).subscribe({
       next: (response) => {
-        // Only allow active leaf accounts (or all active accounts)
-        this.accounts = response.items.filter(x => x.isActive);
+        // Load all active accounts across all levels
+        this.accounts = response.items
+          .filter(x => x.isActive)
+          .sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+        this.filteredAccounts = [...this.accounts];
       }
     });
   }
@@ -72,6 +85,54 @@ export class AccountMappingComponent implements OnInit {
     this.form.patchValue({
       accountId: mapping.accountId || null
     });
+    this.searchTerm = '';
+    this.filteredAccounts = [...this.accounts];
+    this.showDropdown = false;
+  }
+
+  onSearchChange(): void {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      this.filteredAccounts = [...this.accounts];
+    } else {
+      this.filteredAccounts = this.accounts.filter(acc =>
+        (acc.code || '').toLowerCase().includes(term) ||
+        (acc.nameAr || '').toLowerCase().includes(term) ||
+        (acc.name || '').toLowerCase().includes(term)
+      );
+    }
+    this.showDropdown = true;
+  }
+
+  selectAccount(acc: AccountDto): void {
+    this.form.patchValue({ accountId: acc.id });
+    this.searchTerm = `[${acc.code}] - ${acc.nameAr || acc.name}`;
+    this.showDropdown = false;
+  }
+
+  clearAccount(): void {
+    this.form.patchValue({ accountId: null });
+    this.searchTerm = '';
+    this.filteredAccounts = [...this.accounts];
+    this.showDropdown = false;
+  }
+
+  getSelectedAccountLabel(): string {
+    const id = this.form.value.accountId;
+    if (!id) return '';
+    const acc = this.accounts.find(a => a.id === id);
+    return acc ? `[${acc.code}] - ${acc.nameAr || acc.name}` : '';
+  }
+
+  onSearchFocus(): void {
+    this.showDropdown = true;
+    if (!this.searchTerm) {
+      this.filteredAccounts = [...this.accounts];
+    }
+  }
+
+  closeDropdown(): void {
+    setTimeout(() => { this.showDropdown = false; }, 200);
   }
 
   cancelEdit(): void {

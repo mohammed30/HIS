@@ -1,5 +1,6 @@
-﻿using Shouldly;
+using Shouldly;
 using System.Threading.Tasks;
+using System.Linq;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
 using Xunit;
@@ -29,6 +30,6 @@ public abstract class SampleAppServiceTests<TStartupModule> : HISApplicationTest
 
         //Assert
         result.TotalCount.ShouldBeGreaterThan(0);
-        result.Items.ShouldContain(u => u.UserName == "admin");
+        result.Items.ShouldContain(u => u.UserName.Equals("adminstaff", System.StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -25,6 +25,13 @@ public class InvoiceDocument : IDocument
     public string Status { get; set; }
     public byte[] LogoBytes { get; set; }
     
+    /// <summary>هل هي فاتورة مرتجع؟</summary>
+    public bool IsReturn { get; set; } = false;
+    /// <summary>رقم الفاتورة الأصلية (لفواتير المرتجع)</summary>
+    public string? OriginalInvoiceNumber { get; set; }
+    /// <summary>طباعة نسختين (أصل وصورة)</summary>
+    public bool PrintTwoCopies { get; set; } = false;
+    
     public List<InvoiceItemModel> Items { get; set; } = new();
     
     public decimal SubTotal { get; set; }
@@ -48,35 +55,53 @@ public class InvoiceDocument : IDocument
 
     public void Compose(IDocumentContainer container)
     {
-        container
-            .Page(page =>
+        // Page 1 (Original - الأصل)
+        container.Page(page =>
+        {
+            page.Size(PageSizes.A4);
+            page.Margin(1.5f, Unit.Centimetre);
+            page.PageColor(Colors.White);
+            page.DefaultTextStyle(x => x.FontSize(12).FontColor(TextDark));
+            page.ContentFromRightToLeft();
+
+            page.Header().Element(c => ComposeHeader(c, "أصل / ORIGINAL"));
+            page.Content().Element(ComposeContent);
+            page.Footer().Element(ComposeFooter);
+        });
+
+        // Page 2 (Copy - الصورة) - only for return invoices
+        if (PrintTwoCopies)
+        {
+            container.Page(page =>
             {
                 page.Size(PageSizes.A4);
                 page.Margin(1.5f, Unit.Centimetre);
                 page.PageColor(Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(12).FontColor(TextDark));
-                page.ContentFromRightToLeft(); // RTL for Arabic
+                page.ContentFromRightToLeft();
 
-                page.Header().Element(ComposeHeader);
+                page.Header().Element(c => ComposeHeader(c, "صورة / COPY"));
                 page.Content().Element(ComposeContent);
                 page.Footer().Element(ComposeFooter);
             });
+        }
     }
 
-    void ComposeHeader(IContainer container)
+    void ComposeHeader(IContainer container, string copyLabel = "")
     {
+        var titleAr = IsReturn ? "مرتجع / RETURN" : "فاتورة / INVOICE";
+        var titleColor = IsReturn ? "#DC3545" : AccentRed;
+
         container.Column(column =>
         {
             // Top header with blue background
             column.Item().Background(PrimaryBlue).PaddingVertical(6).PaddingHorizontal(12).Row(row =>
             {
-                // Logo on the right (RTL)
                 if (LogoBytes != null && LogoBytes.Length > 0)
                     row.ConstantItem(40).AlignMiddle().Image(LogoBytes).FitArea();
                 else
                     row.ConstantItem(40);
 
-                // Hospital info in the center
                 row.RelativeItem().AlignCenter().Column(col =>
                 {
                     col.Item().Text(text =>
@@ -85,25 +110,22 @@ public class InvoiceDocument : IDocument
                         text.Span("ASIA HOSPITAL").FontSize(10).FontColor(TextLight);
                     });
                     if (Tax > 0)
-                    {
-                        col.Item().PaddingTop(2).Text("فاتورة ضريبية / TAX INVOICE")
-                            .FontSize(10)
-                            .FontColor(LightBlue);
-                    }
+                        col.Item().PaddingTop(2).Text("فاتورة ضريبية / TAX INVOICE").FontSize(10).FontColor(LightBlue);
                     else
-                    {
-                        col.Item().PaddingTop(2).Text("فاتورة / INVOICE")
-                            .FontSize(10)
-                            .FontColor(LightBlue);
-                    }
+                        col.Item().PaddingTop(2).Text("نظام معلومات المستشفيات / HIS").FontSize(10).FontColor(LightBlue);
                 });
 
-                row.ConstantItem(40); // Spacer for balance
+                // Copy label on the left
+                if (!string.IsNullOrEmpty(copyLabel))
+                    row.ConstantItem(60).AlignMiddle().AlignCenter()
+                        .Text(copyLabel).FontSize(9).Bold().FontColor(Colors.Yellow.Medium);
+                else
+                    row.ConstantItem(60);
             });
 
             // Invoice Title Bar
-            column.Item().Background(AccentRed).Padding(8).AlignCenter()
-                .Text("فاتورة / INVOICE")
+            column.Item().Background(titleColor).Padding(8).AlignCenter()
+                .Text(titleAr)
                 .FontSize(16)
                 .Bold()
                 .FontColor(TextLight);
@@ -127,10 +149,12 @@ public class InvoiceDocument : IDocument
                 row.ConstantItem(20);
 
                 // Left side: Invoice Info
-                row.RelativeItem().Element(c => ComposeSection(c, "بيانات الفاتورة", comp =>
+                row.RelativeItem().Element(c => ComposeSection(c, IsReturn ? "بيانات المرتجع" : "بيانات الفاتورة", comp =>
                 {
-                    comp.Item().Text(text => { text.Span("رقم الفاتورة: ").Bold(); text.Span(InvoiceNumber ?? "-"); });
+                    comp.Item().Text(text => { text.Span(IsReturn ? "رقم المرتجع: " : "رقم الفاتورة: ").Bold(); text.Span(InvoiceNumber ?? "-"); });
                     comp.Item().Text(text => { text.Span("التاريخ: ").Bold(); text.Span(Date.ToString("yyyy/MM/dd")); });
+                    if (IsReturn && !string.IsNullOrEmpty(OriginalInvoiceNumber))
+                        comp.Item().Text(text => { text.Span("فاتورة الأصل: ").Bold(); text.Span(OriginalInvoiceNumber); });
                     comp.Item().Text(text => { text.Span("الحالة: ").Bold(); text.Span(Status ?? "-"); });
                 }));
             });

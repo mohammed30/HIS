@@ -132,3 +132,113 @@
 .modal-backdrop {
   background-color: rgba(15, 23, 42, 0.55);
 }
+
+/* Custom Searchable Dropdown */
+.custom-search-input {
+  background-color: var(--theme-input-bg, #ffffff);
+  color: var(--theme-text-primary, #212529);
+  border-color: var(--theme-border-color, #cbd5e1);
+  border-radius: 0;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background-color: var(--theme-input-bg, #ffffff);
+    color: var(--theme-text-primary, #212529);
+  }
+
+  &::placeholder {
+    color: var(--theme-text-muted, #94a3b8);
+    font-size: 0.9rem;
+  }
+}
+
+.account-dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--theme-bg-card, #ffffff);
+  border: 1px solid var(--theme-border-color, #cbd5e1);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+}
+
+.account-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--theme-border-color, #f1f5f9);
+  color: var(--theme-text-primary, #1e293b);
+
+  &:last-child { border-bottom: none; }
+
+  &:hover {
+    background-color: var(--theme-hover-bg, #eff6ff);
+    color: #2563eb;
+  }
+
+  &.selected {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    font-weight: 600;
+  }
+}
+
+.acc-code-badge {
+  background: var(--theme-input-bg, #edf2f7);
+  color: var(--theme-text-secondary, #4a5568);
+  padding: 0.15rem 0.5rem;
+  border-radius: 5px;
+  font-family: var(--bs-font-monospace);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--theme-border-color, #e2e8f0);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.acc-name {
+  font-size: 0.9rem;
+  flex: 1;
+  text-align: right;
+}
+
+.account-dropdown-empty {
+  padding: 0.8rem 1rem;
+  color: var(--theme-text-muted, #94a3b8);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.account-dropdown-more {
+  padding: 0.5rem 1rem;
+  color: var(--theme-text-muted, #94a3b8);
+  font-size: 0.8rem;
+  text-align: center;
+  border-top: 1px dashed var(--theme-border-color, #e2e8f0);
+  background: var(--theme-bg-secondary, #f8fafc);
+}
+
+.selected-account-preview {
+  font-size: 0.88rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(59, 130, 246, 0.07);
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--theme-text-primary, #1e293b);
+}
+

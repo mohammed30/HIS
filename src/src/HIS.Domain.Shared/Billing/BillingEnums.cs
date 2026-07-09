@@ -18,7 +18,24 @@ public enum InvoiceStatus
     /// <summary>مؤجلة</summary>
     Deferred = 5,
     /// <summary>مستردة</summary>
-    Refunded = 6
+    Refunded = 6,
+    /// <summary>في انتظار اعتماد المحاسب</summary>
+    PendingApproval = 7,
+    /// <summary>مرفوضة من المحاسب</summary>
+    Rejected = 8,
+    /// <summary>تم صرف الأصناف</summary>
+    Dispensed = 9
+}
+
+/// <summary>
+/// نوع الفاتورة
+/// </summary>
+public enum InvoiceType
+{
+    /// <summary>فاتورة بيع</summary>
+    Sale = 0,
+    /// <summary>فاتورة مرتجع</summary>
+    Return = 1
 }
 
 /// <summary>

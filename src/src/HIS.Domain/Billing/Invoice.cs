@@ -83,6 +83,31 @@ public class Invoice : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Draft;
 
     /// <summary>
+    /// طريقة الدفع
+    /// </summary>
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+
+    /// <summary>
+    /// نوع الفاتورة (بيع / مرتجع)
+    /// </summary>
+    public InvoiceType InvoiceType { get; set; } = InvoiceType.Sale;
+
+    /// <summary>
+    /// سبب الرفض (يُملأ عند رفض الفاتورة)
+    /// </summary>
+    public string? RejectionReason { get; set; }
+
+    /// <summary>
+    /// معرف الفاتورة الأصلية (لفواتير الارتجاع)
+    /// </summary>
+    public Guid? OriginalInvoiceId { get; set; }
+
+    /// <summary>
+    /// رقم الفاتورة الأصلية (لفواتير الارتجاع)
+    /// </summary>
+    public string? OriginalInvoiceNumber { get; set; }
+
+    /// <summary>
     /// تأمين المريض (إن وجد)
     /// </summary>
     public Guid? PatientInsuranceId { get; set; }

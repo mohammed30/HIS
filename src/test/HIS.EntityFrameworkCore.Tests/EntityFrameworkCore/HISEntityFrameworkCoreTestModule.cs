@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -69,7 +69,7 @@ public class HISEntityFrameworkCoreTestModule : AbpModule
 
         using (var context = new HISDbContext(options))
         {
-            context.GetService<IRelationalDatabaseCreator>().CreateTables();
+            context.Database.EnsureCreated();
         }
 
         return connection;

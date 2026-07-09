@@ -131,6 +131,9 @@ public class HISHttpApiHostModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
 
+        // Increase maximum allowed result count to fix validation errors when loading large dropdowns
+        Volo.Abp.Application.Dtos.LimitedResultRequestDto.MaxMaxResultCount = 10000;
+
         if (!configuration.GetValue<bool>("App:DisablePII"))
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
