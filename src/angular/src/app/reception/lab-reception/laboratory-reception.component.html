@@ -556,12 +556,12 @@
                                 </td>
                                 <td class="text-start">{{ item.notes }}</td>
                                 <td>
-                                    <button *ngIf="item.type.includes('Invoice') && item.status !== 4"
+                                    <button *ngIf="isAdminOrAdminStaff && item.type.includes('Invoice') && item.status !== 4"
                                         class="btn btn-xs btn-outline-danger" (click)="cancelInvoice(item)"
                                         title="إلغاء الفاتورة">
                                         <i class="fas fa-ban"></i>
                                     </button>
-                                    <button *ngIf="item.type.includes('Payment') && item.status !== 2"
+                                    <button *ngIf="isAdminOrAdminStaff && item.type.includes('Payment') && item.status !== 2"
                                         class="btn btn-xs btn-outline-warning" (click)="refundPayment(item)"
                                         title="استرداد المبلغ">
                                         <i class="fas fa-undo"></i>

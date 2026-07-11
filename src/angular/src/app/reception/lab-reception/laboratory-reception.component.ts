@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CoreModule, LocalizationService } from '@abp/ng.core';
+import { CoreModule, LocalizationService, ConfigStateService } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
@@ -64,6 +64,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     private clinicService = inject(ClinicService);
     private labService = inject(LabService);
     private confirmation = inject(ConfirmationService);
+    private configState = inject(ConfigStateService);
 
     @ViewChild('testSearchInput') testSearchInput!: ElementRef;
 
@@ -73,6 +74,9 @@ export class LaboratoryReceptionComponent implements OnInit {
     contracts: ContractDto[] = [];
     paymentMethods: PaymentMethodDto[] = [];
     referralSources: ReferralSourceDto[] = [];
+
+    // Role-Based Access
+    isAdminOrAdminStaff: boolean = false;
 
     // Tab State
     activeTab: string = 'lab';
@@ -274,6 +278,17 @@ export class LaboratoryReceptionComponent implements OnInit {
     constructor() { }
 
     ngOnInit() {
+        // Check user roles for admin access
+        const currentUser = this.configState.getDeep('currentUser');
+        const roles: string[] = currentUser?.roles || [];
+        this.isAdminOrAdminStaff = roles.some((r: string) => {
+            const normalized = r.toLowerCase().replace(/\s/g, '');
+            return normalized === 'admin' ||
+                   normalized === 'adminstaff' ||
+                   normalized === 'administrators' ||
+                   normalized === 'his.admin';
+        });
+
         this.loadLabTests();
         this.loadMasterData();
         this.loadClinicData();

@@ -1395,3 +1395,131 @@ html:not([data-theme="dark"]) .vital-card {
     border-radius: 15px !important;
   }
 }
+
+/* ===== SIDEBAR REDESIGN (Premium Clinical) ===== */
+.lpx-sidebar-container,
+.lpx-sidebar,
+.lpx-nav-menu {
+  background-color: #111827 !important;
+  border-right: 1px solid #1f2937 !important;
+}
+
+/* Base item link styling */
+.lpx-nav-menu .lpx-menu-item-link {
+  font-family: 'Cairo', sans-serif !important;
+  color: #9ca3af !important;
+  margin: 0.25rem 1rem !important;
+  padding: 0.6rem 1rem !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  height: auto !important; /* Fix chopped text */
+  min-height: 44px !important; /* Ensure touch target size */
+  line-height: 1.5 !important; /* Fix chopped text */
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Hover state */
+.lpx-nav-menu .lpx-menu-item-link:hover {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  transform: translateX(-4px) !important;
+}
+
+/* Active item highlight */
+.lpx-nav-menu .lpx-menu-item.selected > .lpx-menu-item-link,
+.lpx-nav-menu .lpx-menu-item.active > .lpx-menu-item-link {
+  background-color: rgba(14, 165, 233, 0.15) !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+  box-shadow: inset -4px 0 0 0 #38bdf8 !important;
+}
+
+/* Icons */
+.lpx-nav-menu .lpx-menu-item-link .lpx-icon {
+  color: inherit !important;
+  opacity: 0.75;
+  font-size: 1.1rem !important;
+  margin-left: 0.75rem !important;
+  transition: opacity 0.3s ease !important;
+  height: auto !important; /* Reset forced heights */
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.lpx-nav-menu .lpx-menu-item-link:hover .lpx-icon,
+.lpx-nav-menu .lpx-menu-item.selected > .lpx-menu-item-link .lpx-icon,
+.lpx-nav-menu .lpx-menu-item.active > .lpx-menu-item-link .lpx-icon {
+  opacity: 1;
+}
+
+/* Typography specifics */
+.lpx-nav-menu .lpx-menu-item-link .lpx-menu-item-text {
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* Sub-menus */
+.lpx-nav-menu .lpx-inner-menu {
+  background-color: transparent !important;
+  border-right: 2px solid #1f2937 !important;
+  margin-right: 2rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.lpx-nav-menu .lpx-inner-menu .lpx-menu-item-link {
+  margin: 0.15rem 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.9rem !important;
+  border-radius: 8px !important;
+  min-height: 38px !important;
+}
+
+.lpx-nav-menu .lpx-inner-menu .lpx-menu-item-text {
+  font-weight: 500 !important;
+}
+
+/* Chevron arrow adjustment */
+.lpx-nav-menu .lpx-menu-item-link .lpx-arrow {
+  margin-right: auto !important;
+  margin-left: 0 !important;
+  opacity: 0.5;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.lpx-nav-menu .lpx-menu-item-link:hover .lpx-arrow {
+  opacity: 1;
+}
+
+/* Logo container spacing */
+.lpx-sidebar .lpx-logo-container {
+  padding: 1.5rem 1rem !important;
+  border-bottom: 1px solid #1f2937 !important;
+  margin-bottom: 0 !important;
+  background-color: #111827 !important; /* Solid background to hide scrolling items */
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1020 !important;
+}
+
+/* Global fixes for custom scrollbars to bypass View Encapsulation */
+.account-dropdown-list::-webkit-scrollbar {
+  width: 6px;
+}
+.account-dropdown-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.account-dropdown-list::-webkit-scrollbar-thumb {
+  background: #94a3b8; /* text-muted */
+  border-radius: 3px;
+}
+[data-theme="dark"] .account-dropdown-list::-webkit-scrollbar-thumb,
+.dark .account-dropdown-list::-webkit-scrollbar-thumb {
+  background: #475569;
+}

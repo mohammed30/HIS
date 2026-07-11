@@ -1,7 +1,7 @@
-$ftpHost = "ftp://win9081.site4now.net/site1"
-$user = "asiahospitalt-001"
+$ftpHost = "ftp://win1135.site4now.net/site1"
+$user = "asiahisbackend-001"
 $pass = "Oldlazy@123"
-$localPath = "C:\Users\Mohammed\source\repos\HIS\src\angular\dist\HIS\browser"
+$localPath = "C:\Users\Mohammed\source\repos\HIS\src\publish_backend"
 
 function New-FtpDir ($ftpUri) {
     try {
@@ -30,4 +30,4 @@ foreach ($item in $files) {
         }
     }
 }
-Write-Host "Upload completed."
+Write-Host "Backend upload completed."

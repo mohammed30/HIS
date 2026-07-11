@@ -43,6 +43,42 @@ export class AccountMappingComponent implements OnInit {
     'PatientDeposits': 'أمانات ودفعات مقدمة للمرضى'
   };
 
+  typeDescriptions: Record<string, string> = {
+    'SalesRevenue': 'يستخدم لتسجيل إيرادات المبيعات اليومية بشكل آلي',
+    'CashAccount': 'الحساب النقدي الافتراضي لاستلام الدفعات والصرف',
+    'VATOutput': 'حساب الضريبة المحصلة من العملاء (المبيعات)',
+    'VATInput': 'حساب الضريبة المدفوعة للموردين (المشتريات)',
+    'Inventory': 'يستخدم لتتبع قيمة البضاعة والمخزون الفعلي',
+    'COGS': 'يسجل تكلفة البضاعة المباعة عند صرفها من المخزون',
+    'PatientsReceivable': 'يمثل المبالغ المستحقة على المرضى غير المسددة',
+    'InsuranceReceivable': 'يمثل مطالبات المستشفى لدى شركات التأمين',
+    'InsuranceDiscounts': 'يستخدم لتسجيل الخصومات الممنوحة حسب عقود التأمين',
+    'InventoryAdjustment': 'يستخدم لتسوية الفروقات عند الجرد (عجز أو زيادة)',
+    'AccruedInventory': 'يسجل قيمة البضاعة المستلمة التي لم تصل فواتيرها بعد',
+    'CardPaymentBank': 'يمثل حساب البنك المربوط بأجهزة الدفع الإلكتروني (الشبكة)',
+    'PatientDeposits': 'يسجل المبالغ المدفوعة مقدماً من المرضى قبل تقديم الخدمة'
+  };
+
+  getMappingTypeTranslation(typeName: string): string {
+    if (!typeName) return '';
+    const key = typeName.trim();
+    if (this.typeTranslations[key]) return this.typeTranslations[key];
+    
+    const lowerKey = key.toLowerCase();
+    const foundKey = Object.keys(this.typeTranslations).find(k => k.toLowerCase() === lowerKey);
+    return foundKey ? this.typeTranslations[foundKey] : key;
+  }
+
+  getMappingDescriptionTranslation(typeName: string): string {
+    if (!typeName) return '';
+    const key = typeName.trim();
+    if (this.typeDescriptions[key]) return this.typeDescriptions[key];
+    
+    const lowerKey = key.toLowerCase();
+    const foundKey = Object.keys(this.typeDescriptions).find(k => k.toLowerCase() === lowerKey);
+    return foundKey ? this.typeDescriptions[foundKey] : '';
+  }
+
   constructor(
     private mappingService: AccountMappingService,
     private accountService: AccountService,

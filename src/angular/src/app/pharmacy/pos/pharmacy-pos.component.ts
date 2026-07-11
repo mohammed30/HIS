@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CoreModule } from '@abp/ng.core';
@@ -61,58 +61,435 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
   standalone: true,
   imports: [CommonModule, ThemeSharedModule, CoreModule, FormsModule],
   styles: [`
-    .step-badge {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem;
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;500;700;800&display=swap');
+
+    :host {
+      --pos-bg: #0f1623;
+      --pos-card: #1a2235;
+      --pos-card2: #1f2a3d;
+      --pos-border: #2a3a54;
+      --pos-accent: #38bdf8;
+      --pos-accent2: #818cf8;
+      --pos-success: #34d399;
+      --pos-danger: #f87171;
+      --pos-warning: #fbbf24;
+      --pos-text: #e2e8f0;
+      --pos-muted: #94a3b8;
+      font-family: 'Cairo', sans-serif;
     }
-    .tab-pill {
-      border-radius: 20px; padding: 6px 18px;
-      border: 2px solid transparent; cursor: pointer;
-      font-weight: 600; transition: all 0.2s;
+
+    .pos-shell {
+      min-height: 100vh;
+      background: var(--pos-bg);
+      padding: 1.5rem;
+      color: var(--pos-text);
+      font-family: 'Cairo', sans-serif;
     }
-    .tab-pill.active { border-color: #0d6efd; background: #0d6efd; color: #fff; }
-    .tab-pill:not(.active) { border-color: #dee2e6; color: #6c757d; }
-    .tab-pill:not(.active):hover { border-color: #adb5bd; color: #343a40; }
-    .workflow-step {
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 16px; border-radius: 10px; margin-bottom: 8px;
-      border: 1px solid #e9ecef;
+
+    /* ─── Header ─── */
+    .pos-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-    .workflow-step.active { background: #e7f3ff; border-color: #0d6efd; }
-    .workflow-step.done { background: #d4edda; border-color: #28a745; }
-    .invoice-card {
-      border-radius: 12px; border: 1px solid #dee2e6;
-      transition: box-shadow 0.2s;
+    .pos-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    .invoice-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-    .refund-item-row { padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 6px; }
-    .refund-item-row.selected { background: #fff3cd; border-color: #ffc107; }
-    .return-badge { background: #dc3545; color: white; padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; }
+    .pos-icon-wrap {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--pos-accent), var(--pos-accent2));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: #fff;
+      box-shadow: 0 8px 20px rgba(56,189,248,0.3);
+    }
+    .pos-title h1 {
+      font-size: 1.35rem; font-weight: 800; margin: 0;
+      background: linear-gradient(135deg, var(--pos-accent), var(--pos-accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .pos-title p { margin: 0; font-size: 0.82rem; color: var(--pos-muted); }
+
+    /* ─── Tabs ─── */
+    .pos-tabs {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .pos-tab {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1.2rem;
+      border-radius: 12px;
+      border: 1px solid var(--pos-border);
+      background: var(--pos-card);
+      color: var(--pos-muted);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600; font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .pos-tab:hover { border-color: var(--pos-accent); color: var(--pos-text); }
+    .pos-tab.active {
+      background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(129,140,248,0.15));
+      border-color: var(--pos-accent);
+      color: var(--pos-accent);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.2);
+    }
+    .tab-badge {
+      background: var(--pos-warning);
+      color: #111; border-radius: 8px;
+      padding: 1px 7px; font-size: 0.72rem; font-weight: 700;
+    }
+    .tab-badge.green { background: var(--pos-success); }
+
+    /* ─── Workflow Steps ─── */
+    .pos-steps {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--pos-card);
+      border: 1px solid var(--pos-border);
+      border-radius: 16px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      flex: 1; min-width: 150px;
+    }
+    .step-num {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem;
+      background: var(--pos-card2); color: var(--pos-muted);
+      border: 2px solid var(--pos-border);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .step-item.active .step-num {
+      background: linear-gradient(135deg, var(--pos-accent), var(--pos-accent2));
+      color: #fff; border-color: transparent;
+      box-shadow: 0 0 16px rgba(56,189,248,0.4);
+    }
+    .step-item.done .step-num {
+      background: var(--pos-success); color: #fff; border-color: transparent;
+    }
+    .step-label { font-size: 0.85rem; font-weight: 700; color: var(--pos-text); }
+    .step-sub { font-size: 0.72rem; color: var(--pos-muted); }
+    .step-arrow { color: var(--pos-border); font-size: 0.8rem; }
+
+    /* ─── Cards ─── */
+    .pos-card {
+      background: var(--pos-card);
+      border: 1px solid var(--pos-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .pos-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--pos-border);
+      background: var(--pos-card2);
+    }
+    .pos-card-title {
+      font-weight: 700; font-size: 0.95rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* ─── Search Input ─── */
+    .pos-search-group {
+      display: flex; gap: 0;
+      background: var(--pos-card2);
+      border: 1px solid var(--pos-border);
+      border-radius: 12px; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .pos-search-group:focus-within { border-color: var(--pos-accent); }
+    .pos-search-icon {
+      padding: 0 1rem; color: var(--pos-muted);
+      display: flex; align-items: center;
+    }
+    .pos-search-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--pos-text); font-family: 'Cairo', sans-serif;
+      font-size: 0.95rem; padding: 0.75rem 0;
+    }
+    .pos-search-input::placeholder { color: var(--pos-muted); }
+    .pos-btn-add {
+      background: linear-gradient(135deg, var(--pos-accent), var(--pos-accent2));
+      border: none; color: #fff; padding: 0.75rem 1.5rem;
+      font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.88rem;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .pos-btn-add:hover { opacity: 0.9; }
+
+    /* ─── Search Dropdown ─── */
+    .search-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 999;
+      background: var(--pos-card2);
+      border: 1px solid var(--pos-border);
+      border-top: none; border-radius: 0 0 12px 12px;
+      max-height: 220px; overflow-y: auto;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      scrollbar-width: thin; scrollbar-color: var(--pos-border) transparent;
+    }
+    .search-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.65rem 1rem; cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+    }
+    .search-item:hover { background: rgba(56,189,248,0.08); }
+    .search-item-name { font-weight: 700; font-size: 0.88rem; }
+    .search-item-code { font-size: 0.75rem; color: var(--pos-muted); }
+    .stock-badge {
+      padding: 2px 10px; border-radius: 8px;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .stock-ok { background: rgba(52,211,153,0.15); color: var(--pos-success); }
+    .stock-low { background: rgba(248,113,113,0.15); color: var(--pos-danger); }
+
+    /* ─── Cart Table ─── */
+    .cart-table { width: 100%; border-collapse: collapse; }
+    .cart-table th {
+      padding: 0.65rem 1rem; font-size: 0.8rem; font-weight: 700;
+      color: var(--pos-muted); text-transform: uppercase; letter-spacing: 0.04em;
+      background: var(--pos-card2); border-bottom: 1px solid var(--pos-border);
+    }
+    .cart-table td {
+      padding: 0.7rem 1rem; font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--pos-text);
+    }
+    .cart-table tr:hover td { background: rgba(56,189,248,0.04); }
+    .cart-table tr:last-child td { border-bottom: none; }
+    .item-name { font-weight: 700; font-size: 0.9rem; }
+    .item-code { font-size: 0.73rem; color: var(--pos-muted); }
+    .qty-input {
+      width: 72px; background: var(--pos-card2);
+      border: 1px solid var(--pos-border); border-radius: 8px;
+      color: var(--pos-text); text-align: center; padding: 4px 8px;
+      font-family: 'Outfit', sans-serif; font-weight: 700;
+    }
+    .qty-input:focus { outline: none; border-color: var(--pos-accent); }
+    .cart-empty {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--pos-muted); font-size: 0.9rem;
+    }
+    .cart-empty i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; display: block; }
+
+    /* ─── Summary Panel ─── */
+    .summary-panel {
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .total-card {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 16px; padding: 1.5rem; text-align: center;
+      box-shadow: 0 8px 30px rgba(14,165,233,0.3);
+    }
+    .total-label { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-bottom: 0.25rem; }
+    .total-value { font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 800; color: #fff; }
+    .total-currency { font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 0.2rem; }
+
+    .pos-form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .pos-label { font-size: 0.82rem; font-weight: 700; color: var(--pos-muted); }
+    .pos-input, .pos-textarea {
+      background: var(--pos-card2); border: 1px solid var(--pos-border);
+      border-radius: 10px; color: var(--pos-text); padding: 0.65rem 1rem;
+      font-family: 'Cairo', sans-serif; font-size: 0.9rem;
+      transition: border-color 0.2s; width: 100%; box-sizing: border-box;
+    }
+    .pos-input:focus, .pos-textarea:focus { outline: none; border-color: var(--pos-accent); }
+    .pos-input::placeholder, .pos-textarea::placeholder { color: var(--pos-muted); }
+
+    /* ─── Buttons ─── */
+    .btn-pos-primary {
+      background: linear-gradient(135deg, var(--pos-accent), var(--pos-accent2));
+      border: none; border-radius: 12px; color: #fff;
+      padding: 0.75rem 1.5rem; font-family: 'Cairo', sans-serif;
+      font-weight: 700; font-size: 0.92rem; cursor: pointer;
+      transition: all 0.2s; width: 100%;
+    }
+    .btn-pos-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-pos-primary:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+
+    .btn-pos-success {
+      background: linear-gradient(135deg, #059669, #34d399);
+      border: none; border-radius: 10px; color: #fff;
+      padding: 0.6rem 1.2rem; font-family: 'Cairo', sans-serif;
+      font-weight: 700; font-size: 0.88rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-pos-success:hover { opacity: 0.9; }
+    .btn-pos-success:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-pos-danger {
+      background: linear-gradient(135deg, #dc2626, #f87171);
+      border: none; border-radius: 10px; color: #fff;
+      padding: 0.6rem 1.2rem; font-family: 'Cairo', sans-serif;
+      font-weight: 700; font-size: 0.88rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-pos-danger:hover { opacity: 0.9; }
+
+    .btn-pos-ghost {
+      background: transparent; border: 1px solid var(--pos-border);
+      border-radius: 10px; color: var(--pos-muted);
+      padding: 0.6rem 1.2rem; font-family: 'Cairo', sans-serif;
+      font-weight: 600; font-size: 0.88rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-pos-ghost:hover { border-color: var(--pos-accent); color: var(--pos-accent); }
+
+    .btn-icon {
+      background: transparent; border: 1px solid var(--pos-border);
+      border-radius: 8px; color: var(--pos-muted);
+      padding: 0.4rem 0.65rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-icon:hover { border-color: var(--pos-danger); color: var(--pos-danger); }
+
+    /* ─── Invoice Cards (Queues) ─── */
+    .inv-card {
+      background: var(--pos-card);
+      border: 1px solid var(--pos-border);
+      border-radius: 14px; overflow: hidden;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .inv-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3); transform: translateY(-2px); }
+    .inv-card-head {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--pos-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .inv-number { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.9rem; }
+    .inv-status {
+      padding: 3px 10px; border-radius: 8px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .status-pending { background: rgba(251,191,36,0.15); color: var(--pos-warning); }
+    .status-paid { background: rgba(52,211,153,0.15); color: var(--pos-success); }
+    .status-rejected { background: rgba(248,113,113,0.15); color: var(--pos-danger); }
+
+    .inv-card-body { padding: 1rem; }
+    .inv-meta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.83rem; color: var(--pos-muted); margin-bottom: 0.4rem; }
+    .inv-items { margin-top: 0.5rem; }
+    .inv-item-line { font-size: 0.82rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .inv-total {
+      margin-top: 0.75rem; padding-top: 0.75rem;
+      border-top: 1px solid var(--pos-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .inv-total-val { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--pos-accent); }
+    .inv-card-foot {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--pos-border);
+      background: var(--pos-card2);
+    }
+
+    /* ─── Section headings ─── */
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .section-title {
+      font-size: 1rem; font-weight: 800;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* ─── Approve/Reject inline form ─── */
+    .inline-form { background: var(--pos-card2); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; }
+    .inline-label { font-size: 0.78rem; font-weight: 700; color: var(--pos-muted); margin-bottom: 0.3rem; }
+    .inline-input, .inline-select {
+      width: 100%; background: var(--pos-bg);
+      border: 1px solid var(--pos-border); border-radius: 8px;
+      color: var(--pos-text); padding: 0.5rem 0.75rem;
+      font-family: 'Cairo', sans-serif; font-size: 0.88rem;
+    }
+    .inline-input:focus, .inline-select:focus { outline: none; border-color: var(--pos-accent); }
+    .inline-select option { background: var(--pos-card); }
+
+    /* ─── Return Module ─── */
+    .return-item {
+      background: var(--pos-card2); border: 1px solid var(--pos-border);
+      border-radius: 10px; padding: 0.75rem; margin-bottom: 0.5rem;
+      transition: border-color 0.2s;
+    }
+    .return-item.selected { border-color: var(--pos-warning); background: rgba(251,191,36,0.06); }
+    .return-total-box {
+      background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 12px; padding: 1rem;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 0.75rem;
+    }
+    .return-total-label { font-weight: 700; font-size: 0.9rem; }
+    .return-total-val { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--pos-danger); }
+
+    /* ─── Success state ─── */
+    .success-state {
+      text-align: center; padding: 3rem 2rem;
+    }
+    .success-emoji { font-size: 4rem; margin-bottom: 1rem; }
+    .success-title { font-size: 1.3rem; font-weight: 800; color: var(--pos-success); }
+
+    /* ─── Utility ─── */
+    .row-pos { display: flex; gap: 1.25rem; }
+    .col-pos-8 { flex: 0 0 calc(65% - 0.625rem); }
+    .col-pos-4 { flex: 0 0 calc(35% - 0.625rem); }
+    @media(max-width: 900px) { .row-pos { flex-direction: column; } .col-pos-8, .col-pos-4 { flex: 1; } }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .gap-2 { gap: 0.5rem; }
+    .d-flex { display: flex; }
+    .align-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .w-100 { width: 100%; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .text-sm { font-size: 0.82rem; }
+    .text-muted-c { color: var(--pos-muted); }
+    .fw-700 { font-weight: 700; }
+    .fw-800 { font-weight: 800; }
+    .text-center { text-align: center; }
+    .text-danger { color: var(--pos-danger); }
+    .text-success { color: var(--pos-success); }
+    .text-accent { color: var(--pos-accent); }
+    .pos-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .rejection-alert { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 0.83rem; }
+    .p-1rem { padding: 1rem; }
   `],
   template: `
-  <div class="container-fluid py-3">
+  <div class="pos-shell">
 
-    <!-- ─── Page Header ─── -->
-    <div class="d-flex align-items-center justify-content-between mb-4">
-      <div>
-        <h4 class="mb-1 fw-bold"><i class="fas fa-cash-register text-primary me-2"></i>نقطة البيع - الصيدلية</h4>
-        <small class="text-muted">إدارة المبيعات والارتجاع وفق مسار العمل المعتمد</small>
+    <!-- ─── Header ─── -->
+    <div class="pos-header">
+      <div class="pos-title">
+        <div class="pos-icon-wrap"><i class="fas fa-cash-register"></i></div>
+        <div>
+          <h1>نقطة البيع – الصيدلية</h1>
+          <p>إدارة المبيعات والارتجاع وفق مسار العمل المعتمد</p>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap justify-content-end">
-        <button class="tab-pill" [class.active]="activeTab==='new-sale'" (click)="setTab('new-sale')">
-          <i class="fas fa-plus me-1"></i> فاتورة جديدة
+      <div class="pos-tabs">
+        <button class="pos-tab" [class.active]="activeTab==='new-sale'" (click)="setTab('new-sale')">
+          <i class="fas fa-plus"></i> فاتورة جديدة
         </button>
-        <button class="tab-pill" [class.active]="activeTab==='pending-approval'" (click)="setTab('pending-approval')">
-          <i class="fas fa-clock me-1"></i> بانتظار الاعتماد
-          <span *ngIf="pendingApprovalCount > 0" class="badge bg-warning text-dark ms-1">{{ pendingApprovalCount }}</span>
+        <button class="pos-tab" [class.active]="activeTab==='pending-approval'" (click)="setTab('pending-approval')">
+          <i class="fas fa-clock"></i> الاعتماد
+          <span *ngIf="pendingApprovalCount > 0" class="tab-badge">{{ pendingApprovalCount }}</span>
         </button>
-        <button class="tab-pill" [class.active]="activeTab==='to-dispense'" (click)="setTab('to-dispense')">
-          <i class="fas fa-pills me-1"></i> للصرف
-          <span *ngIf="toDispenseCount > 0" class="badge bg-success ms-1">{{ toDispenseCount }}</span>
+        <button class="pos-tab" [class.active]="activeTab==='to-dispense'" (click)="setTab('to-dispense')">
+          <i class="fas fa-pills"></i> للصرف
+          <span *ngIf="toDispenseCount > 0" class="tab-badge green">{{ toDispenseCount }}</span>
         </button>
-        <button class="tab-pill" [class.active]="activeTab==='return'" (click)="setTab('return')">
-          <i class="fas fa-undo me-1"></i> الارتجاع
+        <button class="pos-tab" [class.active]="activeTab==='return'" (click)="setTab('return')">
+          <i class="fas fa-undo"></i> الارتجاع
         </button>
       </div>
     </div>
@@ -122,64 +499,59 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
     <!-- ══════════════════════════════════════════════════════════ -->
     <div *ngIf="activeTab==='new-sale'">
 
-      <!-- Workflow Steps Indicator -->
-      <div class="card mb-3 border-0 shadow-sm">
-        <div class="card-body py-3">
-          <div class="d-flex align-items-center gap-3 flex-wrap">
-            <div class="workflow-step flex-fill" [class.active]="saleStep==='cart'" [class.done]="saleStep==='review'||saleStep==='sent'">
-              <span class="step-badge" [class.bg-primary]="saleStep==='cart'" [class.text-white]="saleStep==='cart'" [class.bg-success]="saleStep!=='cart'" [class.text-white]="saleStep!=='cart'">1</span>
-              <div><div class="fw-bold small">إنشاء الفاتورة</div><div class="text-muted" style="font-size:0.75rem">إدخال الأصناف والكميات</div></div>
-            </div>
-            <i class="fas fa-arrow-left text-muted"></i>
-            <div class="workflow-step flex-fill" [class.active]="saleStep==='review'" [class.done]="saleStep==='sent'">
-              <span class="step-badge" [class.bg-primary]="saleStep==='review'" [class.text-white]="saleStep==='review'" [class.bg-success]="saleStep==='sent'" [class.text-white]="saleStep==='sent'" [class.bg-light]="saleStep==='cart'">2</span>
-              <div><div class="fw-bold small">مراجعة الفاتورة</div><div class="text-muted" style="font-size:0.75rem">مراجعة البيانات والإجمالي</div></div>
-            </div>
-            <i class="fas fa-arrow-left text-muted"></i>
-            <div class="workflow-step flex-fill" [class.active]="saleStep==='sent'">
-              <span class="step-badge" [class.bg-info]="saleStep==='sent'" [class.text-white]="saleStep==='sent'" [class.bg-light]="saleStep!=='sent'">3</span>
-              <div><div class="fw-bold small">إرسال للمحاسب</div><div class="text-muted" style="font-size:0.75rem">في انتظار الاعتماد</div></div>
-            </div>
+      <!-- Workflow Steps -->
+      <div class="pos-steps">
+        <div class="step-item" [class.active]="saleStep==='cart'" [class.done]="saleStep==='review'||saleStep==='sent'">
+          <div class="step-num">
+            <i *ngIf="saleStep==='review'||saleStep==='sent'" class="fas fa-check" style="font-size:0.8rem"></i>
+            <span *ngIf="saleStep==='cart'">1</span>
           </div>
+          <div><div class="step-label">إنشاء الفاتورة</div><div class="step-sub text-muted-c">إدخال الأصناف والكميات</div></div>
+        </div>
+        <i class="fas fa-arrow-left step-arrow"></i>
+        <div class="step-item" [class.active]="saleStep==='review'" [class.done]="saleStep==='sent'">
+          <div class="step-num">
+            <i *ngIf="saleStep==='sent'" class="fas fa-check" style="font-size:0.8rem"></i>
+            <span *ngIf="saleStep!=='sent'">2</span>
+          </div>
+          <div><div class="step-label">مراجعة الفاتورة</div><div class="step-sub text-muted-c">مراجعة البيانات والإجمالي</div></div>
+        </div>
+        <i class="fas fa-arrow-left step-arrow"></i>
+        <div class="step-item" [class.active]="saleStep==='sent'">
+          <div class="step-num">3</div>
+          <div><div class="step-label">إرسال للمحاسب</div><div class="step-sub text-muted-c">في انتظار الاعتماد</div></div>
         </div>
       </div>
 
       <!-- STEP 1: Cart -->
       <div *ngIf="saleStep==='cart'">
-        <div class="row g-3">
-          <!-- Left: Search & Cart -->
-          <div class="col-lg-8">
-            <!-- Search / Barcode -->
-            <div class="card mb-3 shadow-sm">
-              <div class="card-body">
-                <div class="input-group">
-                  <span class="input-group-text"><i class="fas fa-barcode"></i></span>
-                  <input type="text" class="form-control" [(ngModel)]="searchQuery"
+        <div class="row-pos">
+          <!-- Search + Cart -->
+          <div class="col-pos-8">
+            <!-- Search -->
+            <div class="pos-card mb-3">
+              <div class="p-1rem" style="position:relative">
+                <div class="pos-search-group">
+                  <span class="pos-search-icon"><i class="fas fa-barcode"></i></span>
+                  <input class="pos-search-input" [(ngModel)]="searchQuery"
                     (keyup.enter)="searchOrScan()"
-                    placeholder="امسح الباركود أو ابحث عن الدواء..."
-                    autofocus>
-                  <button class="btn btn-outline-secondary" (click)="toggleSearch()">
-                    <i class="fas" [class.fa-search]="!showSearchResults" [class.fa-times]="showSearchResults"></i>
-                  </button>
-                  <button class="btn btn-primary" (click)="searchOrScan()">
-                    <i class="fas fa-plus me-1"></i> إضافة
+                    placeholder="امسح الباركود أو ابحث عن الدواء..." autofocus>
+                  <button class="pos-btn-add" (click)="searchOrScan()">
+                    <i class="fas fa-plus"></i> إضافة
                   </button>
                 </div>
-                <!-- Search Results Dropdown -->
-                <div *ngIf="showSearchResults && searchResults.length > 0"
-                  class="border rounded mt-1 shadow-sm" style="max-height:200px;overflow-y:auto;">
-                  <div *ngFor="let p of searchResults"
-                    class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
-                    style="cursor:pointer" (click)="addProductToCart(p)">
+                <!-- Dropdown -->
+                <div *ngIf="showSearchResults && searchResults.length > 0" class="search-dropdown">
+                  <div *ngFor="let p of searchResults" class="search-item" (click)="addProductToCart(p)">
                     <div>
-                      <strong>{{ p.name }}</strong>
-                      <small class="text-muted ms-2">{{ p.barcode }}</small>
+                      <div class="search-item-name">{{ p.name }}</div>
+                      <div class="search-item-code">{{ p.barcode }}</div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                      <span class="badge" [class.bg-success]="(p.currentStock||0)>0" [class.bg-danger]="(p.currentStock||0)<=0">
+                    <div class="d-flex align-center gap-2">
+                      <span class="stock-badge" [class.stock-ok]="(p.currentStock||0)>0" [class.stock-low]="(p.currentStock||0)<=0">
                         {{ p.currentStock || 0 }}
                       </span>
-                      <strong class="text-primary">{{ p.price | number:'1.2-2' }} ج.م</strong>
+                      <span class="fw-700 text-accent" style="font-family:'Outfit',sans-serif">{{ p.price | number:'1.2-2' }}</span>
                     </div>
                   </div>
                 </div>
@@ -187,53 +559,52 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
             </div>
 
             <!-- Cart Table -->
-            <div class="card shadow-sm">
-              <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold"><i class="fas fa-shopping-cart text-primary me-2"></i>قائمة الأصناف</h6>
-                <button *ngIf="cart.length > 0" class="btn btn-sm btn-outline-danger" (click)="clearCart()">
-                  <i class="fas fa-trash me-1"></i>مسح الكل
+            <div class="pos-card">
+              <div class="pos-card-header">
+                <span class="pos-card-title"><i class="fas fa-shopping-cart text-accent"></i> قائمة الأصناف</span>
+                <button *ngIf="cart.length > 0" class="btn-pos-danger" style="padding:0.35rem 0.9rem;font-size:0.8rem" (click)="clearCart()">
+                  <i class="fas fa-trash"></i> مسح
                 </button>
               </div>
-              <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                  <thead class="table-light">
+              <div style="overflow-x:auto">
+                <table class="cart-table">
+                  <thead>
                     <tr>
                       <th>الصنف</th>
-                      <th class="text-center" width="100">المخزون</th>
-                      <th class="text-center" width="100">السعر</th>
-                      <th class="text-center" width="110">الكمية</th>
-                      <th class="text-center" width="110">الإجمالي</th>
-                      <th width="50"></th>
+                      <th class="text-center" style="width:80px">المخزون</th>
+                      <th class="text-center" style="width:90px">السعر</th>
+                      <th class="text-center" style="width:100px">الكمية</th>
+                      <th class="text-center" style="width:100px">الإجمالي</th>
+                      <th style="width:44px"></th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let item of cart; let i = index">
                       <td>
-                        <div class="fw-semibold">{{ item.name }}</div>
-                        <small class="text-muted">{{ item.barcode }}</small>
+                        <div class="item-name">{{ item.name }}</div>
+                        <div class="item-code">{{ item.barcode }}</div>
                       </td>
                       <td class="text-center">
-                        <span class="badge" [class.bg-success]="(item.currentStock||0)>0" [class.bg-danger]="(item.currentStock||0)<=0">
+                        <span class="stock-badge" [class.stock-ok]="(item.currentStock||0)>0" [class.stock-low]="(item.currentStock||0)<=0">
                           {{ item.currentStock || 0 }}
                         </span>
                       </td>
-                      <td class="text-center">{{ item.price | number:'1.2-2' }}</td>
-                      <td>
-                        <input type="number" class="form-control form-control-sm text-center"
-                          [(ngModel)]="item.quantity" (change)="recalcTotal()" min="1"
-                          [max]="item.currentStock || 9999" style="width:80px;margin:auto">
+                      <td class="text-center fw-700" style="font-family:'Outfit',sans-serif">{{ item.price | number:'1.2-2' }}</td>
+                      <td class="text-center">
+                        <input type="number" class="qty-input" [(ngModel)]="item.quantity"
+                          (change)="recalcTotal()" min="1" [max]="item.currentStock || 9999">
                       </td>
-                      <td class="text-center fw-bold">{{ (item.price || 0) * item.quantity | number:'1.2-2' }}</td>
+                      <td class="text-center fw-800 text-accent" style="font-family:'Outfit',sans-serif">
+                        {{ (item.price || 0) * item.quantity | number:'1.2-2' }}
+                      </td>
                       <td>
-                        <button class="btn btn-sm btn-outline-danger" (click)="removeFromCart(i)">
-                          <i class="fas fa-trash"></i>
-                        </button>
+                        <button class="btn-icon" (click)="removeFromCart(i)" title="حذف"><i class="fas fa-trash"></i></button>
                       </td>
                     </tr>
                     <tr *ngIf="cart.length === 0">
-                      <td colspan="6" class="text-center py-5 text-muted">
-                        <i class="fas fa-shopping-cart fa-2x mb-2 d-block"></i>
-                        السلة فارغة - ابحث عن دواء وأضفه
+                      <td colspan="6" class="cart-empty">
+                        <i class="fas fa-shopping-cart"></i>
+                        السلة فارغة — ابحث عن دواء وأضفه
                       </td>
                     </tr>
                   </tbody>
@@ -242,25 +613,25 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
             </div>
           </div>
 
-          <!-- Right: Summary -->
-          <div class="col-lg-4">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body text-center py-4" style="background:linear-gradient(135deg,#0d6efd,#0a58ca);border-radius:inherit">
-                <div class="text-white mb-1" style="font-size:0.85rem">الإجمالي</div>
-                <div class="text-white fw-bold" style="font-size:2rem">{{ cartTotal | number:'1.2-2' }}</div>
-                <div class="text-white-50" style="font-size:0.8rem">جنيه مصري</div>
+          <!-- Summary Panel -->
+          <div class="col-pos-4">
+            <div class="summary-panel">
+              <div class="total-card">
+                <div class="total-label">الإجمالي</div>
+                <div class="total-value">{{ cartTotal | number:'1.2-2' }}</div>
+                <div class="total-currency">جنيه مصري</div>
               </div>
-              <div class="card-body">
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">اسم المريض (اختياري)</label>
-                  <input type="text" class="form-control" [(ngModel)]="patientSearchName" placeholder="بحث عن مريض...">
+              <div class="pos-card p-1rem">
+                <div class="pos-form-group mb-3">
+                  <label class="pos-label">اسم المريض (اختياري)</label>
+                  <input type="text" class="pos-input" [(ngModel)]="patientSearchName" placeholder="بحث عن مريض...">
                 </div>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">ملاحظات</label>
-                  <textarea class="form-control" [(ngModel)]="saleNotes" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+                <div class="pos-form-group mb-3">
+                  <label class="pos-label">ملاحظات</label>
+                  <textarea class="pos-textarea" [(ngModel)]="saleNotes" rows="2" placeholder="ملاحظات إضافية..."></textarea>
                 </div>
-                <button class="btn btn-success w-100 py-2 fw-bold" (click)="goToReview()" [disabled]="cart.length === 0">
-                  <i class="fas fa-eye me-2"></i>مراجعة الفاتورة
+                <button class="btn-pos-primary" (click)="goToReview()" [disabled]="cart.length === 0">
+                  <i class="fas fa-eye"></i> مراجعة الفاتورة
                 </button>
               </div>
             </div>
@@ -270,15 +641,15 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
 
       <!-- STEP 2: Review -->
       <div *ngIf="saleStep==='review'">
-        <div class="row g-3">
-          <div class="col-lg-8">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white">
-                <h6 class="mb-0 fw-bold text-primary"><i class="fas fa-file-invoice me-2"></i>مراجعة الفاتورة قبل الإرسال</h6>
+        <div class="row-pos">
+          <div class="col-pos-8">
+            <div class="pos-card">
+              <div class="pos-card-header">
+                <span class="pos-card-title"><i class="fas fa-file-invoice text-accent"></i> مراجعة الفاتورة</span>
               </div>
-              <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                  <thead class="table-light">
+              <div style="overflow-x:auto">
+                <table class="cart-table">
+                  <thead>
                     <tr>
                       <th>الصنف</th>
                       <th class="text-center">الكمية</th>
@@ -288,178 +659,157 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
                   </thead>
                   <tbody>
                     <tr *ngFor="let item of cart">
-                      <td><strong>{{ item.name }}</strong></td>
-                      <td class="text-center">{{ item.quantity }}</td>
-                      <td class="text-center">{{ item.price | number:'1.2-2' }}</td>
-                      <td class="text-center fw-bold">{{ (item.price || 0) * item.quantity | number:'1.2-2' }}</td>
+                      <td class="fw-700">{{ item.name }}</td>
+                      <td class="text-center fw-700" style="font-family:'Outfit',sans-serif">{{ item.quantity }}</td>
+                      <td class="text-center" style="font-family:'Outfit',sans-serif">{{ item.price | number:'1.2-2' }}</td>
+                      <td class="text-center fw-800 text-accent" style="font-family:'Outfit',sans-serif">{{ (item.price || 0) * item.quantity | number:'1.2-2' }}</td>
                     </tr>
                   </tbody>
-                  <tfoot class="table-light">
+                  <tfoot>
                     <tr>
-                      <td colspan="3" class="text-start fw-bold">الإجمالي الكلي:</td>
-                      <td class="text-center fw-bold text-success fs-5">{{ cartTotal | number:'1.2-2' }} ج.م</td>
+                      <td colspan="3" class="fw-700" style="padding:0.75rem 1rem;border-top:1px solid var(--pos-border)">الإجمالي الكلي:</td>
+                      <td class="text-center fw-800 text-success" style="font-family:'Outfit',sans-serif;font-size:1.2rem;padding:0.75rem 1rem;border-top:1px solid var(--pos-border)">{{ cartTotal | number:'1.2-2' }} ج.م</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
-              <div class="card-footer bg-white d-flex gap-2 justify-content-end">
-                <button class="btn btn-outline-secondary" (click)="saleStep='cart'">
-                  <i class="fas fa-arrow-right me-1"></i>تعديل
-                </button>
-                <button class="btn btn-primary px-4" (click)="submitForApproval()" [disabled]="isBusy">
-                  <span *ngIf="isBusy" class="spinner-border spinner-border-sm me-1"></span>
-                  <i class="fas fa-paper-plane me-1" *ngIf="!isBusy"></i>
-                  إرسال للمحاسب
+              <div style="padding:1rem;display:flex;gap:0.75rem;justify-content:flex-end;border-top:1px solid var(--pos-border)">
+                <button class="btn-pos-ghost" (click)="saleStep='cart'"><i class="fas fa-arrow-right"></i> تعديل</button>
+                <button class="btn-pos-primary" style="width:auto;padding:0.65rem 2rem" (click)="submitForApproval()" [disabled]="isBusy">
+                  <span *ngIf="isBusy" class="pos-spinner"></span>
+                  <i *ngIf="!isBusy" class="fas fa-paper-plane"></i> إرسال للمحاسب
                 </button>
               </div>
             </div>
           </div>
-          <div class="col-lg-4">
-            <div class="card shadow-sm border-warning">
-              <div class="card-body">
-                <h6 class="fw-bold text-warning"><i class="fas fa-info-circle me-2"></i>ملاحظات الإرسال</h6>
-                <p class="small text-muted mb-0">بعد الإرسال ستنتقل الفاتورة لقائمة <strong>انتظار الاعتماد</strong> عند المحاسب. ستتمكن من صرف الأصناف فقط بعد موافقة المحاسب.</p>
+          <div class="col-pos-4">
+            <div class="pos-card p-1rem" style="border-color:rgba(251,191,36,0.3)">
+              <div class="d-flex align-center gap-2 mb-2">
+                <i class="fas fa-info-circle" style="color:var(--pos-warning)"></i>
+                <span class="fw-700" style="color:var(--pos-warning)">ملاحظات الإرسال</span>
               </div>
+              <p class="text-sm text-muted-c mb-1">بعد الإرسال ستنتقل الفاتورة لقائمة <strong style="color:var(--pos-text)">انتظار الاعتماد</strong> عند المحاسب.</p>
+              <p class="text-sm text-muted-c mb-1">ستتمكن من صرف الأصناف فقط بعد موافقة المحاسب.</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- STEP 3: Sent -->
-      <div *ngIf="saleStep==='sent'" class="text-center py-5">
-        <div class="mb-4" style="font-size:4rem">✅</div>
-        <h4 class="fw-bold text-success">تم إرسال الفاتورة للمحاسب بنجاح!</h4>
-        <p class="text-muted mb-4">الفاتورة في انتظار مراجعة واعتماد المحاسب.</p>
-        <div class="d-flex gap-2 justify-content-center">
-          <button class="btn btn-outline-primary" (click)="setTab('pending-approval')">
-            <i class="fas fa-clock me-1"></i>عرض الفواتير المعلقة
-          </button>
-          <button class="btn btn-success px-4" (click)="startNewSale()">
-            <i class="fas fa-plus me-1"></i>فاتورة جديدة
-          </button>
+      <div *ngIf="saleStep==='sent'" class="pos-card">
+        <div class="success-state">
+          <div class="success-emoji">✅</div>
+          <div class="success-title mb-2">تم إرسال الفاتورة للمحاسب بنجاح!</div>
+          <p class="text-muted-c text-sm mb-3">الفاتورة في انتظار مراجعة واعتماد المحاسب.</p>
+          <div class="d-flex align-center gap-2" style="justify-content:center">
+            <button class="btn-pos-ghost" (click)="setTab('pending-approval')"><i class="fas fa-clock"></i> عرض المعلقة</button>
+            <button class="btn-pos-success" (click)="startNewSale()"><i class="fas fa-plus"></i> فاتورة جديدة</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- TAB 2: Pending Approval (Accountant View)                -->
+    <!-- TAB 2: Pending Approval                                   -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <div *ngIf="activeTab==='pending-approval'">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-bold mb-0"><i class="fas fa-clock text-warning me-2"></i>الفواتير في انتظار الاعتماد</h6>
-        <button class="btn btn-sm btn-outline-secondary" (click)="loadPendingApproval()">
-          <i class="fas fa-sync me-1"></i>تحديث
-        </button>
+      <div class="section-head">
+        <div class="section-title"><i class="fas fa-clock" style="color:var(--pos-warning)"></i> الفواتير في انتظار الاعتماد</div>
+        <button class="btn-pos-ghost" (click)="loadPendingApproval()" style="padding:0.45rem 1rem"><i class="fas fa-sync"></i> تحديث</button>
       </div>
 
-      <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary"></div>
-        <div class="mt-2 text-muted">جاري التحميل...</div>
+      <div *ngIf="isLoading" class="text-center" style="padding:3rem">
+        <div class="pos-spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto"></div>
+        <div class="text-muted-c mt-2">جاري التحميل...</div>
       </div>
 
-      <div *ngIf="!isLoading && pendingInvoices.length === 0" class="text-center py-5 text-muted">
-        <i class="fas fa-check-circle fa-3x text-success mb-3 d-block"></i>
-        لا توجد فواتير في انتظار الاعتماد
+      <div *ngIf="!isLoading && pendingInvoices.length === 0" class="pos-card" style="text-align:center;padding:3rem">
+        <i class="fas fa-check-circle" style="font-size:2.5rem;color:var(--pos-success);margin-bottom:0.75rem;display:block"></i>
+        <div class="text-muted-c">لا توجد فواتير في انتظار الاعتماد</div>
       </div>
 
-      <div class="row g-3">
-        <div class="col-md-6 col-xl-4" *ngFor="let inv of pendingInvoices">
-          <div class="card invoice-card h-100">
-            <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between">
-              <span class="fw-bold">{{ inv.invoiceNumber }}</span>
-              <span class="badge" [class]="getStatusClass(inv.status)">{{ getStatusLabel(inv.status) }}</span>
-            </div>
-            <div class="card-body">
-              <div class="mb-2"><i class="fas fa-user text-muted me-1"></i>{{ inv.patientName }}</div>
-              <div class="mb-2"><i class="fas fa-calendar text-muted me-1"></i>{{ inv.invoiceDate | date:'yyyy/MM/dd HH:mm' }}</div>
-              <div class="mb-3">
-                <small class="text-muted">الأصناف:</small>
-                <ul class="mb-0 ps-3">
-                  <li *ngFor="let item of inv.items" class="small">
-                    {{ item.description }} × {{ item.quantity }} = {{ item.totalPrice | number:'1.2-2' }} ج.م
-                  </li>
-                </ul>
-              </div>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small">الإجمالي:</span>
-                <strong class="text-primary fs-5">{{ inv.totalAmount | number:'1.2-2' }} ج.م</strong>
+      <div class="grid-3">
+        <div *ngFor="let inv of pendingInvoices" class="inv-card">
+          <div class="inv-card-head">
+            <span class="inv-number">{{ inv.invoiceNumber }}</span>
+            <span class="inv-status status-pending">{{ getStatusLabel(inv.status) }}</span>
+          </div>
+          <div class="inv-card-body">
+            <div class="inv-meta"><i class="fas fa-user"></i> {{ inv.patientName || 'بدون اسم' }}</div>
+            <div class="inv-meta"><i class="fas fa-calendar-alt"></i> {{ inv.invoiceDate | date:'yyyy/MM/dd – HH:mm' }}</div>
+            <div class="inv-items">
+              <div class="text-sm text-muted-c mb-1">الأصناف:</div>
+              <div *ngFor="let item of inv.items" class="inv-item-line">
+                {{ item.description }} × {{ item.quantity }} =
+                <span style="font-family:'Outfit',sans-serif" class="text-accent"> {{ item.totalPrice | number:'1.2-2' }} ج.م</span>
               </div>
             </div>
-            <div class="card-footer bg-white">
-              <!-- Approve Form -->
-              <div *ngIf="approvingInvoiceId === inv.id" class="mb-2">
-                <div class="mb-2">
-                  <label class="form-label small fw-semibold">المبلغ المدفوع</label>
-                  <input type="number" class="form-control form-control-sm" [(ngModel)]="approveDto.paidAmount" [min]="inv.totalAmount">
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small fw-semibold">طريقة الدفع</label>
-                  <select class="form-select form-select-sm" [(ngModel)]="approveDto.paymentMethod">
-                    <option [ngValue]="0">نقدي</option>
-                    <option [ngValue]="1">بطاقة ائتمان</option>
-                    <option [ngValue]="2">بطاقة مدى</option>
-                    <option [ngValue]="3">تحويل بنكي</option>
-                  </select>
-                </div>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-success btn-sm flex-fill" (click)="confirmApprove(inv)" [disabled]="isBusy">
-                    <span *ngIf="isBusy" class="spinner-border spinner-border-sm me-1"></span>
-                    تأكيد الاعتماد
-                  </button>
-                  <button class="btn btn-outline-secondary btn-sm" (click)="approvingInvoiceId=null">إلغاء</button>
-                </div>
-              </div>
-              <!-- Reject Form -->
-              <div *ngIf="rejectingInvoiceId === inv.id" class="mb-2">
-                <div class="mb-2">
-                  <label class="form-label small fw-semibold">سبب الرفض</label>
-                  <textarea class="form-control form-control-sm" [(ngModel)]="rejectReason" rows="2" placeholder="اكتب سبب الرفض..."></textarea>
-                </div>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-danger btn-sm flex-fill" (click)="confirmReject(inv)" [disabled]="isBusy || !rejectReason">
-                    <span *ngIf="isBusy" class="spinner-border spinner-border-sm me-1"></span>
-                    تأكيد الرفض
-                  </button>
-                  <button class="btn btn-outline-secondary btn-sm" (click)="rejectingInvoiceId=null">إلغاء</button>
-                </div>
-              </div>
-              <!-- Action Buttons -->
-              <div *ngIf="approvingInvoiceId !== inv.id && rejectingInvoiceId !== inv.id" class="d-flex gap-2">
-                <button class="btn btn-success btn-sm flex-fill" (click)="startApprove(inv)">
-                  <i class="fas fa-check me-1"></i>موافقة
+            <div class="inv-total">
+              <span class="text-sm text-muted-c">الإجمالي</span>
+              <span class="inv-total-val">{{ inv.totalAmount | number:'1.2-2' }} ج.م</span>
+            </div>
+          </div>
+          <div class="inv-card-foot">
+            <!-- Approve Form -->
+            <div *ngIf="approvingInvoiceId === inv.id" class="inline-form">
+              <div class="inline-label mb-1">المبلغ المدفوع</div>
+              <input type="number" class="inline-input mb-2" [(ngModel)]="approveDto.paidAmount" [min]="inv.totalAmount">
+              <div class="inline-label mb-1">طريقة الدفع</div>
+              <select class="inline-select mb-2" [(ngModel)]="approveDto.paymentMethod">
+                <option [ngValue]="0">نقدي</option>
+                <option [ngValue]="1">بطاقة ائتمان</option>
+                <option [ngValue]="2">بطاقة مدى</option>
+                <option [ngValue]="3">تحويل بنكي</option>
+              </select>
+              <div class="d-flex gap-2">
+                <button class="btn-pos-success w-100" (click)="confirmApprove(inv)" [disabled]="isBusy">
+                  <span *ngIf="isBusy" class="pos-spinner"></span> تأكيد الاعتماد
                 </button>
-                <button class="btn btn-danger btn-sm flex-fill" (click)="startReject(inv)">
-                  <i class="fas fa-times me-1"></i>رفض
-                </button>
+                <button class="btn-pos-ghost" (click)="approvingInvoiceId=null">إلغاء</button>
               </div>
+            </div>
+            <!-- Reject Form -->
+            <div *ngIf="rejectingInvoiceId === inv.id" class="inline-form">
+              <div class="inline-label mb-1">سبب الرفض</div>
+              <textarea class="inline-input mb-2" [(ngModel)]="rejectReason" rows="2" placeholder="اكتب سبب الرفض..."></textarea>
+              <div class="d-flex gap-2">
+                <button class="btn-pos-danger w-100" (click)="confirmReject(inv)" [disabled]="isBusy || !rejectReason">
+                  <span *ngIf="isBusy" class="pos-spinner"></span> تأكيد الرفض
+                </button>
+                <button class="btn-pos-ghost" (click)="rejectingInvoiceId=null">إلغاء</button>
+              </div>
+            </div>
+            <!-- Action Buttons -->
+            <div *ngIf="approvingInvoiceId !== inv.id && rejectingInvoiceId !== inv.id" class="d-flex gap-2">
+              <button class="btn-pos-success w-100" (click)="startApprove(inv)"><i class="fas fa-check"></i> موافقة</button>
+              <button class="btn-pos-danger w-100" (click)="startReject(inv)"><i class="fas fa-times"></i> رفض</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Rejected Invoices (for pharmacist to re-edit) -->
-      <div *ngIf="rejectedInvoices.length > 0" class="mt-4">
-        <h6 class="fw-bold mb-3 text-danger"><i class="fas fa-times-circle me-2"></i>الفواتير المرفوضة - تحتاج تعديل</h6>
-        <div class="row g-3">
-          <div class="col-md-6 col-xl-4" *ngFor="let inv of rejectedInvoices">
-            <div class="card invoice-card border-danger h-100">
-              <div class="card-header bg-danger bg-opacity-10 d-flex justify-content-between">
-                <span class="fw-bold">{{ inv.invoiceNumber }}</span>
-                <span class="badge bg-danger">مرفوضة</span>
+      <!-- Rejected Invoices -->
+      <div *ngIf="rejectedInvoices.length > 0" class="mt-3">
+        <div class="section-title mb-2" style="font-size:0.9rem"><i class="fas fa-times-circle text-danger"></i> الفواتير المرفوضة</div>
+        <div class="grid-3">
+          <div *ngFor="let inv of rejectedInvoices" class="inv-card" style="border-color:rgba(248,113,113,0.3)">
+            <div class="inv-card-head">
+              <span class="inv-number">{{ inv.invoiceNumber }}</span>
+              <span class="inv-status status-rejected">مرفوضة</span>
+            </div>
+            <div class="inv-card-body">
+              <div class="rejection-alert"><i class="fas fa-exclamation-triangle text-danger"></i> <strong>سبب الرفض:</strong> {{ inv.rejectionReason }}</div>
+              <div class="inv-meta"><i class="fas fa-user"></i> {{ inv.patientName }}</div>
+              <div class="inv-total">
+                <span class="text-sm text-muted-c">الإجمالي</span>
+                <span class="text-danger fw-800" style="font-family:'Outfit',sans-serif;font-size:1.1rem">{{ inv.totalAmount | number:'1.2-2' }} ج.م</span>
               </div>
-              <div class="card-body">
-                <div class="alert alert-danger small p-2 mb-2">
-                  <i class="fas fa-exclamation-triangle me-1"></i>
-                  <strong>سبب الرفض:</strong> {{ inv.rejectionReason }}
-                </div>
-                <div><i class="fas fa-user text-muted me-1"></i>{{ inv.patientName }}</div>
-                <div class="mt-1"><strong class="text-danger">{{ inv.totalAmount | number:'1.2-2' }} ج.م</strong></div>
-              </div>
-              <div class="card-footer bg-white">
-                <button class="btn btn-warning w-100 btn-sm" (click)="resubmitRejected(inv)" [disabled]="isBusy">
-                  <i class="fas fa-paper-plane me-1"></i>إعادة الإرسال
-                </button>
-              </div>
+            </div>
+            <div class="inv-card-foot">
+              <button class="btn-pos-primary" (click)="resubmitRejected(inv)" [disabled]="isBusy">
+                <span *ngIf="isBusy" class="pos-spinner"></span>
+                <i *ngIf="!isBusy" class="fas fa-paper-plane"></i> إعادة الإرسال
+              </button>
             </div>
           </div>
         </div>
@@ -467,54 +817,49 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
     </div>
 
     <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- TAB 3: To Dispense (Pharmacist)                          -->
+    <!-- TAB 3: To Dispense                                        -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <div *ngIf="activeTab==='to-dispense'">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-bold mb-0"><i class="fas fa-pills text-success me-2"></i>الفواتير المعتمدة - جاهزة للصرف</h6>
-        <button class="btn btn-sm btn-outline-secondary" (click)="loadToDispense()">
-          <i class="fas fa-sync me-1"></i>تحديث
-        </button>
+      <div class="section-head">
+        <div class="section-title"><i class="fas fa-pills" style="color:var(--pos-success)"></i> الفواتير المعتمدة – جاهزة للصرف</div>
+        <button class="btn-pos-ghost" (click)="loadToDispense()" style="padding:0.45rem 1rem"><i class="fas fa-sync"></i> تحديث</button>
       </div>
 
-      <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-success"></div>
+      <div *ngIf="isLoading" class="text-center" style="padding:3rem">
+        <div class="pos-spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto;border-top-color:var(--pos-success)"></div>
+      </div>
+      <div *ngIf="!isLoading && approvedInvoices.length === 0" class="pos-card" style="text-align:center;padding:3rem">
+        <i class="fas fa-box-open" style="font-size:2.5rem;color:var(--pos-muted);margin-bottom:0.75rem;display:block;opacity:0.4"></i>
+        <div class="text-muted-c">لا توجد فواتير جاهزة للصرف حالياً</div>
       </div>
 
-      <div *ngIf="!isLoading && approvedInvoices.length === 0" class="text-center py-5 text-muted">
-        <i class="fas fa-box-open fa-3x text-muted mb-3 d-block"></i>
-        لا توجد فواتير جاهزة للصرف حالياً
-      </div>
-
-      <div class="row g-3">
-        <div class="col-md-6 col-xl-4" *ngFor="let inv of approvedInvoices">
-          <div class="card invoice-card border-success h-100">
-            <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between">
-              <span class="fw-bold">{{ inv.invoiceNumber }}</span>
-              <span class="badge bg-success">مدفوعة - جاهزة</span>
-            </div>
-            <div class="card-body">
-              <div class="mb-2"><i class="fas fa-user text-muted me-1"></i>{{ inv.patientName }}</div>
-              <div class="mb-2"><i class="fas fa-calendar text-muted me-1"></i>{{ inv.invoiceDate | date:'yyyy/MM/dd HH:mm' }}</div>
-              <div class="mb-3">
-                <small class="text-muted fw-semibold">الأصناف للصرف:</small>
-                <ul class="mb-0 ps-3 mt-1">
-                  <li *ngFor="let item of inv.items" class="small fw-semibold">
-                    {{ item.description }} × <span class="text-primary">{{ item.quantity }}</span>
-                  </li>
-                </ul>
-              </div>
-              <div class="text-center">
-                <strong class="text-primary fs-5">{{ inv.totalAmount | number:'1.2-2' }} ج.م</strong>
+      <div class="grid-3">
+        <div *ngFor="let inv of approvedInvoices" class="inv-card" style="border-color:rgba(52,211,153,0.2)">
+          <div class="inv-card-head" style="background:rgba(52,211,153,0.06)">
+            <span class="inv-number">{{ inv.invoiceNumber }}</span>
+            <span class="inv-status status-paid">مدفوعة – جاهزة</span>
+          </div>
+          <div class="inv-card-body">
+            <div class="inv-meta"><i class="fas fa-user"></i> {{ inv.patientName || 'بدون اسم' }}</div>
+            <div class="inv-meta"><i class="fas fa-calendar-alt"></i> {{ inv.invoiceDate | date:'yyyy/MM/dd – HH:mm' }}</div>
+            <div class="inv-items">
+              <div class="text-sm fw-700 text-muted-c mb-1">الأصناف للصرف:</div>
+              <div *ngFor="let item of inv.items" class="inv-item-line">
+                <span class="fw-700">{{ item.description }}</span> × <span class="text-accent fw-800" style="font-family:'Outfit',sans-serif">{{ item.quantity }}</span>
               </div>
             </div>
-            <div class="card-footer bg-white d-flex gap-2">
-              <button class="btn btn-success btn-sm flex-fill" (click)="confirmDispense(inv)" [disabled]="isBusy">
-                <span *ngIf="isBusy" class="spinner-border spinner-border-sm me-1"></span>
-                <i class="fas fa-check me-1" *ngIf="!isBusy"></i>
-                تأكيد الصرف
+            <div class="inv-total">
+              <span class="text-sm text-muted-c">الإجمالي</span>
+              <span class="inv-total-val">{{ inv.totalAmount | number:'1.2-2' }} ج.م</span>
+            </div>
+          </div>
+          <div class="inv-card-foot">
+            <div class="d-flex gap-2">
+              <button class="btn-pos-success w-100" (click)="confirmDispense(inv)" [disabled]="isBusy">
+                <span *ngIf="isBusy" class="pos-spinner"></span>
+                <i *ngIf="!isBusy" class="fas fa-check"></i> تأكيد الصرف
               </button>
-              <button class="btn btn-outline-secondary btn-sm" (click)="printInvoice(inv.id)">
+              <button class="btn-pos-ghost" (click)="printInvoice(inv.id)" title="طباعة" style="padding:0.6rem 0.9rem">
                 <i class="fas fa-print"></i>
               </button>
             </div>
@@ -524,76 +869,66 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
     </div>
 
     <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- TAB 4: Return / Refund                                   -->
+    <!-- TAB 4: Return / Refund                                    -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <div *ngIf="activeTab==='return'">
-      <div class="row g-3">
-        <div class="col-lg-5">
-          <div class="card shadow-sm">
-            <div class="card-header bg-white">
-              <h6 class="mb-0 fw-bold text-danger"><i class="fas fa-undo me-2"></i>ارتجاع فاتورة</h6>
+      <div class="row-pos">
+        <div class="col-pos-4">
+          <div class="pos-card">
+            <div class="pos-card-header">
+              <span class="pos-card-title"><i class="fas fa-undo text-danger"></i> ارتجاع فاتورة</span>
             </div>
-            <div class="card-body">
-              <div class="mb-3">
-                <label class="form-label fw-semibold">رقم الفاتورة الأصلية</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" [(ngModel)]="returnInvoiceNumber"
+            <div class="p-1rem">
+              <div class="pos-form-group mb-3">
+                <label class="pos-label">رقم الفاتورة الأصلية</label>
+                <div class="pos-search-group">
+                  <input class="pos-search-input" [(ngModel)]="returnInvoiceNumber"
                     placeholder="مثال: POS-123456789" (keyup.enter)="loadInvoiceForReturn()">
-                  <button class="btn btn-outline-primary" (click)="loadInvoiceForReturn()" [disabled]="isBusy">
+                  <button class="pos-btn-add" (click)="loadInvoiceForReturn()" [disabled]="isBusy">
                     <i class="fas fa-search"></i>
                   </button>
                 </div>
               </div>
 
-              <!-- Invoice for Return -->
+              <!-- Invoice Info -->
               <div *ngIf="invoiceForReturn">
-                <div class="alert alert-info small">
-                  <div><strong>{{ invoiceForReturn.invoiceNumber }}</strong></div>
-                  <div>{{ invoiceForReturn.patientName }}</div>
-                  <div>{{ invoiceForReturn.invoiceDate | date:'yyyy/MM/dd' }}</div>
-                  <div class="mt-1 fw-bold">الإجمالي: {{ invoiceForReturn.totalAmount | number:'1.2-2' }} ج.م</div>
+                <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:0.75rem;margin-bottom:0.75rem">
+                  <div class="fw-700 text-accent mb-1">{{ invoiceForReturn.invoiceNumber }}</div>
+                  <div class="text-sm text-muted-c">{{ invoiceForReturn.patientName }}</div>
+                  <div class="text-sm text-muted-c">{{ invoiceForReturn.invoiceDate | date:'yyyy/MM/dd' }}</div>
+                  <div class="fw-800 text-accent mt-1" style="font-family:'Outfit',sans-serif">{{ invoiceForReturn.totalAmount | number:'1.2-2' }} ج.م</div>
                 </div>
 
-                <p class="fw-semibold mb-2">اختر الأصناف المراد إرجاعها:</p>
+                <div class="fw-700 mb-2 text-sm">اختر الأصناف المراد إرجاعها:</div>
 
-                <div *ngFor="let sel of returnSelections; let i = index"
-                  class="refund-item-row" [class.selected]="sel.selected">
-                  <div class="d-flex align-items-center gap-2">
-                    <input type="checkbox" class="form-check-input mt-0" [(ngModel)]="sel.selected" style="width:18px;height:18px">
-                    <div class="flex-fill">
-                      <div class="fw-semibold small">{{ sel.item.description }}</div>
-                      <div class="text-muted" style="font-size:0.75rem">الكمية الأصلية: {{ sel.item.quantity }}</div>
+                <div *ngFor="let sel of returnSelections; let i = index" class="return-item" [class.selected]="sel.selected">
+                  <div class="d-flex align-center gap-2">
+                    <input type="checkbox" [(ngModel)]="sel.selected" style="width:18px;height:18px;cursor:pointer;accent-color:var(--pos-warning)">
+                    <div style="flex:1">
+                      <div class="fw-700 text-sm">{{ sel.item.description }}</div>
+                      <div class="text-sm text-muted-c">الكمية الأصلية: {{ sel.item.quantity }}</div>
                     </div>
-                    <div *ngIf="sel.selected" style="width:80px">
-                      <input type="number" class="form-control form-control-sm text-center"
-                        [(ngModel)]="sel.returnQty"
-                        [min]="1" [max]="sel.item.quantity"
-                        (change)="recalcRefundTotal()">
+                    <div *ngIf="sel.selected" style="width:72px">
+                      <input type="number" class="qty-input" [(ngModel)]="sel.returnQty" [min]="1" [max]="sel.item.quantity" (change)="recalcRefundTotal()">
                     </div>
-                    <div class="text-end" style="min-width:80px">
-                      <span *ngIf="sel.selected" class="fw-bold text-danger small">
-                        -{{ (sel.item.unitPrice || 0) * sel.returnQty | number:'1.2-2' }}
-                      </span>
+                    <div *ngIf="sel.selected" class="fw-800 text-danger text-sm" style="min-width:70px;text-align:left;font-family:'Outfit',sans-serif">
+                      -{{ (sel.item.unitPrice || 0) * sel.returnQty | number:'1.2-2' }}
                     </div>
                   </div>
                 </div>
 
-                <div class="mt-3 d-flex justify-content-between align-items-center p-3 bg-warning bg-opacity-10 rounded">
-                  <span class="fw-bold">إجمالي الارتجاع:</span>
-                  <strong class="text-danger fs-5">{{ refundTotal | number:'1.2-2' }} ج.م</strong>
+                <div class="return-total-box">
+                  <span class="return-total-label">إجمالي الارتجاع</span>
+                  <span class="return-total-val">{{ refundTotal | number:'1.2-2' }} ج.م</span>
                 </div>
 
-                <div class="d-flex gap-2 mt-3">
-                  <button class="btn btn-warning flex-fill" (click)="selectAllReturn()">الكل</button>
-                  <button class="btn btn-outline-secondary flex-fill" (click)="clearReturnSelections()">إلغاء</button>
+                <div class="d-flex gap-2 mt-2">
+                  <button class="btn-pos-ghost w-100" (click)="selectAllReturn()">الكل</button>
+                  <button class="btn-pos-ghost w-100" (click)="clearReturnSelections()">إلغاء</button>
                 </div>
-
-                <button class="btn btn-danger w-100 mt-2 py-2 fw-bold"
-                  (click)="processReturn()"
-                  [disabled]="isBusy || getSelectedReturnCount() === 0">
-                  <span *ngIf="isBusy" class="spinner-border spinner-border-sm me-1"></span>
-                  <i class="fas fa-undo me-1" *ngIf="!isBusy"></i>
-                  تأكيد الارتجاع وطباعة نسختين
+                <button class="btn-pos-danger w-100 mt-2" (click)="processReturn()" [disabled]="isBusy || getSelectedReturnCount() === 0" style="padding:0.75rem">
+                  <span *ngIf="isBusy" class="pos-spinner"></span>
+                  <i *ngIf="!isBusy" class="fas fa-undo"></i> تأكيد الارتجاع
                 </button>
               </div>
             </div>
@@ -601,26 +936,29 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return';
         </div>
 
         <!-- Return Result -->
-        <div class="col-lg-7" *ngIf="refundResult">
-          <div class="card border-warning shadow-sm">
-            <div class="card-body text-center py-5">
-              <div style="font-size:3.5rem">🧾</div>
-              <h5 class="fw-bold text-success mt-3">تم إجراء الارتجاع بنجاح!</h5>
-              <div class="mt-3 mb-4">
-                <div class="text-muted small mb-1">رقم فاتورة الارتجاع</div>
-                <div class="fw-bold fs-4 text-primary">{{ refundResult.refundInvoiceNumber }}</div>
-                <div class="mt-2 text-muted small">المبلغ المرتجع</div>
-                <div class="fw-bold fs-3 text-danger">{{ refundResult.refundAmount | number:'1.2-2' }} ج.م</div>
-              </div>
-              <div class="d-flex justify-content-center gap-3">
-                <button class="btn btn-primary px-4" (click)="printReturnInvoice(refundResult.refundInvoiceId)" [disabled]="isBusy">
-                  <i class="fas fa-print me-1"></i>طباعة نسختين (أصل وصورة)
+        <div class="col-pos-8" *ngIf="refundResult">
+          <div class="pos-card">
+            <div class="success-state" style="padding:3.5rem">
+              <div class="success-emoji">🧾</div>
+              <div class="success-title mb-2">تم إجراء الارتجاع بنجاح!</div>
+              <div class="text-muted-c text-sm mb-1">رقم فاتورة الارتجاع</div>
+              <div class="fw-800 text-accent mb-1" style="font-family:'Outfit',sans-serif;font-size:1.3rem">{{ refundResult.refundInvoiceNumber }}</div>
+              <div class="text-muted-c text-sm mb-1">المبلغ المرتجع</div>
+              <div class="fw-800 text-danger mb-3" style="font-family:'Outfit',sans-serif;font-size:1.8rem">{{ refundResult.refundAmount | number:'1.2-2' }} ج.م</div>
+              <div class="d-flex align-center gap-2" style="justify-content:center">
+                <button class="btn-pos-primary" style="width:auto;padding:0.65rem 1.5rem" (click)="printReturnInvoice(refundResult.refundInvoiceId)" [disabled]="isBusy">
+                  <i class="fas fa-print"></i> طباعة (أصل وصورة)
                 </button>
-                <button class="btn btn-outline-secondary" (click)="resetReturn()">
-                  <i class="fas fa-undo me-1"></i>ارتجاع جديد
-                </button>
+                <button class="btn-pos-ghost" (click)="resetReturn()"><i class="fas fa-undo"></i> ارتجاع جديد</button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="col-pos-8" *ngIf="!refundResult">
+          <div class="pos-card" style="text-align:center;padding:3rem;opacity:0.4">
+            <i class="fas fa-receipt" style="font-size:3rem;display:block;margin-bottom:1rem"></i>
+            <div class="text-muted-c">ابحث عن فاتورة لبدء إجراء الارتجاع</div>
           </div>
         </div>
       </div>
