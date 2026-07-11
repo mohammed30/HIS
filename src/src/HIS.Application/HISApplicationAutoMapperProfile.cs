@@ -203,6 +203,12 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Pharmacy.DispensedItem, Pharmacy.Dtos.DispensedItemDto>()
             .ForMember(x => x.ProductName, opt => opt.Ignore());
 
+        CreateMap<Pharmacy.StockTransfer, Pharmacy.Dtos.StockTransferDto>()
+            .ForMember(x => x.FromWarehouseName, opt => opt.Ignore())
+            .ForMember(x => x.ToWarehouseName, opt => opt.Ignore());
+        CreateMap<Pharmacy.StockTransferLine, Pharmacy.Dtos.StockTransferLineDto>()
+            .ForMember(x => x.ProductName, opt => opt.Ignore());
+
         // Procurement (Inventory)
         CreateMap<Inventory.PurchaseRequisition, Inventory.Dtos.PurchaseRequisitionDto>()
             .ForMember(x => x.RequestorName, opt => opt.Ignore())

@@ -12,7 +12,7 @@
     </div>
   </div>
   <div class="card-body">
-    <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="getList" default>
+    <ngx-datatable [rows]="data.items" [count]="data.totalCount" class="material fullscreen">
       <ngx-datatable-column
         [name]="'::Actions' | abpLocalization"
         [maxWidth]="150"
