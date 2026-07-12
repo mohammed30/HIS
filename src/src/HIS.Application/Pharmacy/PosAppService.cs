@@ -226,7 +226,7 @@ public class PosAppService : HISAppService, IPosAppService
         if (!string.IsNullOrWhiteSpace(input.Notes))
             invoice.Notes = (invoice.Notes ?? "") + " | " + input.Notes;
 
-        await _invoiceRepository.UpdateAsync(invoice);
+        await _invoiceRepository.UpdateAsync(invoice, autoSave: true);
 
         // Accounting Entry: Dr Cash / Cr Revenue
         await CreateSaleAccountingEntryAsync(invoice);
@@ -367,11 +367,15 @@ public class PosAppService : HISAppService, IPosAppService
 
     [HttpGet]
     [Route("api/app/pos/invoices")]
-    public async Task<List<PosInvoiceListDto>> GetPosInvoicesAsync(InvoiceStatus? status = null)
+    public async Task<List<PosInvoiceListDto>> GetPosInvoicesAsync(InvoiceStatus? status = null, string? filter = null, DateTime? fromDate = null, DateTime? toDate = null)
     {
         var invoices = await _invoiceRepository.GetListAsync(x =>
             (status == null || x.Status == status) &&
-            (x.InvoiceNumber.StartsWith("POS-") || x.InvoiceNumber.StartsWith("RET-")));
+            (status != InvoiceStatus.Refunded || x.InvoiceType == InvoiceType.Return) &&
+            (x.InvoiceNumber.StartsWith("POS-") || x.InvoiceNumber.StartsWith("RET-")) &&
+            (string.IsNullOrEmpty(filter) || x.InvoiceNumber.Contains(filter) || x.OriginalInvoiceNumber.Contains(filter)) &&
+            (!fromDate.HasValue || x.InvoiceDate >= fromDate.Value) &&
+            (!toDate.HasValue || x.InvoiceDate <= toDate.Value));
 
         invoices = invoices.OrderByDescending(x => x.InvoiceDate).ToList();
 
@@ -451,7 +455,12 @@ public class PosAppService : HISAppService, IPosAppService
         Invoice invoice;
         if (Guid.TryParse(idOrNumber, out Guid invoiceId))
         {
-            invoice = await _invoiceRepository.GetAsync(invoiceId, true);
+            invoice = await _invoiceRepository.GetAsync(invoiceId);
+            if (invoice != null)
+            {
+                var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
+                foreach (var item in items) invoice.Items.Add(item);
+            }
         }
         else
         {

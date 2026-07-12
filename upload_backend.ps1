@@ -20,6 +20,11 @@ foreach ($item in $files) {
     if ($item.PSIsContainer) {
         New-FtpDir $ftpUri
     } else {
+        if ($item.Extension -eq ".dll" -and -not $item.Name.StartsWith("HIS.")) {
+            Write-Host "Skipped backend library: $($item.Name)"
+            continue
+        }
+
         try {
             $webclient = New-Object System.Net.WebClient
             $webclient.Credentials = New-Object System.Net.NetworkCredential($user, $pass)

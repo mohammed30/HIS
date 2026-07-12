@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { DynamicLayoutComponent, ReplaceableComponentsService } from '@abp/ng.core';
+import { DynamicLayoutComponent, ReplaceableComponentsService, SessionStateService } from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
 import { eAccountComponents } from '@abp/ng.account';
@@ -8,6 +8,7 @@ import { UserManagementComponent } from './identity-extended/users/user-manageme
 import { RoleManagementComponent } from './identity-extended/roles/role-management.component';
 import { eIdentityComponents } from '@abp/ng.identity';
 import { AppFooterComponent } from './layout/footer/app-footer.component';
+import { Router, NavigationStart, NavigationCancel, NavigationError, NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -20,8 +21,29 @@ import { AppFooterComponent } from './layout/footer/app-footer.component';
 })
 export class AppComponent implements OnInit {
   private replaceableComponents = inject(ReplaceableComponentsService);
+  private session = inject(SessionStateService);
+  private router = inject(Router);
+
+  constructor() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        console.log('[Router] Navigation started to:', event.url);
+      } else if (event instanceof NavigationCancel) {
+        console.warn('[Router] Navigation cancelled to:', event.url, 'Reason:', event.reason);
+      } else if (event instanceof NavigationError) {
+        console.error('[Router] Navigation error to:', event.url, 'Error:', event.error);
+      } else if (event instanceof NavigationEnd) {
+        console.log('[Router] Navigation ended successfully to:', event.url);
+      }
+    });
+  }
 
   ngOnInit(): void {
+    // Set Arabic as the default language if not already set
+    if (!this.session.getLanguage()) {
+      this.session.setLanguage('ar');
+    }
+
     // Register custom components after app is initialized
     this.replaceableComponents.add({
       component: AppLogoComponent,

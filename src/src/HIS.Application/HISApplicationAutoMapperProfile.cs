@@ -206,8 +206,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Pharmacy.StockTransfer, Pharmacy.Dtos.StockTransferDto>()
             .ForMember(x => x.FromWarehouseName, opt => opt.Ignore())
             .ForMember(x => x.ToWarehouseName, opt => opt.Ignore());
-        CreateMap<Pharmacy.StockTransferLine, Pharmacy.Dtos.StockTransferLineDto>()
-            .ForMember(x => x.ProductName, opt => opt.Ignore());
+        CreateMap<Pharmacy.StockTransferItem, Pharmacy.Dtos.StockTransferItemDto>()
+            .ForMember(x => x.DrugName, opt => opt.Ignore());
 
         // Procurement (Inventory)
         CreateMap<Inventory.PurchaseRequisition, Inventory.Dtos.PurchaseRequisitionDto>()

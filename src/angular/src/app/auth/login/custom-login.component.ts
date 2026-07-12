@@ -24,6 +24,7 @@ export class CustomLoginComponent implements OnInit {
     form: FormGroup;
     inProgress = false;
     isPasswordVisible = false;
+    errorMessage: string | null = null;
 
     languages: any[] = [];
     currentLang: string;
@@ -36,7 +37,12 @@ export class CustomLoginComponent implements OnInit {
         });
 
         this.languages = this.config.getDeep('localization.languages') || [];
-        this.currentLang = this.session.getLanguage();
+        this.currentLang = this.session.getLanguage() || 'ar';
+
+        // If no language is saved in session, set Arabic as default now
+        if (!this.session.getLanguage()) {
+            this.session.setLanguage('ar');
+        }
     }
 
     togglePasswordVisibility() {
@@ -44,34 +50,42 @@ export class CustomLoginComponent implements OnInit {
     }
 
     onSubmit() {
-        if (this.form.invalid) return;
+        if (this.form.invalid) {
+            this.form.markAllAsTouched();
+            return;
+        }
 
         this.inProgress = true;
+        this.errorMessage = null;
 
-        // Using standard ABP auth service login
-        // Note: This relies on the internal implementation of AuthService in @abp/ng.core
-        // Usually it redirects to Identity Server or handles token request directly depending on config
-        // For password flow/resource owner password:
+        const redirectUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+        console.log('[Login Flow] Form is valid. redirectUrl:', redirectUrl);
+        console.log('[Login Flow] Calling authService.login...');
+
         this.authService.login({
             username: this.form.value.username,
             password: this.form.value.password,
-            rememberMe: this.form.value.rememberMe
+            rememberMe: this.form.value.rememberMe,
+            redirectUrl: redirectUrl
         }).subscribe({
-            next: () => {
-                // Get returnUrl from query parameters or default to home
-                const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-
-                console.log('Login successful, preparing redirect to:', returnUrl);
-
-                // Refresh app state to ensure menus & permissions are loaded
-                this.config.refreshAppState().subscribe(() => {
-                    this.router.navigateByUrl(returnUrl);
-                });
+            next: (result) => {
+                console.log('[Login Flow] authService.login returned successfully.', result);
+                // We're letting ABP handle the redirection here.
+                // Let's also listen if the router actually navigates.
+                console.log('[Login Flow] Waiting for ABP to refresh app state and redirect...');
             },
             error: (err) => {
+                console.error('[Login Flow] Error inside authService.login:', err);
                 this.inProgress = false;
-                this.toaster.error('Invalid username or password', 'Login Failed');
-                console.error(err);
+                const status = err?.status || err?.error?.status;
+
+                if (status === 400 || status === 401) {
+                    this.errorMessage = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                } else if (status === 0 || status === 503) {
+                    this.errorMessage = 'تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً';
+                } else {
+                    this.errorMessage = 'حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة مجدداً';
+                }
             }
         });
     }
@@ -81,7 +95,6 @@ export class CustomLoginComponent implements OnInit {
         window.location.reload();
     }
 
-    // Helper to maintain branding
     get logoUrl() {
         return 'assets/images/logo/logo.svg';
     }

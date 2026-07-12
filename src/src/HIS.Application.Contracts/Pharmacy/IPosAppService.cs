@@ -40,7 +40,7 @@ public interface IPosAppService : IApplicationService
     // --- Queries ---
 
     /// <summary>قائمة فواتير نقطة البيع مع إمكانية التصفية حسب الحالة</summary>
-    Task<List<PosInvoiceListDto>> GetPosInvoicesAsync(InvoiceStatus? status = null);
+    Task<List<PosInvoiceListDto>> GetPosInvoicesAsync(InvoiceStatus? status = null, string? filter = null, DateTime? fromDate = null, DateTime? toDate = null);
 
     /// <summary>تفاصيل فاتورة واحدة</summary>
     Task<PosInvoiceListDto> GetInvoiceDetailsAsync(Guid invoiceId);

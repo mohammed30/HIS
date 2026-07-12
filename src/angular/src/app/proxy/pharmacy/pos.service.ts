@@ -86,12 +86,19 @@ export class PosService {
 
   // ── Queries ─────────────────────────────────────────────────
 
-  getPosInvoices = (status?: number, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, PosInvoiceListDto[]>({
+  getPosInvoices = (status?: number, filter?: string, fromDate?: string, toDate?: string, config?: Partial<Rest.Config>) => {
+    let params: any = {};
+    if (status !== undefined) params.status = status;
+    if (filter) params.filter = filter;
+    if (fromDate) params.fromDate = fromDate;
+    if (toDate) params.toDate = toDate;
+
+    return this.restService.request<any, PosInvoiceListDto[]>({
       method: 'GET',
       url: '/api/app/pos/invoices',
-      params: status !== undefined ? { status } : {},
+      params: params,
     }, { apiName: this.apiName, ...config });
+  };
 
   getInvoiceDetails = (invoiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PosInvoiceListDto>({

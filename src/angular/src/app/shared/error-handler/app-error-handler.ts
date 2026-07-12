@@ -9,26 +9,37 @@ import { Router } from '@angular/router';
 export class AppErrorHandler implements ErrorHandler {
     private router = inject(Router);
 
+    // Prevent reload loop: only allow one automatic reload per session
+    private static readonly RELOAD_KEY = '__abp_reload_ts__';
+    private static readonly RELOAD_COOLDOWN_MS = 10_000; // 10 seconds
+
     handleError(error: any): void {
-        // Check if this is the ABP OAuth injector error
         const errorMessage = error?.message || error?.toString() || '';
 
         if (errorMessage.includes("Cannot read properties of undefined (reading 'injector')") ||
             errorMessage.includes('checkAccessToken')) {
 
-            // Don't clear tokens if we are on the login page, as it might be a transient state
+            // Don't clear tokens if we are on the login page
             if (this.router.url.includes('/account/login')) {
                 console.warn('OAuth error on login page, skipping automatic token clear');
                 return;
             }
 
-            console.warn('OAuth token error detected, clearing stale tokens and reloading...');
+            // Prevent reload loop: check how long ago we last reloaded
+            const lastReload = Number(sessionStorage.getItem(AppErrorHandler.RELOAD_KEY) || '0');
+            const now = Date.now();
 
-            // Clear all OAuth-related storage
+            if (now - lastReload < AppErrorHandler.RELOAD_COOLDOWN_MS) {
+                // We already reloaded very recently — do NOT reload again, just log
+                console.warn('OAuth error detected but reload cooldown active, skipping reload. Error:', errorMessage);
+                return;
+            }
+
+            console.warn('OAuth token error detected, clearing stale tokens and reloading...');
             this.clearOAuthStorage();
 
-            // Reload to get fresh state
-            console.log('Reloading application due to OAuth error...');
+            // Record the time of this reload to prevent loops
+            sessionStorage.setItem(AppErrorHandler.RELOAD_KEY, String(now));
             window.location.reload();
             return;
         }
@@ -57,11 +68,11 @@ export class AppErrorHandler implements ErrorHandler {
         }
         keysToRemove.forEach(key => localStorage.removeItem(key));
 
-        // Clear sessionStorage
+        // Clear sessionStorage (but keep our reload key)
         const sessionKeysToRemove: string[] = [];
         for (let i = 0; i < sessionStorage.length; i++) {
             const key = sessionStorage.key(i);
-            if (key && (
+            if (key && key !== AppErrorHandler.RELOAD_KEY && (
                 key.includes('access_token') ||
                 key.includes('refresh_token') ||
                 key.includes('id_token') ||
