@@ -40,6 +40,7 @@
     "@fullcalendar/interaction": "^6.1.20",
     "@fullcalendar/list": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
+    "@microsoft/signalr": "^10.0.0",
     "@ng-bootstrap/ng-bootstrap": "^19.0.0",
     "@volo/ngx-lepton-x.core": "~5.0.0",
     "echarts": "^6.0.0",

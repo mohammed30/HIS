@@ -16,6 +16,7 @@ using HIS.Permissions;
 using HIS.Billing;
 using HIS.Rooms;
 using HIS.Insurance;
+using Microsoft.Extensions.Logging;
 
 namespace HIS.Patients;
 
@@ -220,6 +221,40 @@ public class PatientAppService : ApplicationService, IPatientAppService
             ipAddress: GetClientIp() ?? "",
             userAgent: GetUserAgent() ?? ""
         );
+
+        try
+        {
+            var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+            var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+            var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+            var subscribersStr = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Patients");
+            var subscriberIds = string.IsNullOrEmpty(subscribersStr) ? new List<Guid>() : subscribersStr.Split(',').Select(Guid.Parse).ToList();
+
+            if (subscriberIds.Any())
+            {
+                var notifications = subscriberIds.Select(id => new HIS.Notifications.Notification(
+                    _guidGenerator.Create(),
+                    id,
+                    "تسجيل مريض جديد",
+                    $"تم تسجيل مريض جديد باسم {patient.FullNameAr} (MRN: {patient.MRN})",
+                    HIS.Notifications.NotificationTypes.Patients,
+                    "/patients",
+                    patient.Id.ToString(),
+                    CurrentUser.UserName ?? "النظام"
+                )).ToList();
+
+                await notificationRepo.InsertManyAsync(notifications);
+                foreach (var notif in notifications)
+                {
+                    var notifDto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                    await notificationSender.SendToUserAsync(notif.UserId, notifDto);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to send patient notification");
+        }
 
         return MapToDto(patient);
     }

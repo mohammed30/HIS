@@ -1,0 +1,94 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="fa fa-bell text-primary me-2"></i> إعدادات التنبيهات
+    </h5>
+    <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+      <i class="fa fa-save me-1" *ngIf="!isSaving"></i>
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      حفظ الإعدادات
+    </button>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <!-- Users List Panel -->
+      <div class="col-md-4 border-end">
+        <div class="card bg-light mb-4 border-0 shadow-sm">
+          <div class="card-body py-2 px-3 d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-dark"><i class="fa fa-comment-dots text-warning me-2"></i> الإشعارات المنبثقة (Toast)</span>
+              <div class="form-check form-switch fs-5 mb-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" [(ngModel)]="showToast" (change)="saveToastSetting()">
+              </div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary w-100 mt-2" (click)="testToast()">
+              <i class="fa fa-vial me-1"></i> تجربة ظهور التنبيه الآن
+            </button>
+          </div>
+        </div>
+
+        <h6 class="mb-3 text-muted">اختر المستخدم:</h6>
+        
+        <!-- Search bar -->
+        <div class="input-group mb-3">
+          <span class="input-group-text"><i class="fa fa-search"></i></span>
+          <input type="text" class="form-control" placeholder="بحث عن مستخدم..." [(ngModel)]="searchTerm" (input)="filterUsers()">
+        </div>
+
+        <div class="list-group" style="max-height: 600px; overflow-y: auto;">
+          <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  *ngFor="let user of filteredUsers" 
+                  [class.active]="selectedUserId === user.id"
+                  (click)="selectedUserId = user.id">
+            {{ user.name }}
+          </button>
+          <div *ngIf="filteredUsers.length === 0" class="text-center text-muted p-3">
+            لا يوجد مستخدمين
+          </div>
+        </div>
+      </div>
+
+      <!-- Modules Panel -->
+      <div class="col-md-8 ps-4">
+        <div *ngIf="selectedUserId">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="text-primary mb-0">
+              صلاحيات التنبيه لـ: <span class="fw-bold">{{ selectedUser?.name }}</span>
+            </h5>
+            <div>
+              <button class="btn btn-sm btn-outline-success me-2" (click)="selectAllForUser()">
+                <i class="fa fa-check-double me-1"></i> منح الكل
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deselectAllForUser()">
+                <i class="fa fa-times me-1"></i> إزالة الكل
+              </button>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3" *ngFor="let module of modules">
+              <div class="card h-100 shadow-sm border-0 bg-light">
+                <div class="card-body d-flex justify-content-between align-items-center py-3">
+                  <div>
+                    <h6 class="mb-0 fw-bold">{{ module.displayName || module.moduleName }}</h6>
+                  </div>
+                  <div class="form-check form-switch fs-4 mb-0">
+                    <input class="form-check-input cursor-pointer" type="checkbox"
+                           [id]="module.moduleName + '-' + selectedUserId"
+                           [checked]="isUserSubscribed(module, selectedUserId)"
+                           (change)="toggleUserSubscription(module, selectedUserId, $event)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!selectedUserId" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted" style="min-height: 300px;">
+          <i class="fa fa-hand-pointer fa-3x mb-3 text-light"></i>
+          <h5>الرجاء اختيار مستخدم من القائمة لعرض وتعديل صلاحيات التنبيهات الخاصة به.</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

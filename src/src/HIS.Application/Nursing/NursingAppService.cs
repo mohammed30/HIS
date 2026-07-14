@@ -8,6 +8,7 @@ using HIS.Nursing;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace HIS.Nursing;
 
@@ -46,6 +47,40 @@ public class NursingAppService : HISAppService, INursingAppService
         var dto = ObjectMapper.Map<MedicationAdministration, MedicationAdministrationDto>(medAdmin);
         var patient = await _patientRepo.GetAsync(input.PatientId);
         dto.PatientName = patient.FullNameAr;
+
+        try
+        {
+            var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+            var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+            var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+            var subscribersStr = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Nursing");
+            var subscriberIds = string.IsNullOrEmpty(subscribersStr) ? new List<Guid>() : subscribersStr.Split(',').Select(Guid.Parse).ToList();
+
+            if (subscriberIds.Any())
+            {
+                var notifications = subscriberIds.Select(id => new HIS.Notifications.Notification(
+                    GuidGenerator.Create(),
+                    id,
+                    "إدارة دواء جديد",
+                    $"تم تسجيل إعطاء دواء ({medAdmin.DrugName}) للمريض {patient.FullNameAr}",
+                    HIS.Notifications.NotificationTypes.Nursing,
+                    "/nursing/medication",
+                    medAdmin.Id.ToString(),
+                    CurrentUser.UserName ?? "النظام"
+                )).ToList();
+
+                await notificationRepo.InsertManyAsync(notifications);
+                foreach (var notif in notifications)
+                {
+                    var notifDto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                    await notificationSender.SendToUserAsync(notif.UserId, notifDto);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to send nursing notification");
+        }
 
         return dto;
     }

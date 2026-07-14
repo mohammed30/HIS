@@ -2,6 +2,7 @@ using HIS.General;
 using HIS.Nursing;
 using HIS.HR;
 using HIS.ActivityLogs;
+using HIS.Notifications;
 using HIS.Patients;
 using HIS.Settings;
 using HIS.Appointments;
@@ -184,6 +185,10 @@ public class HISDbContext :
     public DbSet<Penalty> Penalties { get; set; }
     public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
     public DbSet<DailyAttendance> DailyAttendances { get; set; }
+
+    // Notifications
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<UserNotificationSettings> UserNotificationSettings { get; set; }
 
     #region Entities from the modules
 
@@ -1532,6 +1537,29 @@ public class HISDbContext :
                 b.ConfigureByConvention();
                 b.Property(x => x.Margin).HasColumnType("decimal(18,2)");
                 b.Property(x => x.SalePrice).HasColumnType("decimal(18,2)");
+            });
+
+            // Notifications
+            builder.Entity<Notification>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "Notifications", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Title).HasMaxLength(256).IsRequired();
+                b.Property(x => x.Message).HasMaxLength(1024).IsRequired();
+                b.Property(x => x.Type).HasMaxLength(64).IsRequired();
+                b.Property(x => x.Url).HasMaxLength(512);
+                b.Property(x => x.EntityId).HasMaxLength(128);
+                b.Property(x => x.SentBy).HasMaxLength(256);
+                b.HasIndex(x => x.UserId);
+                b.HasIndex(x => new { x.UserId, x.IsRead });
+            });
+
+            builder.Entity<UserNotificationSettings>(b =>
+            {
+                b.ToTable(HISConsts.DbTablePrefix + "UserNotificationSettings", HISConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.EnabledTypes).HasMaxLength(512);
+                b.HasIndex(x => x.UserId).IsUnique();
             });
 
     }

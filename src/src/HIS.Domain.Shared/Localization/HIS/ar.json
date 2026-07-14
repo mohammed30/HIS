@@ -10,6 +10,8 @@
                   "Menu:Patients":  "المرضى",
                   "Menu:Administration":  "الإدارة",
                   "Menu:Settings":  "الإعدادات",
+                  "Menu:NotificationSettings":  "إعدادات التنبيهات",
+                  "Menu:Notifications":  "التنبيهات",
                   "Menu:PaidTickets":  "تذاكر مسددة",
                   "Menu:DoctorSchedule":  "جدول الأطباء",
                   "TicketNumber":  "رقم التذكرة",

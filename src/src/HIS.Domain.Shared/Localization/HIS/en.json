@@ -9,6 +9,8 @@
     "Menu:Home": "Home",
     "Menu:Administration": "Administration",
     "Menu:Settings": "Settings",
+    "Menu:NotificationSettings": "Notification Settings",
+    "Menu:Notifications": "Notifications",
     "Menu:Patients": "Patients",
     "Menu:DoctorSchedule": "Doctor Schedule",
     "Menu:PaidTickets": "Paid Tickets",

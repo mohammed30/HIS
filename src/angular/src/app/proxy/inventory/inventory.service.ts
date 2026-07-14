@@ -1,4 +1,5 @@
 import type { CreateUpdateWarehouseDto, DepartmentConsumptionReportDto, GetConsumptionReportInput, GetLowStockReportInput, GetStagnantStockReportInput, InventoryItemDto, InventoryTransactionDto, IssueStockDto, LowStockReportDto, ReceiveStockDto, StagnantStockReportDto, UpdateStockLevelsDto, WarehouseDto } from './dtos/models';
+import type { InventoryItemType } from './inventory-item-type.enum';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -99,11 +100,11 @@ export class InventoryService {
     { apiName: this.apiName,...config });
   
 
-  getStockLevels = (warehouseId: string, config?: Partial<Rest.Config>) =>
+  getStockLevels = (warehouseId: string, filter?: string, type?: InventoryItemType, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<InventoryItemDto>>({
       method: 'GET',
       url: '/api/app/inventory/stock-levels',
-      params: { warehouseId },
+      params: { warehouseId, filter, type },
     },
     { apiName: this.apiName,...config });
   

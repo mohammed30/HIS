@@ -187,6 +187,35 @@ public class PosAppService : HISAppService, IPosAppService
         invoice.Status = InvoiceStatus.PendingApproval;
         invoice.RejectionReason = null; // Clear previous rejection reason
         await _invoiceRepository.UpdateAsync(invoice);
+
+        // Notify Subscribers
+        var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+        var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+        var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+        var subscribersStr = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Pharmacy");
+        var subscriberIds = string.IsNullOrEmpty(subscribersStr) ? new List<Guid>() : subscribersStr.Split(',').Select(Guid.Parse).ToList();
+
+        if (subscriberIds.Any())
+        {
+            var notifications = subscriberIds.Select(id => new HIS.Notifications.Notification(
+                _guidGenerator.Create(),
+                id,
+                "فاتورة صيدلية بانتظار الاعتماد",
+                $"تم إرسال فاتورة مبيعات جديدة رقم {invoice.InvoiceNumber} بانتظار الاعتماد.",
+                HIS.Notifications.NotificationTypes.Pharmacy,
+                $"/pharmacy/pos?invoiceId={invoice.Id}",
+                invoice.Id.ToString(),
+                CurrentUser.UserName ?? "النظام"
+            )).ToList();
+
+            await notificationRepo.InsertManyAsync(notifications);
+            foreach (var notif in notifications)
+            {
+                var dto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                await notificationSender.SendToUserAsync(notif.UserId, dto);
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────
@@ -205,6 +234,35 @@ public class PosAppService : HISAppService, IPosAppService
         invoice.Status = InvoiceStatus.Rejected;
         invoice.RejectionReason = input.RejectionReason;
         await _invoiceRepository.UpdateAsync(invoice);
+
+        // Notify Subscribers
+        var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+        var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+        var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+        var subscribersStr = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Pharmacy");
+        var subscriberIds = string.IsNullOrEmpty(subscribersStr) ? new List<Guid>() : subscribersStr.Split(',').Select(Guid.Parse).ToList();
+
+        if (subscriberIds.Any())
+        {
+            var notifications = subscriberIds.Select(id => new HIS.Notifications.Notification(
+                _guidGenerator.Create(),
+                id,
+                "فاتورة صيدلية مرفوضة",
+                $"تم رفض فاتورة مبيعات الصيدلية رقم {invoice.InvoiceNumber}. السبب: {input.RejectionReason}",
+                HIS.Notifications.NotificationTypes.Pharmacy,
+                $"/pharmacy/pos?invoiceId={invoice.Id}",
+                invoice.Id.ToString(),
+                CurrentUser.UserName ?? "النظام"
+            )).ToList();
+
+            await notificationRepo.InsertManyAsync(notifications);
+            foreach (var notif in notifications)
+            {
+                var dto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                await notificationSender.SendToUserAsync(notif.UserId, dto);
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────
@@ -230,6 +288,35 @@ public class PosAppService : HISAppService, IPosAppService
 
         // Accounting Entry: Dr Cash / Cr Revenue
         await CreateSaleAccountingEntryAsync(invoice);
+
+        // Notify Subscribers
+        var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+        var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+        var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+        var subscribersStr = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Pharmacy");
+        var subscriberIds = string.IsNullOrEmpty(subscribersStr) ? new List<Guid>() : subscribersStr.Split(',').Select(Guid.Parse).ToList();
+
+        if (subscriberIds.Any())
+        {
+            var notifications = subscriberIds.Select(id => new HIS.Notifications.Notification(
+                _guidGenerator.Create(),
+                id,
+                "اعتماد فاتورة صيدلية",
+                $"تم اعتماد ودفع فاتورة مبيعات الصيدلية رقم {invoice.InvoiceNumber}.",
+                HIS.Notifications.NotificationTypes.Pharmacy,
+                $"/pharmacy/pos?invoiceId={invoice.Id}",
+                invoice.Id.ToString(),
+                CurrentUser.UserName ?? "النظام"
+            )).ToList();
+
+            await notificationRepo.InsertManyAsync(notifications);
+            foreach (var notif in notifications)
+            {
+                var dto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                await notificationSender.SendToUserAsync(notif.UserId, dto);
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────

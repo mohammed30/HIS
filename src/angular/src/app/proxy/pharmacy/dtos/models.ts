@@ -1,6 +1,8 @@
 import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto } from '@abp/ng.core';
 import type { VerificationStatus } from '../verification-status.enum';
 import type { PaymentMethod } from '../../billing/payment-method.enum';
+import type { InvoiceStatus } from '../../billing/invoice-status.enum';
+import type { InvoiceType } from '../../billing/invoice-type.enum';
 import type { TransferStatus } from '../transfer-status.enum';
 
 export interface CreateDispensedItemDto {
@@ -83,28 +85,10 @@ export interface DrugDto extends AuditedEntityDto<string> {
   legalCategory?: string | null;
 }
 
-export interface PosProductDto {
-  id?: string;
-  name?: string;
-  barcode?: string;
-  price?: number;
-  currentStock?: number;
-}
-
-export interface PosSaleDto {
-  patientId?: string | null;
-  items?: PosSaleItemDto[];
-  totalAmount?: number;
+export interface PosApproveDto {
   paidAmount?: number;
   paymentMethod?: PaymentMethod;
   notes?: string | null;
-}
-
-export interface PosSaleItemDto {
-  drugId?: string;
-  quantity?: number;
-  unitPrice?: number;
-  discount?: number;
 }
 
 export interface PosInvoiceItemDto {
@@ -123,25 +107,23 @@ export interface PosInvoiceListDto {
   patientName?: string;
   totalAmount?: number;
   paidAmount?: number;
-  status?: number; // InvoiceStatus
-  invoiceType?: number; // InvoiceType 0=Sale 1=Return
+  status?: InvoiceStatus;
+  invoiceType?: InvoiceType;
   rejectionReason?: string | null;
   originalInvoiceNumber?: string | null;
   items?: PosInvoiceItemDto[];
 }
 
-export interface PosApproveDto {
-  paidAmount?: number;
-  paymentMethod?: PaymentMethod;
-  notes?: string | null;
-}
-
-export interface PosRejectDto {
-  rejectionReason?: string;
-}
-
 export interface PosPartialRefundDto {
   items?: PosRefundItemDto[];
+}
+
+export interface PosProductDto {
+  id?: string;
+  name?: string;
+  barcode?: string;
+  price?: number;
+  currentStock?: number;
 }
 
 export interface PosRefundItemDto {
@@ -153,6 +135,26 @@ export interface PosRefundResultDto {
   refundInvoiceId?: string;
   refundInvoiceNumber?: string;
   refundAmount?: number;
+}
+
+export interface PosRejectDto {
+  rejectionReason?: string;
+}
+
+export interface PosSaleDto {
+  patientId?: string | null;
+  items?: PosSaleItemDto[];
+  totalAmount?: number;
+  paidAmount?: number;
+  paymentMethod?: PaymentMethod;
+  notes?: string | null;
+}
+
+export interface PosSaleItemDto {
+  drugId?: string;
+  quantity?: number;
+  unitPrice?: number;
+  discount?: number;
 }
 
 export interface StockTransferDto extends FullAuditedEntityDto<string> {

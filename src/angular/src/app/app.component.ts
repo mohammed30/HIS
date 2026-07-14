@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { DynamicLayoutComponent, ReplaceableComponentsService, SessionStateService } from '@abp/ng.core';
+import { DynamicLayoutComponent, ReplaceableComponentsService, SessionStateService, AuthService } from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
 import { eAccountComponents } from '@abp/ng.account';
@@ -9,6 +9,11 @@ import { RoleManagementComponent } from './identity-extended/roles/role-manageme
 import { eIdentityComponents } from '@abp/ng.identity';
 import { AppFooterComponent } from './layout/footer/app-footer.component';
 import { Router, NavigationStart, NavigationCancel, NavigationError, NavigationEnd } from '@angular/router';
+import { NotificationBellComponent } from './notifications/notification-bell/notification-bell.component';
+import { LoginNotificationsModalComponent } from './notifications/login-modal/login-notifications-modal.component';
+import { NotificationHubService } from './notifications/services/notification-hub.service';
+
+import { NavItemsService } from '@abp/ng.theme.shared';
 
 @Component({
   selector: 'app-root',
@@ -16,13 +21,22 @@ import { Router, NavigationStart, NavigationCancel, NavigationError, NavigationE
     <abp-loader-bar />
     <abp-dynamic-layout />
     <app-theme-toggle />
+    <app-login-notifications-modal />
   `,
-  imports: [LoaderBarComponent, DynamicLayoutComponent, ThemeToggleComponent],
+  imports: [
+    LoaderBarComponent,
+    DynamicLayoutComponent,
+    ThemeToggleComponent,
+    LoginNotificationsModalComponent,
+  ],
 })
 export class AppComponent implements OnInit {
   private replaceableComponents = inject(ReplaceableComponentsService);
   private session = inject(SessionStateService);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private notifHub = inject(NotificationHubService);
+  private navItems = inject(NavItemsService);
 
   constructor() {
     this.router.events.subscribe(event => {
@@ -43,6 +57,20 @@ export class AppComponent implements OnInit {
     if (!this.session.getLanguage()) {
       this.session.setLanguage('ar');
     }
+
+    // Connect SignalR hub when authenticated
+    if (this.authService.isAuthenticated) {
+      this.notifHub.connect();
+    }
+
+    // Add Notification Bell to the top navigation bar
+    this.navItems.addItems([
+      {
+        id: 'Notifications',
+        component: NotificationBellComponent,
+        order: 1 // Put it on the right side
+      }
+    ]);
 
     // Register custom components after app is initialized
     this.replaceableComponents.add({

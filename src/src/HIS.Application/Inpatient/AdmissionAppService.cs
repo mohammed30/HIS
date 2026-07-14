@@ -177,6 +177,41 @@ public class AdmissionAppService : CrudAppService<
             await _journalEntryRepository.InsertAsync(je);
         }
 
+        // --- Trigger Notification ---
+        try
+        {
+            var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+            var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+            var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+            var settingValue = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Inpatient");
+            var userIds = string.IsNullOrWhiteSpace(settingValue) ? new List<Guid>() : settingValue.Split(',').Select(Guid.Parse).ToList();
+
+            if (userIds.Any())
+            {
+                var notifications = userIds.Select(id => new HIS.Notifications.Notification(
+                    GuidGenerator.Create(), 
+                    id, 
+                    "حالة تنويم جديدة", 
+                    $"تم تنويم مريض جديد في الغرفة {room?.RoomNumber ?? "غير محدد"}", 
+                    "Inpatient", 
+                    "/inpatient/admissions", 
+                    admission.Id.ToString(), 
+                    CurrentUser.UserName ?? "النظام")).ToList();
+                
+                await notificationRepo.InsertManyAsync(notifications);
+                foreach (var notif in notifications)
+                {
+                    var notifDto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                    await notificationSender.SendToUserAsync(notif.UserId, notifDto);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Microsoft.Extensions.Logging.LoggerExtensions.LogError(LazyServiceProvider.LazyGetRequiredService<Microsoft.Extensions.Logging.ILogger<AdmissionAppService>>(), ex, "Failed to send notification");
+        }
+
         var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
         await EnrichAdmissionDtoAsync(dto);
         return dto;

@@ -1,5 +1,6 @@
 import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto } from '@abp/ng.core';
 import type { AccountType } from '../account-type.enum';
+import type { AccountMappingType } from '../account-mapping-type.enum';
 import type { BankTransactionType } from '../bank-transaction-type.enum';
 import type { ClaimStatus } from '../claim-status.enum';
 
@@ -20,6 +21,19 @@ export interface AccountLookupDto extends EntityDto<string> {
   type?: AccountType;
   parentId?: string | null;
   hasChildren?: boolean;
+}
+
+export interface AccountMappingDto {
+  id?: string;
+  mappingType?: AccountMappingType;
+  mappingTypeName?: string;
+  accountId?: string | null;
+  accountCode?: string;
+  accountName?: string;
+  accountNameAr?: string;
+  isMandatory?: boolean;
+  description?: string;
+  descriptionAr?: string;
 }
 
 export interface AccountStatementDto {
@@ -78,6 +92,12 @@ export interface BankTransactionDto extends AuditedEntityDto<string> {
   description?: string;
   amount?: number;
   transactionType?: BankTransactionType;
+  bankAccountId?: string | null;
+  bankAccountName?: string;
+  bankAccountNameAr?: string;
+  oppositeAccountId?: string | null;
+  oppositeAccountName?: string;
+  oppositeAccountNameAr?: string;
   relatedJournalEntryId?: string | null;
 }
 
@@ -127,6 +147,8 @@ export interface CreateUpdateBankTransactionDto {
   description?: string;
   amount?: number;
   transactionType?: BankTransactionType;
+  bankAccountId?: string;
+  oppositeAccountId?: string;
 }
 
 export interface CreateUpdateContractClaimDto {
@@ -315,4 +337,8 @@ export interface ReportTransactionDto {
   amount?: number;
   type?: string;
   accountName?: string;
+}
+
+export interface UpdateAccountMappingDto {
+  accountId?: string | null;
 }

@@ -152,6 +152,40 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             // Auto-Create Journal Entry (Debit AR 1120, Credit Revenue 4100)
             await CreateInvoiceJournalEntryAsync(invoice, totalAmount);
 
+            try
+            {
+                var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+                var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+                var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+                var settingValue = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Billing");
+                var userIds = string.IsNullOrWhiteSpace(settingValue) ? new List<Guid>() : settingValue.Split(',').Select(Guid.Parse).ToList();
+
+                if (userIds.Any())
+                {
+                    var notifications = userIds.Select(id => new HIS.Notifications.Notification(
+                        GuidGenerator.Create(), 
+                        id, 
+                        "فاتورة جديدة", 
+                        $"تم إصدار فاتورة جديدة برقم {invoice.InvoiceNumber}", 
+                        "Billing", 
+                        "/billing/invoices", 
+                        invoice.Id.ToString(), 
+                        CurrentUser.UserName ?? "النظام")).ToList();
+                    
+                    await notificationRepo.InsertManyAsync(notifications);
+                    foreach (var notif in notifications)
+                    {
+                        var dto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                        await notificationSender.SendToUserAsync(notif.UserId, dto);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Microsoft.Extensions.Logging.LoggerExtensions.LogError(LazyServiceProvider.LazyGetRequiredService<Microsoft.Extensions.Logging.ILogger<InvoiceAppService>>(), ex, "Failed to send notification");
+            }
+
             return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
         }
         catch (Exception ex)

@@ -1,22 +1,7 @@
-import { RestService, Rest, ListResultDto } from '@abp/ng.core';
+import type { AccountMappingDto, UpdateAccountMappingDto } from './dtos/models';
+import { RestService, Rest } from '@abp/ng.core';
+import type { ListResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
-
-export interface AccountMappingDto {
-  id: string;
-  mappingType: number;
-  mappingTypeName: string;
-  accountId?: string;
-  accountCode?: string;
-  accountName?: string;
-  accountNameAr?: string;
-  isMandatory: boolean;
-  description: string;
-  descriptionAr: string;
-}
-
-export interface UpdateAccountMappingDto {
-  accountId?: string;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -24,13 +9,15 @@ export interface UpdateAccountMappingDto {
 export class AccountMappingService {
   private restService = inject(RestService);
   apiName = 'Default';
+  
 
   getList = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, ListResultDto<AccountMappingDto>>({
       method: 'GET',
       url: '/api/app/account-mapping',
     },
-    { apiName: this.apiName, ...config });
+    { apiName: this.apiName,...config });
+  
 
   update = (id: string, input: UpdateAccountMappingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AccountMappingDto>({
@@ -38,5 +25,5 @@ export class AccountMappingService {
       url: `/api/app/account-mapping/${id}`,
       body: input,
     },
-    { apiName: this.apiName, ...config });
+    { apiName: this.apiName,...config });
 }

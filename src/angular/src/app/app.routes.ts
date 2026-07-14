@@ -256,6 +256,12 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./admin/activity-logs/activity-logs.component').then(c => c.ActivityLogsComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Settings' }
+      },
+      {
+        path: 'notification-settings',
+        loadComponent: () => import('./admin/notification-settings/notification-settings').then(c => c.NotificationSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
       }
     ]
   },
@@ -510,5 +516,26 @@ export const APP_ROUTES: Routes = [
     loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule),
     canActivate: [authGuard, permissionGuard],
     data: { requiredPolicy: 'HIS.Operations.Report' }
+  },
+  // Notifications
+  {
+    path: 'notifications',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./notifications/notifications-page/notifications.component').then(c => c.NotificationsPageComponent),
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./notifications/user-settings/user-notification-settings.component').then(c => c.UserNotificationSettingsComponent),
+      },
+    ]
+  },
+  {
+    path: 'admin/notifications',
+    loadComponent: () => import('./notifications/admin/admin-notifications.component').then(c => c.AdminNotificationsComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { requiredPolicy: 'HIS.Notifications.Manage' }
   },
 ];

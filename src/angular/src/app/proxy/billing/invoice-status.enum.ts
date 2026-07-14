@@ -8,6 +8,9 @@ export enum InvoiceStatus {
   Cancelled = 4,
   Deferred = 5,
   Refunded = 6,
+  PendingApproval = 7,
+  Rejected = 8,
+  Dispensed = 9,
 }
 
 export const invoiceStatusOptions = mapEnumToOptions(InvoiceStatus);

@@ -180,5 +180,11 @@ public static class HISPermissions
         public const string Default = GroupName + ".Radiology";
         public const string Requests = Default + ".Requests";
     }
+
+    public static class Notifications
+    {
+        public const string Default = GroupName + ".Notifications";
+        public const string Manage  = Default + ".Manage"; // Admin only
+    }
 }
 

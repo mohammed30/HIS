@@ -156,6 +156,10 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
 
         // Activity Logs
         hisGroup.AddPermission(HISPermissions.ActivityLogs.Default, L("Permission:ActivityLogs"));
+
+        // Notifications
+        var notifications = hisGroup.AddPermission(HISPermissions.Notifications.Default, L("Permission:Notifications"));
+        notifications.AddChild(HISPermissions.Notifications.Manage, L("Permission:NotificationsManage"));
     }
 
     private static LocalizableString L(string name)

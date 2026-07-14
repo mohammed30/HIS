@@ -197,6 +197,40 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
             }
         }
 
+        try
+        {
+            var notificationRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Notifications.Notification, Guid>>();
+            var notificationSender = LazyServiceProvider.LazyGetRequiredService<HIS.Notifications.NotificationSender>();
+            var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+            var settingValue = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Appointments");
+            var userIds = string.IsNullOrWhiteSpace(settingValue) ? new List<Guid>() : settingValue.Split(',').Select(Guid.Parse).ToList();
+
+            if (userIds.Any())
+            {
+                var notifications = userIds.Select(id => new HIS.Notifications.Notification(
+                    GuidGenerator.Create(), 
+                    id, 
+                    "موعد جديد", 
+                    $"تم حجز موعد جديد للمريض في العيادة", 
+                    "Appointment", 
+                    "/appointments", 
+                    appt.Id.ToString(), 
+                    CurrentUser.UserName ?? "النظام")).ToList();
+                
+                await notificationRepo.InsertManyAsync(notifications);
+                foreach (var notif in notifications)
+                {
+                    var dto = ObjectMapper.Map<HIS.Notifications.Notification, HIS.Notifications.NotificationDto>(notif);
+                    await notificationSender.SendToUserAsync(notif.UserId, dto);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Microsoft.Extensions.Logging.LoggerExtensions.LogError(LazyServiceProvider.LazyGetRequiredService<Microsoft.Extensions.Logging.ILogger<AppointmentAppService>>(), ex, "Failed to send notification");
+        }
+
         return ObjectMapper.Map<Appointment, AppointmentDto>(appt);
     }
 

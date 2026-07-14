@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Hosting;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using HIS.Notifications;
+using Volo.Abp.Identity;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace HIS.Accounting
 {
@@ -28,6 +32,11 @@ namespace HIS.Accounting
         private readonly IRepository<Account, Guid> _accountRepository;
         private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
         private readonly IWebHostEnvironment _env;
+        
+        // Notifications
+        private readonly IRepository<Notification, Guid> _notificationRepo;
+        private readonly NotificationSender _notificationSender;
+        private readonly IIdentityUserRepository _userRepository;
 
         public PaymentVoucherAppService(
             IRepository<PaymentVoucher, Guid> repository,
@@ -35,7 +44,10 @@ namespace HIS.Accounting
             IRepository<PaymentMethod, Guid> paymentMethodRepository,
             IRepository<Account, Guid> accountRepository,
             IRepository<JournalEntry, Guid> journalEntryRepository,
-            IWebHostEnvironment env) 
+            IWebHostEnvironment env,
+            IRepository<Notification, Guid> notificationRepo,
+            NotificationSender notificationSender,
+            IIdentityUserRepository userRepository) 
             : base(repository)
         {
             _supplierRepository = supplierRepository;
@@ -43,6 +55,9 @@ namespace HIS.Accounting
             _accountRepository = accountRepository;
             _journalEntryRepository = journalEntryRepository;
             _env = env;
+            _notificationRepo = notificationRepo;
+            _notificationSender = notificationSender;
+            _userRepository = userRepository;
         }
 
         protected override async Task<IQueryable<PaymentVoucher>> CreateFilteredQueryAsync(PagedAndSortedResultRequestDto input)
@@ -93,6 +108,42 @@ namespace HIS.Accounting
 
             // Auto-Create Journal Entry
             await CreateJournalEntryAsync(entity, input);
+
+            // Trigger Notification to all users
+            try
+            {
+                var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+
+                var settingValue = await settingProvider.GetOrNullAsync("Notifications.Subscribers.Accounting");
+                var userIds = string.IsNullOrWhiteSpace(settingValue) ? new List<Guid>() : settingValue.Split(',').Select(Guid.Parse).ToList();
+
+                if (userIds.Any())
+                {
+                    var notifications = userIds.Select(id => new Notification(
+                        GuidGenerator.Create(),
+                        id,
+                        "سند صرف جديد",
+                        $"تم إنشاء سند صرف جديد برقم {entity.VoucherNumber} بقيمة {entity.Amount}",
+                        "Accounting",
+                        "/accounting/payment-vouchers",
+                        entity.Id.ToString(),
+                        CurrentUser.UserName ?? "النظام"
+                    )).ToList();
+
+                    await _notificationRepo.InsertManyAsync(notifications);
+
+                    foreach (var notif in notifications)
+                    {
+                        var dto = ObjectMapper.Map<Notification, NotificationDto>(notif);
+                        await _notificationSender.SendToUserAsync(notif.UserId, dto);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log and ignore notification errors so it doesn't break the transaction
+                Logger.LogError(ex, "Failed to send notification");
+            }
 
             return await GetAsync(entity.Id);
         }

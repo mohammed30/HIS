@@ -1,6 +1,7 @@
 using HIS.EntityFrameworkCore;
 using HIS.HealthChecks;
 using HIS.MultiTenancy;
+using HIS.Notifications;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
@@ -40,6 +41,7 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
+using Volo.Abp.AspNetCore.SignalR;
 
 namespace HIS;
 
@@ -53,7 +55,8 @@ namespace HIS;
     typeof(HISEntityFrameworkCoreModule),
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
-    typeof(AbpAspNetCoreSerilogModule)
+    typeof(AbpAspNetCoreSerilogModule),
+    typeof(AbpAspNetCoreSignalRModule)
 )]
 public class HISHttpApiHostModule : AbpModule
 {
@@ -312,6 +315,18 @@ public class HISHttpApiHostModule : AbpModule
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
         app.UseCors();
+
+        // Pass access_token from query string to Authorization header for SignalR WebSockets
+        app.Use(async (context, next) =>
+        {
+            var path = context.Request.Path;
+            if (path.StartsWithSegments("/signalr-hubs") && context.Request.Query.TryGetValue("access_token", out var token))
+            {
+                context.Request.Headers.Authorization = $"Bearer {token}";
+            }
+            await next();
+        });
+
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
 
@@ -334,6 +349,9 @@ public class HISHttpApiHostModule : AbpModule
 
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
-        app.UseConfiguredEndpoints();
+        app.UseConfiguredEndpoints(builder =>
+        {
+            builder.MapHub<NotificationHub>("/signalr-hubs/notifications");
+        });
     }
 }

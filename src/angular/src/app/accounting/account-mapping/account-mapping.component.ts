@@ -3,9 +3,9 @@ import { CommonModule, SlicePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
-import { AccountMappingService, AccountMappingDto } from '../../proxy/accounting/account-mapping.service';
+import { AccountMappingService } from '../../proxy/accounting/account-mapping.service';
 import { AccountService } from '../../proxy/accounting/account.service';
-import { AccountDto } from '../../proxy/accounting/dtos/models';
+import { AccountDto, AccountMappingDto } from '../../proxy/accounting/dtos/models';
 
 declare var abp: any;
 

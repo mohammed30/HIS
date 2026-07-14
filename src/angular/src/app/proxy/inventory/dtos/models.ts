@@ -37,6 +37,8 @@ export interface CreateUpdatePurchaseInvoiceLineDto {
   quantity?: number;
   unitCost?: number;
   discount?: number;
+  margin?: number;
+  salePrice?: number;
   batchNumber?: string;
   expiryDate?: string | null;
 }
@@ -144,11 +146,13 @@ export interface InventoryItemDto extends EntityDto<string> {
   warehouseName?: string;
   productId?: string;
   productName?: string;
+  productCode?: string;
   type?: InventoryItemType;
   quantity?: number;
   averageCost?: number;
   minStockLevel?: number;
   reorderLevel?: number;
+  barcode?: string;
 }
 
 export interface InventoryTransactionDto extends EntityDto<string> {
@@ -209,6 +213,8 @@ export interface PurchaseInvoiceLineDto extends EntityDto<string> {
   quantity?: number;
   unitCost?: number;
   discount?: number;
+  margin?: number;
+  salePrice?: number;
   totalLineAmount?: number;
   batchNumber?: string;
   expiryDate?: string | null;

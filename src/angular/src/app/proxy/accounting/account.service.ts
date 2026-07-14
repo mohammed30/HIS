@@ -28,6 +28,15 @@ export class AccountService {
     { apiName: this.apiName,...config });
   
 
+  fixParents = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string>({
+      method: 'GET',
+      responseType: 'text',
+      url: '/api/app/account/fix-parents',
+    },
+    { apiName: this.apiName,...config });
+  
+
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AccountDto>({
       method: 'GET',

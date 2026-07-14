@@ -1,4 +1,5 @@
 using AutoMapper;
+using HIS.Notifications;
 using HIS.Settings;
 using HIS.Settings.Dtos;
 using Volo.Abp.AutoMapper;
@@ -334,6 +335,9 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<HR.CreateUpdateAttendanceRecordDto, HR.AttendanceRecord>();
         CreateMap<HR.DailyAttendance, HR.DailyAttendanceDto>();
         CreateMap<HR.CreateUpdateDailyAttendanceDto, HR.DailyAttendance>();
+
+        // Notifications
+        CreateMap<Notification, NotificationDto>();
     }
 }
 

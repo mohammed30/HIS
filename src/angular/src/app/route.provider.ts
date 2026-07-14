@@ -617,6 +617,14 @@ function configureRoutes() {
       order: 210,
       layout: eLayoutType.application,
     },
+    {
+      path: '/admin/notification-settings',
+      name: '::Menu:NotificationSettings',
+      parentName: '::Menu:Settings',
+      iconClass: 'fas fa-bell',
+      order: 220,
+      layout: eLayoutType.application,
+    },
     // Inventory
     {
       name: '::Menu:Inventory',
@@ -958,7 +966,24 @@ function configureRoutes() {
       order: 300,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Settings',
-    }
+    },
+    // Notifications (user)
+    {
+      path: '/notifications',
+      name: '::Menu:Notifications',
+      iconClass: 'fas fa-bell',
+      order: 350,
+      layout: eLayoutType.application,
+    },
+    // Admin > Notifications
+    {
+      path: '/admin/notifications',
+      name: '::Menu:AdminNotifications',
+      iconClass: 'fas fa-shield-alt',
+      order: 251,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Notifications.Manage',
+    },
     // Force rebuild 2
   ]);
 }
