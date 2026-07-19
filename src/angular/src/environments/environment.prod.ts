@@ -2,7 +2,7 @@ import { Environment } from '@abp/ng.core';
 
 const baseUrl = 'http://asiahospitalt-001-site1.jtempurl.com';
 const oAuthConfig = {
-  issuer: 'http://asiahisbackend-001-site1.stempurl.com',
+  issuer: 'http://asiaback2000-001-site1.gtempurl.com',
   redirectUri: baseUrl,
   clientId: 'HIS_App',
   responseType: 'code',
@@ -24,7 +24,7 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'http://asiahisbackend-001-site1.stempurl.com',
+      url: 'http://asiaback2000-001-site1.gtempurl.com',
       rootNamespace: 'HIS',
     },
     AbpAccountPublic: {
