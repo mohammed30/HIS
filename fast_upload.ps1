@@ -9,6 +9,7 @@ $files = @(
     "c:\Users\Mohammed\source\repos\HIS\publish\backend\HIS.Application.dll",
     "c:\Users\Mohammed\source\repos\HIS\publish\backend\HIS.Application.Contracts.dll",
     "c:\Users\Mohammed\source\repos\HIS\publish\backend\HIS.Domain.Shared.dll",
+    "c:\Users\Mohammed\source\repos\HIS\publish\backend\appsettings.Production.json",
     "c:\Users\Mohammed\source\repos\HIS\publish\backend\web.config"
 )
 

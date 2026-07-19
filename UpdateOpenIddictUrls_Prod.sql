@@ -1,7 +1,7 @@
 -- SQL Script to update OpenIddict Applications to the new production URLs
 -- Run this on your production database (db_aca183_his) to fix redirection and login issues.
 
-USE [db_aca183_his];
+USE [db_acc373_asiaback20];
 GO
 
 PRINT 'Updating OpenIddict Applications Redirect URIs...';
@@ -15,9 +15,9 @@ WHERE [ClientId] = 'HIS_App';
 
 -- Update HIS_Swagger (Swagger UI / Backend)
 UPDATE [OpenIddictApplications]
-SET [RedirectUris] = '["http://asiahisbackend-001-site1.stempurl.com/swagger/oauth2-redirect.html", "http://asiahisbackend-001-site1.stempurl.com/swagger/"]',
-    [PostLogoutRedirectUris] = '["http://asiahisbackend-001-site1.stempurl.com/swagger/oauth2-redirect.html"]',
-    [ClientUri] = 'http://asiahisbackend-001-site1.stempurl.com/swagger'
+SET [RedirectUris] = '["http://asiaback2000-001-site1.gtempurl.com/swagger/oauth2-redirect.html", "http://asiaback2000-001-site1.gtempurl.com/swagger/"]',
+    [PostLogoutRedirectUris] = '["http://asiaback2000-001-site1.gtempurl.com/swagger/oauth2-redirect.html"]',
+    [ClientUri] = 'http://asiaback2000-001-site1.gtempurl.com/swagger'
 WHERE [ClientId] = 'HIS_Swagger';
 
 GO

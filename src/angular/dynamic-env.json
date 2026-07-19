@@ -1,7 +1,7 @@
 {
     "production": true,
     "oAuthConfig": {
-        "issuer": "http://asiahisbackend-001-site1.stempurl.com/",
+        "issuer": "http://asiaback2000-001-site1.gtempurl.com/",
         "redirectUri": "http://asiahospitalt-001-site1.jtempurl.com",
         "clientId": "HIS_App",
         "responseType": "code",
@@ -10,11 +10,11 @@
     },
     "apis": {
         "default": {
-            "url": "http://asiahisbackend-001-site1.stempurl.com/",
+            "url": "http://asiaback2000-001-site1.gtempurl.com/",
             "rootNamespace": "HIS"
         },
         "AbpAccountPublic": {
-            "url": "http://asiahisbackend-001-site1.stempurl.com/",
+            "url": "http://asiaback2000-001-site1.gtempurl.com/",
             "rootNamespace": "AbpAccountPublic"
         }
     }
