@@ -166,7 +166,7 @@ public class PosAppService : HISAppService, IPosAppService
         }
 
         invoice.NetAmount = invoice.TotalAmount - invoice.DiscountAmount;
-        await _invoiceRepository.InsertAsync(invoice);
+        await _invoiceRepository.InsertAsync(invoice, autoSave: true);
 
         return invoice.Id;
     }
@@ -339,9 +339,9 @@ public class PosAppService : HISAppService, IPosAppService
 
         foreach (var item in items)
         {
-            if (Guid.TryParse(item.ServiceCode, out Guid productId))
+            if (Guid.TryParse(item.ServiceCode, out Guid serviceItemId))
             {
-                await _inventoryManager.DispenseStockAsync(pharmacy.Id, productId, item.Quantity, invoice.InvoiceNumber);
+                await _inventoryManager.DispenseStockAsync(pharmacy.Id, serviceItemId, item.Quantity, invoice.InvoiceNumber);
             }
         }
 
@@ -411,10 +411,10 @@ public class PosAppService : HISAppService, IPosAppService
             refundTotal += refundItem.ReturnQuantity * originalItem.UnitPrice;
 
             // Return stock to pharmacy
-            if (Guid.TryParse(originalItem.ServiceCode, out Guid productId))
+            if (Guid.TryParse(originalItem.ServiceCode, out Guid serviceItemId))
             {
                 await _inventoryManager.ReturnStockAsync(
-                    pharmacy.Id, productId, refundItem.ReturnQuantity, refundNumber);
+                    pharmacy.Id, serviceItemId, refundItem.ReturnQuantity, refundNumber);
             }
         }
 
@@ -631,6 +631,10 @@ public class PosAppService : HISAppService, IPosAppService
         await _invoiceRepository.UpdateAsync(invoice);
 
         await CreateSaleAccountingEntryAsync(invoice);
+
+        // Deduct from stock automatically in the same process
+        await DispenseAsync(invoiceId);
+
         return invoiceId;
     }
 
@@ -722,3 +726,4 @@ public class PosAppService : HISAppService, IPosAppService
         return account;
     }
 }
+

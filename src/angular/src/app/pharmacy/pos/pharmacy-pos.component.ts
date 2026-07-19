@@ -921,9 +921,11 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
 
       <div class="grid-3">
         <div *ngFor="let inv of approvedInvoices" class="inv-card" style="border-color:rgba(52,211,153,0.2)">
-          <div class="inv-card-head" style="background:rgba(52,211,153,0.06)">
+          <div class="inv-card-head" [style.background]="inv.status === 9 ? 'rgba(56,189,248,0.06)' : 'rgba(52,211,153,0.06)'">
             <span class="inv-number">{{ inv.invoiceNumber }}</span>
-            <span class="inv-status status-paid">مدفوعة – جاهزة</span>
+            <span class="inv-status" [ngClass]="{'status-paid': inv.status !== 9, 'status-pending': inv.status === 9}" [style.background]="inv.status === 9 ? 'rgba(56,189,248,0.15)' : ''" [style.color]="inv.status === 9 ? 'var(--pos-accent)' : ''">
+              {{ inv.status === 9 ? 'تم الصرف' : 'مدفوعة – جاهزة' }}
+            </span>
           </div>
           <div class="inv-card-body">
             <div class="inv-meta"><i class="fas fa-user"></i> {{ inv.patientName || 'بدون اسم' }}</div>
@@ -931,7 +933,7 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
             <div class="inv-items">
               <div class="text-sm fw-700 text-muted-c mb-1">الأصناف للصرف:</div>
               <div *ngFor="let item of inv.items" class="inv-item-line">
-                <span class="fw-700">{{ item.description }}</span> × <span class="text-accent fw-800" style="font-family:'Outfit',sans-serif">{{ item.quantity }}</span>
+                <span class="fw-700" [ngStyle]="{'text-decoration': inv.status === 9 ? 'line-through' : 'none'}">{{ item.description }}</span> × <span class="text-accent fw-800" style="font-family:'Outfit',sans-serif">{{ item.quantity }}</span>
               </div>
             </div>
             <div class="inv-total">
@@ -940,7 +942,7 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
             </div>
           </div>
           <div class="inv-card-foot">
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2" *ngIf="inv.status !== 9">
               <button class="btn-pos-success w-100" (click)="confirmDispense(inv)" [disabled]="isBusy">
                 <span *ngIf="isBusy" class="pos-spinner"></span>
                 <i *ngIf="!isBusy" class="fas fa-check"></i> تأكيد الصرف
@@ -948,6 +950,9 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
               <button class="btn-pos-ghost" (click)="printInvoice(inv.id)" title="طباعة" style="padding:0.6rem 0.9rem">
                 <i class="fas fa-print"></i>
               </button>
+            </div>
+            <div class="d-flex gap-2 align-center justify-center w-100" *ngIf="inv.status === 9" style="padding:0.5rem">
+              <div class="text-accent fw-800"><i class="fas fa-check-circle"></i> تم صرف الفاتورة</div>
             </div>
           </div>
         </div>
@@ -1261,10 +1266,11 @@ export class PharmacyPosComponent implements OnInit {
         this.isBusy = false;
         this.approvingInvoiceId = null;
         abp.notify.success('تم اعتماد الفاتورة بنجاح', 'موافقة');
-        // Optimistically remove from list to make it disappear instantly
+        
+        // Optimistically update lists (prevents browser caching from restoring the item)
         this.pendingInvoices = this.pendingInvoices.filter(i => i.id !== inv.id);
-        this.loadPendingApproval();
-        this.loadToDispense();
+        inv.status = 3; // Paid
+        this.approvedInvoices = [inv, ...this.approvedInvoices];
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل الاعتماد', 'خطأ'); }
     });
@@ -1279,13 +1285,19 @@ export class PharmacyPosComponent implements OnInit {
   confirmReject(inv: PosInvoiceListDto) {
     if (!this.rejectReason.trim()) return;
     this.isBusy = true;
-    this.posService.reject(inv.id, { rejectionReason: this.rejectReason }).subscribe({
+    const reasonToSave = this.rejectReason;
+    this.posService.reject(inv.id, { rejectionReason: reasonToSave }).subscribe({
       next: () => {
         this.isBusy = false;
         this.rejectingInvoiceId = null;
         this.rejectReason = '';
         abp.notify.warn('تم رفض الفاتورة وإعادتها للصيدلي', 'رفض');
-        this.loadPendingApproval();
+        
+        // Optimistically update lists
+        this.pendingInvoices = this.pendingInvoices.filter(i => i.id !== inv.id);
+        inv.status = 8; // Rejected
+        inv.rejectionReason = reasonToSave;
+        this.rejectedInvoices = [inv, ...this.rejectedInvoices];
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل الرفض', 'خطأ'); }
     });
@@ -1297,7 +1309,12 @@ export class PharmacyPosComponent implements OnInit {
       next: () => {
         this.isBusy = false;
         abp.notify.success('تمت إعادة إرسال الفاتورة للمحاسب', 'نجاح');
-        this.loadPendingApproval();
+        
+        // Optimistically update lists
+        this.rejectedInvoices = this.rejectedInvoices.filter(i => i.id !== inv.id);
+        inv.status = 7; // PendingApproval
+        inv.rejectionReason = null;
+        this.pendingInvoices = [inv, ...this.pendingInvoices];
       },
       error: () => { this.isBusy = false; }
     });
@@ -1327,7 +1344,9 @@ export class PharmacyPosComponent implements OnInit {
       next: () => {
         this.isBusy = false;
         abp.notify.success('تم صرف الأصناف بنجاح', 'صرف');
-        this.loadToDispense();
+        
+        // Optimistically update status to Dispensed instead of removing
+        inv.status = 9; // Dispensed
         this.printInvoice(inv.id);
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل الصرف', 'خطأ'); }

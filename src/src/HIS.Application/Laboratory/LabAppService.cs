@@ -248,6 +248,8 @@ public class LabAppService : ApplicationService, ILabAppService
             dto.DoctorName = x.doctor?.NameAr ?? "N/A";
             dto.TestName = x.test.Name;
             dto.TestCode = x.test.Code;
+            dto.ReferenceRange = x.test.ReferenceRange;
+            dto.Unit = x.test.Unit;
 
             // Enrich with Inpatient context if it's a nursing request
             if (x.request.Notes != null && x.request.Notes.Contains("Nursing Req:"))

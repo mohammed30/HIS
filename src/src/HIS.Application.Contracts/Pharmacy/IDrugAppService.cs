@@ -9,7 +9,7 @@ namespace HIS.Pharmacy;
 public interface IDrugAppService : ICrudAppService<
     DrugDto, 
     Guid, 
-    PagedAndSortedResultRequestDto, 
+    GetDrugListDto, 
     CreateUpdateDrugDto>
 {
     Task<Volo.Abp.Content.IRemoteStreamContent> GetImportTemplateAsync();

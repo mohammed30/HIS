@@ -16,7 +16,7 @@ using HIS.Permissions;
 
 namespace HIS.Pharmacy;
 
-public class DrugAppService : CrudAppService<Drug, DrugDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateDrugDto>, IDrugAppService
+public class DrugAppService : CrudAppService<Drug, DrugDto, Guid, GetDrugListDto, CreateUpdateDrugDto>, IDrugAppService
 {
     protected override string GetPolicyName { get; set; } = HISPermissions.Pharmacy.Drugs;
     protected override string GetListPolicyName { get; set; } = HISPermissions.Pharmacy.Drugs;
@@ -32,6 +32,23 @@ public class DrugAppService : CrudAppService<Drug, DrugDto, Guid, PagedAndSorted
         : base(repository)
     {
         _serviceItemRepository = serviceItemRepository;
+    }
+
+    protected override async Task<IQueryable<Drug>> CreateFilteredQueryAsync(GetDrugListDto input)
+    {
+        var query = await base.CreateFilteredQueryAsync(input);
+
+        if (!string.IsNullOrWhiteSpace(input.SearchText))
+        {
+            query = query.Where(d => 
+                d.BrandName.Contains(input.SearchText) ||
+                d.ScientificName.Contains(input.SearchText) ||
+                d.Barcode.Contains(input.SearchText) ||
+                d.Manufacturer.Contains(input.SearchText)
+            );
+        }
+
+        return query;
     }
 
     public override async Task<DrugDto> CreateAsync(CreateUpdateDrugDto input)
@@ -98,35 +115,66 @@ public class DrugAppService : CrudAppService<Drug, DrugDto, Guid, PagedAndSorted
                     continue;
                 }
 
-                // Follow logic from CreateAsync
-                var serviceItem = new ServiceItem(
-                    GuidGenerator.Create(),
-                    row.Barcode,
-                    $"{row.BrandName} {row.Strength} - {row.Form}",
-                    ServiceCategory.Pharmacy
-                );
-                serviceItem.Price = row.Price;
+                // Check if ServiceItem already exists
+                var serviceItem = await _serviceItemRepository.FirstOrDefaultAsync(s => s.Code == row.Barcode);
+                if (serviceItem == null)
+                {
+                    serviceItem = new ServiceItem(
+                        GuidGenerator.Create(),
+                        row.Barcode,
+                        $"{row.BrandName} {row.Strength} - {row.Form}",
+                        ServiceCategory.Pharmacy
+                    );
+                    serviceItem.Price = row.Price;
+                    await _serviceItemRepository.InsertAsync(serviceItem);
+                }
+                else
+                {
+                    serviceItem.Name = $"{row.BrandName} {row.Strength} - {row.Form}";
+                    serviceItem.Price = row.Price;
+                    await _serviceItemRepository.UpdateAsync(serviceItem);
+                }
 
-                await _serviceItemRepository.InsertAsync(serviceItem);
+                // Check if Drug already exists
+                var drug = await Repository.FirstOrDefaultAsync(d => d.Barcode == row.Barcode);
+                if (drug == null)
+                {
+                    drug = new Drug(
+                        GuidGenerator.Create(),
+                        row.Barcode,
+                        row.BrandName,
+                        row.ScientificName,
+                        row.Strength,
+                        row.Form,
+                        row.Manufacturer
+                    );
+                    drug.BatchNumberPrefix = row.BatchNumberPrefix;
+                    drug.MinimumStockLevel = row.MinimumStockLevel;
+                    drug.ReorderLevel = row.ReorderLevel;
+                    drug.BinLocation = row.BinLocation;
+                    drug.IsControlled = row.IsControlled?.Equals("Yes", StringComparison.OrdinalIgnoreCase) ?? false;
+                    drug.LegalCategory = row.LegalCategory;
+                    drug.ServiceItemId = serviceItem.Id;
 
-                var drug = new Drug(
-                    GuidGenerator.Create(),
-                    row.Barcode,
-                    row.BrandName,
-                    row.ScientificName,
-                    row.Strength,
-                    row.Form,
-                    row.Manufacturer
-                );
-                drug.BatchNumberPrefix = row.BatchNumberPrefix;
-                drug.MinimumStockLevel = row.MinimumStockLevel;
-                drug.ReorderLevel = row.ReorderLevel;
-                drug.BinLocation = row.BinLocation;
-                drug.IsControlled = row.IsControlled?.Equals("Yes", StringComparison.OrdinalIgnoreCase) ?? false;
-                drug.LegalCategory = row.LegalCategory;
-                drug.ServiceItemId = serviceItem.Id;
+                    await Repository.InsertAsync(drug);
+                }
+                else
+                {
+                    drug.BrandName = row.BrandName;
+                    drug.ScientificName = row.ScientificName;
+                    drug.Strength = row.Strength;
+                    drug.Form = row.Form;
+                    drug.Manufacturer = row.Manufacturer;
+                    drug.BatchNumberPrefix = row.BatchNumberPrefix;
+                    drug.MinimumStockLevel = row.MinimumStockLevel;
+                    drug.ReorderLevel = row.ReorderLevel;
+                    drug.BinLocation = row.BinLocation;
+                    drug.IsControlled = row.IsControlled?.Equals("Yes", StringComparison.OrdinalIgnoreCase) ?? false;
+                    drug.LegalCategory = row.LegalCategory;
+                    drug.ServiceItemId = serviceItem.Id;
 
-                await Repository.InsertAsync(drug);
+                    await Repository.UpdateAsync(drug);
+                }
             }
         }
     }

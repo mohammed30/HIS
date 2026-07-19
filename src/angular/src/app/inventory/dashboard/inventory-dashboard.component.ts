@@ -53,7 +53,9 @@ export class InventoryDashboardComponent implements OnInit {
             if (!this.selectedWarehouseId) return this.emptypagedResult();
             
             return this.inventoryService.getStockLevels(
-                this.selectedWarehouseId
+                this.selectedWarehouseId,
+                this.searchTerm || undefined,
+                (this.selectedType as any) || undefined
             ).pipe(
                 tap(response => {
                     this.data = response;

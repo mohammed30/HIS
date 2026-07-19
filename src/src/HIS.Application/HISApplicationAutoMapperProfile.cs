@@ -86,6 +86,7 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Inventory.Dtos.CreateUpdateWarehouseDto, Inventory.Warehouse>();
         
         CreateMap<Inventory.InventoryItem, Inventory.Dtos.InventoryItemDto>();
+        CreateMap<Inventory.InventoryTransaction, Inventory.Dtos.InventoryTransactionDto>();
         
         CreateMap<Inventory.Supplier, Inventory.Dtos.SupplierDto>();
         CreateMap<Inventory.Dtos.CreateUpdateSupplierDto, Inventory.Supplier>();

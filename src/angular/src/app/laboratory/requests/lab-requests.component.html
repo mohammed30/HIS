@@ -261,6 +261,10 @@
                 <div class="col-md-6"><strong>{{ '::Patient' | abpLocalization }}:</strong> {{ selectedRequest.patientName }}</div>
                 <div class="col-md-6"><strong>{{ '::Date' | abpLocalization }}:</strong> {{ selectedRequest.requestDate | date:'medium' }}</div>
                 <div class="col-md-12"><strong>{{ '::Test' | abpLocalization }}:</strong> {{ selectedRequest.testName }}</div>
+                <div class="col-md-12 text-success" *ngIf="selectedRequest.referenceRange">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <strong>{{ '::ReferenceRange' | abpLocalization }}:</strong> <span dir="ltr">{{ selectedRequest.referenceRange }} {{ selectedRequest.unit }}</span>
+                </div>
             </div>
         </div>
         

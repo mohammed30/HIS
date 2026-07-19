@@ -77,9 +77,9 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
         return dto;
     }
 
-    public async Task<List<Inventory.Dtos.InventoryItemDto>> GetPharmacyStockAsync()
+    public async Task<List<Inventory.Dtos.InventoryItemDto>> GetPharmacyStockAsync(Guid warehouseId)
     {
-        var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy");
+        var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Id == warehouseId);
         if (pharmacyWarehouse == null) return new List<Inventory.Dtos.InventoryItemDto>();
 
         var items = await _inventoryItemRepository.GetListAsync(x => x.WarehouseId == pharmacyWarehouse.Id);
@@ -94,22 +94,29 @@ public class PharmacyAppService : HISAppService, IPharmacyAppService
              throw new UserFriendlyException("Prescription already dispensed.");
         }
 
-        var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name == "Pharmacy");
+        var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Id == input.WarehouseId);
         if (pharmacyWarehouse == null)
         {
-             throw new UserFriendlyException("Pharmacy Warehouse not found. Please contact admin.");
+             throw new UserFriendlyException("Selected Warehouse not found.");
+        }
+
+        var drugRepository = LazyServiceProvider.LazyGetRequiredService<IRepository<Drug, Guid>>();
+        var drug = await drugRepository.FirstOrDefaultAsync(x => x.ServiceItemId == order.ServiceItemId);
+        if (drug == null)
+        {
+             throw new UserFriendlyException("Drug not found for this service item.");
         }
 
         // 1. Dispense from Inventory (LIFO)
         var batchDetails = await _inventoryManager.DispenseStockAsync(
             pharmacyWarehouse.Id, 
-            order.ServiceItemId, 
+            drug.ServiceItemId.Value, 
             order.Quantity, 
             order.Id.ToString()
         );
 
         // 2. Record Dispensing Event
-        var dispensing = new Dispensing(GuidGenerator.Create(), order.Id, order.PatientId)
+        var dispensing = new Dispensing(Guid.NewGuid(), order.Id, order.PatientId)
         {
             CounselingNotes = input.CounselingNotes
         };

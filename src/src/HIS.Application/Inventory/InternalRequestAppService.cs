@@ -63,10 +63,19 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
 
         if (input.FulfilledByWarehouseId == Guid.Empty && (input.RequestType == InternalRequestType.Medication || input.RequestType == InternalRequestType.Consumable))
         {
-            var pharmacyWarehouse = await _warehouseRepository.FirstOrDefaultAsync(x => x.Name.Contains("Pharmacy") || x.Name.Contains("صيدلية"));
-            if (pharmacyWarehouse != null)
+            var pharmacyIdStr = await SettingProvider.GetOrNullAsync("HIS.Inventory.PharmacyWarehouseId");
+            if (!string.IsNullOrEmpty(pharmacyIdStr) && Guid.TryParse(pharmacyIdStr, out var pharmacyId))
             {
-                input.FulfilledByWarehouseId = pharmacyWarehouse.Id;
+                input.FulfilledByWarehouseId = pharmacyId;
+            }
+            else
+            {
+                // Fallback to finding any warehouse that is designated as pharmacy or just the first one
+                var fallback = await _warehouseRepository.FirstOrDefaultAsync();
+                if (fallback != null)
+                {
+                    input.FulfilledByWarehouseId = fallback.Id;
+                }
             }
         }
 

@@ -73,24 +73,17 @@ public class InventoryAppService : HISAppService, IInventoryAppService
         if (transfer.Status != TransferStatus.Draft) return;
 
         // Execute Stock Movement using InventoryManager (Domain Service)
-        // Assuming InventoryManager has TransferStockAsync(from, to, itemId, qty) logic.
-        // Since Logic might be complex (matching batches), we'll simulate basic deduction/addition here or call a domain method.
-        // Ideally: _inventoryManager.ProcessTransfer(transfer);
-        
         foreach (var item in transfer.Items)
         {
-             // Simplified logic: Just get InventoryItem(DrugId, FromWarehouse) and reduce
-             // The DrugId links to InventoryItem via mapping or Name?
-             // Drug entity has ServiceItemId. InventoryItem links to Inventory? No.
-             // Usually InventoryItem links to Product/Service.
-             
-             // We need to resolve ServiceItemId from DrugId
-             var drug = await _drugRepository.GetAsync(item.DrugId);
-             if (drug.ServiceItemId.HasValue)
-             {
-                 // Move Stock
-                 // await _inventoryManager.MoveStockAsync(...)
-             }
+             // Note: In InventoryDashboard, the UI sends ServiceItemId inside DrugId field.
+             // InventoryManager expects productId which maps to ServiceItemId.
+             await _inventoryManager.TransferStockAsync(
+                 transfer.FromWarehouseId, 
+                 transfer.ToWarehouseId, 
+                 item.DrugId, 
+                 item.Quantity, 
+                 transfer.TransferNumber
+             );
         }
         
         transfer.Status = TransferStatus.Received;

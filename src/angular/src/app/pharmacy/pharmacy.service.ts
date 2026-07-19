@@ -24,10 +24,10 @@ export class PharmacyService {
         });
     }
 
-    getPharmacyStock(): Observable<any[]> {
+    getPharmacyStock(warehouseId: string): Observable<any[]> {
         return this.restService.request({
             method: 'GET',
-            url: '/api/app/pharmacy/pharmacy-stock'
+            url: `/api/app/pharmacy/pharmacy-stock?warehouseId=${warehouseId}`
         });
     }
 

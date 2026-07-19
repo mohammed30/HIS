@@ -1,4 +1,4 @@
-using HIS.General;
+﻿using HIS.General;
 using HIS.Nursing;
 using HIS.HR;
 using HIS.ActivityLogs;
@@ -172,7 +172,7 @@ public class HISDbContext :
     public DbSet<FluidBalance> FluidBalances { get; set; }
     public DbSet<ShiftHandover> ShiftHandovers { get; set; }
 
-    // HR (شؤون العاملين)
+    // HR (Ø´Ø¤ÙˆÙ† Ø§Ù„Ø¹Ø§Ù…Ù„ÙŠÙ†)
     public DbSet<Employee> Employees { get; set; }
     public DbSet<JobGrade> JobGrades { get; set; }
     public DbSet<CompensationItem> CompensationItems { get; set; }
@@ -1124,6 +1124,7 @@ public class HISDbContext :
             {
                 a.ToTable(HISConsts.DbTablePrefix + "DispensedItems", HISConsts.DbSchema);
                 a.WithOwner().HasForeignKey(x => x.DispensingId);
+                a.HasKey(x => new { x.DispensingId, x.InventoryBatchId });
                 a.Property(x => x.Quantity).HasPrecision(18, 2);
                 a.Property(x => x.UnitCost).HasPrecision(18, 2);
                 a.Property(x => x.BatchNumber).HasMaxLength(64);
@@ -1347,7 +1348,7 @@ public class HISDbContext :
                 b.HasIndex(x => x.HandoverTime);
             });
 
-            // ===== HR (شؤون العاملين) =====
+            // ===== HR (Ø´Ø¤ÙˆÙ† Ø§Ù„Ø¹Ø§Ù…Ù„ÙŠÙ†) =====
 
             builder.Entity<JobGrade>(b =>
             {
@@ -1564,4 +1565,5 @@ public class HISDbContext :
 
     }
 }
+
 

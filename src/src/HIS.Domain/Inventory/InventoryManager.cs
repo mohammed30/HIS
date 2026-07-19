@@ -83,24 +83,34 @@ public class InventoryManager : DomainService
         );
         await _transactionRepository.InsertAsync(transaction);
 
-        // 4. Post to Accounting
-        // Look up default accounts (In a real app, these would be in Settings or Warehouse/Supplier config)
+        // 4. Post to Accounting (Asia Hospital Models)
+        // Debit: Inventory, Credit: Purchases
         var inventoryMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Inventory);
         var inventoryAccount = inventoryMapping?.AccountId.HasValue == true
             ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == inventoryMapping.AccountId.Value)
-            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // Inventory
-        var payableAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2110");   // Accounts Payable
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130"); // المخزون
 
-        if (inventoryAccount != null && payableAccount != null)
+        var purchasesMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Purchases);
+        var purchasesAccount = purchasesMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == purchasesMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "5150"); // حساب المشتريات الافتراضي إذا لم يوجد
+        
+        // Fallback to Accounts Payable if Purchases account doesn't exist
+        if (purchasesAccount == null)
+        {
+             purchasesAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2110");
+        }
+
+        if (inventoryAccount != null && purchasesAccount != null)
         {
             var totalAmount = quantity * unitCost;
             var description = $"توريد مخزني: {productName} (مرجع: {reference})";
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description, isAutomatic: true);
 
-            // Debit Inventory
+            // Debit Inventory (من حساب المخزن)
             entry.AddLine(GuidGenerator, inventoryAccount.Id, totalAmount, 0);
-            // Credit Payable
-            entry.AddLine(GuidGenerator, payableAccount.Id, 0, totalAmount);
+            // Credit Purchases (إلى حساب المشتريات)
+            entry.AddLine(GuidGenerator, purchasesAccount.Id, 0, totalAmount);
 
             await _accountingManager.PostEntryAsync(entry);
         }
@@ -180,9 +190,9 @@ public class InventoryManager : DomainService
             var description = $"صرف مخزني: {item.ProductName} (مرجع: {reference})";
             var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, description, isAutomatic: true);
 
-            // Debit Expense with CostCenter
+            // Debit Expense (القسم) with CostCenter
             entry.AddLine(GuidGenerator, expenseAccount.Id, totalAmount, 0, costCenterId);
-            // Credit Inventory
+            // Credit Inventory (المخزن)
             entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalAmount);
 
             await _accountingManager.PostEntryAsync(entry);
@@ -268,12 +278,132 @@ public class InventoryManager : DomainService
         if (inventoryAccount != null && expenseAccount != null)
         {
              var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"صرف علاج: {item.ProductName}", isAutomatic: true);
+             // Debit Expense (القسم)
              entry.AddLine(GuidGenerator, expenseAccount.Id, totalCostOfIssue, 0);
+             // Credit Inventory (المخزن)
              entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalCostOfIssue);
              await _accountingManager.PostEntryAsync(entry);
         }
 
         return dispensedDetails;
+    }
+
+    public async Task TransferStockAsync(Guid sourceWarehouseId, Guid destWarehouseId, Guid productId, decimal quantity, string reference)
+    {
+        if (sourceWarehouseId == destWarehouseId) return;
+
+        var sourceItem = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == sourceWarehouseId && x.ProductId == productId);
+        if (sourceItem == null || sourceItem.Quantity < quantity)
+        {
+            throw new Volo.Abp.BusinessException("Inventory:InsufficientStock");
+        }
+
+        var destItem = await _inventoryItemRepository.FirstOrDefaultAsync(x => x.WarehouseId == destWarehouseId && x.ProductId == productId);
+        if (destItem == null)
+        {
+            destItem = new InventoryItem(GuidGenerator.Create(), destWarehouseId, productId, sourceItem.ProductName, sourceItem.Type, 0, 0);
+            await _inventoryItemRepository.InsertAsync(destItem);
+        }
+
+        decimal remainingQtyToTransfer = quantity;
+        decimal totalCostOfTransfer = 0;
+
+        var sourceBatches = await _batchRepository.GetListAsync(x => x.InventoryItemId == sourceItem.Id && x.Quantity > 0);
+        sourceBatches = sourceBatches.OrderByDescending(x => x.ReceivedDate).ToList();
+
+        foreach (var batch in sourceBatches)
+        {
+            if (remainingQtyToTransfer <= 0) break;
+
+            decimal qtyTaken = Math.Min(batch.Quantity, remainingQtyToTransfer);
+            
+            batch.Quantity -= qtyTaken;
+            remainingQtyToTransfer -= qtyTaken;
+            decimal costTaken = qtyTaken * batch.UnitCost;
+            totalCostOfTransfer += costTaken;
+
+            await _batchRepository.UpdateAsync(batch);
+
+            // Create equivalent batch in destination
+            var destBatch = new InventoryBatch(
+                GuidGenerator.Create(),
+                destItem.Id,
+                batch.BatchNumber,
+                qtyTaken,
+                batch.UnitCost,
+                DateTime.Now,
+                reference + " (Transfer In)",
+                batch.ExpiryDate
+            );
+            await _batchRepository.InsertAsync(destBatch);
+        }
+
+        if (remainingQtyToTransfer > 0)
+        {
+             decimal costTaken = remainingQtyToTransfer * sourceItem.AverageCost;
+             totalCostOfTransfer += costTaken;
+             
+             var destBatch = new InventoryBatch(
+                GuidGenerator.Create(),
+                destItem.Id,
+                "TRF-" + DateTime.Now.ToString("yyMMdd"),
+                remainingQtyToTransfer,
+                sourceItem.AverageCost,
+                DateTime.Now,
+                reference + " (Transfer In)",
+                null
+            );
+            await _batchRepository.InsertAsync(destBatch);
+        }
+
+        // Update Source Item
+        sourceItem.Quantity -= quantity;
+        await _inventoryItemRepository.UpdateAsync(sourceItem);
+
+        // Update Dest Item
+        var destTotalValue = (destItem.Quantity * destItem.AverageCost) + totalCostOfTransfer;
+        destItem.Quantity += quantity;
+        destItem.AverageCost = destItem.Quantity > 0 ? destTotalValue / destItem.Quantity : 0;
+        await _inventoryItemRepository.UpdateAsync(destItem);
+
+        // Transactions
+        var txOut = new InventoryTransaction(
+            GuidGenerator.Create(),
+            sourceItem.Id,
+            TransactionType.Transfer,
+            quantity, // Kept positive as is typical
+            quantity > 0 ? totalCostOfTransfer / quantity : 0,
+            DateTime.Now,
+            reference + " (Out to Dest)"
+        );
+        await _transactionRepository.InsertAsync(txOut);
+
+        var txIn = new InventoryTransaction(
+            GuidGenerator.Create(),
+            destItem.Id,
+            TransactionType.Transfer,
+            quantity, 
+            quantity > 0 ? totalCostOfTransfer / quantity : 0,
+            DateTime.Now,
+            reference + " (In from Source)"
+        );
+        await _transactionRepository.InsertAsync(txIn);
+
+        // Accounting for Transfer
+        var inventoryMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.Inventory);
+        var inventoryAccount = inventoryMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == inventoryMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1130");
+
+        if (inventoryAccount != null)
+        {
+            var entry = await _accountingManager.CreateEntryAsync(DateTime.Now, reference, $"تحويل مخزني: {sourceItem.ProductName}", isAutomatic: true);
+            // Debit Destination Inventory
+            entry.AddLine(GuidGenerator, inventoryAccount.Id, totalCostOfTransfer, 0);
+            // Credit Source Inventory
+            entry.AddLine(GuidGenerator, inventoryAccount.Id, 0, totalCostOfTransfer);
+            await _accountingManager.PostEntryAsync(entry);
+        }
     }
 
     public async Task ReturnStockAsync(Guid warehouseId, Guid productId, decimal quantity, string reference)

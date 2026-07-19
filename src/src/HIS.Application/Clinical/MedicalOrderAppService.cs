@@ -80,11 +80,25 @@ public class MedicalOrderAppService : CrudAppService<MedicalOrder, MedicalOrderD
             {
                 var inventoryManager = LazyServiceProvider.LazyGetRequiredService<InventoryManager>();
                 var warehouseRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<Warehouse, Guid>>();
-                var mainWarehouse = await warehouseRepo.FirstOrDefaultAsync(w => w.Name.Contains("رئيسي") || w.Name.Contains("Main") || w.Name.Contains("مركزي"));
-                if (mainWarehouse != null)
+                var settingProvider = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Settings.ISettingProvider>();
+                
+                var mainWarehouseIdStr = await settingProvider.GetOrNullAsync("HIS.Inventory.MainWarehouseId");
+                Guid? targetWarehouseId = null;
+                
+                if (!string.IsNullOrEmpty(mainWarehouseIdStr) && Guid.TryParse(mainWarehouseIdStr, out var mainId))
+                {
+                    targetWarehouseId = mainId;
+                }
+                else
+                {
+                    var fallback = await warehouseRepo.FirstOrDefaultAsync();
+                    targetWarehouseId = fallback?.Id;
+                }
+
+                if (targetWarehouseId.HasValue)
                 {
                     await inventoryManager.DispenseStockAsync(
-                        mainWarehouse.Id,
+                        targetWarehouseId.Value,
                         input.ServiceItemId,
                         entity.Quantity,
                         $"طلب مستهلكات - مريض"

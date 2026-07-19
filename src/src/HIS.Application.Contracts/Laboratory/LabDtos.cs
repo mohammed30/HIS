@@ -61,6 +61,8 @@ public class LabRequestDto : AuditedEntityDto<Guid>
     public string Notes { get; set; }
     public string? RequestingDepartmentName { get; set; }
     public string? AdmissionRoom { get; set; }
+    public string? ReferenceRange { get; set; }
+    public string? Unit { get; set; }
 }
 
 public class CreateLabRequestDto

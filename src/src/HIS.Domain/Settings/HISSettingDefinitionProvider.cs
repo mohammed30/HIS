@@ -14,6 +14,8 @@ public class HISSettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition(HISSettings.HospitalLogo, ""),
             new SettingDefinition(HISSettings.HospitalTaxNumber, ""),
             new SettingDefinition(HISSettings.Pharmacy.AllowNegativeStock, "false"),
+            new SettingDefinition("HIS.Inventory.MainWarehouseId", ""),
+            new SettingDefinition("HIS.Inventory.PharmacyWarehouseId", ""),
 
             // Notifications module subscribers
             new SettingDefinition("Notifications.Subscribers.Appointments", ""),

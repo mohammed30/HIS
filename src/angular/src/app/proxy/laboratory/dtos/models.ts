@@ -65,6 +65,8 @@ export interface LabRequestDto extends AuditedEntityDto<string> {
   notes?: string;
   requestingDepartmentName?: string | null;
   admissionRoom?: string | null;
+  referenceRange?: string | null;
+  unit?: string | null;
 }
 
 export interface LabTestCategoryDto extends AuditedEntityDto<string> {

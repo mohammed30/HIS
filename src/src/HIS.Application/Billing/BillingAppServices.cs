@@ -221,12 +221,16 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 isAutomatic: true
             );
             
-            // Debit AR for Net Amount (Total + Tax - Discount)
-            je.AddLine(GuidGenerator, arAccount.Id, invoice.NetAmount, 0);
-            
-            // Credit Revenue per ServiceType
+            // Debit AR for Gross + Tax (to match Asia Hospital requirement for Gross AR and Contra-Asset Discount)
             var itemsQueryable = await _itemRepository.GetQueryableAsync();
             var invoiceItems = await AsyncExecuter.ToListAsync(itemsQueryable.Where(x => x.InvoiceId == invoice.Id));
+
+            decimal grossAmount = invoiceItems.Sum(i => i.Quantity * i.UnitPrice);
+            decimal itemDiscounts = invoiceItems.Sum(i => i.DiscountAmount);
+            decimal totalDiscount = itemDiscounts + invoice.DiscountAmount;
+            
+            // Debit AR for Gross + Tax
+            je.AddLine(GuidGenerator, arAccount.Id, grossAmount + invoice.TaxAmount, 0);
             
             // If there are items, we group them. If not (shouldn't happen), fallback to 4100
             if (invoiceItems.Any())
@@ -288,20 +292,35 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                             }
                         }
                         revenueAccount = await GetLeafAccountAsync(revenueAccount);
+                        // Credit Revenue (Net)
                         je.AddLine(GuidGenerator, revenueAccount.Id, 0, group.SubTotal, costCenterId);
                     }
                 }
             }
             else
             {
-                // Fallback if no items found in DB yet (e.g. they weren't saved properly or we are in a transaction issue)
+                // Fallback if no items found in DB yet
                 var fallbackRevenueAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100");
                 if (fallbackRevenueAccount != null)
                 {
                     fallbackRevenueAccount = await GetLeafAccountAsync(fallbackRevenueAccount);
-                    var revenueAmount = amount - invoice.DiscountAmount;
+                    var revenueAmount = invoice.TotalAmount - invoice.DiscountAmount;
                     je.AddLine(GuidGenerator, fallbackRevenueAccount.Id, 0, revenueAmount);
                 }
+            }
+
+            // Credit Insurance Discounts
+            if (totalDiscount > 0)
+            {
+                var discountMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.InsuranceDiscounts);
+                var discountAccount = discountMapping?.AccountId.HasValue == true
+                    ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == discountMapping.AccountId.Value)
+                    : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4150"); // Default code
+
+                if (discountAccount == null) discountAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "4100"); // Fallback
+                
+                discountAccount = await GetLeafAccountAsync(discountAccount);
+                je.AddLine(GuidGenerator, discountAccount.Id, 0, totalDiscount);
             }
 
             // Credit Tax Liability 

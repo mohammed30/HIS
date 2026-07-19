@@ -46,10 +46,10 @@ export class PharmacyService {
     { apiName: this.apiName,...config });
   
 
-  getPharmacyStock = (config?: Partial<Rest.Config>) =>
+  getPharmacyStock = (warehouseId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, InventoryItemDto[]>({
       method: 'GET',
-      url: '/api/app/pharmacy/pharmacy-stock',
+      url: `/api/app/pharmacy/pharmacy-stock?warehouseId=${warehouseId}`,
     },
     { apiName: this.apiName,...config });
   

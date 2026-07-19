@@ -14,6 +14,7 @@ namespace HIS.Accounting
         InventoryAdjustment,  // تسوية عجز وزيادة المخزون
         AccruedInventory,     // البضاعة المستلمة غير المفوترة
         CardPaymentBank,      // حساب البنك لشبكة نقاط البيع
-        PatientDeposits       // أمانات ودفعات مقدمة للمرضى
+        PatientDeposits,      // أمانات ودفعات مقدمة للمرضى
+        Purchases             // حساب المشتريات
     }
 }
