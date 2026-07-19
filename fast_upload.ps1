@@ -1,6 +1,6 @@
-$user = "asiahisbackend-001"
+$user = "asiaback2000-001"
 $pass = "Oldlazy@123"
-$ftpHost = "ftp://win1135.site4now.net/site1"
+$ftpHost = "ftp://win1035.site4now.net/site1"
 
 $webclient = New-Object System.Net.WebClient
 $webclient.Credentials = New-Object System.Net.NetworkCredential($user, $pass)

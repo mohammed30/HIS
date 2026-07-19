@@ -1,5 +1,5 @@
-$ftpHost = "ftp://win1135.site4now.net/site1"
-$user = "asiahisbackend-001"
+$ftpHost = "ftp://win1035.site4now.net/site1"
+$user = "asiaback2000-001"
 $pass = "Oldlazy@123"
 $localPath = "C:\Users\Mohammed\source\repos\HIS\publish\backend"
 
