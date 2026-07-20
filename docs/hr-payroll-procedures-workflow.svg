@@ -1,0 +1,245 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", Tahoma, Arial, sans-serif; fill: #0c254a; }
+      .title { font-size: 42px; font-weight: 900; }
+      .subtitle { font-size: 20px; fill: #333; font-weight: 600; }
+      .badgeText { font-size: 18px; fill: #fff; font-weight: 800; }
+      .badgeSub { font-size: 15px; fill: #fff; font-weight: 700; }
+      .cardTitle { font-size: 22px; font-weight: 900; }
+      .body { font-size: 14px; fill: #111; }
+      .small { font-size: 12.5px; fill: #222; }
+      .summaryTitle { font-size: 21px; fill: #fff; font-weight: 900; }
+      .footerTitle { font-size: 22px; font-weight: 900; fill: #06499a; }
+      .noteTitle { font-size: 20px; font-weight: 900; fill: #d92323; }
+      .noteText { font-size: 14px; fill: #222; }
+      .card { fill: #fff; stroke-width: 2; rx: 14; filter: url(#softShadow); }
+      .num { fill: currentColor; }
+      .numText { font-size: 22px; fill: #fff; font-weight: 900; }
+      .arrow { stroke: #0d2a4d; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .return { stroke: #e11d1d; stroke-width: 2; fill: none; stroke-dasharray: 7 7; marker-end: url(#returnArrow); }
+      .check { fill: #109447; font-size: 20px; font-weight: 900; }
+      .iconStroke { fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .iconFill { fill: currentColor; opacity: .12; }
+    </style>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="10" flood-color="#0f2b52" flood-opacity=".12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#0d2a4d"/>
+    </marker>
+    <marker id="returnArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#e11d1d"/>
+    </marker>
+    <linearGradient id="blueBadge" x1="0" x2="1">
+      <stop offset="0" stop-color="#0b4ea2"/>
+      <stop offset="1" stop-color="#2d74cf"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1536" height="1024" fill="#f8fafc"/>
+  <rect x="0" y="0" width="1536" height="1024" fill="#fff" opacity=".72"/>
+
+  <g transform="translate(26,28)">
+    <circle cx="44" cy="44" r="42" fill="#eaf3ff" stroke="#1358b0" stroke-width="3"/>
+    <circle cx="44" cy="31" r="13" fill="#10294f"/>
+    <path d="M23 76 C27 55 61 55 65 76" fill="#2d74cf" stroke="#0a4b9d" stroke-width="2"/>
+    <circle cx="44" cy="42" r="16" fill="#f3c29a" stroke="#10294f" stroke-width="2"/>
+    <path d="M30 34 C35 23 55 23 59 35 C51 31 42 32 30 34Z" fill="#10294f"/>
+    <path d="M38 65 L44 79 L50 65" fill="#d92f2f"/>
+    <path d="M30 63 L38 65 L44 79 L50 65 L59 63" fill="none" stroke="#fff" stroke-width="2"/>
+    <rect x="75" y="14" width="210" height="64" rx="9" fill="url(#blueBadge)"/>
+    <text x="180" y="40" text-anchor="middle" direction="rtl" class="badgeText">موظف الموارد البشرية</text>
+    <text x="180" y="63" text-anchor="middle" direction="rtl" class="badgeSub">إدارة شؤون الموظفين والرواتب</text>
+  </g>
+
+  <text x="768" y="70" text-anchor="middle" direction="rtl" class="title">ورك فلو إجراءات شؤون الموظفين والرواتب</text>
+  <text x="768" y="108" text-anchor="middle" direction="rtl" class="subtitle">من إنشاء ملف الموظف حتى احتساب الراتب وإصدار القسائم والقيد المحاسبي</text>
+
+  <!-- Top cards -->
+  <g transform="translate(25,162)" style="color:#0d55b3">
+    <rect width="214" height="296" class="card" stroke="#0d55b3"/>
+    <circle cx="194" cy="23" r="17" fill="#1758b3"/><text x="194" y="31" text-anchor="middle" class="numText">1</text>
+    <g transform="translate(78,23)">
+      <rect x="18" y="0" width="50" height="66" rx="6" class="iconFill"/>
+      <rect x="18" y="0" width="50" height="66" rx="6" class="iconStroke"/>
+      <path d="M31 13 H55 M31 28 H55 M31 43 H45" class="iconStroke"/>
+      <circle cx="76" cy="52" r="14" fill="#0d55b3" opacity=".18" stroke="#0d55b3" stroke-width="4"/>
+      <path d="M76 69 C56 69 50 82 50 92 H102 C102 82 96 69 76 69Z" fill="#0d55b3" opacity=".2" stroke="#0d55b3" stroke-width="4"/>
+    </g>
+    <text x="107" y="132" text-anchor="middle" direction="rtl" class="cardTitle" fill="#0d55b3">ملف الموظف</text>
+    <text x="107" y="169" text-anchor="middle" direction="rtl" class="body">رقم موظف تلقائي</text>
+    <text x="107" y="201" text-anchor="middle" direction="rtl" class="body">بيانات شخصية ووظيفية</text>
+    <text x="107" y="233" text-anchor="middle" direction="rtl" class="body">حالة نشط / موقوف</text>
+    <text x="107" y="265" text-anchor="middle" direction="rtl" class="body">راتب أساسي عند التعيين</text>
+  </g>
+
+  <g transform="translate(273,162)" style="color:#128044">
+    <rect width="224" height="296" class="card" stroke="#128044"/>
+    <circle cx="204" cy="23" r="17" fill="#15924e"/><text x="204" y="31" text-anchor="middle" class="numText">2</text>
+    <g transform="translate(80,23)">
+      <circle cx="20" cy="24" r="13" class="iconFill" stroke="#128044" stroke-width="4"/>
+      <circle cx="54" cy="24" r="13" class="iconFill" stroke="#128044" stroke-width="4"/>
+      <circle cx="88" cy="24" r="13" class="iconFill" stroke="#128044" stroke-width="4"/>
+      <path d="M5 62 C7 45 33 45 36 62 M39 62 C41 45 67 45 70 62 M73 62 C75 45 101 45 104 62" class="iconStroke"/>
+    </g>
+    <text x="112" y="132" text-anchor="middle" direction="rtl" class="cardTitle" fill="#128044">بنود المرتب</text>
+    <text x="112" y="169" text-anchor="middle" direction="rtl" class="body">بدل / استحقاق</text>
+    <text x="112" y="201" text-anchor="middle" direction="rtl" class="body">خصم / استقطاع</text>
+    <text x="112" y="233" text-anchor="middle" direction="rtl" class="body">ثابت / نسبة / معادلة</text>
+    <text x="112" y="265" text-anchor="middle" direction="rtl" class="body">ربط بحساب مالي</text>
+  </g>
+
+  <g transform="translate(535,162)" style="color:#048296">
+    <rect width="210" height="296" class="card" stroke="#048296"/>
+    <circle cx="190" cy="23" r="17" fill="#0a8ca0"/><text x="190" y="31" text-anchor="middle" class="numText">3</text>
+    <g transform="translate(72,22)">
+      <rect x="10" y="22" width="72" height="54" rx="7" class="iconFill"/>
+      <rect x="10" y="22" width="72" height="54" rx="7" class="iconStroke"/>
+      <path d="M18 22 V12 H68 L82 22" class="iconStroke"/>
+      <circle cx="46" cy="45" r="10" fill="#048296" opacity=".2" stroke="#048296" stroke-width="4"/>
+      <path d="M28 66 C33 56 59 56 64 66" class="iconStroke"/>
+    </g>
+    <text x="105" y="132" text-anchor="middle" direction="rtl" class="cardTitle" fill="#048296">ضبط راتب الموظف</text>
+    <text x="105" y="169" text-anchor="middle" direction="rtl" class="body">ربط الموظف بالبند</text>
+    <text x="105" y="201" text-anchor="middle" direction="rtl" class="body">تحديد المبلغ</text>
+    <text x="105" y="233" text-anchor="middle" direction="rtl" class="body">متكرر أو مرة واحدة</text>
+    <text x="105" y="265" text-anchor="middle" direction="rtl" class="body">تفعيل / إيقاف البند</text>
+  </g>
+
+  <g transform="translate(781,162)" style="color:#7130a8">
+    <rect width="215" height="296" class="card" stroke="#7130a8"/>
+    <circle cx="195" cy="23" r="17" fill="#7130a8"/><text x="195" y="31" text-anchor="middle" class="numText">4</text>
+    <g transform="translate(76,22)">
+      <rect x="23" y="0" width="58" height="74" rx="5" class="iconFill"/>
+      <rect x="23" y="0" width="58" height="74" rx="5" class="iconStroke"/>
+      <path d="M36 20 H67 M36 38 H67 M36 56 H52" class="iconStroke"/>
+      <path d="M72 63 L100 35 L108 43 L80 71 Z" fill="#7130a8" opacity=".18" stroke="#7130a8" stroke-width="4"/>
+    </g>
+    <text x="108" y="132" text-anchor="middle" direction="rtl" class="cardTitle" fill="#7130a8">الحضور والإجازات</text>
+    <text x="108" y="169" text-anchor="middle" direction="rtl" class="body">حضور وانصراف يومي</text>
+    <text x="108" y="201" text-anchor="middle" direction="rtl" class="body">ساعات العمل والإضافي</text>
+    <text x="108" y="233" text-anchor="middle" direction="rtl" class="body">حالات غياب وتأخير</text>
+    <text x="108" y="265" text-anchor="middle" direction="rtl" class="body">إجازات وأرصدة</text>
+  </g>
+
+  <g transform="translate(1035,162)" style="color:#e08800">
+    <rect width="212" height="296" class="card" stroke="#e08800"/>
+    <circle cx="192" cy="23" r="17" fill="#f0a000"/><text x="192" y="31" text-anchor="middle" class="numText">5</text>
+    <g transform="translate(74,26)">
+      <circle cx="34" cy="24" r="18" fill="#e08800" opacity=".16" stroke="#e08800" stroke-width="4"/>
+      <path d="M10 80 C14 57 54 57 58 80" class="iconStroke"/>
+      <circle cx="82" cy="59" r="15" fill="#e08800" opacity=".16" stroke="#e08800" stroke-width="4"/>
+      <path d="M82 35 V45 M82 73 V83 M58 59 H68 M96 59 H106 M65 42 L72 49 M92 69 L99 76 M65 76 L72 69 M92 49 L99 42" class="iconStroke"/>
+    </g>
+    <text x="106" y="132" text-anchor="middle" direction="rtl" class="cardTitle" fill="#e08800">السلف والعقوبات</text>
+    <text x="106" y="169" text-anchor="middle" direction="rtl" class="body">تسجيل السلفة والأقساط</text>
+    <text x="106" y="201" text-anchor="middle" direction="rtl" class="body">تسجيل الجزاءات</text>
+    <text x="106" y="233" text-anchor="middle" direction="rtl" class="body">خصم من مرتب / إيقاف</text>
+    <text x="106" y="265" text-anchor="middle" direction="rtl" class="small">لا تدخل تلقائيا بالحساب الحالي</text>
+  </g>
+
+  <g transform="translate(1283,162)" style="color:#0a71bf">
+    <rect width="225" height="296" class="card" stroke="#0a71bf"/>
+    <circle cx="205" cy="23" r="17" fill="#0a71bf"/><text x="205" y="31" text-anchor="middle" class="numText">6</text>
+    <g transform="translate(78,22)">
+      <rect x="12" y="12" width="76" height="70" rx="8" class="iconFill"/>
+      <rect x="12" y="12" width="76" height="70" rx="8" class="iconStroke"/>
+      <path d="M12 33 H88 M29 4 V20 M70 4 V20 M30 49 H34 M49 49 H53 M68 49 H72 M30 65 H34 M49 65 H53 M68 65 H72" class="iconStroke"/>
+      <circle cx="90" cy="78" r="18" fill="#fff" stroke="#0a71bf" stroke-width="4"/>
+      <path d="M90 67 V80 L100 85" class="iconStroke"/>
+    </g>
+    <text x="112" y="132" text-anchor="middle" direction="rtl" class="cardTitle" fill="#0a71bf">تجهيز الرواتب</text>
+    <text x="112" y="169" text-anchor="middle" direction="rtl" class="body">تحديد الفترة من / إلى</text>
+    <text x="112" y="201" text-anchor="middle" direction="rtl" class="body">فلترة قسم أو درجة</text>
+    <text x="112" y="233" text-anchor="middle" direction="rtl" class="body">احتساب البنود والإضافي</text>
+    <text x="112" y="265" text-anchor="middle" direction="rtl" class="body">خصم الغياب تلقائيا</text>
+  </g>
+
+  <!-- Flow arrows top -->
+  <path d="M239 310 H270" class="arrow"/>
+  <path d="M497 310 H532" class="arrow"/>
+  <path d="M745 310 H778" class="arrow"/>
+  <path d="M996 310 H1032" class="arrow"/>
+  <path d="M1247 310 H1280" class="arrow"/>
+  <path d="M1395 458 V530" class="arrow"/>
+
+  <!-- Bottom cards -->
+  <g transform="translate(1213,530)" style="color:#df2222">
+    <rect width="292" height="285" class="card" stroke="#df2222"/>
+    <circle cx="270" cy="20" r="17" fill="#df2222"/><text x="270" y="28" text-anchor="middle" class="numText">7</text>
+    <g transform="translate(98,24)">
+      <circle cx="42" cy="26" r="20" fill="#10294f"/>
+      <path d="M7 88 C12 58 72 58 78 88" fill="#10294f" opacity=".2" stroke="#10294f" stroke-width="4"/>
+      <circle cx="90" cy="78" r="22" fill="#fff" stroke="#df2222" stroke-width="5"/>
+      <path d="M78 66 L102 90 M102 66 L78 90" stroke="#df2222" stroke-width="6" stroke-linecap="round"/>
+    </g>
+    <text x="146" y="126" text-anchor="middle" direction="rtl" class="cardTitle" fill="#df2222">مراجعة واعتماد الرواتب</text>
+    <text x="146" y="166" text-anchor="middle" direction="rtl" class="body">مراجعة إجمالي الاستحقاقات</text>
+    <text x="146" y="198" text-anchor="middle" direction="rtl" class="body">مراجعة إجمالي الخصومات</text>
+    <text x="146" y="230" text-anchor="middle" direction="rtl" class="body">صافي الراتب لكل موظف</text>
+    <text x="146" y="262" text-anchor="middle" direction="rtl" class="body">اعتماد الدورة أو إرجاعها للتعديل</text>
+  </g>
+
+  <g transform="translate(876,530)" style="color:#126bc4">
+    <rect width="267" height="285" class="card" stroke="#126bc4"/>
+    <circle cx="247" cy="20" r="17" fill="#126bc4"/><text x="247" y="28" text-anchor="middle" class="numText">8</text>
+    <g transform="translate(87,18)">
+      <rect x="12" y="0" width="62" height="80" rx="5" class="iconFill"/>
+      <rect x="12" y="0" width="62" height="80" rx="5" class="iconStroke"/>
+      <path d="M27 21 H60 M27 40 H60 M27 58 H47" class="iconStroke"/>
+      <circle cx="86" cy="66" r="18" fill="#fff" stroke="#126bc4" stroke-width="4"/>
+      <path d="M77 66 L84 73 L96 57" stroke="#126bc4" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <text x="134" y="126" text-anchor="middle" direction="rtl" class="cardTitle" fill="#126bc4">القيد والقسائم والأرشفة</text>
+    <text x="134" y="166" text-anchor="middle" direction="rtl" class="body">إنشاء PayrollRun و PayrollLine</text>
+    <text x="134" y="198" text-anchor="middle" direction="rtl" class="body">قيد محاسبي 5100 / 2200</text>
+    <text x="134" y="230" text-anchor="middle" direction="rtl" class="body">قسيمة راتب PDF</text>
+    <text x="134" y="262" text-anchor="middle" direction="rtl" class="body">حفظ مستندات الدورة</text>
+  </g>
+
+  <path d="M1213 675 H1146" class="arrow"/>
+  <path d="M876 675 H780 C720 675 705 623 705 560" class="arrow"/>
+
+  <!-- Return box -->
+  <g transform="translate(568,532)">
+    <rect width="198" height="237" rx="12" fill="#fffdfd" stroke="#e11d1d" stroke-width="2" stroke-dasharray="7 6"/>
+    <path d="M84 42 C111 20 154 44 142 82 M142 82 L141 59 M142 82 L119 80" fill="none" stroke="#e03a2e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M113 116 C86 138 43 114 55 76 M55 76 L56 99 M55 76 L78 78" fill="none" stroke="#e03a2e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="99" y="151" text-anchor="middle" direction="rtl" class="noteTitle">عودة للإجراء السابق</text>
+    <text x="99" y="178" text-anchor="middle" direction="rtl" class="noteText">في حال وجود نقص أو خطأ</text>
+    <text x="99" y="205" text-anchor="middle" direction="rtl" class="noteText">يتم تعديل بيانات الموظف أو</text>
+    <text x="99" y="232" text-anchor="middle" direction="rtl" class="noteText">بنود الراتب أو الحضور</text>
+  </g>
+  <path d="M668 532 C668 502 390 510 382 463" class="return"/>
+  <path d="M668 532 C668 502 640 510 640 463" class="return"/>
+  <path d="M668 532 C668 502 887 510 888 463" class="return"/>
+  <path d="M668 769 C668 850 1285 838 1288 817" class="return"/>
+
+  <!-- Summary -->
+  <g transform="translate(23,615)">
+    <rect width="505" height="216" rx="10" fill="#fff" stroke="#46699a" stroke-width="2" filter="url(#softShadow)"/>
+    <circle cx="55" cy="56" r="39" fill="#fff" stroke="#0d55b3" stroke-width="2.5"/>
+    <rect x="38" y="34" width="35" height="43" rx="4" fill="#dfeeff" stroke="#0d55b3" stroke-width="3"/>
+    <path d="M47 48 H65 M47 61 H64 M47 73 H59" stroke="#0d55b3" stroke-width="3" stroke-linecap="round"/>
+    <path d="M64 70 L74 80 L91 56" stroke="#15924e" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="112" y="25" width="397" height="40" rx="11" fill="url(#blueBadge)"/>
+    <text x="310" y="52" text-anchor="middle" direction="rtl" class="summaryTitle">ملخص العملية حسب الكود الحالي</text>
+    <text x="290" y="98" text-anchor="middle" direction="rtl" class="body">تبدأ العملية من إنشاء الموظف وقد ينشأ ضبط الراتب الأساسي تلقائيا.</text>
+    <text x="290" y="130" text-anchor="middle" direction="rtl" class="body">تجهيز الرواتب يجمع البنود النشطة ويحسب الإضافي وخصم الغياب.</text>
+    <text x="290" y="162" text-anchor="middle" direction="rtl" class="body">ينتج عن الدورة إجماليات وقيد محاسبي وقسيمة راتب لكل موظف.</text>
+    <text x="290" y="194" text-anchor="middle" direction="rtl" class="body">السلف والعقوبات موجودة كبيانات لكنها غير مدمجة تلقائيا في الحساب.</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(1297,847)">
+    <rect width="207" height="146" rx="10" fill="#fff" stroke="#46699a" stroke-width="1.6" filter="url(#softShadow)"/>
+    <text x="103" y="28" text-anchor="middle" direction="rtl" class="footerTitle">مفتاح الرموز</text>
+    <path d="M25 55 H67" class="arrow"/>
+    <text x="145" y="62" text-anchor="middle" direction="rtl" class="body">تدفق العملية</text>
+    <path d="M25 89 H67" class="return"/>
+    <text x="146" y="96" text-anchor="middle" direction="rtl" class="body">عودة للتعديل</text>
+    <text x="44" y="126" class="check">✓</text>
+    <text x="145" y="127" text-anchor="middle" direction="rtl" class="body">اعتماد ومراجعة</text>
+  </g>
+</svg>

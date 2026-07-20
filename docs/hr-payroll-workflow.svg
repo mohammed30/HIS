@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180">
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", Tahoma, Arial, sans-serif; fill: #172033; }
+      .title { font-size: 42px; font-weight: 800; }
+      .subtitle { font-size: 23px; fill: #526173; }
+      .lane-title { font-size: 28px; font-weight: 800; }
+      .box-title { font-size: 24px; font-weight: 800; }
+      .box-text { font-size: 20px; fill: #314256; }
+      .small { font-size: 18px; fill: #526173; }
+      .note { font-size: 19px; fill: #6b4f00; }
+      .formula { font-size: 21px; font-weight: 700; fill: #132238; }
+      .box { fill: #ffffff; stroke-width: 2.2; rx: 12; }
+      .setup { stroke: #2563eb; }
+      .input { stroke: #0f766e; }
+      .calc { stroke: #7c3aed; }
+      .out { stroke: #be123c; }
+      .warn { fill: #fff8db; stroke: #d19a00; stroke-width: 2.2; rx: 12; }
+      .lane { fill: #f7f9fc; stroke: #d8e1ec; stroke-width: 1.5; rx: 18; }
+      .arrow { stroke: #526173; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dash { stroke-dasharray: 9 8; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#526173" />
+    </marker>
+  </defs>
+
+  <rect width="1800" height="1180" fill="#eef3f8"/>
+  <rect x="42" y="34" width="1716" height="1112" rx="26" fill="#ffffff" stroke="#d8e1ec"/>
+
+  <text x="900" y="92" text-anchor="middle" direction="rtl" class="title">Workflow الرواتب والبدلات والخصومات - موديول شؤون الموظفين</text>
+  <text x="900" y="132" text-anchor="middle" direction="rtl" class="subtitle">مبني على HRAppService وكيانات Employee / CompensationItem / SalarySetup / DailyAttendance / PayrollRun</text>
+
+  <rect x="82" y="170" width="1636" height="176" class="lane"/>
+  <text x="1660" y="216" text-anchor="end" direction="rtl" class="lane-title">1. الإعدادات الأساسية</text>
+
+  <rect x="1260" y="238" width="390" height="76" class="box setup"/>
+  <text x="1455" y="268" text-anchor="middle" direction="rtl" class="box-title">بيانات الموظف</text>
+  <text x="1455" y="296" text-anchor="middle" direction="rtl" class="box-text">نشط، غير موقوف، قسم، درجة، راتب أساسي</text>
+
+  <rect x="705" y="238" width="390" height="76" class="box setup"/>
+  <text x="900" y="268" text-anchor="middle" direction="rtl" class="box-title">بنود المرتب</text>
+  <text x="900" y="296" text-anchor="middle" direction="rtl" class="box-text">بدل / خصم، ثابت / نسبة / معادلة، حساب مالي</text>
+
+  <rect x="150" y="238" width="390" height="76" class="box setup"/>
+  <text x="345" y="268" text-anchor="middle" direction="rtl" class="box-title">ضبط المرتب</text>
+  <text x="345" y="296" text-anchor="middle" direction="rtl" class="box-text">ربط الموظف بالبند والمبلغ وتاريخ البداية</text>
+
+  <path d="M1260 276 L1095 276" class="arrow"/>
+  <path d="M705 276 L540 276" class="arrow"/>
+
+  <rect x="82" y="380" width="1636" height="218" class="lane"/>
+  <text x="1660" y="426" text-anchor="end" direction="rtl" class="lane-title">2. مدخلات الفترة قبل تجهيز الرواتب</text>
+
+  <rect x="1215" y="456" width="435" height="92" class="box input"/>
+  <text x="1432" y="488" text-anchor="middle" direction="rtl" class="box-title">الحضور والانصراف اليومي</text>
+  <text x="1432" y="518" text-anchor="middle" direction="rtl" class="box-text">ساعات العمل والإضافي محسوبة من الحضور والانصراف</text>
+
+  <rect x="682" y="456" width="435" height="92" class="box input"/>
+  <text x="900" y="488" text-anchor="middle" direction="rtl" class="box-title">اختيار فترة الرواتب</text>
+  <text x="900" y="518" text-anchor="middle" direction="rtl" class="box-text">من / إلى + اختيار درجة وظيفية، والقسم موجود في API</text>
+
+  <rect x="150" y="440" width="435" height="124" class="warn"/>
+  <text x="368" y="472" text-anchor="middle" direction="rtl" class="box-title">مدخلات غير محتسبة تلقائيا حاليا</text>
+  <text x="368" y="503" text-anchor="middle" direction="rtl" class="note">السلفيات والعقوبات مسجلة في الموديول</text>
+  <text x="368" y="532" text-anchor="middle" direction="rtl" class="note">لكن ProcessPayroll لا يضيف أقساطها أو مبالغها تلقائيا</text>
+
+  <path d="M345 314 L345 440" class="arrow"/>
+  <path d="M1432 548 L1432 652" class="arrow"/>
+  <path d="M900 548 L900 652" class="arrow"/>
+  <path d="M368 564 L368 652" class="arrow dash"/>
+
+  <rect x="82" y="632" width="1636" height="296" class="lane"/>
+  <text x="1660" y="678" text-anchor="end" direction="rtl" class="lane-title">3. احتساب الرواتب - ProcessPayrollAsync</text>
+
+  <rect x="1288" y="712" width="362" height="102" class="box calc"/>
+  <text x="1469" y="743" text-anchor="middle" direction="rtl" class="box-title">تصفية الموظفين</text>
+  <text x="1469" y="773" text-anchor="middle" direction="rtl" class="box-text">IsActive = true</text>
+  <text x="1469" y="801" text-anchor="middle" direction="rtl" class="box-text">IsSuspended = false</text>
+
+  <rect x="827" y="712" width="362" height="102" class="box calc"/>
+  <text x="1008" y="743" text-anchor="middle" direction="rtl" class="box-title">إضافة البنود الثابتة</text>
+  <text x="1008" y="773" text-anchor="middle" direction="rtl" class="box-text">SalarySetup النشط لكل موظف</text>
+  <text x="1008" y="801" text-anchor="middle" direction="rtl" class="box-text">Allowance يزيد الاستحقاقات، Deduction يزيد الخصومات</text>
+
+  <rect x="366" y="712" width="362" height="102" class="box calc"/>
+  <text x="547" y="743" text-anchor="middle" direction="rtl" class="box-title">احتساب الإضافي</text>
+  <text x="547" y="773" text-anchor="middle" direction="rtl" class="box-text">إذا وجد بند "بدل إضافي"</text>
+  <text x="547" y="801" text-anchor="middle" direction="rtl" class="formula">الإضافي = الساعات * (الأساسي / 240) * 1.5</text>
+
+  <rect x="1288" y="846" width="362" height="58" class="box calc"/>
+  <text x="1469" y="883" text-anchor="middle" direction="rtl" class="box-title">احتساب خصم الغياب</text>
+
+  <rect x="827" y="846" width="362" height="58" class="box calc"/>
+  <text x="1008" y="883" text-anchor="middle" direction="rtl" class="formula">خصم الغياب = أيام الغياب * (الأساسي / 30)</text>
+
+  <rect x="366" y="846" width="362" height="58" class="box calc"/>
+  <text x="547" y="883" text-anchor="middle" direction="rtl" class="box-title">إنشاء PayrollLine لكل بند</text>
+
+  <path d="M1288 763 L1189 763" class="arrow"/>
+  <path d="M827 763 L728 763" class="arrow"/>
+  <path d="M547 814 C547 874 1160 810 1288 874" class="arrow"/>
+  <path d="M1288 875 L1189 875" class="arrow"/>
+  <path d="M827 875 L728 875" class="arrow"/>
+
+  <rect x="82" y="960" width="1636" height="138" class="lane"/>
+  <text x="1660" y="1006" text-anchor="end" direction="rtl" class="lane-title">4. النتائج والمخرجات</text>
+
+  <rect x="1260" y="1030" width="390" height="50" class="box out"/>
+  <text x="1455" y="1063" text-anchor="middle" direction="rtl" class="box-title">الإجماليات: استحقاقات - خصومات = صافي</text>
+
+  <rect x="705" y="1030" width="390" height="50" class="box out"/>
+  <text x="900" y="1063" text-anchor="middle" direction="rtl" class="box-title">قيد محاسبي تلقائي: 5100 مدين / 2200 دائن</text>
+
+  <rect x="150" y="1030" width="390" height="50" class="box out"/>
+  <text x="345" y="1063" text-anchor="middle" direction="rtl" class="box-title">قسيمة راتب PDF لكل موظف</text>
+
+  <path d="M547 904 C547 1000 1370 950 1455 1030" class="arrow"/>
+  <path d="M1260 1055 L1095 1055" class="arrow"/>
+  <path d="M705 1055 L540 1055" class="arrow"/>
+
+  <text x="900" y="1130" text-anchor="middle" direction="rtl" class="small">ملاحظة مراجعة: حقول Percentage / Equation و StartDate / IsRecurring موجودة في التصميم، لكن منطق الحساب الحالي يستخدم Amount فقط ولا يفلتر تاريخ بداية البند.</text>
+</svg>
