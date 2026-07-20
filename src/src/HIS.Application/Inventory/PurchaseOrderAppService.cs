@@ -29,22 +29,30 @@ public class PurchaseOrderAppService : CrudAppService<PurchaseOrder, PurchaseOrd
 
     public override async Task<PurchaseOrderDto> CreateAsync(CreateUpdatePurchaseOrderDto input)
     {
-        var orderNumber = $"PO-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+        Console.WriteLine("PurchaseOrderAppService.CreateAsync called!");
+        var orderNumber = Guid.NewGuid().ToString("N");
         
-        var entity = new PurchaseOrder(GuidGenerator.Create(), orderNumber, input.SupplierId, input.OrderDate)
+        var entity = new PurchaseOrder(
+            GuidGenerator.Create(),
+            orderNumber,
+            input.SupplierId,
+            input.OrderDate
+        )
         {
-            ExpectedDeliveryDate = input.ExpectedDeliveryDate,
             ReferenceNumber = input.ReferenceNumber,
             Notes = input.Notes,
             Status = PurchaseOrderStatus.Draft
         };
 
-        decimal totalAmount = 0;
+
+        await Repository.InsertAsync(entity, autoSave: true);
+
         foreach (var lineDto in input.PurchaseOrderLines)
         {
-            var lineTotal = (lineDto.Quantity * lineDto.UnitPrice) - lineDto.Discount;
-            totalAmount += lineTotal;
-            
+            var lineTotal = lineDto.Quantity * lineDto.UnitPrice;
+            var lineDiscount = lineDto.Discount;
+            var lineNetAmount = lineTotal - lineDiscount;
+
             entity.PurchaseOrderLines.Add(new PurchaseOrderLine(
                 GuidGenerator.Create(),
                 entity.Id,
@@ -54,14 +62,14 @@ public class PurchaseOrderAppService : CrudAppService<PurchaseOrder, PurchaseOrd
             )
             {
                 Discount = lineDto.Discount,
-                TotalAmount = lineTotal,
-                Description = lineDto.Description
+                TotalAmount = lineNetAmount,
+                Description = lineDto.Description ?? string.Empty
             });
-        }
-        
-        entity.TotalAmount = totalAmount;
 
-        await Repository.InsertAsync(entity);
+            entity.TotalAmount += lineNetAmount;
+        }
+
+        await Repository.UpdateAsync(entity, autoSave: true);
         
         return await MapToGetOutputDtoAsync(entity);
     }

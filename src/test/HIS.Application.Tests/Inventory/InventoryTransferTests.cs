@@ -66,8 +66,15 @@ public abstract class InventoryTransferTests<TStartupModule> : HISTestBase<TStar
                 invAcc = new Account(Guid.NewGuid(), "1130", "Inventory", "المخزون", AccountType.Asset, null);
                 await accountRepo.InsertAsync(invAcc, autoSave: true);
             }
-            if (await mappingRepo.FirstOrDefaultAsync(m => m.MappingType == AccountMappingType.Inventory) == null)
+
+            var invMapping = await mappingRepo.FirstOrDefaultAsync(m => m.MappingType == AccountMappingType.Inventory);
+            if (invMapping == null)
                 await mappingRepo.InsertAsync(new AccountMapping(Guid.NewGuid(), AccountMappingType.Inventory, invAcc.Id, true), autoSave: true);
+            else if (invMapping.AccountId == null)
+            {
+                invMapping.AccountId = invAcc.Id;
+                await mappingRepo.UpdateAsync(invMapping, autoSave: true);
+            }
 
             var cogsAcc = await accountRepo.FirstOrDefaultAsync(a => a.Code == "5200");
             if (cogsAcc == null)
@@ -75,8 +82,14 @@ public abstract class InventoryTransferTests<TStartupModule> : HISTestBase<TStar
                 cogsAcc = new Account(Guid.NewGuid(), "5200", "COGS", "تكلفة المبيعات", AccountType.Expense, null);
                 await accountRepo.InsertAsync(cogsAcc, autoSave: true);
             }
-            if (await mappingRepo.FirstOrDefaultAsync(m => m.MappingType == AccountMappingType.COGS) == null)
+            var cogsMapping = await mappingRepo.FirstOrDefaultAsync(m => m.MappingType == AccountMappingType.COGS);
+            if (cogsMapping == null)
                 await mappingRepo.InsertAsync(new AccountMapping(Guid.NewGuid(), AccountMappingType.COGS, cogsAcc.Id, true), autoSave: true);
+            else if (cogsMapping.AccountId == null)
+            {
+                cogsMapping.AccountId = cogsAcc.Id;
+                await mappingRepo.UpdateAsync(cogsMapping, autoSave: true);
+            }
             
             // Other mandatory mappings required by AccountingManager
             var otherMappings = new[] { 
@@ -87,9 +100,15 @@ public abstract class InventoryTransferTests<TStartupModule> : HISTestBase<TStar
             };
             foreach (var mapping in otherMappings)
             {
-                if (await mappingRepo.FirstOrDefaultAsync(m => m.MappingType == mapping) == null)
+                var existingMapping = await mappingRepo.FirstOrDefaultAsync(m => m.MappingType == mapping);
+                if (existingMapping == null)
                 {
                     await mappingRepo.InsertAsync(new AccountMapping(Guid.NewGuid(), mapping, invAcc.Id, true), autoSave: true);
+                }
+                else if (existingMapping.AccountId == null)
+                {
+                    existingMapping.AccountId = invAcc.Id;
+                    await mappingRepo.UpdateAsync(existingMapping, autoSave: true);
                 }
             }
         });

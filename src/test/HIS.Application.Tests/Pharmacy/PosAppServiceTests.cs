@@ -164,6 +164,128 @@ public abstract class PosAppServiceTests<TStartupModule> : HISApplicationTestBas
             inv.Status.ShouldBe(HIS.Billing.InvoiceStatus.Dispensed);
         });
     }
+
+    [Fact]
+    public async Task ComplexSale_WithApproval_Dispense_And_PartialReturn_ShouldTrackStock_Accurately()
+    {
+        // 1. إعداد البيانات: دوائين في مستودع الصيدلية
+        Guid drug1Id = Guid.NewGuid();
+        Guid drug2Id = Guid.NewGuid();
+        Guid serviceItem1Id = Guid.NewGuid();
+        Guid serviceItem2Id = Guid.NewGuid();
+        Guid whId = Guid.Empty;
+        Guid item1Id = Guid.Empty;
+        Guid item2Id = Guid.Empty;
+        const decimal initialQty = 100m;
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await EnsureAccountMappingsAreFilledAsync();
+            whId = await GetOrCreatePharmacyWarehouseIdAsync();
+
+            // Drug 1
+            var serviceItem1 = new ServiceItem(serviceItem1Id, "M100", "Aspirin", ServiceCategory.Pharmacy) { Price = 20m };
+            await _serviceItemRepository.InsertAsync(serviceItem1);
+            var drug1 = new Drug(drug1Id, "B100", "Aspirin", "Aspirin", "100", "Tab", "Manuf") { ServiceItemId = serviceItem1Id };
+            await _drugRepository.InsertAsync(drug1);
+
+            var item1 = new InventoryItem(Guid.NewGuid(), whId, serviceItem1Id, "Aspirin", InventoryItemType.Medication, initialQty, 10m);
+            await _inventoryItemRepository.InsertAsync(item1);
+            item1Id = item1.Id;
+
+            await _batchRepository.InsertAsync(new InventoryBatch(Guid.NewGuid(), item1Id, "B-ASP", initialQty, 10m, DateTime.Now.AddDays(-5), "PO-1"));
+
+            // Drug 2
+            var serviceItem2 = new ServiceItem(serviceItem2Id, "M200", "Ibuprofen", ServiceCategory.Pharmacy) { Price = 30m };
+            await _serviceItemRepository.InsertAsync(serviceItem2);
+            var drug2 = new Drug(drug2Id, "B200", "Ibuprofen", "Ibuprofen", "400", "Tab", "Manuf") { ServiceItemId = serviceItem2Id };
+            await _drugRepository.InsertAsync(drug2);
+
+            var item2 = new InventoryItem(Guid.NewGuid(), whId, serviceItem2Id, "Ibuprofen", InventoryItemType.Medication, initialQty, 15m);
+            await _inventoryItemRepository.InsertAsync(item2);
+            item2Id = item2.Id;
+
+            await _batchRepository.InsertAsync(new InventoryBatch(Guid.NewGuid(), item2Id, "B-IBU", initialQty, 15m, DateTime.Now.AddDays(-5), "PO-2"));
+        });
+
+        Guid invoiceId = Guid.Empty;
+
+        // 2. إنشاء الفاتورة كمودة (Draft) من الصيدلي
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var dto = new PosSaleDto
+            {
+                PaymentMethod = HIS.Billing.PaymentMethod.Cash,
+                TotalAmount = 190m, // (5 * 20) + (3 * 30) = 100 + 90
+                PaidAmount = 0m,
+                Items = new List<PosSaleItemDto>
+                {
+                    new PosSaleItemDto { DrugId = drug1Id, Quantity = 5, UnitPrice = 20m }, // Aspirin
+                    new PosSaleItemDto { DrugId = drug2Id, Quantity = 3, UnitPrice = 30m }  // Ibuprofen
+                }
+            };
+            invoiceId = await _posAppService.CreateDraftAsync(dto);
+        });
+
+        // 3. تقديم للاعتماد والموافقة والدفع
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _posAppService.SubmitForApprovalAsync(invoiceId);
+            
+            var approveDto = new PosApproveDto { PaidAmount = 190m, PaymentMethod = HIS.Billing.PaymentMethod.Cash };
+            await _posAppService.ApproveAndPayAsync(invoiceId, approveDto);
+        });
+
+        // التأكد من أن الكمية لم تتغير قبل الصرف
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var stock1 = await _inventoryItemRepository.GetAsync(item1Id);
+            var stock2 = await _inventoryItemRepository.GetAsync(item2Id);
+            stock1.Quantity.ShouldBe(100m, "الكمية يجب أن لا تُخصم قبل الصرف");
+            stock2.Quantity.ShouldBe(100m, "الكمية يجب أن لا تُخصم قبل الصرف");
+        });
+
+        // 4. صرف الأدوية
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _posAppService.DispenseAsync(invoiceId);
+        });
+
+        // التأكد من الخصم من المستودع بعد الصرف
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var stock1 = await _inventoryItemRepository.GetAsync(item1Id);
+            var stock2 = await _inventoryItemRepository.GetAsync(item2Id);
+            stock1.Quantity.ShouldBe(95m, "تم خصم 5 حبات أسبرين");
+            stock2.Quantity.ShouldBe(97m, "تم خصم 3 حبات إيبوبروفين");
+        });
+
+        // 5. عمل مرتجع جزئي (إرجاع حبتين أسبرين)
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var invoiceDetails = await _posAppService.GetInvoiceDetailsAsync(invoiceId);
+            var aspirinItem = invoiceDetails.Items.First(x => x.ServiceCode == serviceItem1Id.ToString("N"));
+
+            var refundDto = new PosPartialRefundDto
+            {
+                Items = new List<PosRefundItemDto>
+                {
+                    new PosRefundItemDto { InvoiceItemId = aspirinItem.Id, ReturnQuantity = 2m }
+                }
+            };
+
+            await _posAppService.PartialRefundAsync(invoiceId, refundDto);
+        });
+
+        // 6. التحقق من الكميات بعد الارتجاع الجزئي
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var stock1 = await _inventoryItemRepository.GetAsync(item1Id);
+            var stock2 = await _inventoryItemRepository.GetAsync(item2Id);
+            stock1.Quantity.ShouldBe(97m, "عادت حبتين أسبرين للمستودع (95 + 2 = 97)");
+            stock2.Quantity.ShouldBe(97m, "الإيبوبروفين لم يتأثر بالمرتجع (بقي 97)");
+        });
+    }
 }
 
 

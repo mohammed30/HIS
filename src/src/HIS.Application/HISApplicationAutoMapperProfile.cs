@@ -88,6 +88,11 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Inventory.InventoryItem, Inventory.Dtos.InventoryItemDto>();
         CreateMap<Inventory.InventoryTransaction, Inventory.Dtos.InventoryTransactionDto>();
         
+        CreateMap<Inventory.InventoryCount, Inventory.InventoryCountDto>()
+            .ForMember(x => x.WarehouseName, opt => opt.Ignore());
+        CreateMap<Inventory.InventoryCountItem, Inventory.InventoryCountItemDto>()
+            .ForMember(x => x.ProductName, opt => opt.Ignore());
+
         CreateMap<Inventory.Supplier, Inventory.Dtos.SupplierDto>();
         CreateMap<Inventory.Dtos.CreateUpdateSupplierDto, Inventory.Supplier>();
 

@@ -47,7 +47,7 @@ public class InventoryCountAppService : ApplicationService, IInventoryCountAppSe
             inventoryCount.Items.Add(new InventoryCountItem(GuidGenerator.Create(), countId, item.Id, item.Quantity, CurrentTenant.Id));
         }
 
-        await _countRepository.InsertAsync(inventoryCount);
+        await _countRepository.InsertAsync(inventoryCount, autoSave: true);
         
         return await GetAsync(countId);
     }

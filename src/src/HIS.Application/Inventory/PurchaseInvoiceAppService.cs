@@ -36,6 +36,45 @@ public class PurchaseInvoiceAppService : CrudAppService<
         _serviceItemRepository = serviceItemRepository;
     }
 
+    public override async Task<PurchaseInvoiceDto> CreateAsync(CreateUpdatePurchaseInvoiceDto input)
+    {
+        var entity = new PurchaseInvoice(GuidGenerator.Create(), input.InvoiceNumber, input.SupplierId, input.InvoiceDate)
+        {
+            PurchaseOrderId = input.PurchaseOrderId,
+            Notes = input.Notes,
+            Status = PurchaseInvoiceStatus.Draft
+        };
+
+        decimal totalAmount = 0;
+        foreach (var lineDto in input.Lines)
+        {
+            var lineTotal = (lineDto.Quantity * lineDto.UnitCost) - lineDto.Discount;
+            totalAmount += lineTotal;
+
+            entity.Lines.Add(new PurchaseInvoiceLine(
+                GuidGenerator.Create(),
+                entity.Id,
+                lineDto.ProductId,
+                lineDto.Quantity,
+                lineDto.UnitCost
+            )
+            {
+                Discount = lineDto.Discount,
+                Margin = lineDto.Margin,
+                SalePrice = lineDto.SalePrice,
+                TotalLineAmount = lineTotal,
+                BatchNumber = lineDto.BatchNumber,
+                ExpiryDate = lineDto.ExpiryDate
+            });
+        }
+
+        entity.TotalAmount = totalAmount;
+        entity.NetAmount = totalAmount; // Simplified for now
+        
+        await Repository.InsertAsync(entity);
+        return await MapToGetOutputDtoAsync(entity);
+    }
+
     public override async Task<PurchaseInvoiceDto> GetAsync(Guid id)
     {
         var entity = await Repository.WithDetailsAsync(x => x.Lines);
