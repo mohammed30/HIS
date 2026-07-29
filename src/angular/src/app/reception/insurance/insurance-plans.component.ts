@@ -1,48 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
-
-interface InsurancePlan {
-  id: string;
-  insuranceCompanyId: string;
-  insuranceCompanyName?: string;
-  code: string;
-  nameAr: string;
-  nameEn?: string;
-  planType: number;
-  coveragePercentage: number;
-  maxCoverageAmount?: number;
-  coPaymentPercentage: number;
-  deductibleAmount: number;
-  includesMedications: boolean;
-  includesLab: boolean;
-  includesRadiology: boolean;
-  includesInpatient: boolean;
-  notes?: string;
-  isActive: boolean;
-  sortOrder: number;
-}
-
-interface Lookup {
-  id: string;
-  name: string;
-}
-
-const planTypeLabels: { [key: number]: string } = {
-  0: 'فردي',
-  1: 'عائلي',
-  2: 'شركات',
-  3: 'حكومي'
-};
+import { CoreModule } from '@abp/ng.core';
+import { InsurancePlanService } from '../../proxy/insurance/insurance-plan.service';
+import { InsuranceCompanyService } from '../../proxy/insurance/insurance-company.service';
+import { InsurancePlanDto, CreateUpdateInsurancePlanDto, LookupDto } from '../../proxy/insurance/models';
+import { InsurancePlanType, insurancePlanTypeOptions } from '../../proxy/insurance/insurance-plan-type.enum';
+import { InsurancePlanClass, insurancePlanClassOptions } from '../../proxy/insurance/insurance-plan-class.enum';
 
 @Component({
   selector: 'app-insurance-plans',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule],
+  imports: [CommonModule, FormsModule, NgbPaginationModule, ThemeSharedModule, CoreModule],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -84,6 +55,7 @@ const planTypeLabels: { [key: number]: string } = {
                   <th>الشركة</th>
                   <th>الخطة</th>
                   <th>النوع</th>
+                  <th>الفئة</th>
                   <th>نسبة التغطية</th>
                   <th>المشاركة</th>
                   <th>الحالة</th>
@@ -96,7 +68,8 @@ const planTypeLabels: { [key: number]: string } = {
                     <td>{{ item.code }}</td>
                     <td>{{ item.insuranceCompanyName }}</td>
                     <td>{{ item.nameAr }}</td>
-                    <td>{{ getPlanTypeLabel(item.planType) }}</td>
+                    <td>{{ '::Enum:InsurancePlanType:' + item.planType | abpLocalization }}</td>
+                    <td>{{ '::Enum:InsurancePlanClass:' + item.planClass | abpLocalization }}</td>
                     <td>{{ item.coveragePercentage }}%</td>
                     <td>{{ item.coPaymentPercentage }}%</td>
                     <td>
@@ -157,13 +130,20 @@ const planTypeLabels: { [key: number]: string } = {
                       }
                     </select>
                   </div>
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-3 mb-3">
                     <label class="form-label">نوع الخطة</label>
                     <select class="form-select" [(ngModel)]="formData.planType">
-                      <option [value]="0">فردي</option>
-                      <option [value]="1">عائلي</option>
-                      <option [value]="2">شركات</option>
-                      <option [value]="3">حكومي</option>
+                      @for (opt of planTypeOptions; track opt.value) {
+                        <option [value]="opt.value">{{ '::Enum:InsurancePlanType:' + opt.value | abpLocalization }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label class="form-label">الفئة (Class)</label>
+                    <select class="form-select" [(ngModel)]="formData.planClass">
+                      @for (opt of planClassOptions; track opt.value) {
+                        <option [value]="opt.value">{{ '::Enum:InsurancePlanClass:' + opt.value | abpLocalization }}</option>
+                      }
                     </select>
                   </div>
                 </div>
@@ -248,18 +228,21 @@ const planTypeLabels: { [key: number]: string } = {
   styles: [`.modal { z-index: 1050; }`]
 })
 export class InsurancePlansComponent implements OnInit {
-  private http = inject(HttpClient);
-  private apiUrl = environment.apis.default.url + '/api/app/insurance-plan';
+  private planService = inject(InsurancePlanService);
+  private companyService = inject(InsuranceCompanyService);
   private confirmation = inject(ConfirmationService);
 
-  items: InsurancePlan[] = [];
-  companies: Lookup[] = [];
+  items: InsurancePlanDto[] = [];
+  companies: LookupDto[] = [];
+
+  planTypeOptions = insurancePlanTypeOptions;
+  planClassOptions = insurancePlanClassOptions;
 
   searchText = '';
   filterCompanyId = '';
   showForm = false;
-  editingItem: InsurancePlan | null = null;
-  formData: Partial<InsurancePlan> = this.getEmptyForm();
+  editingItem: InsurancePlanDto | null = null;
+  formData: CreateUpdateInsurancePlanDto = this.getEmptyForm();
 
   page = 1;
   pageSize = 10;
@@ -270,9 +253,9 @@ export class InsurancePlansComponent implements OnInit {
     this.loadData();
   }
 
-  getEmptyForm(): Partial<InsurancePlan> {
+  getEmptyForm(): CreateUpdateInsurancePlanDto {
     return {
-      insuranceCompanyId: '', nameAr: '', nameEn: '', planType: 0,
+      insuranceCompanyId: '', nameAr: '', nameEn: '', planType: InsurancePlanType.Individual, planClass: InsurancePlanClass.ClassA,
       coveragePercentage: 80, coPaymentPercentage: 20, deductibleAmount: 0,
       includesMedications: true, includesLab: true, includesRadiology: true, includesInpatient: false,
       isActive: true, sortOrder: 0
@@ -282,7 +265,7 @@ export class InsurancePlansComponent implements OnInit {
   resetForm() { this.formData = this.getEmptyForm(); }
 
   loadCompanies() {
-    this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/insurance-company/lookup').subscribe({
+    this.companyService.getLookup().subscribe({
       next: (res) => this.companies = res,
       error: (err) => console.error(err)
     });
@@ -290,10 +273,12 @@ export class InsurancePlansComponent implements OnInit {
 
   loadData() {
     const skipCount = (this.page - 1) * this.pageSize;
-    let url = `${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`;
-    if (this.filterCompanyId) url += `&insuranceCompanyId=${this.filterCompanyId}`;
-
-    this.http.get<any>(url).subscribe({
+    this.planService.getList({
+      searchText: this.searchText,
+      insuranceCompanyId: this.filterCompanyId || undefined,
+      skipCount: skipCount,
+      maxResultCount: this.pageSize
+    }).subscribe({
       next: (res) => {
         this.items = res.items || [];
         this.totalCount = res.totalCount || 0;
@@ -312,30 +297,27 @@ export class InsurancePlansComponent implements OnInit {
     this.loadData();
   }
 
-  getPlanTypeLabel(type: number): string {
-    return planTypeLabels[type] || '-';
-  }
-
-  edit(item: InsurancePlan) {
+  edit(item: InsurancePlanDto) {
     this.editingItem = item;
     this.formData = { ...item };
     this.showForm = true;
   }
 
   save() {
-    const req = this.editingItem
-      ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
-      : this.http.post(this.apiUrl, this.formData);
+    const req = this.editingItem?.id
+      ? this.planService.update(this.editingItem.id, this.formData)
+      : this.planService.create(this.formData);
     req.subscribe({
       next: () => { this.showForm = false; this.loadData(); },
       error: (err) => console.error(err)
     });
   }
 
-  delete(item: InsurancePlan) {
+  delete(item: InsurancePlanDto) {
+    if (!item.id) return;
     this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
       if (status === Confirmation.Status.confirm) {
-        this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
+        this.planService.delete(item.id as string).subscribe({ next: () => this.loadData() });
       }
     });
   }

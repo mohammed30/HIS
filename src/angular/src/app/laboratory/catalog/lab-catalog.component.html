@@ -17,7 +17,7 @@
                 <input type="text" class="search-input"
                     [(ngModel)]="searchText"
                     (ngModelChange)="onSearchChange()"
-                    placeholder="بحث باسم التحليل أو الكود...">
+                    [placeholder]="'::SearchByNameOrCode' | abpLocalization">
                 <button *ngIf="searchText" class="search-clear" (click)="searchText=''; applyFilter()">
                     <i class="fas fa-times"></i>
                 </button>
@@ -174,10 +174,10 @@
                         <tr>
                             <th class="col-label">التسمية</th>
                             <th class="col-normal">
-                                <span class="th-dot normal"></span> Min
+                                <span class="th-dot normal"></span> أدنى طبيعي
                             </th>
                             <th class="col-normal">
-                                <span class="th-dot normal"></span> Max
+                                <span class="th-dot normal"></span> أقصى طبيعي
                             </th>
                             <th class="col-warn">
                                 <span class="th-dot warning"></span> حد أدنى حرج

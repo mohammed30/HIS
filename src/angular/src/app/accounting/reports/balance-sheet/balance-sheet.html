@@ -16,7 +16,7 @@
                     <span class="input-group-text bg-white border-0 text-muted">
                         <i class="fas fa-search"></i>
                     </span>
-                    <input type="text" class="form-control border-0" placeholder="بحث عن حساب..."
+                    <input type="text" class="form-control border-0" [placeholder]="'::SearchAccount' | abpLocalization"
                         [(ngModel)]="searchText">
                     <button *ngIf="searchText" class="btn btn-white border-0" (click)="searchText = ''">
                         <i class="fas fa-times text-muted"></i>

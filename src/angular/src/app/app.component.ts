@@ -1,5 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { DynamicLayoutComponent, ReplaceableComponentsService, SessionStateService, AuthService } from '@abp/ng.core';
+import {
+  DynamicLayoutComponent,
+  ReplaceableComponentsService,
+  SessionStateService,
+  AuthService,
+} from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
 import { SidebarSearchComponent } from './shared/sidebar-search/sidebar-search.component';
@@ -9,7 +14,13 @@ import { UserManagementComponent } from './identity-extended/users/user-manageme
 import { RoleManagementComponent } from './identity-extended/roles/role-management.component';
 import { eIdentityComponents } from '@abp/ng.identity';
 import { AppFooterComponent } from './layout/footer/app-footer.component';
-import { Router, NavigationStart, NavigationCancel, NavigationError, NavigationEnd } from '@angular/router';
+import {
+  Router,
+  NavigationStart,
+  NavigationCancel,
+  NavigationError,
+  NavigationEnd,
+} from '@angular/router';
 import { NotificationBellComponent } from './notifications/notification-bell/notification-bell.component';
 import { LoginNotificationsModalComponent } from './notifications/login-modal/login-notifications-modal.component';
 import { NotificationHubService } from './notifications/services/notification-hub.service';
@@ -70,13 +81,13 @@ export class AppComponent implements OnInit {
       {
         id: 'Notifications',
         component: NotificationBellComponent,
-        order: 1 // Put it on the right side
+        order: 1, // Put it on the right side
       },
       {
         id: 'ThemeToggle',
         component: ThemeToggleComponent,
-        order: 2 // Put it next to notifications
-      }
+        order: 2, // Put it next to notifications
+      },
     ]);
 
     // Register custom components after app is initialized

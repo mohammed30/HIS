@@ -36,7 +36,7 @@
         <input 
           type="text" 
           class="form-control border-start-0" 
-          placeholder="بحث بالاسم أو رقم الطلب..." 
+          [placeholder]="'::SearchByNameOrCode' | abpLocalization" 
           [(ngModel)]="filterText"
           (keyup.enter)="search()"
         />

@@ -30,52 +30,66 @@ import { RouterModule } from '@angular/router';
       <!-- Menu Search Bar removed by user request -->
     </div>
   `,
-  styles: [`
-    :host {
-      display: block;
-      width: 100%;
-    }
-    .logo-container {
-      display: flex;
-      flex-direction: column;
-      padding: 5px;
-    }
-    .navbar-brand {
-      display: block;
-      max-width: 60px;
-      margin: 0 auto;
-    }
-    .logo-dark { display: none; }
-    .logo-light { display: block; }
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 100%;
+      }
+      .logo-container {
+        display: flex;
+        flex-direction: column;
+        padding: 5px;
+      }
+      .navbar-brand {
+        display: block;
+        max-width: 60px;
+        margin: 0 auto;
+      }
+      .logo-dark {
+        display: none;
+      }
+      .logo-light {
+        display: block;
+      }
 
-    /* When dark theme is active */
-    :host-context([data-theme="dark"]) .logo-light { display: none; }
-    :host-context([data-theme="dark"]) .logo-dark { display: block; }
-    
-    :host-context(.dark) .logo-light { display: none; }
-    :host-context(.dark) .logo-dark { display: block; }
+      /* When dark theme is active */
+      :host-context([data-theme='dark']) .logo-light {
+        display: none;
+      }
+      :host-context([data-theme='dark']) .logo-dark {
+        display: block;
+      }
 
-    .menu-search-wrapper {
-      margin-bottom: 5px;
-    }
+      :host-context(.dark) .logo-light {
+        display: none;
+      }
+      :host-context(.dark) .logo-dark {
+        display: block;
+      }
 
-    .form-control {
-      font-size: 0.85rem;
-      color: inherit !important;
-      border-color: rgba(128, 128, 128, 0.3) !important;
-    }
+      .menu-search-wrapper {
+        margin-bottom: 5px;
+      }
 
-    .input-group-text {
-      border-color: rgba(128, 128, 128, 0.3) !important;
-    }
+      .form-control {
+        font-size: 0.85rem;
+        color: inherit !important;
+        border-color: rgba(128, 128, 128, 0.3) !important;
+      }
 
-    /* Hide search when sidebar is collapsed (LeptonX often uses .lpx-sidebar-collapsed class) */
-    :host-context(.lpx-sidebar-collapsed) .menu-search-wrapper {
-      display: none;
-    }
-  `],
+      .input-group-text {
+        border-color: rgba(128, 128, 128, 0.3) !important;
+      }
+
+      /* Hide search when sidebar is collapsed (LeptonX often uses .lpx-sidebar-collapsed class) */
+      :host-context(.lpx-sidebar-collapsed) .menu-search-wrapper {
+        display: none;
+      }
+    `,
+  ],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CoreModule]
+  imports: [CommonModule, FormsModule, RouterModule, CoreModule],
 })
 export class AppLogoComponent {
   private routesService = inject(RoutesService);
@@ -110,9 +124,11 @@ export class AppLogoComponent {
       const normalizedLocalized = this.normalizeArabic(localizedName);
       const rawName = (route.name || '').toLowerCase();
 
-      return localizedName.includes(term) ||
+      return (
+        localizedName.includes(term) ||
         normalizedLocalized.includes(normalizedTerm) ||
-        rawName.includes(term);
+        rawName.includes(term)
+      );
     });
 
     // 2. Build set of names to show (including chain of parents)

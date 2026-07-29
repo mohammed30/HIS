@@ -115,7 +115,7 @@ export const APP_ROUTES: Routes = [
         path: 'inpatient',
         loadComponent: () => import('./settings/inpatient-settings/inpatient-settings.component').then(c => c.InpatientSettingsComponent),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Settings.Default' }
+        data: { requiredPolicy: 'HIS.Settings' }
       }
     ]
   },
@@ -201,6 +201,12 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./reception/billing/invoices.component').then(c => c.InvoicesComponent),
         canActivate: [permissionGuard],
         data: { requiredPolicy: 'HIS.Reception.Invoices' }
+      },
+      {
+        path: 'insurance-service-prices',
+        loadComponent: () => import('./reception/insurance/insurance-service-prices.component').then(c => c.InsuranceServicePricesComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Reception.InsurancePlans' }
       },
       {
         path: 'payments',

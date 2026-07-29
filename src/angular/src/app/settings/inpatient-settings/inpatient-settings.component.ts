@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
               <label class="form-label fw-bold">مبلغ الدفعة المقدمة (الحد الائتماني)</label>
               <div class="input-group">
                 <input type="number" class="form-control" formControlName="admissionDepositAmount">
-                <span class="input-group-text">ر.س</span>
+                <span class="input-group-text">ج.م</span>
               </div>
               <small class="text-muted">هذا المبلغ سيكون الحد الائتماني المبدئي للمريض عند التنويم.</small>
             </div>

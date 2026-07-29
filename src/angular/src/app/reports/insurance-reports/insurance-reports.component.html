@@ -4,24 +4,34 @@
     </div>
     <div class="card-body bg-light border-bottom">
         <div class="row align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small fw-bold">من تاريخ</label>
                 <input type="date" class="form-control" [(ngModel)]="filters.fromDate" (change)="refresh()">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small fw-bold">إلى تاريخ</label>
                 <input type="date" class="form-control" [(ngModel)]="filters.toDate" (change)="refresh()">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small fw-bold">شركة التأمين</label>
-                <select class="form-select" [(ngModel)]="filters.insuranceCompanyId" (change)="refresh()">
+                <select class="form-select" [(ngModel)]="filters.insuranceCompanyId" (change)="onCompanyChange()">
                     <option [ngValue]="null">-- الكل --</option>
                     <option *ngFor="let company of companies" [ngValue]="company.id">{{ company.name }}</option>
                 </select>
             </div>
-            <div class="col-md-2 text-end">
-                <button class="btn btn-primary w-100" (click)="refresh()">
-                    <i class="fas fa-sync-alt me-1"></i> تحديث
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">خطة التأمين</label>
+                <select class="form-select" [(ngModel)]="filters.insurancePlanId" (change)="refresh()" [disabled]="!filters.insuranceCompanyId">
+                    <option [ngValue]="null">-- الكل --</option>
+                    <option *ngFor="let plan of plans" [ngValue]="plan.id">{{ plan.name }}</option>
+                </select>
+            </div>
+            <div class="col-md-2 text-end d-flex gap-2 justify-content-end">
+                <button class="btn btn-primary" (click)="refresh()" title="تحديث">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-danger" (click)="exportToPdf()" title="تصدير PDF">
+                    <i class="fas fa-file-pdf"></i>
                 </button>
             </div>
         </div>
@@ -98,7 +108,7 @@
                                 <td class="text-end text-primary">{{ item.patientShare | number:'1.2-2' }}</td>
                                 <td class="text-center">
                                     <span class="badge" [ngClass]="item.status === 'Paid' ? 'bg-success' : 'bg-warning text-dark'">
-                                        {{ item.status }}
+                                        {{ '::Enum:InvoiceStatus:' + item.status | abpLocalization }}
                                     </span>
                                 </td>
                             </tr>

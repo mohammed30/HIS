@@ -1,26 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
-
-interface InsuranceCompany {
-  id: string;
-  code: string;
-  nameAr: string;
-  nameEn?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  contactPerson?: string;
-  contactPhone?: string;
-  website?: string;
-  notes?: string;
-  isActive: boolean;
-  sortOrder: number;
-}
+import { InsuranceCompanyService } from '../../proxy/insurance/insurance-company.service';
+import { InsuranceCompanyDto, CreateUpdateInsuranceCompanyDto } from '../../proxy/insurance/models';
 
 @Component({
   selector: 'app-insurance-companies',
@@ -194,15 +178,14 @@ interface InsuranceCompany {
   styles: [`.modal { z-index: 1050; }`]
 })
 export class InsuranceCompaniesComponent implements OnInit {
-  private http = inject(HttpClient);
-  private apiUrl = environment.apis.default.url + '/api/app/insurance-company';
+  private companyService = inject(InsuranceCompanyService);
   private confirmation = inject(ConfirmationService);
 
-  items: InsuranceCompany[] = [];
+  items: InsuranceCompanyDto[] = [];
   searchText = '';
   showForm = false;
-  editingItem: InsuranceCompany | null = null;
-  formData: Partial<InsuranceCompany> = this.getEmptyForm();
+  editingItem: InsuranceCompanyDto | null = null;
+  formData: CreateUpdateInsuranceCompanyDto = this.getEmptyForm();
 
   page = 1;
   pageSize = 10;
@@ -212,7 +195,7 @@ export class InsuranceCompaniesComponent implements OnInit {
     this.loadData();
   }
 
-  getEmptyForm(): Partial<InsuranceCompany> {
+  getEmptyForm(): CreateUpdateInsuranceCompanyDto {
     return { nameAr: '', nameEn: '', phone: '', email: '', address: '', contactPerson: '', contactPhone: '', website: '', notes: '', isActive: true, sortOrder: 0 };
   }
 
@@ -220,7 +203,11 @@ export class InsuranceCompaniesComponent implements OnInit {
 
   loadData() {
     const skipCount = (this.page - 1) * this.pageSize;
-    this.http.get<any>(`${this.apiUrl}?searchText=${this.searchText}&skipCount=${skipCount}&maxResultCount=${this.pageSize}`).subscribe({
+    this.companyService.getList({
+      searchText: this.searchText,
+      skipCount: skipCount,
+      maxResultCount: this.pageSize
+    }).subscribe({
       next: (res) => {
         this.items = res.items || [];
         this.totalCount = res.totalCount || 0;
@@ -239,26 +226,28 @@ export class InsuranceCompaniesComponent implements OnInit {
     this.loadData();
   }
 
-  edit(item: InsuranceCompany) {
+  edit(item: InsuranceCompanyDto) {
     this.editingItem = item;
     this.formData = { ...item };
     this.showForm = true;
   }
 
   save() {
-    const req = this.editingItem
-      ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
-      : this.http.post(this.apiUrl, this.formData);
+    const req = this.editingItem?.id
+      ? this.companyService.update(this.editingItem.id, this.formData)
+      : this.companyService.create(this.formData);
+      
     req.subscribe({
       next: () => { this.showForm = false; this.loadData(); },
       error: (err) => console.error(err)
     });
   }
 
-  delete(item: InsuranceCompany) {
+  delete(item: InsuranceCompanyDto) {
+    if (!item.id) return;
     this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
       if (status === Confirmation.Status.confirm) {
-        this.http.delete(`${this.apiUrl}/${item.id}`).subscribe({ next: () => this.loadData() });
+        this.companyService.delete(item.id as string).subscribe({ next: () => this.loadData() });
       }
     });
   }

@@ -240,6 +240,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Reception.InsurancePlans',
     },
     {
+      path: '/reception/insurance-service-prices',
+      name: '::Menu:InsuranceServicePrices',
+      parentName: '::Menu:Insurance',
+      iconClass: 'fas fa-tags',
+      order: 43,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.InsurancePlans',
+    },
+    {
       path: '/reports/insurance-reports',
       name: '::Menu:InsuranceReports',
       parentName: '::Menu:Insurance',
@@ -415,7 +424,7 @@ function configureRoutes() {
       iconClass: 'fas fa-bed',
       order: 11,
       layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings.Default',
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/appointments/waiting-list',

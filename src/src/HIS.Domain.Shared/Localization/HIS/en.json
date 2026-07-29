@@ -2,6 +2,10 @@
   "culture": "en",
   "texts": {
     "AppName": "Asia Hospital",
+    "SearchInMenu": "Search in menu...",
+    "SearchUser": "Search user...",
+    "SearchAccount": "Search account...",
+    "SearchByNameOrCode": "Search by name or order code...",
     "Account": "Account",
     "SelectAccount": "Select Account",
     "PaymentMethod": "Payment Method",
@@ -211,6 +215,7 @@
     "Menu:Insurance": "Insurance",
     "Menu:InsuranceCompanies": "Insurance Companies",
     "Menu:InsurancePlans": "Insurance Plans",
+    "Menu:InsuranceServicePrices": "Service Prices",
     "Menu:InsuranceReports": "Insurance Reports",
     "Menu:Billing": "Billing",
     "Menu:Reception": "Reception",

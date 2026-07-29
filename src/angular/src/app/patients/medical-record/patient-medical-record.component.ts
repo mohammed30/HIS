@@ -10,11 +10,12 @@ import { ServiceItemService } from '../../proxy/services/service-item.service';
 import { OrderType } from '../../proxy/clinical/order-type.enum';
 import { OrderStatus } from '../../proxy/clinical/order-status.enum';
 import { RadiologyService } from '../../proxy/radiology/radiology.service';
+import { PatientInsuranceComponent } from '../../reception/insurance/patient-insurance.component';
 
 @Component({
   selector: 'app-patient-medical-record',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageModule, CoreModule],
+  imports: [CommonModule, FormsModule, PageModule, CoreModule, PatientInsuranceComponent],
   template: `
     <abp-page [title]="'السجل الطبي للمريض' | abpLocalization">
       
@@ -174,11 +175,21 @@ import { RadiologyService } from '../../proxy/radiology/radiology.service';
                   <i class="fas fa-x-ray me-2"></i> نتائج الأشعة
                 </button>
               </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="activeTab === 'insurance'" (click)="activeTab = 'insurance'">
+                  <i class="fas fa-shield-alt me-2"></i> التأمين
+                </button>
+              </li>
             </ul>
           </div>
           
           <div class="card-body p-4 rounded-bottom-3">
              
+             <!-- Insurance Tab -->
+             <div *ngIf="activeTab === 'insurance'">
+               <app-patient-insurance [patientId]="patientId"></app-patient-insurance>
+             </div>
+
              <!-- Vital Signs Table -->
              <div *ngIf="activeTab === 'vitals'">
                <div class="text-end mb-3">

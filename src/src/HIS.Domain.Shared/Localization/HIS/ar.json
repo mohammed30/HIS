@@ -2,6 +2,10 @@
     "culture":  "ar",
     "texts":  {
                   "AppName":  "مستشفى آسيا",
+                  "SearchInMenu": "بحث في القائمة...",
+                  "SearchUser": "بحث عن مستخدم...",
+                  "SearchAccount": "بحث عن حساب...",
+                  "SearchByNameOrCode": "بحث بالاسم أو رقم الطلب...",
                   "PaymentMethod":  "طريقة الدفع",
                   "SelectPaymentMethod":  "اختر طريقة الدفع",
                   "Account":  "الحساب",
@@ -215,6 +219,7 @@
                   "Menu:Insurance":  "التأمين",
                   "Menu:InsuranceCompanies":  "شركات التأمين",
                   "Menu:InsurancePlans":  "خطط التأمين",
+                  "Menu:InsuranceServicePrices": "أسعار الخدمات",
                   "Menu:InsuranceReports":  "تقارير التأمين",
                   "Menu:Billing":  "المدفوعات",
                   "Menu:Reception":  "الاستقبال",

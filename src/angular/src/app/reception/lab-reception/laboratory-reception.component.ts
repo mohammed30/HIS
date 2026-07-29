@@ -622,6 +622,8 @@ export class LaboratoryReceptionComponent implements OnInit {
                     discount: 0,
                     tax: 0,
                     grandTotal: 0,
+                    insuranceShare: 0,
+                    patientShare: 0,
                     cash: 0,
                     card: 0,
                     transfer: 0,
@@ -1315,6 +1317,10 @@ export class LaboratoryReceptionComponent implements OnInit {
 
         // Logic: Grand Total = Total - Discount + Tax
         this.billingDetails.grandTotal = (this.billingDetails.total - (this.billingDetails.discount || 0)) + this.billingDetails.tax;
+
+        // Temporary Insurance Calculation (to be enhanced with actual insurance plans)
+        this.billingDetails.insuranceShare = 0;
+        this.billingDetails.patientShare = this.billingDetails.grandTotal;
 
         // Recalculate Active Payment Type Amount if needed (to keep it in sync with new Grand Total)
         // If we are currently editing one, maybe update it? 

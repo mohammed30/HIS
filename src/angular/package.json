@@ -44,6 +44,8 @@
     "@ng-bootstrap/ng-bootstrap": "^19.0.0",
     "@volo/ngx-lepton-x.core": "~5.0.0",
     "echarts": "^6.0.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "ngx-echarts": "^20.0.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.0.0",

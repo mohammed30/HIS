@@ -364,9 +364,15 @@
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
-                            <label class="col-4 small text-end fw-bold">التعاقد</label>
+                            <label class="col-4 small text-end fw-bold">حصة التأمين</label>
                             <div class="col-8"><input type="text"
-                                    class="form-control form-control-sm text-center fw-bold" readonly placeholder="0">
+                                    class="form-control form-control-sm text-center fw-bold text-success" readonly placeholder="0" [value]="billingDetails.insuranceShare">
+                            </div>
+                        </div>
+                        <div class="row g-1 mb-1 align-items-center">
+                            <label class="col-4 small text-end fw-bold">حصة المريض</label>
+                            <div class="col-8"><input type="text"
+                                    class="form-control form-control-sm text-center fw-bold text-primary" readonly placeholder="0" [value]="billingDetails.patientShare">
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center d-none">
@@ -681,10 +687,6 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="small fw-bold mb-1 text-primary">رقم الملف</label>
-                        <input type="text" class="form-control form-control-sm" readonly>
-                    </div>
 
                     <div class="accounts-panel border rounded p-2 small mb-2">
                         <div class="fw-bold text-primary border-bottom mb-2 pb-1">الحسابات</div>

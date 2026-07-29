@@ -1,15 +1,16 @@
 import { Component, AfterViewInit, OnDestroy, inject, PLATFORM_ID, ElementRef, Renderer2 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CoreModule } from '@abp/ng.core';
 
 @Component({
     selector: 'app-sidebar-search',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, CoreModule],
     template: `
         <div #searchContainer class="sidebar-search-container" style="display: none;">
             <div class="sidebar-search-box">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" placeholder="بحث في القائمة..." (input)="onSearch($event)" />
+                <input type="text" [placeholder]="'::SearchInMenu' | abpLocalization" (input)="onSearch($event)" />
             </div>
         </div>
     `,
@@ -69,33 +70,43 @@ export class SidebarSearchComponent implements AfterViewInit, OnDestroy {
     private checkInterval: any;
     private injected = false;
 
+    private searchBoxNode: HTMLElement | null = null;
+
     ngAfterViewInit() {
         if (isPlatformBrowser(this.platformId)) {
+            const originalSearchBox = this.el.nativeElement.querySelector('.sidebar-search-container');
+            if (originalSearchBox) {
+                this.searchBoxNode = originalSearchBox;
+            }
+
             // Continuously check for the sidebar logo container so we can insert the search box below it
             this.checkInterval = setInterval(() => {
                 const logoContainer = document.querySelector('.lpx-sidebar .lpx-logo-container');
-                const sidebar = document.querySelector('.lpx-sidebar');
                 
-                if (logoContainer && sidebar && !this.injected) {
-                    const searchBox = this.el.nativeElement.querySelector('.sidebar-search-container');
+                if (logoContainer && this.searchBoxNode) {
                     const parent = logoContainer.parentElement;
-                    if (searchBox && parent) {
+                    const existingInSidebar = parent?.querySelector('.sidebar-search-container');
+                    
+                    if (!existingInSidebar && parent) {
+                        const searchBox = this.searchBoxNode;
                         searchBox.style.display = 'block';
                         
                         // Bind native event listener because moving DOM element breaks Angular bindings
                         const inputEl = searchBox.querySelector('input');
                         if (inputEl) {
-                            inputEl.addEventListener('input', (event: any) => this.onSearch(event));
-                            inputEl.addEventListener('keyup', (event: any) => this.onSearch(event));
+                            // Clone to remove previous event listeners and prevent duplicates
+                            const newInput = inputEl.cloneNode(true) as HTMLInputElement;
+                            inputEl.parentNode?.replaceChild(newInput, inputEl);
+                            newInput.addEventListener('input', (event: any) => this.onSearch(event));
+                            newInput.addEventListener('keyup', (event: any) => this.onSearch(event));
                         }
 
                         // Insert search box right after the logo container
                         this.renderer.insertBefore(parent, searchBox, logoContainer.nextSibling);
                         this.injected = true;
-                        clearInterval(this.checkInterval);
                     }
                 }
-            }, 500);
+            }, 1000);
         }
     }
 

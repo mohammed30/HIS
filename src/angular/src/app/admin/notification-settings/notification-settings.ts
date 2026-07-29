@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CoreModule } from '@abp/ng.core';
 import { NotificationService } from '../../proxy/notifications/notification.service';
 import { ToasterService } from '@abp/ng.theme.shared';
 import { ModuleSubscriptionDto, UpdateModuleSubscriptionDto } from '../../proxy/notifications/models';
@@ -9,7 +10,7 @@ import { LookupDto } from '../../proxy/appointments/dtos/models';
 @Component({
   selector: 'app-notification-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CoreModule],
   templateUrl: './notification-settings.html',
   styleUrl: './notification-settings.scss'
 })
