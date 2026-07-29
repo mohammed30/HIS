@@ -18,6 +18,10 @@ import { ServiceItemService } from '@proxy/services';
 import { PatientInsuranceService } from '@proxy/insurance';
 import { PatientInsuranceDto } from '@proxy/insurance/models';
 
+import { CreditLimitGaugeComponent } from '../../shared/components/credit-limit-gauge/credit-limit-gauge.component';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-admission-list',
   standalone: true,
@@ -26,7 +30,8 @@ import { PatientInsuranceDto } from '@proxy/insurance/models';
     CoreModule,
     ThemeSharedModule,
     ReactiveFormsModule,
-    NgbModule
+    NgbModule,
+    CreditLimitGaugeComponent
   ],
   templateUrl: './admission-list.component.html',
   styleUrls: ['./admission-list.component.scss']
@@ -42,11 +47,15 @@ export class AdmissionListComponent implements OnInit {
   private medicalOrderService = inject(MedicalOrderService);
   private serviceItemService = inject(ServiceItemService);
   private patientInsuranceService = inject(PatientInsuranceService);
+  private http = inject(HttpClient);
 
   admissions: AdmissionDto[] = [];
   selectedAdmission: AdmissionDto | null = null;
   roomTypes = roomTypeOptions;
   provisionalInvoice: any = null;
+
+  defaultCreditLimit: number = 1000;
+  creditLimitSettingsLoaded: boolean = false;
 
   patients: PatientDto[] = [];
   filteredPatients: PatientDto[] = [];
@@ -73,6 +82,8 @@ export class AdmissionListComponent implements OnInit {
     pharmacyPercentage: [0],
     purpose: [''],
     notes: [''],
+    numberOfDays: [0],
+    paidAmount: [0],
     patientInsuranceId: [null as string | null]
   });
 
@@ -149,6 +160,18 @@ export class AdmissionListComponent implements OnInit {
 
   ngOnInit() {
     this.loadAdmissions();
+    
+    // Load inpatient settings for credit limit
+    this.http.get<any>(environment.apis.default.url + '/api/app/inpatient-settings').subscribe({
+      next: (res) => {
+        this.defaultCreditLimit = res.admissionDepositAmount || 1000;
+        this.creditLimitSettingsLoaded = true;
+      },
+      error: () => {
+        this.defaultCreditLimit = 1000;
+        this.creditLimitSettingsLoaded = true;
+      }
+    });
   }
 
   loadAdmissions() {
@@ -375,7 +398,7 @@ export class AdmissionListComponent implements OnInit {
       purpose: '',
       notes: '',
       numberOfDays: 0,
-      paidAmount: 0
+      paidAmount: this.defaultCreditLimit
     });
     this.availableRooms = [];
     this.availableBedsList = [];

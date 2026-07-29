@@ -109,7 +109,13 @@ export const APP_ROUTES: Routes = [
         path: 'pharmacy',
         loadComponent: () => import('./settings/pharmacy/pharmacy-settings.component').then(c => c.PharmacySettingsComponent),
         canActivate: [permissionGuard],
-        data: { requiredPolicy: 'HIS.Settings' }
+        data: { requiredPolicy: 'HIS.Settings.Pharmacy' }
+      },
+      {
+        path: 'inpatient',
+        loadComponent: () => import('./settings/inpatient-settings/inpatient-settings.component').then(c => c.InpatientSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings.Default' }
       }
     ]
   },

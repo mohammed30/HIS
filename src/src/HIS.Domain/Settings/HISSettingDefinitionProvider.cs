@@ -17,6 +17,10 @@ public class HISSettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition("HIS.Inventory.MainWarehouseId", ""),
             new SettingDefinition("HIS.Inventory.PharmacyWarehouseId", ""),
 
+            // Inpatient
+            new SettingDefinition(HISSettings.Inpatient.AdmissionDepositAmount, "1000"),
+            new SettingDefinition(HISSettings.Inpatient.RequireAdvancePayment, "false"),
+
             // Notifications module subscribers
             new SettingDefinition("Notifications.Subscribers.Appointments", ""),
             new SettingDefinition("Notifications.Subscribers.Radiology", ""),

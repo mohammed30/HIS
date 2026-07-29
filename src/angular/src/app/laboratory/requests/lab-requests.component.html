@@ -229,12 +229,24 @@
                     <option *ngFor="let d of doctors" [value]="d.id">{{ d.nameAr }}</option>
                 </select>
             </div>
-            <div class="col-12">
+            <div class="col-12 position-relative">
                 <label class="form-label font-weight-bold">{{ '::LabTest' | abpLocalization }} *</label>
-                <select class="form-select border-light-gray" [(ngModel)]="newRequest.serviceItemId">
-                    <option value="">{{ '::SelectLabTest' | abpLocalization }}</option>
-                    <option *ngFor="let t of labTests" [value]="t.id">[{{ t.code }}] {{ t.name }}</option>
-                </select>
+                <input type="text" 
+                       class="form-control border-light-gray" 
+                       [placeholder]="'::SelectLabTest' | abpLocalization"
+                       [(ngModel)]="labTestSearch"
+                       (focus)="isLabTestDropdownOpen = true"
+                       (blur)="closeLabTestDropdown()"
+                       (input)="filterLabTests()">
+                
+                <div class="dropdown-menu w-100 shadow-sm" [class.show]="isLabTestDropdownOpen" style="max-height: 250px; overflow-y: auto; position: absolute; z-index: 1000; margin-top: 2px;">
+                    <button type="button" class="dropdown-item py-2" *ngFor="let t of filteredLabTests" (mousedown)="selectLabTest(t)">
+                        <span class="badge bg-soft-secondary text-secondary me-2">[{{ t.code }}]</span> {{ t.name }}
+                    </button>
+                    <div class="dropdown-item text-muted text-center py-2" *ngIf="filteredLabTests.length === 0">
+                        {{ '::NoLabTestsFound' | abpLocalization }}
+                    </div>
+                </div>
             </div>
             <div class="col-12">
                 <label class="form-label font-weight-bold">{{ '::Notes' | abpLocalization }}</label>
@@ -250,7 +262,7 @@
 </abp-modal>
 
 <!-- Result Modal -->
-<abp-modal [(visible)]="isResultModalOpen">
+<abp-modal [(visible)]="isResultModalOpen" [options]="{ size: 'xl' }">
     <ng-template #abpHeader>
         <h3 class="mb-0"><i class="fas fa-file-signature text-primary me-2"></i>{{ '::EnterLabResult' | abpLocalization }}</h3>
     </ng-template>
@@ -261,22 +273,82 @@
                 <div class="col-md-6"><strong>{{ '::Patient' | abpLocalization }}:</strong> {{ selectedRequest.patientName }}</div>
                 <div class="col-md-6"><strong>{{ '::Date' | abpLocalization }}:</strong> {{ selectedRequest.requestDate | date:'medium' }}</div>
                 <div class="col-md-12"><strong>{{ '::Test' | abpLocalization }}:</strong> {{ selectedRequest.testName }}</div>
-                <div class="col-md-12 text-success" *ngIf="selectedRequest.referenceRange">
+                <div class="col-md-12" *ngIf="selectedRequest.referenceRange">
                     <i class="fas fa-info-circle me-1"></i>
-                    <strong>{{ '::ReferenceRange' | abpLocalization }}:</strong> <span dir="ltr">{{ selectedRequest.referenceRange }} {{ selectedRequest.unit }}</span>
+                    <strong>{{ '::ReferenceRange' | abpLocalization }}:</strong>
+                    <!-- Structured ranges with color legend -->
+                    <ng-container *ngIf="isStructuredRange; else plainRef">
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            <div *ngFor="let r of parsedRanges"
+                                class="ref-range-card p-2 rounded border small">
+                                <div class="fw-bold text-primary mb-1">{{ r.label }}</div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span *ngIf="r.min !== null && r.max !== null"
+                                        class="badge bg-success fs-6" dir="ltr">
+                                        🟢 {{ r.min }} - {{ r.max }} {{ r.unit || selectedRequest.unit }}
+                                    </span>
+                                    <ng-container *ngIf="r.criticalMin !== null || r.criticalMax !== null">
+                                        <span class="badge bg-warning text-dark fs-6" dir="ltr">
+                                            🟠 {{ r.criticalMin }} - {{ r.min }} / {{ r.max }} - {{ r.criticalMax }} {{ r.unit || selectedRequest.unit }}
+                                        </span>
+                                        <span class="badge bg-danger fs-6" dir="ltr">
+                                            🔴 &lt; {{ r.criticalMin }} أو &gt; {{ r.criticalMax }} {{ r.unit || selectedRequest.unit }}
+                                        </span>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-template #plainRef>
+                        <span dir="ltr" class="text-success ms-1">{{ selectedRequest.referenceRange }} {{ selectedRequest.unit }}</span>
+                    </ng-template>
+
+
                 </div>
             </div>
         </div>
-        
-        <div class="mb-3">
+        <!-- Dynamic Result Inputs -->
+        <div *ngIf="isStructuredRange" class="mb-4 bg-white p-3 rounded border shadow-sm">
+            <div class="row g-3">
+                <div class="col-md-6" *ngFor="let r of parsedRanges">
+                    <label class="form-label fs-5 fw-bold text-primary d-flex justify-content-between align-items-center">
+                        {{ r.label }}
+                        <span class="badge fs-6 px-3 py-2 ms-2 shadow-sm" *ngIf="structuredResults[r.label]" [ngClass]="getStatusBadgeClass(getSingleResultStatus(r, structuredResults[r.label]))">
+                             <ng-container [ngSwitch]="getSingleResultStatus(r, structuredResults[r.label])">
+                                <span *ngSwitchCase="'normal'">✅ طبيعي</span>
+                                <span *ngSwitchCase="'warning'">⚠️ غير طبيعي</span>
+                                <span *ngSwitchCase="'danger'">🚨 حرج</span>
+                            </ng-container>
+                        </span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" 
+                               class="form-control border-primary border-opacity-25" 
+                               style="background:#fffcf5"
+                               [(ngModel)]="structuredResults[r.label]" 
+                               (ngModelChange)="updateCombinedResult()"
+                               step="any">
+                        <span class="input-group-text bg-light text-secondary" *ngIf="r.unit">{{ r.unit }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3 pt-3 border-top" *ngIf="parsedRanges.length > 1">
+                <label class="form-label font-weight-bold text-muted small">{{ '::ResultSummary' | abpLocalization }}</label>
+                <textarea class="form-control bg-light border-0 text-muted" [ngModel]="resultData.result" readonly rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- Fallback Free Text Result -->
+        <div class="mb-3" *ngIf="!isStructuredRange">
             <label class="form-label font-weight-bold text-primary">{{ '::TheResult' | abpLocalization }} *</label>
             <textarea class="form-control border-primary border-opacity-25" [(ngModel)]="resultData.result" rows="4" style="background:#fffcf5"></textarea>
             <div class="form-text small opacity-75">Enter findings, values, and interpretations clearly.</div>
         </div>
         
-        <div class="mb-0">
-            <label class="form-label font-weight-bold text-muted small">{{ '::TechnicianNotes' | abpLocalization }}</label>
-            <textarea class="form-control bg-light border-0" [(ngModel)]="resultData.notes" rows="2"></textarea>
+        <div class="mb-0 mt-2">
+            <label class="form-label font-weight-bold text-muted small"><i class="fas fa-edit me-1"></i>{{ '::TechnicianNotes' | abpLocalization }}</label>
+            <textarea class="form-control border border-secondary border-opacity-25 shadow-sm" style="background:#fcfcfc" [(ngModel)]="resultData.notes" rows="3" placeholder="أضف ملاحظات إضافية هنا..."></textarea>
         </div>
     </ng-template>
 

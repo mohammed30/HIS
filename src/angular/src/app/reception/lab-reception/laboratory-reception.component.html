@@ -16,8 +16,8 @@
                             <label class="form-label small mb-0 fw-bold text-dark">{{ '::NameAr' | abpLocalization }} *</label>
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control border-primary text-dark fw-semibold"
-                                    [(ngModel)]="patientInfo.fullNameAr" (keyup.enter)="searchPatient()"
-                                    (blur)="closeSearch()">
+                                    [(ngModel)]="patientInfo.fullNameAr" (ngModelChange)="searchPatient()"
+                                    (blur)="closeSearch()" (keydown)="onSearchKeyDown($event)">
                                 <button class="btn btn-primary text-white" type="button" (click)="searchPatient()">
                                     <i class="fas fa-search"></i>
                                 </button>
@@ -34,12 +34,13 @@
                                 </div>
                                 <div class="list-group list-group-flush overflow-auto" style="max-height: 260px;">
                                     <button type="button" class="list-group-item list-group-item-action py-2"
-                                        *ngFor="let res of searchResults" (click)="selectPatient(res.id)">
+                                        *ngFor="let res of searchResults; let i = index" (click)="selectPatient(res.id)"
+                                        [class.active]="i === selectedSearchIndex">
                                         <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                                            <h6 class="mb-0 fw-bold text-primary">{{ res.fullNameAr }}</h6>
+                                            <h6 class="mb-0 fw-bold" [ngClass]="i === selectedSearchIndex ? 'text-white' : 'text-primary'">{{ res.fullNameAr }}</h6>
                                             <span class="badge bg-secondary">{{ res.mobileNumber }}</span>
                                         </div>
-                                        <small class="text-muted d-block text-end">{{ '::File' | abpLocalization }}: {{ res.mrn }}</small>
+                                        <small class="d-block text-end" [ngClass]="i === selectedSearchIndex ? 'text-white-50' : 'text-muted'">{{ '::File' | abpLocalization }}: {{ res.mrn }}</small>
                                     </button>
                                 </div>
                             </div>
@@ -473,15 +474,8 @@
                             <option *ngFor="let d of doctors" [value]="d.id">{{ d.nameAr || d.name }}</option>
                         </select>
                     </div>
-                    <div class="d-flex gap-2 mb-2">
-                        <div class="form-check small">
-                            <input class="form-check-input" type="radio" name="searchType" id="searchByCode" value="code" [(ngModel)]="searchMode" (ngModelChange)="filterTests()">
-                            <label class="form-check-label" for="searchByCode">بحث برمز التحليل</label>
-                        </div>
-                        <div class="form-check small">
-                            <input class="form-check-input" type="radio" name="searchType" id="searchByName" value="name" [(ngModel)]="searchMode" (ngModelChange)="filterTests()">
-                            <label class="form-check-label" for="searchByName">بحث باسم التحليل</label>
-                        </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold mb-1 text-primary">بحث بالرمز أو الاسم</label>
                     </div>
                     <input type="text" class="form-control form-control-sm mb-2" placeholder="اكتب للبحث..."
                         [(ngModel)]="testSearchText" (ngModelChange)="filterTests()" #testSearchInput>
@@ -489,7 +483,10 @@
                         <ul class="list-group list-group-flush small">
                             <li class="list-group-item list-group-item-action py-1 px-2 pointer"
                                 *ngFor="let test of displayTests" (click)="addTestToOrder(test)">
-                                {{ test.name }}
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <span>{{ test.name }}</span>
+                                    <span class="badge bg-secondary" *ngIf="test.code">{{ test.code }}</span>
+                                </div>
                             </li>
                         </ul>
                     </div>
@@ -534,6 +531,7 @@
                                 <th>#</th>
                                 <th>التاريخ</th>
                                 <th>البيان</th>
+                                <th>الخدمة المقدمة</th>
                                 <th>رقم المرجع</th>
                                 <th>مدين (Debit)</th>
                                 <th>دائن (Credit)</th>
@@ -547,6 +545,11 @@
                                 <td>{{ i + 1 }}</td>
                                 <td>{{ item.date | date:'yyyy-MM-dd HH:mm' }}</td>
                                 <td>{{ item.type }}</td>
+                                <td>
+                                    <div class="text-truncate text-center mx-auto" style="max-width: 200px;" title="{{ item.serviceName }}">
+                                        {{ item.serviceName || '-' }}
+                                    </div>
+                                </td>
                                 <td>{{ item.reference }}</td>
                                 <td class="text-danger">{{ item.debit | number:'1.2-2' }}</td>
                                 <td class="text-success">{{ item.credit | number:'1.2-2' }}</td>
@@ -554,8 +557,16 @@
                                     [class.text-success]="item.balance < 0">
                                     {{ item.balance | number:'1.2-2' }}
                                 </td>
-                                <td class="text-start">{{ item.notes }}</td>
                                 <td>
+                                    <div class="text-truncate text-start" style="max-width: 150px;" title="{{ item.notes }}">
+                                        {{ item.notes }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-xs btn-outline-info me-1" (click)="viewStatementDetails(item)"
+                                        title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                     <button *ngIf="isAdminOrAdminStaff && item.type.includes('Invoice') && item.status !== 4"
                                         class="btn btn-xs btn-outline-danger" (click)="cancelInvoice(item)"
                                         title="إلغاء الفاتورة">
@@ -1340,6 +1351,53 @@
         <ng-template #abpFooter>
             <button type="button" class="btn btn-secondary" (click)="showRefundModal = false">إلغاء</button>
             <button type="button" class="btn btn-warning" (click)="confirmRefundPayment()">تأكيد الاسترداد</button>
+        </ng-template>
+    </abp-modal>
+
+    <!-- Statement Details Modal -->
+    <abp-modal [(visible)]="showStatementDetailsModal" [options]="{ size: 'xl' }">
+        <ng-template #abpHeader>
+            <h5 class="m-0"><i class="fas fa-info-circle text-primary me-2"></i>تفاصيل الحركة المالية</h5>
+        </ng-template>
+        <ng-template #abpBody>
+            <div class="mb-3 p-3" *ngIf="selectedStatementItem">
+                <div class="row mb-3">
+                    <div class="col-md-6"><strong>نوع الحركة:</strong> {{ selectedStatementItem.type }}</div>
+                    <div class="col-md-6"><strong>رقم المرجع:</strong> {{ selectedStatementItem.reference }}</div>
+                    <div class="col-md-6 mt-2"><strong>التاريخ:</strong> {{ selectedStatementItem.date | date:'medium' }}</div>
+                    <div class="col-md-6 mt-2"><strong>المبلغ:</strong> <span class="text-primary fw-bold">{{ (selectedStatementItem.debit > 0 ? selectedStatementItem.debit : selectedStatementItem.credit) | number:'1.2-2' }}</span></div>
+                </div>
+                
+                <h6 class="fw-bold text-primary mt-4 border-bottom pb-2" *ngIf="selectedStatementItem.type.includes('Invoice')">تفاصيل الخدمات</h6>
+                <table class="table table-sm table-bordered mt-2 text-center" *ngIf="selectedStatementItem.type.includes('Invoice') && selectedStatementItem.originalItem?.items">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>الكود</th>
+                            <th>الخدمة</th>
+                            <th>الكمية</th>
+                            <th>السعر</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let srv of selectedStatementItem.originalItem.items">
+                            <td>{{ srv.serviceCode }}</td>
+                            <td>{{ srv.description || srv.serviceCode }}</td>
+                            <td>{{ srv.quantity }}</td>
+                            <td>{{ srv.unitPrice | number:'1.2-2' }}</td>
+                            <td>{{ srv.totalPrice | number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div *ngIf="selectedStatementItem.type.includes('Payment')" class="alert alert-info mt-2">
+                    <strong>طريقة الدفع:</strong> {{ selectedStatementItem.originalItem?.paymentMethod }}<br>
+                    <strong *ngIf="selectedStatementItem.originalItem?.referenceNumber">رقم المرجع للبنك/البطاقة:</strong> {{ selectedStatementItem.originalItem?.referenceNumber }}
+                </div>
+            </div>
+        </ng-template>
+        <ng-template #abpFooter>
+            <button type="button" class="btn btn-secondary" (click)="showStatementDetailsModal = false">إغلاق</button>
         </ng-template>
     </abp-modal>
 </div>

@@ -137,7 +137,23 @@ public class AdmissionAppService : CrudAppService<
         
         var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
         arAccount = await GetLeafAccountAsync(arAccount);
-        var checkAmount = input.NumberOfDays > 0 ? (input.NumberOfDays * room.DailyRate) : (input.PaidAmount > 0 ? input.PaidAmount : 1000m); // Default fallback
+
+        var depositSetting = await SettingProvider.GetOrNullAsync(HIS.Settings.HISSettings.Inpatient.AdmissionDepositAmount);
+        var defaultDepositAmount = decimal.TryParse(depositSetting, out var parsedDeposit) ? parsedDeposit : 1000m;
+
+        // If the user did not specify PaidAmount and there is a required deposit from settings
+        if (input.PaidAmount <= 0)
+        {
+            var requireAdvanceSetting = await SettingProvider.GetOrNullAsync(HIS.Settings.HISSettings.Inpatient.RequireAdvancePayment);
+            if (bool.TryParse(requireAdvanceSetting, out var requireAdvance) && requireAdvance)
+            {
+                // Force the paid amount to be the default deposit amount if it's required
+                input.PaidAmount = defaultDepositAmount;
+                admission.PaidAmount = defaultDepositAmount;
+            }
+        }
+
+        var checkAmount = input.NumberOfDays > 0 ? (input.NumberOfDays * room.DailyRate) : (input.PaidAmount > 0 ? input.PaidAmount : defaultDepositAmount); // Default fallback
 
         if (arAccount != null)
         {

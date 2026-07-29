@@ -152,11 +152,87 @@ public class LabResultDocument : IDocument
                     });
 
                     // Data Row
-                    table.Cell().Element(DataCell).Text(TestName ?? "-");
-                    table.Cell().Element(DataCell).Text(TestCode ?? "-");
-                    table.Cell().Element(DataCellHighlight).Text(Result ?? "-").Bold();
-                    table.Cell().Element(DataCell).Text(TestUnit ?? "-");
-                    table.Cell().Element(DataCell).Text(ReferenceRange ?? "-");
+                    bool isStructured = !string.IsNullOrWhiteSpace(ReferenceRange) && ReferenceRange.TrimStart().StartsWith("[");
+                    System.Collections.Generic.List<ReferenceRangeModel> ranges = null;
+                    if (isStructured)
+                    {
+                        try
+                        {
+                            ranges = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<ReferenceRangeModel>>(ReferenceRange, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        }
+                        catch { isStructured = false; }
+                    }
+
+                    if (isStructured && ranges != null && ranges.Count > 0)
+                    {
+                        var resultLines = Result?.Split('\n') ?? Array.Empty<string>();
+                        var resultMap = new System.Collections.Generic.Dictionary<string, string>();
+                        foreach (var line in resultLines)
+                        {
+                            int colonIdx = line.IndexOf(':');
+                            if (colonIdx >= 0)
+                            {
+                                resultMap[line.Substring(0, colonIdx).Trim()] = line.Substring(colonIdx + 1).Trim();
+                            }
+                        }
+
+                        bool isFirst = true;
+                        foreach (var r in ranges)
+                        {
+                            if (isFirst)
+                            {
+                                table.Cell().RowSpan((uint)ranges.Count).Element(DataCell).Text(TestName ?? "-");
+                                table.Cell().RowSpan((uint)ranges.Count).Element(DataCell).Text(TestCode ?? "-");
+                                isFirst = false;
+                            }
+
+                            string resStr = resultMap.ContainsKey(r.Label) ? resultMap[r.Label] : "-";
+                            decimal? numVal = null;
+                            if (resStr != "-")
+                            {
+                                var match = System.Text.RegularExpressions.Regex.Match(resStr, @"^[\d\.]+");
+                                if (match.Success && decimal.TryParse(match.Value, out var n))
+                                    numVal = n;
+                            }
+
+                            string color = TextDark;
+                            if (numVal.HasValue)
+                            {
+                                decimal min = r.Min ?? decimal.MinValue;
+                                decimal max = r.Max ?? decimal.MaxValue;
+                                decimal cMin = r.CriticalMin ?? decimal.MinValue;
+                                decimal cMax = r.CriticalMax ?? decimal.MaxValue;
+
+                                if (cMax <= max) cMax = decimal.MaxValue;
+                                if (cMin >= min) cMin = decimal.MinValue;
+
+                                if (numVal < cMin || numVal > cMax) color = AccentRed;
+                                else if (numVal < min || numVal > max) color = "#FF8C00";
+                                else color = "#28A745";
+                            }
+
+                            table.Cell().Element(DataCellHighlight).Text(text =>
+                            {
+                                text.Span(r.Label + "\n").FontSize(9).FontColor(Colors.Grey.Darken2);
+                                text.Span(resStr).Bold().FontColor(color).DirectionFromLeftToRight();
+                            });
+
+                            table.Cell().Element(DataCell).Text(r.Unit ?? TestUnit ?? "-").DirectionFromLeftToRight();
+
+                            string refText = "";
+                            if (r.Min.HasValue && r.Max.HasValue) refText = $"{r.Min} - {r.Max}";
+                            else refText = "-";
+                            table.Cell().Element(DataCell).Text(refText).DirectionFromLeftToRight();
+                        }
+                    }
+                    else
+                    {
+                        table.Cell().Element(DataCell).Text(TestName ?? "-");
+                        table.Cell().Element(DataCell).Text(TestCode ?? "-");
+                        table.Cell().Element(DataCellHighlight).Text(Result ?? "-").Bold().DirectionFromLeftToRight();
+                        table.Cell().Element(DataCell).Text(TestUnit ?? "-").DirectionFromLeftToRight();
+                        table.Cell().Element(DataCell).Text(ReferenceRange ?? "-").DirectionFromLeftToRight();
+                    }
                 });
             }));
 
@@ -280,4 +356,14 @@ public class LabResultDocument : IDocument
     {
         return container.PaddingBottom(8).PaddingRight(15);
     }
+}
+
+public class ReferenceRangeModel
+{
+    public string Label { get; set; }
+    public decimal? Min { get; set; }
+    public decimal? Max { get; set; }
+    public decimal? CriticalMin { get; set; }
+    public decimal? CriticalMax { get; set; }
+    public string Unit { get; set; }
 }

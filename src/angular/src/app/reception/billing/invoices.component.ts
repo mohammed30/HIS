@@ -120,6 +120,7 @@ const statusColors: { [key: number]: string } = {
                   <th>رقم الفاتورة</th>
                   <th>التاريخ</th>
                   <th>المريض</th>
+                  <th>المصدر</th>
                   <th>الإجمالي</th>
                   <th>الخصم</th>
                   <th>الصافي</th>
@@ -134,7 +135,12 @@ const statusColors: { [key: number]: string } = {
                   <tr>
                     <td><code>{{ item.invoiceNumber }}</code></td>
                     <td>{{ item.invoiceDate | date:'yyyy-MM-dd' }}</td>
-                    <td>{{ item.patientName || '-' }}</td>
+                    <td>{{ item.patientName || getPatientName(item.patientId) }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="getInvoiceSourceClass(item.invoiceNumber)">
+                        {{ getInvoiceSource(item.invoiceNumber) }}
+                      </span>
+                    </td>
                     <td>{{ item.totalAmount | number:'1.2-2' }}</td>
                     <td class="text-muted">{{ item.discountAmount | number:'1.2-2' }}</td>
                     <td><strong>{{ item.netAmount | number:'1.2-2' }}</strong></td>
@@ -162,7 +168,7 @@ const statusColors: { [key: number]: string } = {
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="10" class="text-center text-muted py-4">لا توجد فواتير</td>
+                    <td colspan="11" class="text-center text-muted py-4">لا توجد فواتير</td>
                   </tr>
                 }
               </tbody>
@@ -387,6 +393,25 @@ export class InvoicesComponent implements OnInit {
     this.summaryPaid = this.items.reduce((s, i) => s + i.paidAmount, 0);
     this.summaryDue = this.items.reduce((s, i) => s + i.dueAmount, 0);
     this.summaryInsurance = this.items.reduce((s, i) => s + i.insuranceCoverage, 0);
+  }
+
+  getPatientName(id: string): string {
+    const p = this.patients.find(x => x.id === id);
+    return p ? p.name : '-';
+  }
+
+  getInvoiceSource(invoiceNumber: string): string {
+    if (!invoiceNumber) return 'غير معروف';
+    if (invoiceNumber.includes('-INP-')) return 'التنويم';
+    if (invoiceNumber.startsWith('POS-')) return 'الصيدلية';
+    return 'الاستقبال';
+  }
+
+  getInvoiceSourceClass(invoiceNumber: string): string {
+    if (!invoiceNumber) return 'bg-secondary';
+    if (invoiceNumber.includes('-INP-')) return 'bg-info';
+    if (invoiceNumber.startsWith('POS-')) return 'bg-warning text-dark';
+    return 'bg-primary';
   }
 
   onPageChange(page: number) { this.page = page; this.loadData(); }

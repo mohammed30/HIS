@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { DynamicLayoutComponent, ReplaceableComponentsService, SessionStateService, AuthService } from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
+import { SidebarSearchComponent } from './shared/sidebar-search/sidebar-search.component';
 import { eAccountComponents } from '@abp/ng.account';
 import { AppLogoComponent } from './shared/logo/app-logo.component';
 import { UserManagementComponent } from './identity-extended/users/user-management.component';
@@ -20,14 +21,15 @@ import { NavItemsService } from '@abp/ng.theme.shared';
   template: `
     <abp-loader-bar />
     <abp-dynamic-layout />
-    <app-theme-toggle />
     <app-login-notifications-modal />
+    <app-sidebar-search />
   `,
   imports: [
     LoaderBarComponent,
     DynamicLayoutComponent,
     ThemeToggleComponent,
     LoginNotificationsModalComponent,
+    SidebarSearchComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -69,6 +71,11 @@ export class AppComponent implements OnInit {
         id: 'Notifications',
         component: NotificationBellComponent,
         order: 1 // Put it on the right side
+      },
+      {
+        id: 'ThemeToggle',
+        component: ThemeToggleComponent,
+        order: 2 // Put it next to notifications
       }
     ]);
 

@@ -1404,6 +1404,11 @@ html:not([data-theme="dark"]) .vital-card {
   border-right: 1px solid #1f2937 !important;
 }
 
+.lpx-sidebar, .lpx-sidebar-container {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
 /* Base item link styling */
 .lpx-nav-menu .lpx-menu-item-link {
   font-family: 'Cairo', sans-serif !important;
@@ -1499,13 +1504,18 @@ html:not([data-theme="dark"]) .vital-card {
 
 /* Logo container spacing */
 .lpx-sidebar .lpx-logo-container {
-  padding: 1.5rem 1rem !important;
+  padding: 0.5rem 1rem !important;
   border-bottom: 1px solid #1f2937 !important;
   margin-bottom: 0 !important;
-  background-color: #111827 !important; /* Solid background to hide scrolling items */
+  background-color: #111827 !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 1020 !important;
+}
+
+.lpx-sidebar .lpx-nav-menu, .lpx-sidebar .lpx-menu {
+  margin-top: 0 !important;
+  padding-top: 5px !important;
 }
 
 /* Global fixes for custom scrollbars to bypass View Encapsulation */

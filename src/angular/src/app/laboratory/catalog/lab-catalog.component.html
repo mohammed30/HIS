@@ -1,49 +1,97 @@
-<div class="card shadow-sm hover-lift">
-    <div class="card-header bg-primary text-white">
-        <div class="row align-items-center">
-            <div class="col col-md-6">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-microscope me-2"></i>
-                    {{ '::Menu:LabCatalog' | abpLocalization }}
-                </h5>
+<div class="lab-catalog-wrapper">
+    <!-- ═══ Header Bar ═══ -->
+    <div class="catalog-header d-flex align-items-center justify-content-between px-3 py-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <div class="header-icon">
+                <i class="fas fa-microscope"></i>
             </div>
-            <div class="text-end col col-md-6">
-                <button id="create" class="btn btn-light btn-premium shadow-sm" type="button" (click)="createTest()">
-                    <i class="fas fa-plus-circle me-1"></i>
-                    <span>{{ '::NewTest' | abpLocalization }}</span>
+            <div>
+                <h5 class="mb-0 fw-bold">{{ '::Menu:LabCatalog' | abpLocalization }}</h5>
+                <small class="opacity-75">{{ filteredItems.length }} تحليل مختبري</small>
+            </div>
+        </div>
+        <!-- Search bar -->
+        <div class="catalog-search">
+            <div class="search-input-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input"
+                    [(ngModel)]="searchText"
+                    (ngModelChange)="onSearchChange()"
+                    placeholder="بحث باسم التحليل أو الكود...">
+                <button *ngIf="searchText" class="search-clear" (click)="searchText=''; applyFilter()">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
         </div>
+        <button id="create" class="btn btn-add" type="button" (click)="createTest()">
+            <i class="fas fa-plus-circle me-2"></i>
+            {{ '::NewTest' | abpLocalization }}
+        </button>
     </div>
-    <div class="card-body">
-        <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default class="material">
-            <ngx-datatable-column [name]="'::Code' | abpLocalization" prop="code">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <code class="text-primary fw-bold">{{ row.code }}</code>
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="name">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <strong>{{ row.name }}</strong>
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Price' | abpLocalization" prop="price">
-                <ng-template let-row="row" ngx-datatable-cell-template>
-                    <span class="text-success fw-bold">{{ row.price | currency:'EGP':'symbol-narrow' }}</span>
-                </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Unit' | abpLocalization" prop="unit"></ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Range' | abpLocalization" prop="referenceRange"></ngx-datatable-column>
 
-            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="220" [sortable]="false">
+    <!-- ═══ Table ═══ -->
+    <div class="catalog-table-wrapper">
+        <ngx-datatable [rows]="filteredItems" [count]="filteredItems.length" [list]="list" [externalPaging]="false" default class="material catalog-table">
+
+            <ngx-datatable-column [name]="'::Code' | abpLocalization" prop="code" [maxWidth]="90">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="code-badge" [class.code-match]="searchText && row.code && row.code.toString().toLowerCase().includes(searchText.toLowerCase())">
+                        {{ row.code }}
+                    </span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="name" [minWidth]="180">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <div class="test-name">
+                        <span class="name-dot" [class.active]="row.isActive" [class.inactive]="!row.isActive"></span>
+                        <span [class.name-match]="searchText && row.name && row.name.toLowerCase().includes(searchText.toLowerCase())">
+                            {{ row.name }}
+                        </span>
+                    </div>
+                </ng-template>
+            </ngx-datatable-column>
+        
+            <ngx-datatable-column [name]="'::Price' | abpLocalization" prop="price" [maxWidth]="110">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="price-chip">{{ row.price | number:'1.0-2' }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Unit' | abpLocalization" prop="unit" [maxWidth]="100">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <span class="unit-text">{{ row.unit || '—' }}</span>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Range' | abpLocalization" [minWidth]="220">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                    <ng-container *ngIf="hasStructuredRanges(row.referenceRange); else plainRange">
+                        <div class="d-flex flex-wrap gap-1">
+                            <span *ngFor="let r of parseReferenceRanges(row.referenceRange)"
+                                class="struct-range-chip" [title]="r.label">
+                                <span class="chip-label">{{ r.label }}</span>
+                                <span class="chip-normal" *ngIf="r.min !== null && r.max !== null">
+                                    {{ r.min }}–{{ r.max }}
+                                </span>
+                                <span class="chip-unit" *ngIf="r.unit">{{ r.unit }}</span>
+                            </span>
+                        </div>
+                    </ng-container>
+                    <ng-template #plainRange>
+                        <span class="plain-range">{{ row.referenceRange || '—' }}</span>
+                    </ng-template>
+                </ng-template>
+            </ngx-datatable-column>
+
+            <ngx-datatable-column [name]="'::Actions' | abpLocalization" [maxWidth]="160" [sortable]="false">
                 <ng-template let-row="row" ngx-datatable-cell-template>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-primary btn-premium shadow-sm" (click)="editTest(row.id)">
-                            <i class="fas fa-edit me-1"></i> {{ '::Edit' | abpLocalization }}
+                        <button class="action-btn edit-btn" (click)="editTest(row.id)" title="{{ '::Edit' | abpLocalization }}">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger btn-premium shadow-sm"
-                            (click)="deleteTest(row.id)">
-                            <i class="fas fa-trash-alt me-1"></i> {{ '::Delete' | abpLocalization }}
+                        <button class="action-btn delete-btn" (click)="deleteTest(row.id)" title="{{ '::Delete' | abpLocalization }}">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
                 </ng-template>
@@ -52,51 +100,235 @@
     </div>
 </div>
 
-<abp-modal [(visible)]="isModalOpen">
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                         MODAL                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<abp-modal [(visible)]="isModalOpen" [options]="{ size: 'xl' }">
     <ng-template #abpHeader>
-        <h3>{{ (selectedId ? '::Edit' : '::NewTest') | abpLocalization }}</h3>
+        <div class="d-flex align-items-center gap-2">
+            <div class="modal-icon">
+                <i class="fas fa-flask"></i>
+            </div>
+            <div>
+                <h5 class="mb-0">{{ (selectedId ? '::Edit' : '::NewTest') | abpLocalization }}</h5>
+                <small class="text-muted" *ngIf="selectedId">{{ selectedTest.code }}</small>
+            </div>
+        </div>
     </ng-template>
 
     <ng-template #abpBody>
-        <div class="form-group mb-3" *ngIf="selectedId">
-            <label class="form-label">{{ '::Code' | abpLocalization }}</label>
-            <input class="form-control" [(ngModel)]="selectedTest.code" readonly disabled>
-            <small class="text-muted">{{ '::AutoGeneratedCode' | abpLocalization }}</small>
-        </div>
-        <div class="form-group mb-3">
-            <label class="form-label">{{ '::Name' | abpLocalization }} <span class="text-danger">*</span></label>
-            <input class="form-control" [(ngModel)]="selectedTest.name" required>
-        </div>
-        <div class="form-group mb-3">
-            <label class="form-label">{{ '::Price' | abpLocalization }}</label>
-            <input type="number" class="form-control" [(ngModel)]="selectedTest.price" placeholder="0">
-        </div>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">{{ '::Unit' | abpLocalization }}</label>
-                <input class="form-control" [(ngModel)]="selectedTest.unit" placeholder="mg/dL, mmol/L, etc.">
+        <!-- ── Section 1: Basic Info ── -->
+        <div class="modal-section mb-4">
+            <div class="section-title">
+                <i class="fas fa-info-circle me-2"></i>المعلومات الأساسية
             </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">{{ '::ReferenceRange' | abpLocalization }}</label>
-                <input class="form-control" [(ngModel)]="selectedTest.referenceRange" placeholder="70-100">
+            <div class="row g-3">
+                <div class="col-md-3" *ngIf="selectedId">
+                    <label class="field-label">{{ '::Code' | abpLocalization }}</label>
+                    <input class="form-control form-control-sm field-disabled" [(ngModel)]="selectedTest.code" readonly disabled>
+                </div>
+                <div [class]="selectedId ? 'col-md-5' : 'col-md-8'">
+                    <label class="field-label">{{ '::Name' | abpLocalization }} <span class="text-danger">*</span></label>
+                    <input class="form-control form-control-sm" [(ngModel)]="selectedTest.name" required placeholder="اسم التحليل">
+                </div>
+                <div class="col-md-2">
+                    <label class="field-label">{{ '::Price' | abpLocalization }}</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">ج.م</span>
+                        <input type="number" class="form-control" [(ngModel)]="selectedTest.price" placeholder="0">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="field-label">{{ '::Unit' | abpLocalization }}</label>
+                    <input class="form-control form-control-sm" [(ngModel)]="selectedTest.unit" placeholder="mg/dL">
+                </div>
             </div>
         </div>
-        <div class="form-group mb-3">
-            <label class="form-label">{{ '::Instructions' | abpLocalization }}</label>
-            <textarea class="form-control" [(ngModel)]="selectedTest.instructions" rows="2"
-                placeholder="فاطر، صائم، إلخ"></textarea>
+
+        <!-- ── Section 2: Reference Ranges ── -->
+        <div class="modal-section mb-4">
+            <div class="section-title d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-sliders-h me-2"></i>المراجع الطبيعية</span>
+                <button type="button" class="btn btn-sm btn-add-range" (click)="addReferenceRange()">
+                    <i class="fas fa-plus me-1"></i> إضافة مرجع
+                </button>
+            </div>
+
+            <!-- Color legend -->
+            <div class="color-legend d-flex gap-3 mb-3">
+                <span class="legend-item">
+                    <span class="legend-dot normal"></span> طبيعي
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot warning"></span> تنبيه
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot danger"></span> خطر
+                </span>
+            </div>
+
+            <!-- Ranges Table -->
+            <div *ngIf="referenceRanges.length > 0" class="ranges-table-wrap">
+                <table class="table table-sm mb-0 ranges-table">
+                    <thead>
+                        <tr>
+                            <th class="col-label">التسمية</th>
+                            <th class="col-normal">
+                                <span class="th-dot normal"></span> Min
+                            </th>
+                            <th class="col-normal">
+                                <span class="th-dot normal"></span> Max
+                            </th>
+                            <th class="col-warn">
+                                <span class="th-dot warning"></span> حد أدنى حرج
+                            </th>
+                            <th class="col-warn">
+                                <span class="th-dot warning"></span> حد أقصى حرج
+                            </th>
+                            <th class="col-unit">الوحدة</th>
+                            <th class="col-del"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let r of referenceRanges; let i = index" class="range-row">
+                            <td>
+                                <input type="text" class="form-control form-control-sm"
+                                    [(ngModel)]="r.label"
+                                    placeholder="اسم المرجع"
+                                    [ngModelOptions]="{standalone: true}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center input-normal"
+                                    [(ngModel)]="r.min" placeholder="—"
+                                    [ngModelOptions]="{standalone: true}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center input-normal"
+                                    [(ngModel)]="r.max" placeholder="—"
+                                    [ngModelOptions]="{standalone: true}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center input-warn"
+                                    [(ngModel)]="r.criticalMin" placeholder="—"
+                                    [ngModelOptions]="{standalone: true}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center input-warn"
+                                    [(ngModel)]="r.criticalMax" placeholder="—"
+                                    [ngModelOptions]="{standalone: true}">
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm text-center"
+                                    [(ngModel)]="r.unit"
+                                    [ngModelOptions]="{standalone: true}">
+                                    <option value="">— اختر —</option>
+                                    <option value="mg/dL">mg/dL</option>
+                                    <option value="mmol/L">mmol/L</option>
+                                    <option value="g/dL">g/dL</option>
+                                    <option value="g/L">g/L</option>
+                                    <option value="μg/dL">μg/dL</option>
+                                    <option value="μg/L">μg/L</option>
+                                    <option value="ng/mL">ng/mL</option>
+                                    <option value="pg/mL">pg/mL</option>
+                                    <option value="mIU/mL">mIU/mL</option>
+                                    <option value="IU/L">IU/L</option>
+                                    <option value="U/L">U/L</option>
+                                    <option value="mEq/L">mEq/L</option>
+                                    <option value="μmol/L">μmol/L</option>
+                                    <option value="nmol/L">nmol/L</option>
+                                    <option value="pmol/L">pmol/L</option>
+                                    <option value="%">%</option>
+                                    <option value="10³/μL">10³/μL</option>
+                                    <option value="10⁶/μL">10⁶/μL</option>
+                                    <option value="fl">fl</option>
+                                    <option value="pg">pg</option>
+                                    <option value="sec">sec</option>
+                                    <option value="mmHg">mmHg</option>
+                                    <option value="mL/min">mL/min</option>
+                                    <option value="mg/24hr">mg/24hr</option>
+                                    <option value="mcg/24hr">mcg/24hr</option>
+                                </select>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-del-range"
+                                    (click)="removeReferenceRange(i)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="referenceRanges.length === 0" class="empty-ranges-state">
+                <i class="fas fa-chart-bar mb-2 d-block fs-4 opacity-50"></i>
+                لا توجد مراجع طبيعية<br>
+                <small>اضغط "إضافة مرجع" لإضافة نطاق طبيعي</small>
+            </div>
+
+            <!-- Live Preview -->
+            <div *ngIf="referenceRanges.length > 0" class="ranges-preview">
+                <div class="preview-title">
+                    <i class="fas fa-eye me-1"></i> معاينة النطاقات
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <ng-container *ngFor="let r of referenceRanges">
+                        <div *ngIf="r.label || r.min !== null" class="preview-card">
+                            <div class="preview-card-label">{{ r.label || '—' }}</div>
+                            <div class="preview-card-body">
+                                <span class="pv-normal" *ngIf="r.min !== null">
+                                    🟢 {{ r.min }}–{{ r.max }}
+                                </span>
+                                <span class="pv-warn" *ngIf="r.criticalMin !== null && r.min !== null">
+                                    🟠 {{ r.criticalMin }}–{{ r.min }}
+                                </span>
+                                <span class="pv-warn" *ngIf="r.criticalMax !== null && r.max !== null">
+                                    🟠 {{ r.max }}–{{ r.criticalMax }}
+                                </span>
+                                <span class="pv-danger" *ngIf="r.criticalMin !== null">
+                                    🔴 &lt; {{ r.criticalMin }}
+                                </span>
+                                <span class="pv-danger" *ngIf="r.criticalMax !== null">
+                                    🔴 &gt; {{ r.criticalMax }}
+                                </span>
+                                <span class="pv-unit" *ngIf="r.unit">{{ r.unit }}</span>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
         </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" [(ngModel)]="selectedTest.isActive">
-            <label class="form-check-label">{{ '::Active' | abpLocalization }}</label>
+
+        <!-- ── Section 3: Instructions & Status ── -->
+        <div class="modal-section">
+            <div class="section-title">
+                <i class="fas fa-clipboard-list me-2"></i>تعليمات وحالة التحليل
+            </div>
+            <div class="row g-3">
+                <div class="col-md-10">
+                    <label class="field-label">{{ '::Instructions' | abpLocalization }}</label>
+                    <textarea class="form-control form-control-sm" [(ngModel)]="selectedTest.instructions"
+                        rows="2" placeholder="مثال: فاطر، صائم، لا يحتاج تحضير..."></textarea>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="status-toggle" [class.is-active]="selectedTest.isActive">
+                        <input class="form-check-input me-2" type="checkbox" id="activeCheck"
+                            [(ngModel)]="selectedTest.isActive">
+                        <label class="form-check-label fw-bold" for="activeCheck">
+                            {{ selectedTest.isActive ? 'نشط' : 'غير نشط' }}
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     </ng-template>
 
     <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary shadow-sm" abpClose>
-            {{ '::Close' | abpLocalization }}
+        <button type="button" class="btn btn-cancel" abpClose>
+            <i class="fas fa-times me-1"></i>{{ '::Close' | abpLocalization }}
         </button>
-        <button class="btn btn-primary btn-premium shadow-sm" (click)="save()">
+        <button class="btn btn-save" (click)="save()">
             <i class="fas fa-save me-1"></i>
             {{ (selectedId ? '::Edit' : '::Save') | abpLocalization }}
         </button>

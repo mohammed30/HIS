@@ -4,7 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CoreModule, LocalizationService, ConfigStateService } from '@abp/ng.core';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { NationalityService } from '../../proxy/general/nationality.service';
 import { ProfessionService } from '../../proxy/general/profession.service';
@@ -272,8 +273,13 @@ export class LaboratoryReceptionComponent implements OnInit {
     refundReason: string = '';
     selectedRefundItem: any = null;
 
+    // Statement Details
+    selectedStatementItem: any = null;
+    showStatementDetailsModal: boolean = false;
+
     // Patient Search
     searchResults: any[] = [];
+    selectedSearchIndex: number = -1;
 
     constructor() { }
 
@@ -355,29 +361,24 @@ export class LaboratoryReceptionComponent implements OnInit {
     }
 
     loadLabTests() {
-        this.serviceItemService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
-            // Filter only Lab Tests
-            this.availableTests = (res.items || []).filter(x => x.category === ServiceCategory.LabTest);
-            this.displayTests = [...this.availableTests];
+        this.labService.getTests({ maxResultCount: 1000 } as any).subscribe(res => {
+            this.availableTests = res.items || [];
+            this.filterTests(); // Apply any existing filter after loading
         });
     }
 
     filterTests() {
-        if (!this.testSearchText) {
+        if (!this.testSearchText || !this.testSearchText.trim()) {
             this.displayTests = [...this.availableTests];
             return;
         }
-        const lower = this.testSearchText.toLowerCase();
+        const lower = this.testSearchText.trim().toLowerCase();
         
-        if (this.searchMode === 'code') {
-            this.displayTests = this.availableTests.filter(t =>
-                t.code && t.code.toLowerCase().includes(lower)
-            );
-        } else {
-            this.displayTests = this.availableTests.filter(t =>
-                t.name && t.name.toLowerCase().includes(lower)
-            );
-        }
+        this.displayTests = this.availableTests.filter(t =>
+            (t.code && String(t.code).toLowerCase().includes(lower)) ||
+            (t.name && String(t.name).toLowerCase().includes(lower)) ||
+            (t['nameAr'] && String(t['nameAr']).toLowerCase().includes(lower))
+        );
     }
 
     newPatient() {
@@ -459,27 +460,40 @@ export class LaboratoryReceptionComponent implements OnInit {
     searchPatient() {
         const searchText = this.patientInfo.fullNameAr;
         if (!searchText) {
-            this.toaster.warn('الرجاء إدخال اسم للبحث', 'تنبيه');
+            this.searchResults = [];
+            this.selectedSearchIndex = -1;
             return;
         }
 
         this.patientService.search(searchText).subscribe({
             next: (res) => {
-                if (res.length === 0) {
-                    this.toaster.info('لا توجد نتائج مطابقة', 'بحث');
-                    this.searchResults = [];
-                } else if (res.length === 1) {
-                    this.selectPatient(res[0].id);
-                } else {
-                    this.searchResults = res;
-                    this.toaster.info(`تم العثور على ${res.length} نتائج`, 'بحث');
-                }
+                this.searchResults = res;
+                this.selectedSearchIndex = -1;
             },
             error: (err) => {
                 console.error(err);
                 this.toaster.error('حدث خطأ أثناء البحث', 'خطأ');
             }
         });
+    }
+
+    onSearchKeyDown(event: KeyboardEvent) {
+        if (!this.searchResults || this.searchResults.length === 0) return;
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, this.searchResults.length - 1);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            this.selectedSearchIndex = Math.max(this.selectedSearchIndex - 1, 0);
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            if (this.selectedSearchIndex >= 0 && this.selectedSearchIndex < this.searchResults.length) {
+                this.selectPatient(this.searchResults[this.selectedSearchIndex].id);
+                this.searchResults = [];
+                this.selectedSearchIndex = -1;
+            }
+        }
     }
 
     selectPatient(id: string) {
@@ -521,6 +535,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     closeSearch() {
         setTimeout(() => {
             this.searchResults = [];
+            this.selectedSearchIndex = -1;
         }, 200);
     }
 
@@ -1354,7 +1369,21 @@ export class LaboratoryReceptionComponent implements OnInit {
             fromDate: from,
             toDate: to,
             maxResultCount: 1000
-        } as any);
+        } as any).pipe(
+            switchMap(invRes => {
+                const items = invRes.items || [];
+                if (items.length === 0) return of(invRes);
+                
+                const requests = items.map(i => this.invoiceService.getWithItems(i.id).pipe(
+                    catchError(() => of(i)) // fallback to basic info on error
+                ));
+                return forkJoin(requests).pipe(
+                    map(detailedInvoices => {
+                        return { items: detailedInvoices, totalCount: invRes.totalCount };
+                    })
+                );
+            })
+        );
 
         const payments$ = this.paymentService.getList({
             patientId: this.patientInfo.id,
@@ -1377,7 +1406,9 @@ export class LaboratoryReceptionComponent implements OnInit {
                     credit: 0,
                     balance: 0,
                     status: i.status,
-                    notes: i.items?.map(x => x.serviceCode).join(', ')
+                    notes: i.items?.map(x => x.serviceCode).join(', '),
+                    serviceName: i.items?.map(x => x.description || x.serviceCode).join(' + '),
+                    originalItem: i
                 }));
 
                 const payments = (payRes.items || []).map(p => ({
@@ -1389,7 +1420,9 @@ export class LaboratoryReceptionComponent implements OnInit {
                     credit: p.amount || 0,
                     balance: 0,
                     status: p.status,
-                    notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : '')
+                    notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : ''),
+                    serviceName: '-',
+                    originalItem: p
                 }));
 
                 // Merge and Sort
@@ -1417,6 +1450,32 @@ export class LaboratoryReceptionComponent implements OnInit {
                 this.toaster.error('حدث خطأ أثناء تحميل كشف الحساب', 'خطأ');
             }
         });
+    }
+
+    viewStatementDetails(item: any) {
+        this.selectedStatementItem = item;
+        // If it's an invoice and items are missing, we might need to fetch full invoice details
+        if (item.type.includes('Invoice') && (!item.originalItem.items || item.originalItem.items.length === 0)) {
+            this.invoiceService.getWithItems(item.id).subscribe({
+                next: (res) => {
+                    this.selectedStatementItem.originalItem = res;
+                    this.selectedStatementItem.serviceName = res.items?.map(x => x.description || x.serviceCode).join(' + ') || '-';
+                    // Update in list as well
+                    const listItem = this.patientStatement.find(x => x.id === item.id);
+                    if (listItem) {
+                        listItem.originalItem = res;
+                        listItem.serviceName = this.selectedStatementItem.serviceName;
+                    }
+                    this.showStatementDetailsModal = true;
+                },
+                error: (err) => {
+                    console.error(err);
+                    this.toaster.error('حدث خطأ أثناء جلب تفاصيل الفاتورة', 'خطأ');
+                }
+            });
+        } else {
+            this.showStatementDetailsModal = true;
+        }
     }
 
     cancelInvoice(item: any) {

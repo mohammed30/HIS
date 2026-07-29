@@ -11,6 +11,8 @@ import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
 import { LocalizationModule } from '@abp/ng.core';
 import { PatientService } from '../../proxy/patients/patient.service';
 import { DoctorService } from '../../proxy/settings/doctor.service';
+import { ReferenceRange, ResultStatus } from '../catalog/lab-catalog.component';
+
 
 @Component({
     selector: 'app-lab-requests',
@@ -36,6 +38,105 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     fromDate = new Date().toISOString().split('T')[0];
     toDate = new Date().toISOString().split('T')[0];
     selectedStatus: LabRequestStatus | null = null;
+    LabRequestStatus = LabRequestStatus;
+
+    // ─── Reference Range Helpers ─────────────────────────────────────────────
+    parseReferenceRanges(raw?: string | null): ReferenceRange[] {
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) return parsed as ReferenceRange[];
+        } catch {
+            const match = raw.match(/^(\d+\.?\d*)\s*[-–]\s*(\d+\.?\d*)$/);
+            if (match) {
+                return [{ label: 'المرجع الطبيعي', min: parseFloat(match[1]), max: parseFloat(match[2]), criticalMin: null, criticalMax: null, unit: '' }];
+            }
+        }
+        return [];
+    }
+
+    hasStructuredRanges(raw?: string | null): boolean {
+        if (!raw) return false;
+        try { const p = JSON.parse(raw); return Array.isArray(p) && p.length > 0; }
+        catch { return false; }
+    }
+
+    getResultStatus(resultValue: string, raw?: string | null): ResultStatus {
+        const value = parseFloat(resultValue);
+        if (isNaN(value)) return 'unknown';
+        const ranges = this.parseReferenceRanges(raw);
+        if (!ranges.length) return 'unknown';
+        const r = ranges[0];
+        const min = r.min ?? -Infinity;
+        const max = r.max ?? Infinity;
+        const cMin = r.criticalMin ?? -Infinity;
+        const cMax = r.criticalMax ?? Infinity;
+        if (value >= min && value <= max) return 'normal';
+        if (value >= cMin && value <= cMax) return 'warning';
+        return 'danger';
+    }
+
+    getStatusBadgeClass(status: ResultStatus): string {
+        return { normal: 'bg-success', warning: 'bg-warning text-dark', danger: 'bg-danger', unknown: 'bg-secondary' }[status] || 'bg-secondary';
+    }
+
+    getOverallResultStatus(): ResultStatus {
+        if (!this.selectedRequest) return 'unknown';
+        
+        if (!this.isStructuredRange) {
+             return this.getResultStatus(this.resultData.result, this.selectedRequest.referenceRange);
+        }
+
+        let hasWarning = false;
+        let hasDanger = false;
+        let hasNormal = false;
+
+        for (const r of this.parsedRanges) {
+            const val = this.structuredResults[r.label];
+            if (val === null || val === undefined || Number.isNaN(val)) continue;
+            
+            const min = r.min ?? -Infinity;
+            const max = r.max ?? Infinity;
+            let cMin = r.criticalMin ?? -Infinity;
+            let cMax = r.criticalMax ?? Infinity;
+            
+            // Smart protection: ignore invalid critical thresholds caused by typos
+            if (cMax <= max) cMax = Infinity; 
+            if (cMin >= min) cMin = -Infinity;
+            
+            if (val < cMin || val > cMax) {
+                hasDanger = true;
+            } else if (val < min || val > max) {
+                hasWarning = true;
+            } else {
+                hasNormal = true;
+            }
+        }
+
+        if (hasDanger) return 'danger';
+        if (hasWarning) return 'warning';
+        if (hasNormal) return 'normal';
+        
+        return 'unknown';
+    }
+
+    getSingleResultStatus(r: ReferenceRange, val: any): ResultStatus {
+        if (val === null || val === undefined || val === '' || Number.isNaN(Number(val))) return 'unknown';
+        const numVal = Number(val);
+        
+        const min = r.min ?? -Infinity;
+        const max = r.max ?? Infinity;
+        let cMin = r.criticalMin ?? -Infinity;
+        let cMax = r.criticalMax ?? Infinity;
+        
+        // Smart protection: ignore invalid critical thresholds caused by typos
+        if (cMax <= max) cMax = Infinity; 
+        if (cMin >= min) cMin = -Infinity;
+        
+        if (numVal < cMin || numVal > cMax) return 'danger';
+        if (numVal < min || numVal > max) return 'warning';
+        return 'normal';
+    }
 
     // Create modal
     isCreateModalOpen = false;
@@ -48,6 +149,9 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     isResultModalOpen = false;
     selectedRequest?: LabRequestDto;
     resultData: UpdateLabResultDto = { result: '', notes: '' };
+    parsedRanges: ReferenceRange[] = [];
+    isStructuredRange = false;
+    structuredResults: { [key: string]: number | null } = {};
 
     // Print
     printData?: LabRequestDto;
@@ -118,6 +222,7 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
         // Load lab tests
         this.labService.getTests({ maxResultCount: 1000 }).subscribe(res => {
             this.labTests = res.items;
+            this.filteredLabTests = [...this.labTests];
         });
     }
 
@@ -127,6 +232,8 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
 
     openCreateModal() {
         this.newRequest = { patientId: '', doctorId: '', serviceItemId: '', notes: '' };
+        this.labTestSearch = '';
+        this.filteredLabTests = [...this.labTests];
         this.isCreateModalOpen = true;
     }
 
@@ -155,7 +262,46 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
             result: request.result || '',
             notes: request.notes || ''
         };
+        this.parsedRanges = this.parseReferenceRanges(request.referenceRange);
+        this.isStructuredRange = this.hasStructuredRanges(request.referenceRange);
+        
+        this.structuredResults = {};
+        if (this.isStructuredRange && request.result) {
+            if (this.parsedRanges.length === 1) {
+                const val = parseFloat(request.result);
+                if (!isNaN(val)) this.structuredResults[this.parsedRanges[0].label] = val;
+            } else {
+                const lines = request.result.split('\n');
+                lines.forEach(line => {
+                    const match = line.match(/^(.*?):\s*([\d.]+)/);
+                    if (match && match[1] && match[2]) {
+                        this.structuredResults[match[1].trim()] = parseFloat(match[2]);
+                    }
+                });
+            }
+        }
+        
         this.isResultModalOpen = true;
+    }
+
+    updateCombinedResult() {
+        if (!this.isStructuredRange) return;
+        
+        if (this.parsedRanges.length === 1) {
+            const val = this.structuredResults[this.parsedRanges[0].label];
+            this.resultData.result = val !== null && val !== undefined ? val.toString() : '';
+        } else {
+            this.resultData.result = this.parsedRanges
+                .map(r => {
+                    const val = this.structuredResults[r.label];
+                    if (val !== null && val !== undefined && !Number.isNaN(val)) {
+                        return `${r.label}: ${val} ${r.unit || ''}`.trim();
+                    }
+                    return null;
+                })
+                .filter(Boolean)
+                .join('\n');
+        }
     }
 
     saveResult() {
@@ -201,5 +347,41 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     getStatusLabel(status: number) {
         if (status === undefined || status === null) return '::Enum:LabRequestStatus.Unknown';
         return '::Enum:LabRequestStatus.' + status;
+    }
+
+    // Custom searchable dropdown for Lab Tests
+    labTestSearch = '';
+    isLabTestDropdownOpen = false;
+    filteredLabTests: any[] = [];
+
+    filterLabTests() {
+        if (!this.labTestSearch) {
+            this.filteredLabTests = [...this.labTests];
+            return;
+        }
+        const term = this.labTestSearch.toLowerCase();
+        this.filteredLabTests = this.labTests.filter(t => 
+            (t.name && t.name.toLowerCase().includes(term)) || 
+            (t.code && t.code.toLowerCase().includes(term))
+        );
+    }
+
+    selectLabTest(test: any) {
+        this.newRequest.serviceItemId = test.id;
+        this.labTestSearch = `[${test.code}] ${test.name}`;
+        this.isLabTestDropdownOpen = false;
+    }
+
+    closeLabTestDropdown() {
+        setTimeout(() => {
+            this.isLabTestDropdownOpen = false;
+            const selected = this.labTests.find(t => t.id === this.newRequest.serviceItemId);
+            if (selected) {
+                 this.labTestSearch = `[${selected.code}] ${selected.name}`;
+            } else {
+                 this.labTestSearch = '';
+                 this.newRequest.serviceItemId = '';
+            }
+        }, 200);
     }
 }

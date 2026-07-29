@@ -15,4 +15,10 @@ public static class HISSettings
     {
         public const string AllowNegativeStock = Prefix + ".Pharmacy.AllowNegativeStock";
     }
+
+    public static class Inpatient
+    {
+        public const string AdmissionDepositAmount = Prefix + ".Inpatient.AdmissionDepositAmount";
+        public const string RequireAdvancePayment = Prefix + ".Inpatient.RequireAdvancePayment";
+    }
 }
