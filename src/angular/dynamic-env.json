@@ -1,20 +1,20 @@
 {
     "production": true,
     "oAuthConfig": {
-        "issuer": "http://asiaback2000-001-site1.gtempurl.com/",
-        "redirectUri": "http://asiahospitalt-001-site1.jtempurl.com",
+        "issuer": "https://asiaback2000-001-site1.gtempurl.com/",
+        "redirectUri": "https://asiahosp-001-site1.htempurl.com",
         "clientId": "HIS_App",
         "responseType": "code",
         "scope": "offline_access HIS",
-        "requireHttps": false
+        "requireHttps": true
     },
     "apis": {
         "default": {
-            "url": "http://asiaback2000-001-site1.gtempurl.com/",
+            "url": "https://asiaback2000-001-site1.gtempurl.com/",
             "rootNamespace": "HIS"
         },
         "AbpAccountPublic": {
-            "url": "http://asiaback2000-001-site1.gtempurl.com/",
+            "url": "https://asiaback2000-001-site1.gtempurl.com/",
             "rootNamespace": "AbpAccountPublic"
         }
     }
