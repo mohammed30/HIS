@@ -60,12 +60,14 @@ import { CustomPermissionManagement } from '../../shared/components/custom-permi
                     <div class="avatar-sm text-primary rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm border border-primary" style="width: 35px; height: 35px; background-color: rgba(var(--bs-primary-rgb), 0.1);">
                       <i class="fas fa-user-shield"></i>
                     </div>
-                    <span class="fw-bold fs-6">{{ row.name }} <span class="text-muted ms-1 fw-normal" style="font-size: 0.9em;" *ngIf="('Role:' + row.name | abpLocalization) !== 'Role:' + row.name">({{ 'Role:' + row.name | abpLocalization }})</span></span>
+                    <span class="fw-bold fs-6">{{ row.name }}</span>
                     <span *ngIf="row.isDefault" class="badge rounded-pill ms-3 px-3 py-2" style="background-color: rgba(var(--bs-success-rgb), 0.1); color: var(--bs-success); border: 1px solid rgba(var(--bs-success-rgb), 0.2);"><i class="fas fa-check-circle me-1"></i> {{ 'AbpIdentity::DisplayName:IsDefault' | abpLocalization }}</span>
                     <span *ngIf="row.isPublic" class="badge rounded-pill ms-2 px-3 py-2" style="background-color: rgba(var(--bs-info-rgb), 0.1); color: var(--bs-info); border: 1px solid rgba(var(--bs-info-rgb), 0.2);"><i class="fas fa-globe me-1"></i> {{ 'AbpIdentity::DisplayName:IsPublic' | abpLocalization }}</span>
                   </div>
                </ng-template>
             </ngx-datatable-column>
+
+
 
             <ngx-datatable-column [name]="'AbpIdentity::Actions' | abpLocalization" sortable="false" [maxWidth]="200" cellClass="text-end" headerClass="text-end">
               <ng-template let-row="row" ngx-datatable-cell-template>
@@ -107,6 +109,7 @@ import { CustomPermissionManagement } from '../../shared/components/custom-permi
             <label for="roleName" class="form-label">{{ 'AbpIdentity::RoleName' | abpLocalization }}</label>
             <input type="text" id="roleName" class="form-control" formControlName="name">
           </div>
+
           <div class="form-check mb-3">
             <input type="checkbox" id="isDefault" class="form-check-input" formControlName="isDefault">
             <label for="isDefault" class="form-check-label">{{ 'AbpIdentity::DisplayName:IsDefault' | abpLocalization }}</label>
@@ -182,7 +185,11 @@ export class RoleManagementComponent implements OnInit {
     save() {
         if (this.form.invalid) return;
 
-        const input = this.form.value;
+        const formValue = this.form.value;
+        const input: any = {
+            ...formValue
+        };
+
         const request = this.selectedRole?.id
             ? this.service.update(this.selectedRole.id, input)
             : this.service.create(input);
