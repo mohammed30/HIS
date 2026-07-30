@@ -1,0 +1,43 @@
+/* Styles for User Financial Report */
+.table-responsive {
+  margin-top: 1rem;
+}
+
+.amount-badge {
+  display: inline-block;
+  padding: 0.4em 0.8em;
+  font-size: 0.95em;
+  font-weight: bold;
+  border-radius: 50rem;
+  text-align: center;
+  min-width: 90px;
+}
+
+.amount-positive {
+  background-color: rgba(25, 135, 84, 0.15);
+  color: #198754;
+  border: 1px solid rgba(25, 135, 84, 0.4);
+}
+
+.amount-negative {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+/* Dark mode overrides (works with LeptonX and standard dark modes) */
+:host-context([data-theme="dark"]) .amount-positive,
+:host-context(.dark-theme) .amount-positive,
+:host-context(.lpx-theme-dark) .amount-positive {
+  background-color: rgba(25, 135, 84, 0.3);
+  color: #75b798;
+  border-color: rgba(25, 135, 84, 0.6);
+}
+
+:host-context([data-theme="dark"]) .amount-negative,
+:host-context(.dark-theme) .amount-negative,
+:host-context(.lpx-theme-dark) .amount-negative {
+  background-color: rgba(220, 53, 69, 0.3);
+  color: #ea868f;
+  border-color: rgba(220, 53, 69, 0.6);
+}

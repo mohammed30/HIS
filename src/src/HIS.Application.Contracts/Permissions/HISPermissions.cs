@@ -7,6 +7,7 @@ public static class HISPermissions
     public static class Settings
     {
         public const string Default = GroupName + ".Settings";
+        public const string Pharmacy = Default + ".Pharmacy";
     }
 
     public static class Patients

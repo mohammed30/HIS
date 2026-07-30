@@ -11,6 +11,13 @@ export interface GetPharmacySalesInput extends PagedAndSortedResultRequestDto {
   toDate?: string | null;
 }
 
+export interface GetUserFinancialTransactionsInput extends PagedAndSortedResultRequestDto {
+  userId?: string | null;
+  moduleName?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
 export interface PaidTicketDto {
   appointmentId?: string;
   ticketNumber?: string;
@@ -34,4 +41,16 @@ export interface PharmacySalesDto {
   withdrawalType?: string;
   createdByUser?: string;
   dispensingTime?: string;
+}
+
+export interface UserFinancialTransactionDto {
+  transactionId?: string;
+  userId?: string | null;
+  userName?: string;
+  moduleName?: string;
+  transactionType?: string;
+  amount?: number;
+  transactionDate?: string;
+  description?: string;
+  referenceNumber?: string;
 }

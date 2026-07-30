@@ -12,7 +12,8 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         var hisGroup = context.AddGroup(HISPermissions.GroupName, L("Permission:HIS"));
 
         // Settings
-        hisGroup.AddPermission(HISPermissions.Settings.Default, L("Permission:Settings"));
+        var settings = hisGroup.AddPermission(HISPermissions.Settings.Default, L("Permission:Settings"));
+        settings.AddChild(HISPermissions.Settings.Pharmacy, L("Permission:PharmacySettings"));
 
         // Patients
         var patients = hisGroup.AddPermission(HISPermissions.Patients.Default, L("Permission:Patients"));
@@ -42,8 +43,11 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         laboratory.AddChild(HISPermissions.Laboratory.ApproveResults, L("Permission:ApproveResults"));
         laboratory.AddChild(HISPermissions.Laboratory.Catalog, L("Permission:Catalog"));
         laboratory.AddChild(HISPermissions.Laboratory.Requests, L("Permission:Requests"));
-        laboratory.AddChild(HISPermissions.Radiology.Default, L("Permission:RadiologyDept"));
-        laboratory.AddChild(HISPermissions.Radiology.Requests, L("Permission:RadiologyRequests"));
+        laboratory.AddChild(HISPermissions.Laboratory.Appointments, L("Permission:LabAppointments"));
+
+        // Radiology (FIXED: was incorrectly nested under Laboratory)
+        var radiology = hisGroup.AddPermission(HISPermissions.Radiology.Default, L("Permission:RadiologyDept"));
+        radiology.AddChild(HISPermissions.Radiology.Requests, L("Permission:RadiologyRequests"));
 
         // Emergency
         var emergency = hisGroup.AddPermission(HISPermissions.Emergency.Default, L("Permission:Emergency"));

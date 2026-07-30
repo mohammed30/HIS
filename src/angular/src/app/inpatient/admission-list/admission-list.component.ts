@@ -364,12 +364,24 @@ export class AdmissionListComponent implements OnInit {
     });
   }
 
-  getStatusName(status: number | undefined): string {
+  getStatusName(status: number): string {
     switch (status) {
       case 0: return '::Enum:AdmissionStatus.0';
       case 1: return '::Enum:AdmissionStatus.1';
       case 2: return '::Enum:AdmissionStatus.2';
       default: return '::Unknown';
+    }
+  }
+
+  getRoomTypeName(typeValue: any): string {
+    const val = Number(typeValue);
+    switch (val) {
+      case 0: return 'عادي';
+      case 1: return 'خاص';
+      case 2: return 'عناية مركزة';
+      case 3: return 'جناح';
+      case 4: return 'عزل';
+      default: return 'غير معروف';
     }
   }
 

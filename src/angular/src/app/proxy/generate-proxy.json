@@ -18109,6 +18109,43 @@
             }
           ],
           "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/purchase-invoice",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto, HIS.Application.Contracts",
+                  "type": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
+                  "typeSimple": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
+                  "typeSimple": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "HIS.Inventory.Dtos.PurchaseInvoiceDto",
+                "typeSimple": "HIS.Inventory.Dtos.PurchaseInvoiceDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<HIS.Inventory.Dtos.PurchaseInvoiceDto,HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto>"
+            },
             "GetAsyncById": {
               "uniqueName": "GetAsyncById",
               "name": "GetAsync",
@@ -18202,43 +18239,6 @@
               },
               "allowAnonymous": null,
               "implementFrom": "HIS.Inventory.IPurchaseInvoiceAppService"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/purchase-invoice",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto, HIS.Application.Contracts",
-                  "type": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
-                  "typeSimple": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
-                  "typeSimple": "HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "HIS.Inventory.Dtos.PurchaseInvoiceDto",
-                "typeSimple": "HIS.Inventory.Dtos.PurchaseInvoiceDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<HIS.Inventory.Dtos.PurchaseInvoiceDto,HIS.Inventory.Dtos.CreateUpdatePurchaseInvoiceDto>"
             },
             "UpdateAsyncByIdAndInput": {
               "uniqueName": "UpdateAsyncByIdAndInput",
@@ -21107,6 +21107,78 @@
               },
               "allowAnonymous": null,
               "implementFrom": "HIS.Laboratory.LabAppService"
+            }
+          }
+        },
+        "HIS.Laboratory.LabReceptionAppService": {
+          "controllerName": "LabReception",
+          "controllerGroupName": "LabReception",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "HIS.Laboratory.LabReceptionAppService",
+          "interfaces": [
+            {
+              "type": "HIS.Laboratory.ILabReceptionAppService",
+              "name": "ILabReceptionAppService",
+              "methods": [
+                {
+                  "name": "CreateLabReceptionOrderAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Laboratory.CreateLabReceptionOrderDto, HIS.Application",
+                      "type": "HIS.Laboratory.CreateLabReceptionOrderDto",
+                      "typeSimple": "HIS.Laboratory.CreateLabReceptionOrderDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Guid",
+                    "typeSimple": "string"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateLabReceptionOrderAsyncByInput": {
+              "uniqueName": "CreateLabReceptionOrderAsyncByInput",
+              "name": "CreateLabReceptionOrderAsync",
+              "httpMethod": "POST",
+              "url": "api/app/lab-reception/create-order",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Laboratory.CreateLabReceptionOrderDto, HIS.Application",
+                  "type": "HIS.Laboratory.CreateLabReceptionOrderDto",
+                  "typeSimple": "HIS.Laboratory.CreateLabReceptionOrderDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "HIS.Laboratory.CreateLabReceptionOrderDto",
+                  "typeSimple": "HIS.Laboratory.CreateLabReceptionOrderDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Guid",
+                "typeSimple": "string"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "HIS.Laboratory.ILabReceptionAppService"
             }
           }
         },
@@ -27412,9 +27484,9 @@
                   "parametersOnMethod": [
                     {
                       "name": "input",
-                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
-                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "typeAsString": "HIS.Pharmacy.Dtos.GetDrugListDto, HIS.Application.Contracts",
+                      "type": "HIS.Pharmacy.Dtos.GetDrugListDto",
+                      "typeSimple": "HIS.Pharmacy.Dtos.GetDrugListDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -27705,7 +27777,7 @@
                 "typeSimple": "HIS.Pharmacy.Dtos.DrugDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<HIS.Pharmacy.Dtos.DrugDto,HIS.Pharmacy.Dtos.DrugDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<HIS.Pharmacy.Dtos.DrugDto,HIS.Pharmacy.Dtos.DrugDto,System.Guid,HIS.Pharmacy.Dtos.GetDrugListDto>"
             },
             "GetListAsyncByInput": {
               "uniqueName": "GetListAsyncByInput",
@@ -27716,14 +27788,26 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
-                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "typeAsString": "HIS.Pharmacy.Dtos.GetDrugListDto, HIS.Application.Contracts",
+                  "type": "HIS.Pharmacy.Dtos.GetDrugListDto",
+                  "typeSimple": "HIS.Pharmacy.Dtos.GetDrugListDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "SearchText",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
                 {
                   "nameOnMethod": "input",
                   "name": "Sorting",
@@ -27766,7 +27850,7 @@
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<HIS.Pharmacy.Dtos.DrugDto>"
               },
               "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<HIS.Pharmacy.Dtos.DrugDto,HIS.Pharmacy.Dtos.DrugDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
+              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<HIS.Pharmacy.Dtos.DrugDto,HIS.Pharmacy.Dtos.DrugDto,System.Guid,HIS.Pharmacy.Dtos.GetDrugListDto>"
             }
           }
         },
@@ -28091,7 +28175,16 @@
                 },
                 {
                   "name": "GetPharmacyStockAsync",
-                  "parametersOnMethod": [],
+                  "parametersOnMethod": [
+                    {
+                      "name": "warehouseId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
                   "returnValue": {
                     "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.InventoryItemDto>",
                     "typeSimple": "[HIS.Inventory.Dtos.InventoryItemDto]"
@@ -28212,14 +28305,36 @@
               "allowAnonymous": null,
               "implementFrom": "HIS.Pharmacy.IPharmacyAppService"
             },
-            "GetPharmacyStockAsync": {
-              "uniqueName": "GetPharmacyStockAsync",
+            "GetPharmacyStockAsyncByWarehouseId": {
+              "uniqueName": "GetPharmacyStockAsyncByWarehouseId",
               "name": "GetPharmacyStockAsync",
               "httpMethod": "GET",
-              "url": "api/app/pharmacy/pharmacy-stock",
+              "url": "api/app/pharmacy/pharmacy-stock/{warehouseId}",
               "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
+              "parametersOnMethod": [
+                {
+                  "name": "warehouseId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "warehouseId",
+                  "name": "warehouseId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
               "returnValue": {
                 "type": "System.Collections.Generic.List<HIS.Inventory.Dtos.InventoryItemDto>",
                 "typeSimple": "[HIS.Inventory.Dtos.InventoryItemDto]"
@@ -30832,6 +30947,150 @@
             }
           }
         },
+        "HIS.Reports.UserFinancialReportAppService": {
+          "controllerName": "UserFinancialReport",
+          "controllerGroupName": "UserFinancialReport",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "HIS.Reports.UserFinancialReportAppService",
+          "interfaces": [
+            {
+              "type": "HIS.Reports.IUserFinancialReportAppService",
+              "name": "IUserFinancialReportAppService",
+              "methods": [
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Reports.GetUserFinancialTransactionsInput, HIS.Application.Contracts",
+                      "type": "HIS.Reports.GetUserFinancialTransactionsInput",
+                      "typeSimple": "HIS.Reports.GetUserFinancialTransactionsInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<HIS.Reports.UserFinancialTransactionDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<HIS.Reports.UserFinancialTransactionDto>"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetListAsyncByInput": {
+              "uniqueName": "GetListAsyncByInput",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user-financial-report",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Reports.GetUserFinancialTransactionsInput, HIS.Application.Contracts",
+                  "type": "HIS.Reports.GetUserFinancialTransactionsInput",
+                  "typeSimple": "HIS.Reports.GetUserFinancialTransactionsInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "UserId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "ModuleName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "StartDate",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "EndDate",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<HIS.Reports.UserFinancialTransactionDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<HIS.Reports.UserFinancialTransactionDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "HIS.Reports.IUserFinancialReportAppService"
+            }
+          }
+        },
         "HIS.Rooms.RoomAppService": {
           "controllerName": "Room",
           "controllerGroupName": "Room",
@@ -33193,6 +33452,101 @@
               },
               "allowAnonymous": false,
               "implementFrom": "HIS.Settings.IHospitalSettingsAppService"
+            }
+          }
+        },
+        "HIS.Settings.InpatientSettingsAppService": {
+          "controllerName": "InpatientSettings",
+          "controllerGroupName": "InpatientSettings",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "HIS.Settings.InpatientSettingsAppService",
+          "interfaces": [
+            {
+              "type": "HIS.Settings.IInpatientSettingsAppService",
+              "name": "IInpatientSettingsAppService",
+              "methods": [
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "HIS.Settings.InpatientSettingsDto",
+                    "typeSimple": "HIS.Settings.InpatientSettingsDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "HIS.Settings.InpatientSettingsDto, HIS.Application.Contracts",
+                      "type": "HIS.Settings.InpatientSettingsDto",
+                      "typeSimple": "HIS.Settings.InpatientSettingsDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetAsync": {
+              "uniqueName": "GetAsync",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/app/inpatient-settings",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "HIS.Settings.InpatientSettingsDto",
+                "typeSimple": "HIS.Settings.InpatientSettingsDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Settings.IInpatientSettingsAppService"
+            },
+            "UpdateAsyncByInput": {
+              "uniqueName": "UpdateAsyncByInput",
+              "name": "UpdateAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/inpatient-settings",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "HIS.Settings.InpatientSettingsDto, HIS.Application.Contracts",
+                  "type": "HIS.Settings.InpatientSettingsDto",
+                  "typeSimple": "HIS.Settings.InpatientSettingsDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "HIS.Settings.InpatientSettingsDto",
+                  "typeSimple": "HIS.Settings.InpatientSettingsDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "HIS.Settings.IInpatientSettingsAppService"
             }
           }
         },
@@ -37890,7 +38244,8 @@
         "InventoryAdjustment",
         "AccruedInventory",
         "CardPaymentBank",
-        "PatientDeposits"
+        "PatientDeposits",
+        "Purchases"
       ],
       "enumValues": [
         0,
@@ -37905,7 +38260,8 @@
         9,
         10,
         11,
-        12
+        12,
+        13
       ],
       "genericArguments": null,
       "properties": null
@@ -56347,6 +56703,80 @@
         }
       ]
     },
+    "HIS.Laboratory.CreateLabReceptionOrderDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PatientId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "DoctorId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "TotalAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "PaidAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "TestIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
     "HIS.Laboratory.Dtos.CreateLabAppointmentDto": {
       "baseType": null,
       "isEnum": false,
@@ -56999,6 +57429,32 @@
         },
         {
           "name": "AdmissionRoom",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "ReferenceRange",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "Unit",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -63706,6 +64162,19 @@
           "isNullable": false
         },
         {
+          "name": "WarehouseId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
           "name": "CounselingNotes",
           "jsonName": null,
           "type": "System.String",
@@ -64507,6 +64976,28 @@
         },
         {
           "name": "LegalCategory",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        }
+      ]
+    },
+    "HIS.Pharmacy.Dtos.GetDrugListDto": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SearchText",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -66228,6 +66719,67 @@
         }
       ]
     },
+    "HIS.Reports.GetUserFinancialTransactionsInput": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "ModuleName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        }
+      ]
+    },
     "HIS.Reports.PaidTicketDto": {
       "baseType": null,
       "isEnum": false,
@@ -66482,6 +67034,132 @@
           "name": "DispensingTime",
           "jsonName": null,
           "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        }
+      ]
+    },
+    "HIS.Reports.UserFinancialTransactionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "TransactionId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": true
+        },
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "ModuleName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "TransactionType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "Amount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "TransactionDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "ReferenceNumber",
+          "jsonName": null,
+          "type": "System.String",
           "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
@@ -69403,6 +70081,41 @@
           "maximum": null,
           "regex": null,
           "isNullable": true
+        }
+      ]
+    },
+    "HIS.Settings.InpatientSettingsDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "AdmissionDepositAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
+        },
+        {
+          "name": "RequireAdvancePayment",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null,
+          "isNullable": false
         }
       ]
     },

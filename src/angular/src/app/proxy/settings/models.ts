@@ -174,6 +174,11 @@ export interface HospitalSettingsDto {
   hospitalTaxNumber?: string | null;
 }
 
+export interface InpatientSettingsDto {
+  admissionDepositAmount?: number;
+  requireAdvancePayment?: boolean;
+}
+
 export interface LaboratoryDto extends FullAuditedEntityDto<string> {
   code?: string;
   nameAr?: string;

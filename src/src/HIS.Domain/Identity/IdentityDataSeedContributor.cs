@@ -35,19 +35,19 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
 
     public async Task SeedAsync(DataSeedContext context)
     {
-        await CreateRoleAndUserAsync("Doctor", "doctor", "doctor@his.com", "Doctor", "User", "Abc.123");
-        await CreateRoleAndUserAsync("Nurse", "nurse", "nurse@his.com", "Nurse", "User", "Abc.123");
-        await CreateRoleAndUserAsync("AdminStaff", "adminstaff", "adminstaff@his.com", "Admin", "Staff", "Abc.123");
-        await CreateRoleAndUserAsync("LabTechnician", "labtech", "labtech@his.com", "Lab", "Technician", "Abc.123");
-        await CreateRoleAndUserAsync("LabManager", "labmanager", "labmanager@his.com", "Lab", "Manager", "Abc.123");
-        await CreateRoleAndUserAsync("RadiologyTechnician", "radtech", "radtech@his.com", "Radiology", "Technician", "Abc.123");
-        await CreateRoleAndUserAsync("RadiologyManager", "radmanager", "radmanager@his.com", "Radiology", "Manager", "Abc.123");
-        await CreateRoleAndUserAsync("Pharmacist", "pharmacist", "pharmacist@his.com", "Pharmacist", "User", "Abc.123");
-        await CreateRoleAndUserAsync("Receptionist", "receptionist", "receptionist@his.com", "Receptionist", "User", "Abc.123");
+        await CreateRoleAndUserAsync("Doctor", "doctor", "doctor@his.com", "Doctor", "User", "doctor");
+        await CreateRoleAndUserAsync("Nurse", "nurse", "nurse@his.com", "Nurse", "User", "nurse");
+        await CreateRoleAndUserAsync("AdminStaff", "adminstaff", "adminstaff@his.com", "Admin", "Staff", "adminstaff");
+        await CreateRoleAndUserAsync("LabTechnician", "labtech", "labtech@his.com", "Lab", "Technician", "labtech");
+        await CreateRoleAndUserAsync("LabManager", "labmanager", "labmanager@his.com", "Lab", "Manager", "labmanager");
+        await CreateRoleAndUserAsync("RadiologyTechnician", "radtech", "radtech@his.com", "Radiology", "Technician", "radtech");
+        await CreateRoleAndUserAsync("RadiologyManager", "radmanager", "radmanager@his.com", "Radiology", "Manager", "radmanager");
+        await CreateRoleAndUserAsync("Pharmacist", "pharmacist", "pharmacist@his.com", "Pharmacist", "User", "pharmacist");
+        await CreateRoleAndUserAsync("Receptionist", "receptionist", "receptionist@his.com", "Receptionist", "User", "receptionist");
         
-        await CreateRoleAndUserAsync("Security", "security", "security@his.com", "Security", "Officer", "Abc.123");
-        await CreateRoleAndUserAsync("StoreKeeper", "storekeeper", "storekeeper@his.com", "Store", "Keeper", "Abc.123");
-        await CreateRoleAndUserAsync("PatientsUser", "patient", "patient@his.com", "Patient", "User", "Abc.123");
+        await CreateRoleAndUserAsync("Security", "security", "security@his.com", "Security", "Officer", "security");
+        await CreateRoleAndUserAsync("StoreKeeper", "storekeeper", "storekeeper@his.com", "Store", "Keeper", "storekeeper");
+        await CreateRoleAndUserAsync("PatientsUser", "patient", "patient@his.com", "Patient", "User", "patient");
 
         // Grant Permissions
         await GrantPermissionsAsync("Security", new[] { "HIS.Settings" });
@@ -58,10 +58,11 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Reception.Tickets"
         });
         await GrantPermissionsAsync("LabManager", new[] { 
-            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults" 
+            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", 
+            "HIS.Laboratory.ApproveResults", "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments"
         });
         await GrantPermissionsAsync("LabTechnician", new[] { 
-            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults" 
+            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests"
         });
         await GrantPermissionsAsync("StoreKeeper", new[] { 
             "HIS.Inventory", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations",
@@ -72,12 +73,12 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         });
 
         await GrantPermissionsAsync("Pharmacist", new[] { 
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock" 
+            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.POS"
         });
 
         await GrantPermissionsAsync("AdminStaff", new[] { 
             // Settings
-            "HIS.Settings",
+            "HIS.Settings", "HIS.Settings.Pharmacy",
             // Patients
             "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
             // Appointments
@@ -88,6 +89,8 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             // Laboratory
             "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults",
             "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
+            // Radiology
+            "HIS.Radiology", "HIS.Radiology.Requests",
             // Emergency
             "HIS.Emergency", "HIS.Emergency.Dashboard",
             // Pharmacy
@@ -118,7 +121,7 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Inpatient.Dashboard",
             // Operations
             "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report",
-            // HR (Personnel Affairs / شئون العاملين)
+            // HR
             "HIS.HR", "HIS.HR.Employees", "HIS.HR.Employees.Create", "HIS.HR.Employees.Edit", "HIS.HR.Employees.Delete",
             "HIS.HR.CompensationItems", "HIS.HR.LeaveTypes", "HIS.HR.EmployeeLeaves", "HIS.HR.Loans",
             "HIS.HR.Payroll", "HIS.HR.Payroll.Process", "HIS.HR.Penalties", "HIS.HR.Attendance",
@@ -135,13 +138,15 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         
         // Ensure Admin has EVERYTHING (Root + All Children)
         await GrantPermissionsAsync("admin", new[] { 
-            "HIS.Settings",
+            "HIS.Settings", "HIS.Settings.Pharmacy",
             "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
             "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
             "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets", 
             "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
             "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults", 
             "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
+            // Radiology (separate permission - fixed)
+            "HIS.Radiology", "HIS.Radiology.Requests",
             "HIS.Emergency", "HIS.Emergency.Dashboard",
             "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
             "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete", "HIS.Pharmacy.POS",

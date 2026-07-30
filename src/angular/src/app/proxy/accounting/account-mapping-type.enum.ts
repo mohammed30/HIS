@@ -14,6 +14,7 @@ export enum AccountMappingType {
   AccruedInventory = 10,
   CardPaymentBank = 11,
   PatientDeposits = 12,
+  Purchases = 13,
 }
 
 export const accountMappingTypeOptions = mapEnumToOptions(AccountMappingType);

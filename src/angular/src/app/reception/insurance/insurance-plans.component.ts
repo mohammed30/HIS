@@ -68,8 +68,8 @@ import { InsurancePlanClass, insurancePlanClassOptions } from '../../proxy/insur
                     <td>{{ item.code }}</td>
                     <td>{{ item.insuranceCompanyName }}</td>
                     <td>{{ item.nameAr }}</td>
-                    <td>{{ '::Enum:InsurancePlanType:' + item.planType | abpLocalization }}</td>
-                    <td>{{ '::Enum:InsurancePlanClass:' + item.planClass | abpLocalization }}</td>
+                    <td>{{ getPlanTypeName(item.planType) }}</td>
+                    <td>{{ getPlanClassName(item.planClass) }}</td>
                     <td>{{ item.coveragePercentage }}%</td>
                     <td>{{ item.coPaymentPercentage }}%</td>
                     <td>
@@ -134,7 +134,7 @@ import { InsurancePlanClass, insurancePlanClassOptions } from '../../proxy/insur
                     <label class="form-label">نوع الخطة</label>
                     <select class="form-select" [(ngModel)]="formData.planType">
                       @for (opt of planTypeOptions; track opt.value) {
-                        <option [value]="opt.value">{{ '::Enum:InsurancePlanType:' + opt.value | abpLocalization }}</option>
+                        <option [value]="opt.value">{{ getPlanTypeName(opt.value) }}</option>
                       }
                     </select>
                   </div>
@@ -142,7 +142,7 @@ import { InsurancePlanClass, insurancePlanClassOptions } from '../../proxy/insur
                     <label class="form-label">الفئة (Class)</label>
                     <select class="form-select" [(ngModel)]="formData.planClass">
                       @for (opt of planClassOptions; track opt.value) {
-                        <option [value]="opt.value">{{ '::Enum:InsurancePlanClass:' + opt.value | abpLocalization }}</option>
+                        <option [value]="opt.value">{{ getPlanClassName(opt.value) }}</option>
                       }
                     </select>
                   </div>
@@ -303,12 +303,13 @@ export class InsurancePlansComponent implements OnInit {
     this.showForm = true;
   }
 
+
   save() {
     const req = this.editingItem?.id
       ? this.planService.update(this.editingItem.id, this.formData)
       : this.planService.create(this.formData);
     req.subscribe({
-      next: () => { this.showForm = false; this.loadData(); },
+      next: () => { this.showForm = false; this.search(); },
       error: (err) => console.error(err)
     });
   }
@@ -317,8 +318,29 @@ export class InsurancePlansComponent implements OnInit {
     if (!item.id) return;
     this.confirmation.warn('::AreYouSureToDelete', '::AreYouSure').subscribe((status) => {
       if (status === Confirmation.Status.confirm) {
-        this.planService.delete(item.id as string).subscribe({ next: () => this.loadData() });
+        this.planService.delete(item.id as string).subscribe({ next: () => this.search() });
       }
     });
+  }
+
+  getPlanTypeName(typeValue: any): string {
+    const val = Number(typeValue);
+    switch (val) {
+      case 0: return 'أفراد';
+      case 1: return 'عائلي';
+      case 2: return 'شركات';
+      case 3: return 'حكومي';
+      default: return 'غير معروف';
+    }
+  }
+
+  getPlanClassName(classValue: any): string {
+    const val = Number(classValue);
+    switch (val) {
+      case 0: return 'فئة أ (Class A)';
+      case 1: return 'فئة ب (Class B)';
+      case 2: return 'فئة ج (Class C)';
+      default: return 'غير معروف';
+    }
   }
 }

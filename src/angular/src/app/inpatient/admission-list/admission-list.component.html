@@ -27,7 +27,7 @@
                             style="width: 150px;" formControlName="roomTypeId" (change)="loadAdmissions()">
                             <option [ngValue]="null">-- {{ '::All' | abpLocalization }} --</option>
                             <option *ngFor="let type of roomTypes" [ngValue]="type.value">
-                                {{ '::Enum:RoomType.' + type.value | abpLocalization }}
+                                {{ getRoomTypeName(type.value) }}
                             </option>
                         </select>
                     </div>
@@ -66,7 +66,7 @@
                                     <td>{{ i + 1 }}</td>
                                     <td class="fw-bold">{{ row.patientName }}</td>
                                     <td><small class="text-muted">{{ row.patientFileNumber }}</small></td>
-                                    <td>{{ '::Enum:RoomType.' + row.roomTypeName | abpLocalization }}</td>
+                                    <td>{{ getRoomTypeName(row.roomTypeName) }}</td>
                                     <td><span class="badge bg-light text-dark border">{{ row.roomNumber }}</span></td>
                                     <td>{{ row.admissionDate | date:'shortDate' }}</td>
                                     <td>
@@ -365,7 +365,7 @@
             <select class="form-select" formControlName="toRoomTypeId" (change)="onTransferRoomTypeChange()" required>
                 <option [ngValue]="null">-- {{ '::SelectRoomType' | abpLocalization }} --</option>
                 <option *ngFor="let type of roomTypes" [ngValue]="type.value">
-                    {{ '::Enum:RoomType.' + type.value | abpLocalization }}
+                    {{ getRoomTypeName(type.value) }}
                 </option>
             </select>
         </div>
@@ -455,7 +455,7 @@
                     required>
                     <option [ngValue]="null">-- {{ '::SelectRoomType' | abpLocalization }} --</option>
                     <option *ngFor="let type of roomTypes" [ngValue]="type.value">
-                        {{ '::Enum:RoomType.' + type.value | abpLocalization }}
+                        {{ getRoomTypeName(type.value) }}
                     </option>
                 </select>
             </div>

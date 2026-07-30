@@ -2,6 +2,7 @@ import type { MedicalOrderDto } from '../clinical/models';
 
 export interface DispenseDto {
   medicalOrderId: string;
+  warehouseId: string;
   counselingNotes?: string | null;
 }
 

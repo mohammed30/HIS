@@ -1,4 +1,4 @@
-import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto } from '@abp/ng.core';
+import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { VerificationStatus } from '../verification-status.enum';
 import type { PaymentMethod } from '../../billing/payment-method.enum';
 import type { InvoiceStatus } from '../../billing/invoice-status.enum';
@@ -83,6 +83,10 @@ export interface DrugDto extends AuditedEntityDto<string> {
   binLocation?: string;
   isControlled?: boolean;
   legalCategory?: string | null;
+}
+
+export interface GetDrugListDto extends PagedAndSortedResultRequestDto {
+  searchText?: string | null;
 }
 
 export interface PosApproveDto {

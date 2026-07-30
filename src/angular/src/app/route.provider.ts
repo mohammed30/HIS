@@ -117,7 +117,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports',
       name: '::Menu:FinancialReports',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-chart-line',
       order: 33,
       layout: eLayoutType.application,
@@ -162,7 +162,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports/daily',
       name: '::Menu:DailyAccountsReport',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-calendar-day',
       order: 38,
       layout: eLayoutType.application,
@@ -171,7 +171,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports/debts',
       name: '::Menu:CustomerDebtsReport',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-user-clock',
       order: 39,
       layout: eLayoutType.application,
@@ -180,7 +180,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports/discounts',
       name: '::Menu:DiscountsReport',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-percentage',
       order: 40,
       layout: eLayoutType.application,
@@ -189,7 +189,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports/income-statement',
       name: '::Menu:IncomeStatement',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-file-invoice-dollar',
       order: 41,
       layout: eLayoutType.application,
@@ -198,7 +198,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports/balance-sheet',
       name: '::Menu:BalanceSheet',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-balance-scale',
       order: 42,
       layout: eLayoutType.application,
@@ -207,7 +207,7 @@ function configureRoutes() {
     {
       path: '/accounting/reports/account-statement',
       name: '::Menu:AccountStatement',
-      parentName: '::Menu:Accounts',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-file-alt',
       order: 43,
       layout: eLayoutType.application,
@@ -293,17 +293,11 @@ function configureRoutes() {
       requiredPolicy: 'HIS.Billing.DeferredPayments',
     },
     // Definitions
-    {
-      name: '::Menu:Definitions',
-      iconClass: 'fas fa-cogs',
-      order: 100,
-      layout: eLayoutType.application,
-      requiredPolicy: 'HIS.Settings',
-    },
+    
     {
       path: '/settings/departments',
       name: '::Menu:Departments',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-building',
       order: 101,
       layout: eLayoutType.application,
@@ -312,7 +306,7 @@ function configureRoutes() {
     {
       path: '/settings/specialties',
       name: '::Menu:Specialties',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-stethoscope',
       order: 102,
       layout: eLayoutType.application,
@@ -321,7 +315,7 @@ function configureRoutes() {
     {
       path: '/settings/clinics',
       name: '::Menu:Clinics',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-clinic-medical',
       order: 103,
       layout: eLayoutType.application,
@@ -330,7 +324,7 @@ function configureRoutes() {
     {
       path: '/settings/doctors',
       name: '::Menu:Doctors',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-user-md',
       order: 104,
       layout: eLayoutType.application,
@@ -339,7 +333,7 @@ function configureRoutes() {
     {
       path: '/settings/laboratories',
       name: '::Menu:Laboratories',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-flask',
       order: 105,
       layout: eLayoutType.application,
@@ -348,7 +342,7 @@ function configureRoutes() {
     {
       path: '/settings/doctor-schedule',
       name: '::Menu:DoctorSchedule',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-clock',
       order: 106,
       layout: eLayoutType.application,
@@ -357,7 +351,7 @@ function configureRoutes() {
     {
       path: '/definitions/nationalities',
       name: '::Menu:Nationalities',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-globe',
       order: 110,
       layout: eLayoutType.application,
@@ -366,7 +360,7 @@ function configureRoutes() {
     {
       path: '/definitions/professions',
       name: '::Menu:Professions',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-user-tie',
       order: 111,
       layout: eLayoutType.application,
@@ -375,7 +369,7 @@ function configureRoutes() {
     {
       path: '/definitions/contracts',
       name: '::Menu:Contracts',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-file-contract',
       order: 112,
       layout: eLayoutType.application,
@@ -384,7 +378,7 @@ function configureRoutes() {
     {
       path: '/definitions/patient-categories',
       name: '::Menu:PatientCategories',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-tags',
       order: 113,
       layout: eLayoutType.application,
@@ -393,7 +387,7 @@ function configureRoutes() {
     {
       path: '/definitions/referral-sources',
       name: '::Menu:ReferralSources',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-handshake',
       order: 114,
       layout: eLayoutType.application,
@@ -402,7 +396,7 @@ function configureRoutes() {
     {
       path: '/settings/job-titles',
       name: '::Menu:JobTitles',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-user-tag',
       order: 115,
       layout: eLayoutType.application,
@@ -587,7 +581,7 @@ function configureRoutes() {
     {
       path: '/services',
       name: '::Menu:Services',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-briefcase-medical',
       order: 107,
       layout: eLayoutType.application,
@@ -596,7 +590,7 @@ function configureRoutes() {
     {
       path: '/services/radiology',
       name: '::Menu:Radiology',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-x-ray',
       order: 108,
       layout: eLayoutType.application,
@@ -605,7 +599,7 @@ function configureRoutes() {
     {
       path: '/services/price-lists',
       name: '::Menu:PriceLists',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-tags',
       order: 109,
       layout: eLayoutType.application,
@@ -614,7 +608,7 @@ function configureRoutes() {
     {
       path: '/definitions/payment-methods',
       name: '::Menu:PaymentMethods',
-      parentName: '::Menu:Definitions',
+      parentName: '::Menu:Settings',
       iconClass: 'fas fa-credit-card',
       order: 110,
       layout: eLayoutType.application,
@@ -904,7 +898,7 @@ function configureRoutes() {
     {
       path: '/hr/reports',
       name: '::Menu:HRReports',
-      parentName: '::Menu:HR',
+      parentName: '::Menu:Reports',
       iconClass: 'fas fa-chart-bar',
       order: 8,
       layout: eLayoutType.application,
@@ -976,6 +970,22 @@ function configureRoutes() {
       order: 5,
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Reception.InsuranceCompanies',
+    },
+    {
+      path: '/reports/user-financial-report',
+      name: 'تقرير المستخدم المالي',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-money-check-alt',
+      order: 6,
+      layout: eLayoutType.application,
+    },
+    {
+      path: '/reports/user-activity-report',
+      name: 'نشاط تردد المستخدمين',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-chart-line',
+      order: 7,
+      layout: eLayoutType.application,
     },
     {
       path: '/setting-management',

@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using Microsoft.AspNetCore.Hosting;
+
 
 namespace HIS.Laboratory;
 
@@ -45,8 +45,7 @@ public class LabAppService : ApplicationService, ILabAppService
         IRepository<InternalRequest, Guid> internalRequestRepository,
         IRepository<Department, Guid> departmentRepository,
         IRepository<Admission, Guid> admissionRepository,
-        IRepository<Room, Guid> roomRepository,
-        IWebHostEnvironment env)
+        IRepository<Room, Guid> roomRepository)
     {
         _testRepository = testRepository;
         _categoryRepository = categoryRepository;
@@ -59,10 +58,8 @@ public class LabAppService : ApplicationService, ILabAppService
         _departmentRepository = departmentRepository;
         _admissionRepository = admissionRepository;
         _roomRepository = roomRepository;
-        _env = env;
     }
 
-    private readonly IWebHostEnvironment _env;
 
     // --- CATEGORIES ---
 
@@ -175,9 +172,9 @@ public class LabAppService : ApplicationService, ILabAppService
     
     private async Task<string> GenerateTestCodeAsync()
     {
-        var query = await _testRepository.GetQueryableAsync();
-        var count = await AsyncExecuter.CountAsync(query);
-        return $"LAB-{(count + 1).ToString("D4")}"; // LAB-0001, LAB-0002, etc.
+        // TODO: Replace with Database Sequence or IEntityCodeGenerator to prevent race conditions
+        var uniqueSuffix = Guid.NewGuid().ToString().Substring(0, 4).ToUpper();
+        return $"LAB-{uniqueSuffix}";
     }
 
     [HttpPut]
@@ -315,9 +312,9 @@ public class LabAppService : ApplicationService, ILabAppService
     private async Task<string> GenerateSampleNumberAsync()
     {
         var datePrefix = DateTime.Now.ToString("yyMMdd");
-        var query = await _requestRepository.GetQueryableAsync();
-        var count = await AsyncExecuter.CountAsync(query.Where(x => x.SampleNumber != null && x.SampleNumber.StartsWith(datePrefix)));
-        return $"{datePrefix}-{(count + 1).ToString("D4")}";
+        var uniqueSuffix = Guid.NewGuid().ToString().Substring(0, 4).ToUpper();
+        // TODO: Replace with Database Sequence to prevent race conditions while keeping readable sequential format
+        return $"{datePrefix}-{uniqueSuffix}";
     }
 
     [HttpPost]
@@ -382,21 +379,9 @@ public class LabAppService : ApplicationService, ILabAppService
         // Fetch from LabTests as we switched to it
         var test = await _testRepository.GetAsync(request.ServiceItemId);
         
-        // Try to load logo from wwwroot
+        // Load logo from a centralized setting or domain service, not IWebHostEnvironment
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
-        
-        // Fallback for development
-        if (!System.IO.File.Exists(logoPath))
-        {
-            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
-            if (System.IO.File.Exists(devPath)) logoPath = devPath;
-        }
 
-        if (System.IO.File.Exists(logoPath))
-        {
-            logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
-        }
         
         var document = new HIS.Laboratory.Printing.LabResultDocument
         {
@@ -458,16 +443,9 @@ public class LabAppService : ApplicationService, ILabAppService
         var doctor = await _doctorRepository.GetAsync(request.DoctorId);
         var test = await _testRepository.GetAsync(request.ServiceItemId);
         
+        // Load logo from a centralized setting or domain service, not IWebHostEnvironment
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
-        
-        if (!System.IO.File.Exists(logoPath))
-        {
-            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
-            if (System.IO.File.Exists(devPath)) logoPath = devPath;
-        }
 
-        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
 
         var document = new HIS.Laboratory.Printing.LabRequestDocument
         {
@@ -647,16 +625,9 @@ public class LabAppService : ApplicationService, ILabAppService
         
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         
+        // Load logo from a centralized setting or domain service, not IWebHostEnvironment
         byte[] logoBytes = null;
-        var logoPath = System.IO.Path.Combine(_env.WebRootPath ?? "", "images", "logo", "Dark.png");
-        
-        if (!System.IO.File.Exists(logoPath))
-        {
-            var devPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "Dark.png");
-            if (System.IO.File.Exists(devPath)) logoPath = devPath;
-        }
 
-        if (System.IO.File.Exists(logoPath)) logoBytes = await System.IO.File.ReadAllBytesAsync(logoPath);
 
         var document = new HIS.Laboratory.Printing.LabAppointmentDocument
         {
