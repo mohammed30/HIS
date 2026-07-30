@@ -55,36 +55,41 @@ export class CustomLoginComponent implements OnInit {
             return;
         }
 
+        // Trim whitespace from username
+        const username = (this.form.value.username || '').trim();
+        if (!username) {
+            this.errorMessage = 'اسم المستخدم لا يمكن أن يكون فارغاً';
+            return;
+        }
+
         this.inProgress = true;
         this.errorMessage = null;
 
-        const redirectUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-        console.log('[Login Flow] Form is valid. redirectUrl:', redirectUrl);
-        console.log('[Login Flow] Calling authService.login...');
+        // Fix redirect: only use returnUrl if it's a local path (not external)
+        const rawReturn = this.route.snapshot.queryParams['returnUrl'] || '';
+        const redirectUrl = rawReturn && rawReturn.startsWith('/') ? rawReturn : '/';
 
         this.authService.login({
-            username: this.form.value.username,
+            username: username,
             password: this.form.value.password,
             rememberMe: this.form.value.rememberMe,
             redirectUrl: redirectUrl
         }).subscribe({
-            next: (result) => {
-                console.log('[Login Flow] authService.login returned successfully.', result);
-                // We're letting ABP handle the redirection here.
-                // Let's also listen if the router actually navigates.
-                console.log('[Login Flow] Waiting for ABP to refresh app state and redirect...');
+            next: () => {
+                // ABP handles navigation after successful login
             },
             error: (err) => {
-                console.error('[Login Flow] Error inside authService.login:', err);
                 this.inProgress = false;
                 const status = err?.status || err?.error?.status;
 
                 if (status === 400 || status === 401) {
-                    this.errorMessage = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                    this.errorMessage = 'اسم المستخدم أو كلمة المرور غير صحيحة. يرجى المحاولة مجدداً.';
+                } else if (status === 423) {
+                    this.errorMessage = 'تم قفل الحساب مؤقتاً بسبب محاولات دخول متعددة. يرجى الانتظار.';
                 } else if (status === 0 || status === 503) {
-                    this.errorMessage = 'تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً';
+                    this.errorMessage = 'تعذر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.';
                 } else {
-                    this.errorMessage = 'حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة مجدداً';
+                    this.errorMessage = 'حدث خطأ غير متوقع أثناء تسجيل الدخول. يرجى المحاولة مجدداً.';
                 }
             }
         });

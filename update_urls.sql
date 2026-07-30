@@ -1,0 +1,1 @@
+UPDATE OpenIddictApplications SET ClientUri = 'http://localhost:4200' WHERE ClientId = 'HIS_App'; UPDATE OpenIddictApplications SET ClientUri = 'https://localhost:44382/swagger', RedirectUris = '["https://localhost:44382/swagger/oauth2-redirect.html"]' WHERE ClientId = 'HIS_Swagger';

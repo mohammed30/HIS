@@ -221,9 +221,10 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         }
 
         // 2. Create User
-        if (await _userManager.FindByNameAsync(username) == null)
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null)
         {
-            var user = new IdentityUser(
+            user = new IdentityUser(
                 _guidGenerator.Create(),
                 username,
                 email,
@@ -237,6 +238,21 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             var result = await _userManager.CreateAsync(user, password);
             
             if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, roleName);
+            }
+        }
+        else
+        {
+            // Reset password to match the requested password
+            if(await _userManager.HasPasswordAsync(user))
+            {
+                await _userManager.RemovePasswordAsync(user);
+            }
+            await _userManager.AddPasswordAsync(user, password);
+            
+            // Ensure they are in the role
+            if (!await _userManager.IsInRoleAsync(user, roleName))
             {
                 await _userManager.AddToRoleAsync(user, roleName);
             }

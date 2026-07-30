@@ -1,0 +1,116 @@
+<div *ngIf="visible" class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      
+      <div class="modal-header bg-light border-bottom-0 rounded-top-4 py-3">
+        <h5 class="modal-title fw-bold text-dark">
+          <i class="fa fa-key text-primary me-2"></i> إدارة الصلاحيات
+        </h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+      </div>
+
+      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+        
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!isLoading">
+          
+          <div *ngIf="matrixPermissions.length > 0">
+            <h6 class="fw-bold mb-3 text-secondary"><i class="fa fa-list-alt me-2"></i> الشاشات الأساسية</h6>
+            <div class="table-responsive rounded border mb-4">
+              <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3">اسم الشاشة</th>
+                    <th class="py-3 text-center" style="width: 120px;">عرض</th>
+                    <th class="py-3 text-center" style="width: 120px;">إضافة (حفظ)</th>
+                    <th class="py-3 text-center" style="width: 120px;">تعديل</th>
+                    <th class="py-3 text-center" style="width: 120px;">حذف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let matrix of matrixPermissions">
+                    <td class="fw-medium">{{ matrix.displayName }}</td>
+                    
+                    <!-- View -->
+                    <td class="text-center">
+                      <div class="form-check form-switch d-flex justify-content-center m-0" *ngIf="matrix.view">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="matrix.view.isGranted" (change)="toggleView(matrix)">
+                      </div>
+                    </td>
+                    
+                    <!-- Create -->
+                    <td class="text-center">
+                      <div class="form-check form-switch d-flex justify-content-center m-0" *ngIf="matrix.create">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="matrix.create.isGranted" (change)="toggleChild(matrix)">
+                      </div>
+                    </td>
+                    
+                    <!-- Update -->
+                    <td class="text-center">
+                      <div class="form-check form-switch d-flex justify-content-center m-0" *ngIf="matrix.update">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="matrix.update.isGranted" (change)="toggleChild(matrix)">
+                      </div>
+                    </td>
+                    
+                    <!-- Delete -->
+                    <td class="text-center">
+                      <div class="form-check form-switch d-flex justify-content-center m-0" *ngIf="matrix.delete">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="matrix.delete.isGranted" (change)="toggleChild(matrix)">
+                      </div>
+                    </td>
+
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="otherPermissionsTree.length > 0">
+             <h6 class="fw-bold mb-3 mt-4 text-secondary"><i class="fa fa-cogs me-2"></i> صلاحيات أخرى</h6>
+             
+             <!-- Recursive Template for Tree -->
+             <ng-template #permTree let-nodes="nodes">
+               <div class="row g-2">
+                 <div class="col-12" *ngFor="let node of nodes">
+                   <div class="card border-0 shadow-sm mb-2" [ngClass]="{'ms-4 border-start border-primary': node.parentName, 'bg-light': !node.parentName}">
+                     <div class="card-body p-2 d-flex flex-column">
+                       <div class="form-check form-switch m-0 d-flex align-items-center">
+                         <input class="form-check-input me-3" type="checkbox" [id]="node.name" [(ngModel)]="node.isGranted" (change)="toggleTreeParent(node); toggleTreeChild(node, node.parentName)">
+                         <label class="form-check-label text-truncate mb-0 fw-bold" style="max-width: 85%; cursor: pointer;" [for]="node.name" [title]="node.displayName">
+                           {{ node.displayName }}
+                         </label>
+                       </div>
+                       <!-- Render children recursively -->
+                       <div *ngIf="node.children && node.children.length > 0" class="mt-2 ms-4">
+                         <ng-container *ngTemplateOutlet="permTree; context:{ nodes: node.children }"></ng-container>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </ng-template>
+
+             <ng-container *ngTemplateOutlet="permTree; context:{ nodes: otherPermissionsTree }"></ng-container>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
+        <button type="button" class="btn btn-secondary px-4 rounded-pill" (click)="close()">إلغاء</button>
+        <button type="button" class="btn btn-primary px-4 rounded-pill d-flex align-items-center gap-2" (click)="save()" [disabled]="isLoading || isSaving">
+          <i class="fa fa-save" *ngIf="!isSaving"></i>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" *ngIf="isSaving"></span>
+          <span>حفظ التغييرات</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

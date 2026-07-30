@@ -13,6 +13,8 @@ import { AppLogoComponent } from './shared/logo/app-logo.component';
 import { UserManagementComponent } from './identity-extended/users/user-management.component';
 import { RoleManagementComponent } from './identity-extended/roles/role-management.component';
 import { eIdentityComponents } from '@abp/ng.identity';
+import { ePermissionManagementComponents } from '@abp/ng.permission-management';
+import { CustomPermissionManagement } from './shared/components/custom-permission-management/custom-permission-management';
 import { AppFooterComponent } from './layout/footer/app-footer.component';
 import {
   Router,
@@ -112,6 +114,12 @@ export class AppComponent implements OnInit {
     this.replaceableComponents.add({
       component: RoleManagementComponent,
       key: eIdentityComponents.Roles,
+    });
+
+    // Replace Permission Management Component
+    this.replaceableComponents.add({
+      component: CustomPermissionManagement,
+      key: ePermissionManagementComponents.PermissionManagement,
     });
 
     // Replace Footer Component

@@ -10,8 +10,8 @@
     </div>
 
     <div class="login-body">
-      <h4 class="mb-3 text-center">دخول</h4>
-      <p class="text-center text-muted mb-4">هل أنت مستخدم جديد؟ <a href="#" class="text-decoration-none">تسجيل</a></p>
+      <h4 class="mb-2 text-center fw-bold">تسجيل الدخول</h4>
+      <p class="text-center text-muted mb-4 small"><i class="fas fa-lock-open me-1"></i> مرحباً بك في نظام إدارة مستشفى آسيا</p>
 
       <!-- Error Alert -->
       <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
@@ -25,8 +25,11 @@
           <input type="text" class="form-control" formControlName="username"
                  [class.is-invalid]="form.get('username').invalid && form.get('username').touched"
                  autocomplete="username">
-          <div class="invalid-feedback" *ngIf="form.get('username').invalid && form.get('username').touched">
-            يرجى إدخال اسم المستخدم
+          <div class="invalid-feedback" *ngIf="form.get('username').hasError('required') && form.get('username').touched">
+            <i class="fas fa-exclamation-triangle me-1"></i> يرجى إدخال اسم المستخدم
+          </div>
+          <div class="invalid-feedback" *ngIf="!form.get('username').hasError('required') && form.get('username').invalid && form.get('username').touched">
+            <i class="fas fa-exclamation-triangle me-1"></i> اسم المستخدم غير صالح
           </div>
         </div>
 
@@ -39,8 +42,8 @@
             <input [type]="isPasswordVisible ? 'text' : 'password'" class="form-control" formControlName="password"
                    [class.is-invalid]="form.get('password').invalid && form.get('password').touched"
                    autocomplete="current-password">
-            <div class="invalid-feedback" *ngIf="form.get('password').invalid && form.get('password').touched">
-              يرجى إدخال كلمة المرور
+            <div class="invalid-feedback" *ngIf="form.get('password').hasError('required') && form.get('password').touched">
+              <i class="fas fa-exclamation-triangle me-1"></i> يرجى إدخال كلمة المرور
             </div>
           </div>
         </div>

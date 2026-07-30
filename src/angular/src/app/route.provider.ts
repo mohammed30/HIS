@@ -621,6 +621,7 @@ function configureRoutes() {
       iconClass: 'fas fa-users-cog',
       order: 200,
       layout: eLayoutType.application,
+      requiredPolicy: 'AbpIdentity.Users',
     },
     {
       path: '/admin/activity-logs',
@@ -628,6 +629,7 @@ function configureRoutes() {
       iconClass: 'fas fa-history',
       order: 210,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
     },
     {
       path: '/admin/notification-settings',
@@ -902,6 +904,7 @@ function configureRoutes() {
       iconClass: 'fas fa-chart-bar',
       order: 8,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.HR.Reports',
     },
     // Operations
     {
@@ -978,6 +981,7 @@ function configureRoutes() {
       iconClass: 'fas fa-money-check-alt',
       order: 6,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Billing.FinancialReports',
     },
     {
       path: '/reports/user-activity-report',
@@ -986,6 +990,7 @@ function configureRoutes() {
       iconClass: 'fas fa-chart-line',
       order: 7,
       layout: eLayoutType.application,
+      requiredPolicy: 'HIS.HR.Reports',
     },
     {
       path: '/setting-management',
