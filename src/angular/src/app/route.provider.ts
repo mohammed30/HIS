@@ -98,7 +98,7 @@ function configureRoutes() {
     },
     {
       path: '/accounting/account-mapping',
-      name: 'توجيه الحسابات المحاسبية',
+      name: '::توجيه الحسابات المحاسبية',
       parentName: '::Menu:Accounts',
       iconClass: 'fas fa-exchange-alt',
       order: 31,
@@ -404,7 +404,7 @@ function configureRoutes() {
     },
     {
       path: '/settings/pharmacy',
-      name: 'إعدادات الصيدلية',
+      name: '::إعدادات الصيدلية',
       parentName: '::Menu:Settings',
       iconClass: 'fas fa-pills',
       order: 10,
@@ -413,7 +413,7 @@ function configureRoutes() {
     },
     {
       path: '/settings/inpatient',
-      name: 'إعدادات التنويم',
+      name: '::إعدادات التنويم',
       parentName: '::Menu:Settings',
       iconClass: 'fas fa-bed',
       order: 11,

@@ -1,0 +1,66 @@
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">الصورة الشخصية</h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="mb-4 text-center">
+        <label for="userProfilePicture" class="form-label d-block fw-bold mb-3">اختر الصورة الرمزية</label>
+        <div class="position-relative d-inline-block">
+          <img [src]="profilePicturePreview || 'assets/images/avatar/avatar-1.jpg'"
+               class="rounded-circle border shadow-sm" width="120" height="120" alt="Profile Picture" style="object-fit: cover;"
+               (error)="profilePicturePreview = 'https://ui-avatars.com/api/?name=' + userName + '&background=random&rounded=true&size=120'">
+          
+          <input type="file" id="userProfilePicture" class="d-none" accept="image/png, image/jpeg, image/gif" (change)="onProfilePictureChange($event)">
+          
+          <button type="button" class="btn btn-sm btn-light position-absolute bottom-0 end-0 rounded-circle border shadow"
+                  style="width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; transform: translate(20%, 20%);"
+                  onclick="document.getElementById('userProfilePicture').click()">
+             <i class="fas fa-camera text-primary fs-5"></i>
+          </button>
+        </div>
+        <div *ngIf="profilePictureError" class="text-danger mt-3 fw-bold">{{ profilePictureError }}</div>
+        <div class="text-muted mt-3" style="font-size: 0.85rem;">الحجم الأقصى المسموح به هو 50 كيلوبايت (امتدادات مدعومة: JPG, PNG, GIF).</div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">{{ 'AbpIdentity::UserName' | abpLocalization }}</label>
+          <input type="text" class="form-control" formControlName="userName" readonly>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">{{ 'AbpIdentity::EmailAddress' | abpLocalization }} *</label>
+          <input type="email" class="form-control" formControlName="email">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">{{ 'AbpIdentity::Name' | abpLocalization }}</label>
+          <input type="text" class="form-control" formControlName="name">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">الاسم بالعربي</label>
+          <input type="text" class="form-control" formControlName="nameAr">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">{{ 'AbpIdentity::Surname' | abpLocalization }}</label>
+          <input type="text" class="form-control" formControlName="surname">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">{{ 'AbpIdentity::PhoneNumber' | abpLocalization }}</label>
+          <input type="text" class="form-control" formControlName="phoneNumber" dir="ltr">
+        </div>
+      </div>
+      
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary px-4" [disabled]="form.invalid || isSaving || !originalProfile">
+          <i class="fas fa-save me-1" *ngIf="!isSaving"></i>
+          <i class="fas fa-spinner fa-spin me-1" *ngIf="isSaving"></i>
+          {{ 'AbpIdentity::Save' | abpLocalization }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

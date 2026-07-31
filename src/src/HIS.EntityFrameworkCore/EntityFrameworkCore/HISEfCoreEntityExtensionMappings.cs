@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Threading;
@@ -27,14 +27,14 @@ public static class HISEfCoreEntityExtensionMappings
                  *
                  * Example: Map a property to a table field:
 
-                     ObjectExtensionManager.Instance
-                         .MapEfCoreProperty<IdentityUser, string>(
-                             "MyProperty",
-                             (entityBuilder, propertyBuilder) =>
-                             {
-                                 propertyBuilder.HasMaxLength(128);
-                             }
-                         );
+                    ObjectExtensionManager.Instance
+                        .MapEfCoreProperty<IdentityUser, string>(
+                            "NameAr",
+                            (entityBuilder, propertyBuilder) =>
+                            {
+                                propertyBuilder.HasMaxLength(128);
+                            }
+                        );
 
                  * See the documentation for more:
                  * https://docs.abp.io/en/abp/latest/Customizing-Application-Modules-Extending-Entities

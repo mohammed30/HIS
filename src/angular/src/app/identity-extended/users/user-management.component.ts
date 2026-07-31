@@ -46,9 +46,31 @@ import { PermissionManagementModule, PermissionManagementComponent } from '@abp/
 
         <ngx-datatable [rows]="data.items" [count]="data.totalCount" [list]="list" default class="material" [footerHeight]="50" [limit]="10" [externalPaging]="true">
           
-          <ngx-datatable-column [name]="'AbpIdentity::UserName' | abpLocalization" prop="userName"></ngx-datatable-column>
-          <ngx-datatable-column [name]="'AbpIdentity::EmailAddress' | abpLocalization" prop="email"></ngx-datatable-column>
-          <ngx-datatable-column [name]="'AbpIdentity::PhoneNumber' | abpLocalization" prop="phoneNumber"></ngx-datatable-column>
+          <ngx-datatable-column [name]="'AbpIdentity::UserName' | abpLocalization" prop="userName">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              {{ row.userName }}
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column name="الاسم بالعربي" prop="name">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              {{ row.name }}
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'AbpIdentity::EmailAddress' | abpLocalization" prop="email" [width]="300">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <div class="d-flex align-items-center justify-content-start" dir="ltr">
+                <img [src]="row.extraProperties?.ProfilePictureUrl || ('https://ui-avatars.com/api/?name=' + (row.name || row.userName) + '&background=random&rounded=true&size=32')"
+                     class="rounded-circle" style="margin-right: 10px;" width="32" height="32" alt="Avatar"
+                     (error)="$event.target.src='assets/images/avatar/avatar-1.jpg'">
+                <span class="text-truncate">{{ row.email }}</span>
+              </div>
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column [name]="'AbpIdentity::PhoneNumber' | abpLocalization" prop="phoneNumber">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+              <span dir="ltr">{{ row.phoneNumber || '-' }}</span>
+            </ng-template>
+          </ngx-datatable-column>
 
           <ngx-datatable-column [name]="'AbpIdentity::Actions' | abpLocalization" sortable="false" [maxWidth]="260">
             <ng-template let-row="row" ngx-datatable-cell-template>
@@ -84,16 +106,35 @@ import { PermissionManagementModule, PermissionManagementComponent } from '@abp/
     <ng-template #userModal let-modal>
       <div class="modal-header">
         <h5 class="modal-title">{{ (selectedUser?.id ? 'AbpIdentity::Edit' : 'AbpIdentity::NewUser') | abpLocalization }}</h5>
-        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()">
+          <span aria-hidden="true" class="d-none d-sm-inline">&times;</span>
+          <i class="fa fa-times d-inline d-sm-none"></i>
+        </button>
       </div>
       <div class="modal-body">
         <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="mb-4 text-center">
+            <label for="profilePicture" class="form-label d-block fw-bold mb-3">الصورة الشخصية</label>
+            <div class="position-relative d-inline-block">
+              <img [src]="profilePicturePreview || 'assets/images/avatar/avatar-1.jpg'"
+                   class="rounded-circle border shadow-sm" width="100" height="100" alt="Profile Picture" style="object-fit: cover;"
+                   (error)="profilePicturePreview = 'https://ui-avatars.com/api/?name=' + (form.get('userName')?.value || 'U') + '&background=random&rounded=true&size=100'">
+              <input type="file" id="profilePicture" class="d-none" accept="image/png, image/jpeg, image/gif" (change)="onProfilePictureChange($event)">
+              <button type="button" class="btn btn-sm btn-light position-absolute bottom-0 end-0 rounded-circle border shadow"
+                      style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; transform: translate(25%, 25%);"
+                      onclick="document.getElementById('profilePicture').click()">
+                 <i class="fas fa-camera text-primary"></i>
+              </button>
+            </div>
+            <div *ngIf="profilePictureError" class="text-danger mt-2 small fw-bold">{{ profilePictureError }}</div>
+            <div class="text-muted mt-2" style="font-size: 0.8rem;">الحجم الأقصى المسموح به هو 50 كيلوبايت (JPG/PNG).</div>
+          </div>
           <div class="mb-3">
             <label for="userName" class="form-label">{{ 'AbpIdentity::UserName' | abpLocalization }}</label>
             <input type="text" id="userName" class="form-control" formControlName="userName">
           </div>
           <div class="mb-3">
-            <label for="name" class="form-label">{{ 'AbpIdentity::Name' | abpLocalization }}</label>
+            <label for="name" class="form-label">الاسم (بالعربي)</label>
             <input type="text" id="name" class="form-control" formControlName="name">
           </div>
           <div class="mb-3">
@@ -138,7 +179,10 @@ export class UserManagementComponent implements OnInit {
   // Permission State
   isPermissionModalVisible = false;
   selectedUserId = '';
-  selectedUserName = '';
+  selectedUserName: string = '';
+
+  profilePicturePreview: string | null = null;
+  profilePictureError: string | null = null;
 
   // Form State
   form: FormGroup;
@@ -151,7 +195,8 @@ export class UserManagementComponent implements OnInit {
       surname: [''],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: [''],
-      password: ['']
+      password: [''],
+      profilePictureUrl: ['']
     });
   }
 
@@ -167,6 +212,8 @@ export class UserManagementComponent implements OnInit {
 
   create() {
     this.selectedUser = null;
+    this.profilePicturePreview = null;
+    this.profilePictureError = null;
     this.form.reset();
     this.form.get('password')?.setValidators([Validators.required]); // Password required for new users
     this.form.get('password')?.updateValueAndValidity();
@@ -176,7 +223,22 @@ export class UserManagementComponent implements OnInit {
   edit(id: string) {
     this.service.get(id).subscribe(user => {
       this.selectedUser = user;
+      
+      // Patch standard fields
       this.form.patchValue(user);
+      
+      this.profilePicturePreview = null;
+      this.profilePictureError = null;
+
+      // Patch extra properties
+      if (user.extraProperties) {
+        if (user.extraProperties['ProfilePictureUrl']) {
+          const picUrl = user.extraProperties['ProfilePictureUrl'] as string;
+          this.form.patchValue({ profilePictureUrl: picUrl });
+          this.profilePicturePreview = picUrl;
+        }
+      }
+
       this.form.get('password')?.clearValidators(); // Password optional for edit
       this.form.get('password')?.updateValueAndValidity();
       this.modalService.open(this.userModal);
@@ -186,7 +248,16 @@ export class UserManagementComponent implements OnInit {
   save() {
     if (this.form.invalid) return;
 
-    const input = this.form.value;
+    const formValue = this.form.value;
+    
+    // Construct the input matching IdentityUserCreateDto / IdentityUserUpdateDto
+    const input: any = {
+      ...formValue,
+      extraProperties: {
+        ProfilePictureUrl: formValue.profilePictureUrl
+      }
+    };
+
     const request = this.selectedUser?.id
       ? this.service.update(this.selectedUser.id, input)
       : this.service.create(input);
@@ -210,5 +281,27 @@ export class UserManagementComponent implements OnInit {
         this.service.delete(id).subscribe(() => this.list.get());
       }
     });
+  }
+
+  onProfilePictureChange(event: any) {
+    const file = event.target.files[0];
+    this.profilePictureError = null;
+
+    if (!file) return;
+
+    // Check size (50KB max)
+    if (file.size > 50 * 1024) {
+      this.profilePictureError = 'عذراً، حجم الصورة يتجاوز 50 كيلوبايت. يرجى اختيار صورة أصغر.';
+      event.target.value = ''; // clear input
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64String = e.target.result;
+      this.profilePicturePreview = base64String;
+      this.form.patchValue({ profilePictureUrl: base64String });
+    };
+    reader.readAsDataURL(file);
   }
 }

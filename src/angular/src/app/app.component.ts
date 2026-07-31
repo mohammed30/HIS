@@ -6,6 +6,8 @@ import {
   AuthService,
 } from '@abp/ng.core';
 import { LoaderBarComponent } from '@abp/ng.theme.shared';
+import { ProfileService } from '@abp/ng.account.core/proxy';
+import { UserProfileService } from '@volo/ngx-lepton-x.core';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
 import { SidebarSearchComponent } from './shared/sidebar-search/sidebar-search.component';
 import { eAccountComponents } from '@abp/ng.account';
@@ -16,6 +18,9 @@ import { eIdentityComponents } from '@abp/ng.identity';
 import { ePermissionManagementComponents } from '@abp/ng.permission-management';
 import { CustomPermissionManagement } from './shared/components/custom-permission-management/custom-permission-management';
 import { AppFooterComponent } from './layout/footer/app-footer.component';
+import { ProfilePictureComponent } from './shared/components/profile-picture/profile-picture';
+import { CurrentUserImageComponent } from './shared/components/current-user-image/current-user-image';
+import { eThemeLeptonXComponents } from '@abp/ng.theme.lepton-x';
 import {
   Router,
   NavigationStart,
@@ -52,6 +57,8 @@ export class AppComponent implements OnInit {
   private authService = inject(AuthService);
   private notifHub = inject(NotificationHubService);
   private navItems = inject(NavItemsService);
+  private profileService = inject(ProfileService);
+  private lpxUserProfileService = inject(UserProfileService);
 
   constructor() {
     this.router.events.subscribe(event => {
@@ -68,6 +75,18 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Fetch user profile and update LeptonX avatar
+    if (this.authService.isAuthenticated) {
+      this.profileService.get().subscribe(profile => {
+        if (profile.extraProperties && profile.extraProperties['ProfilePictureUrl']) {
+          const url = profile.extraProperties['ProfilePictureUrl'] as string;
+          this.lpxUserProfileService.patchUser({
+            avatar: { type: 'image', source: url }
+          });
+        }
+      });
+    }
+
     // Set Arabic as the default language if not already set
     if (!this.session.getLanguage()) {
       this.session.setLanguage('ar');
@@ -126,6 +145,12 @@ export class AppComponent implements OnInit {
     this.replaceableComponents.add({
       component: AppFooterComponent,
       key: 'Theme.FooterComponent', // LeptonX uses this key based on FooterPanelDirective
+    });
+
+    // Replace Personal Settings Component (adds Profile Picture support)
+    this.replaceableComponents.add({
+      component: ProfilePictureComponent,
+      key: eAccountComponents.PersonalSettings,
     });
   }
 }
