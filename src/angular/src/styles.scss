@@ -1742,3 +1742,47 @@ html:not([data-theme="dark"]) body .type-chip.selected {
 html:not([data-theme="dark"]) body .type-chip.selected {
   background: rgba(var(--chip-color), 0.1) !important;
 }
+
+/* ========================================================
+   TOAST (NOTIFICATIONS) RTL FIXES
+   ======================================================== */
+[dir="rtl"] #toast-container > div {
+  padding: 15px 50px 15px 15px !important;
+  background-position: right 15px center !important;
+}
+
+[dir="rtl"] #toast-container > div .toast-close-button {
+  float: left !important;
+  right: auto !important;
+  left: 0.3em !important;
+  margin-left: -0.3em !important;
+}
+
+[dir="rtl"] #toast-container > div {
+  padding: 15px 15px 15px 50px !important; /* Padding left for icon */
+}
+
+[dir="rtl"] #toast-container > div.toast-success,
+[dir="rtl"] #toast-container > div.toast-error,
+[dir="rtl"] #toast-container > div.toast-info,
+[dir="rtl"] #toast-container > div.toast-warning {
+  background-position: left 15px center !important; /* Move icon to the left */
+}
+
+/* ABP Toaster RTL Fixes */
+[dir="rtl"] .abp-toast {
+  grid-template-columns: 1fr 35px !important;
+}
+[dir="rtl"] .abp-toast .abp-toast-icon {
+  grid-column: 2 !important;
+  order: 2 !important;
+}
+[dir="rtl"] .abp-toast .abp-toast-content {
+  grid-column: 1 !important;
+  order: 1 !important;
+}
+[dir="rtl"] .abp-toast .abp-toast-content .abp-toast-close-button {
+  right: auto !important;
+  left: 0 !important;
+  padding: 0 0 0 5px !important;
+}

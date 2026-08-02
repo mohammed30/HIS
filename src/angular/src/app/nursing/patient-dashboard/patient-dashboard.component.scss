@@ -1,0 +1,21 @@
+.modern-pills {
+    .nav-item {
+        .nav-link {
+            color: #64748b;
+            background-color: transparent;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            
+            &:hover {
+                color: #3b82f6;
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+            
+            &.active {
+                color: #fff !important;
+                background-color: #3b82f6 !important;
+                box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            }
+        }
+    }
+}

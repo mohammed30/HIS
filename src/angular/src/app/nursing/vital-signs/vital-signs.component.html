@@ -1,8 +1,8 @@
-<div class="card">
-    <div class="card-header">
-        <div class="d-flex justify-content-between">
-            <h5>{{ '::VitalSigns' | abpLocalization }}</h5>
-            <button class="btn btn-primary btn-sm" (click)="toggleAdd()" *ngIf="!isAdding">
+<div class="card border-0 shadow-sm" style="border-radius: 12px;">
+    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-dark mb-0"><i class="fas fa-heartbeat text-danger me-2"></i>{{ '::VitalSigns' | abpLocalization }}</h5>
+            <button class="btn btn-primary btn-sm fw-bold px-3 rounded-pill" (click)="toggleAdd()" *ngIf="!isAdding">
                 <i class="fa fa-plus me-1"></i>{{ '::AddVitalSign' | abpLocalization }}
             </button>
         </div>
@@ -10,57 +10,65 @@
     <div class="card-body">
 
         <!-- Add Form -->
-        <div *ngIf="isAdding" class="mb-4 border p-3 rounded">
-            <h6>{{ '::NewVitalSign' | abpLocalization }}</h6>
-            <div class="row">
+        <div *ngIf="isAdding" class="mb-4 border p-4 rounded-4 bg-light shadow-sm">
+            <h6 class="fw-bold mb-3"><i class="fas fa-notes-medical me-2 text-primary"></i>{{ '::NewVitalSign' | abpLocalization }}</h6>
+            <div class="row g-3">
                 <div class="col-md-2">
-                    <label>{{ '::Temperature' | abpLocalization }} (C)</label>
-                    <input type="number" class="form-control" [(ngModel)]="newVital.temperature">
+                    <label class="form-label text-muted fw-bold small">{{ '::Temp' | abpLocalization }} (C)</label>
+                    <input type="number" class="form-control rounded-3" [(ngModel)]="newVital.temperature">
                 </div>
                 <div class="col-md-2">
-                    <label>{{ '::Pulse' | abpLocalization }} (bpm)</label>
-                    <input type="number" class="form-control" [(ngModel)]="newVital.heartRate">
+                    <label class="form-label text-muted fw-bold small">{{ '::HeartRate' | abpLocalization }} (bpm)</label>
+                    <input type="number" class="form-control rounded-3" [(ngModel)]="newVital.heartRate">
                 </div>
                 <div class="col-md-2">
-                    <label>{{ '::RespRate' | abpLocalization }} (rpm)</label>
-                    <input type="number" class="form-control" [(ngModel)]="newVital.respiratoryRate">
+                    <label class="form-label text-muted fw-bold small">{{ '::Resp' | abpLocalization }} (rpm)</label>
+                    <input type="number" class="form-control rounded-3" [(ngModel)]="newVital.respiratoryRate">
                 </div>
                 <div class="col-md-2">
-                    <label>{{ '::BPSys' | abpLocalization }}</label>
-                    <input type="number" class="form-control" [(ngModel)]="newVital.bloodPressureSystolic">
+                    <label class="form-label text-muted fw-bold small">Sys BP</label>
+                    <input type="number" class="form-control rounded-3" [(ngModel)]="newVital.bloodPressureSystolic">
                 </div>
                 <div class="col-md-2">
-                    <label>{{ '::BPDia' | abpLocalization }}</label>
-                    <input type="number" class="form-control" [(ngModel)]="newVital.bloodPressureDiastolic">
+                    <label class="form-label text-muted fw-bold small">Dia BP</label>
+                    <input type="number" class="form-control rounded-3" [(ngModel)]="newVital.bloodPressureDiastolic">
                 </div>
                 <div class="col-md-2">
-                    <label>{{ '::SpO2' | abpLocalization }} (%)</label>
-                    <input type="number" class="form-control" [(ngModel)]="newVital.oxygenSaturation">
+                    <label class="form-label text-muted fw-bold small">{{ '::SpO2' | abpLocalization }} (%)</label>
+                    <input type="number" class="form-control rounded-3" [(ngModel)]="newVital.oxygenSaturation">
                 </div>
             </div>
-            <div class="mt-2 text-end">
-                <button class="btn btn-secondary btn-sm me-2" (click)="cancel()">{{ '::Cancel' | abpLocalization
-                    }}</button>
-                <button class="btn btn-success btn-sm" (click)="save()">{{ '::Save' | abpLocalization }}</button>
+            <div class="mt-4 text-end">
+                <button class="btn btn-light border fw-bold me-2 px-4 rounded-pill" (click)="cancel()">{{ 'AbpUi::Cancel' | abpLocalization }}</button>
+                <button class="btn btn-success fw-bold px-4 rounded-pill" (click)="save()"><i class="fas fa-check me-1"></i>{{ 'AbpUi::Save' | abpLocalization }}</button>
             </div>
         </div>
 
         <!-- List -->
-        <ngx-datatable [rows]="vitalSigns" [list]="{ maxResultCount: 10, skipCount: 0 }" default>
-            <ngx-datatable-column [name]="'::RecordedAt' | abpLocalization" prop="recordedAt">
+        <ngx-datatable class="bootstrap" [rows]="vitalSigns" [headerHeight]="50" [rowHeight]="50" [scrollbarV]="true" style="height: 400px;">
+            <ngx-datatable-column [name]="'AbpUi::Time' | abpLocalization" prop="recordedAt">
                 <ng-template let-value="value" ngx-datatable-cell-template>
-                    {{ value | date:'short' }}
+                    <span class="fw-bold">{{ value | date:'shortTime' }}</span>
+                    <small class="d-block text-muted" style="font-size: 0.7rem;">{{ value | date:'shortDate' }}</small>
                 </ng-template>
             </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::Temp' | abpLocalization" prop="temperature"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::Temp' | abpLocalization" prop="temperature">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span [ngClass]="{'text-danger fw-bold': value > 37.5, 'text-info fw-bold': value < 36.0}">{{ value }}°C</span>
+                </ng-template>
+            </ngx-datatable-column>
             <ngx-datatable-column [name]="'::HeartRate' | abpLocalization" prop="heartRate"></ngx-datatable-column>
             <ngx-datatable-column [name]="'::Resp' | abpLocalization" prop="respiratoryRate"></ngx-datatable-column>
-            <ngx-datatable-column [name]="'::BP' | abpLocalization">
+            <ngx-datatable-column [name]="'BP'">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                    {{ row.bloodPressureSystolic }}/{{ row.bloodPressureDiastolic }}
+                    <span class="badge bg-light border text-dark">{{ row.bloodPressureSystolic }}/{{ row.bloodPressureDiastolic }}</span>
                 </ng-template>
             </ngx-datatable-column>
-            <ngx-datatable-column [name]="'::SpO2' | abpLocalization" prop="oxygenSaturation"></ngx-datatable-column>
+            <ngx-datatable-column [name]="'::SpO2' | abpLocalization" prop="oxygenSaturation">
+                <ng-template let-value="value" ngx-datatable-cell-template>
+                    <span [ngClass]="{'text-danger fw-bold': value < 90}">{{ value }}%</span>
+                </ng-template>
+            </ngx-datatable-column>
         </ngx-datatable>
     </div>
 </div>

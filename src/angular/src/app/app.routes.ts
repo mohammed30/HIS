@@ -438,6 +438,12 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Inventory.PurchaseRequisitions' }
       },
       {
+        path: 'internal-requests',
+        loadComponent: () => import('./inventory/internal-requests/internal-requests').then(c => c.InternalRequestsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Inventory.StockOperations' }
+      },
+      {
         path: 'reports/department-consumption',
         loadComponent: () => import('./inventory/reports/department-consumption-report.component').then(c => c.DepartmentConsumptionReportComponent),
         canActivate: [permissionGuard],

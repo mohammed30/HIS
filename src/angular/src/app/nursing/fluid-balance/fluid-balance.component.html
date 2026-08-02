@@ -3,7 +3,7 @@
     <div class="col-md-4">
         <div class="card bg-success text-white">
             <div class="card-body">
-                <h6 class="card-title">{{ 'Nursing::TotalInput' | abpLocalization }}</h6>
+                <h6 class="card-title">{{ '::TotalInput' | abpLocalization }}</h6>
                 <h3>{{ summary.totalInput }} ml</h3>
             </div>
         </div>
@@ -11,7 +11,7 @@
     <div class="col-md-4">
         <div class="card bg-warning text-dark">
             <div class="card-body">
-                <h6 class="card-title">{{ 'Nursing::TotalOutput' | abpLocalization }}</h6>
+                <h6 class="card-title">{{ '::TotalOutput' | abpLocalization }}</h6>
                 <h3>{{ summary.totalOutput }} ml</h3>
             </div>
         </div>
@@ -19,7 +19,7 @@
     <div class="col-md-4">
         <div class="card" [ngClass]="summary.balance >= 0 ? 'bg-info text-white' : 'bg-danger text-white'">
             <div class="card-body">
-                <h6 class="card-title">{{ 'Nursing::Balance' | abpLocalization }}</h6>
+                <h6 class="card-title">{{ '::Balance' | abpLocalization }}</h6>
                 <h3>{{ summary.balance > 0 ? '+' : '' }}{{ summary.balance }} ml</h3>
             </div>
         </div>
@@ -29,9 +29,9 @@
 <div class="card border-0 shadow-none">
     <div class="card-header bg-transparent border-0 px-0">
         <div class="d-flex justify-content-between">
-            <h5 class="card-title mb-0">{{ 'Nursing::FluidRecords' | abpLocalization }}</h5>
+            <h5 class="card-title mb-0">{{ '::FluidRecords' | abpLocalization }}</h5>
             <button class="btn btn-primary btn-sm" (click)="createRecord()">
-                <i class="fa fa-plus me-1"></i> {{ 'Nursing::AddRecord' | abpLocalization }}
+                <i class="fa fa-plus me-1"></i> {{ '::AddRecord' | abpLocalization }}
             </button>
         </div>
     </div>
@@ -41,9 +41,9 @@
                 <tr>
                     <th>{{ 'AbpUi::Time' | abpLocalization }}</th>
                     <th>{{ 'AbpUi::Type' | abpLocalization }}</th>
-                    <th>{{ 'Nursing::Metric' | abpLocalization }}</th>
-                    <th>{{ 'Nursing::Amount' | abpLocalization }} (ml)</th>
-                    <th>{{ 'Nursing::Notes' | abpLocalization }}</th>
+                    <th>{{ '::Metric' | abpLocalization }}</th>
+                    <th>{{ '::Amount' | abpLocalization }} (ml)</th>
+                    <th>{{ '::Notes' | abpLocalization }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,7 +54,7 @@
                             {{ item.type === 0 ? 'Input' : 'Output' }}
                         </span>
                     </td>
-                    <td>{{ 'Nursing::Enum:FluidMetric:' + item.metric | abpLocalization }}</td>
+                    <td>{{ '::Enum:FluidMetric:' + item.metric | abpLocalization }}</td>
                     <td>{{ item.amount }}</td>
                     <td>{{ item.notes }}</td>
                 </tr>
@@ -68,7 +68,7 @@
 
 <abp-modal [(visible)]="isModalOpen">
     <ng-template #abpHeader>
-        <h3>{{ 'Nursing::AddFluidRecord' | abpLocalization }}</h3>
+        <h3>{{ '::AddFluidRecord' | abpLocalization }}</h3>
     </ng-template>
 
     <ng-template #abpBody>
@@ -86,20 +86,20 @@
                 </div>
             </div>
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::Metric' | abpLocalization }}</label>
+                <label class="form-label">{{ '::Metric' | abpLocalization }}</label>
                 <select class="form-select" formControlName="metric">
                     <option [ngValue]="null">Select Source/Route</option>
                     <option *ngFor="let opt of metricOptions" [ngValue]="opt.key">
-                        {{ 'Nursing::Enum:FluidMetric:' + opt.key | abpLocalization }}
+                        {{ '::Enum:FluidMetric:' + opt.key | abpLocalization }}
                     </option>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::Amount' | abpLocalization }} (ml)</label>
+                <label class="form-label">{{ '::Amount' | abpLocalization }} (ml)</label>
                 <input type="number" class="form-control" formControlName="amount" min="1">
             </div>
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::Notes' | abpLocalization }}</label>
+                <label class="form-label">{{ '::Notes' | abpLocalization }}</label>
                 <input type="text" class="form-control" formControlName="notes">
             </div>
         </form>

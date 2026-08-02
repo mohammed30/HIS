@@ -2,20 +2,20 @@
     <div class="card-body p-0">
         <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-pills mb-3">
             <li [ngbNavItem]="1">
-                <a ngbNavLink>{{ 'Nursing::PainAssessment' | abpLocalization }}</a>
+                <a ngbNavLink>{{ '::PainAssessment' | abpLocalization }}</a>
                 <ng-template ngbNavContent>
                     <!-- Pain Content -->
                     <div class="d-flex justify-content-end mb-2">
                         <button class="btn btn-primary btn-sm" (click)="createPain()">
-                            <i class="fa fa-plus me-1"></i> {{ 'Nursing::NewAssessment' | abpLocalization }}
+                            <i class="fa fa-plus me-1"></i> {{ '::NewAssessment' | abpLocalization }}
                         </button>
                     </div>
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>{{ 'Nursing::PainScore' | abpLocalization }}</th>
-                                <th>{{ 'Nursing::Location' | abpLocalization }}</th>
-                                <th>{{ 'Nursing::Intervention' | abpLocalization }}</th>
+                                <th>{{ '::PainScore' | abpLocalization }}</th>
+                                <th>{{ '::Location' | abpLocalization }}</th>
+                                <th>{{ '::Intervention' | abpLocalization }}</th>
                                 <th>{{ 'AbpUi::Time' | abpLocalization }}</th>
                             </tr>
                         </thead>
@@ -27,7 +27,7 @@
                                         {{ item.painScore }}/10
                                     </span>
                                 </td>
-                                <td>{{ 'Nursing::Enum:PainLocation:' + item.location | abpLocalization }}</td>
+                                <td>{{ '::Enum:PainLocation:' + item.location | abpLocalization }}</td>
                                 <!-- Should verify localization key -->
                                 <td>{{ item.intervention || '-' }}</td>
                                 <td>{{ item.assessmentTime | date:'short' }}</td>
@@ -40,19 +40,19 @@
                 </ng-template>
             </li>
             <li [ngbNavItem]="2">
-                <a ngbNavLink>{{ 'Nursing::FallRiskAssessment' | abpLocalization }}</a>
+                <a ngbNavLink>{{ '::FallRiskAssessment' | abpLocalization }}</a>
                 <ng-template ngbNavContent>
                     <!-- Fall Risk Content -->
                     <div class="d-flex justify-content-end mb-2">
                         <button class="btn btn-primary btn-sm" (click)="createFall()">
-                            <i class="fa fa-plus me-1"></i> {{ 'Nursing::NewAssessment' | abpLocalization }}
+                            <i class="fa fa-plus me-1"></i> {{ '::NewAssessment' | abpLocalization }}
                         </button>
                     </div>
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>{{ 'Nursing::TotalScore' | abpLocalization }}</th>
-                                <th>{{ 'Nursing::RiskLevel' | abpLocalization }}</th>
+                                <th>{{ '::TotalScore' | abpLocalization }}</th>
+                                <th>{{ '::RiskLevel' | abpLocalization }}</th>
                                 <th>{{ 'AbpUi::Time' | abpLocalization }}</th>
                             </tr>
                         </thead>
@@ -62,7 +62,7 @@
                                 <td>
                                     <span class="badge"
                                         [ngClass]="{'bg-success': item.riskLevel === 0, 'bg-warning': item.riskLevel === 1, 'bg-danger': item.riskLevel === 2}">
-                                        {{ 'Nursing::Enum:RiskLevel:' + item.riskLevel | abpLocalization }}
+                                        {{ '::Enum:RiskLevel:' + item.riskLevel | abpLocalization }}
                                     </span>
                                 </td>
                                 <td>{{ item.assessmentTime | date:'short' }}</td>
@@ -82,28 +82,28 @@
 <!-- Pain Modal -->
 <abp-modal [(visible)]="isPainModalOpen" *ngIf="isPainModalOpen">
     <ng-template #abpHeader>
-        <h3>{{ 'Nursing::NewPainAssessment' | abpLocalization }}</h3>
+        <h3>{{ '::NewPainAssessment' | abpLocalization }}</h3>
     </ng-template>
     <ng-template #abpBody>
         <form [formGroup]="painForm">
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::PainScore' | abpLocalization }} (0-10)</label>
+                <label class="form-label">{{ '::PainScore' | abpLocalization }} (0-10)</label>
                 <input type="number" class="form-control" formControlName="painScore" min="0" max="10">
             </div>
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::Location' | abpLocalization }}</label>
+                <label class="form-label">{{ '::Location' | abpLocalization }}</label>
                 <select class="form-select" formControlName="location">
                     <option [ngValue]="null">Select Location</option>
-                    <option *ngFor="let loc of painLocations" [ngValue]="loc.key">{{ 'Nursing::Enum:PainLocation:' +
+                    <option *ngFor="let loc of painLocations" [ngValue]="loc.key">{{ '::Enum:PainLocation:' +
                         loc.key | abpLocalization }}</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::Characteristics' | abpLocalization }}</label>
+                <label class="form-label">{{ '::Characteristics' | abpLocalization }}</label>
                 <input type="text" class="form-control" formControlName="characteristics">
             </div>
             <div class="mb-3">
-                <label class="form-label">{{ 'Nursing::Intervention' | abpLocalization }}</label>
+                <label class="form-label">{{ '::Intervention' | abpLocalization }}</label>
                 <input type="text" class="form-control" formControlName="intervention">
             </div>
         </form>
@@ -118,34 +118,34 @@
 <!-- Fall Risk Modal -->
 <abp-modal [(visible)]="isFallModalOpen" *ngIf="isFallModalOpen">
     <ng-template #abpHeader>
-        <h3>{{ 'Nursing::NewFallRiskAssessment' | abpLocalization }}</h3>
+        <h3>{{ '::NewFallRiskAssessment' | abpLocalization }}</h3>
     </ng-template>
     <ng-template #abpBody>
         <form [formGroup]="fallForm">
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" formControlName="historyOfFalls" id="history">
-                <label class="form-check-label" for="history">{{ 'Nursing::HistoryOfFalls' | abpLocalization }}</label>
+                <label class="form-check-label" for="history">{{ '::HistoryOfFalls' | abpLocalization }}</label>
             </div>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" formControlName="secondaryDiagnosis" id="secDiag">
-                <label class="form-check-label" for="secDiag">{{ 'Nursing::SecondaryDiagnosis' | abpLocalization
+                <label class="form-check-label" for="secDiag">{{ '::SecondaryDiagnosis' | abpLocalization
                     }}</label>
             </div>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" formControlName="ambulatoryAid" id="aid">
-                <label class="form-check-label" for="aid">{{ 'Nursing::AmbulatoryAid' | abpLocalization }}</label>
+                <label class="form-check-label" for="aid">{{ '::AmbulatoryAid' | abpLocalization }}</label>
             </div>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" formControlName="iVTherapy" id="iv">
-                <label class="form-check-label" for="iv">{{ 'Nursing::IVTherapy' | abpLocalization }}</label>
+                <label class="form-check-label" for="iv">{{ '::IVTherapy' | abpLocalization }}</label>
             </div>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" formControlName="gaitProblem" id="gait">
-                <label class="form-check-label" for="gait">{{ 'Nursing::GaitProblem' | abpLocalization }}</label>
+                <label class="form-check-label" for="gait">{{ '::GaitProblem' | abpLocalization }}</label>
             </div>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" formControlName="mentalStatusIssue" id="mental">
-                <label class="form-check-label" for="mental">{{ 'Nursing::MentalStatusIssue' | abpLocalization
+                <label class="form-check-label" for="mental">{{ '::MentalStatusIssue' | abpLocalization
                     }}</label>
             </div>
         </form>

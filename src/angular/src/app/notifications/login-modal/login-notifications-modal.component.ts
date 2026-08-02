@@ -74,7 +74,7 @@ import { NotificationService } from '../services/notification.service';
     .login-modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.4);
       backdrop-filter: blur(4px);
       z-index: 10000;
       display: flex;
@@ -88,11 +88,11 @@ import { NotificationService } from '../services/notification.service';
     .login-modal-panel {
       width: 460px;
       max-width: 95vw;
-      background: var(--lpx-card-bg, #1e293b);
+      background: #ffffff;
       border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid #f1f5f9;
       animation: slideUp 0.35s cubic-bezier(.4,0,.2,1);
     }
 
@@ -171,7 +171,7 @@ import { NotificationService } from '../services/notification.service';
       transition: background 0.15s;
     }
 
-    .lm-notif-item:hover { background: rgba(255,255,255,0.04); }
+    .lm-notif-item:hover { background: #f8fafc; }
 
     .lm-notif-icon {
       width: 38px;
@@ -186,19 +186,19 @@ import { NotificationService } from '../services/notification.service';
     }
 
     .lm-notif-title {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--lpx-text, #f1f5f9);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1e293b;
       margin-bottom: 2px;
     }
 
     .lm-notif-msg {
-      font-size: 0.78rem;
-      color: #94a3b8;
+      font-size: 0.8rem;
+      color: #64748b;
       line-height: 1.4;
     }
 
-    .lm-notif-time { font-size: 0.72rem; margin-top: 4px; }
+    .lm-notif-time { font-size: 0.72rem; margin-top: 4px; color: #94a3b8; }
 
     .lm-more {
       text-align: center;
@@ -213,10 +213,13 @@ import { NotificationService } from '../services/notification.service';
       flex-direction: column;
       gap: 8px;
       padding: 16px 22px;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid #f1f5f9;
+      background: #ffffff;
     }
 
-    .lm-footer .btn { border-radius: 10px; }
+    .lm-footer .btn { border-radius: 10px; font-weight: 600; }
+    .lm-footer .btn-outline-secondary { border-color: #e2e8f0; color: #475569; }
+    .lm-footer .btn-outline-secondary:hover { background: #f8fafc; color: #1e293b; }
   `]
 })
 export class LoginNotificationsModalComponent implements OnInit {
