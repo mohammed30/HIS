@@ -68,17 +68,17 @@ body {
   --lpx-logo: var(--lpx-logo-icon);
 
   /* Theme Colors */
-  --theme-bg-primary: #f8f9fa;
-  --theme-bg-secondary: #ffffff;
-  --theme-bg-card: #ffffff;
-  --theme-text-primary: #212529;
-  --theme-text-secondary: #6c757d;
-  --theme-text-muted: #adb5bd;
-  --theme-border-color: #dee2e6;
-  --theme-shadow: rgba(0, 0, 0, 0.1);
+  --theme-bg-primary: #FFF9D2; /* Top color: Pale Yellow/Cream */
+  --theme-bg-secondary: #FFEBCC; /* Second color: Pale Peach */
+  --theme-bg-card: #ffffff; /* Keep cards white for contrast, or use one of the palette colors */
+  --theme-text-primary: #374151;
+  --theme-text-secondary: #6b7280;
+  --theme-text-muted: #9ca3af;
+  --theme-border-color: #BFDDF0; /* Third color: Light Blue */
+  --theme-shadow: rgba(0, 0, 0, 0.05);
   --theme-input-bg: #ffffff;
-  --theme-table-stripe: rgba(0, 0, 0, 0.02);
-  --theme-hover-bg: rgba(0, 0, 0, 0.03);
+  --theme-table-stripe: rgba(140, 192, 235, 0.1); /* Bottom color (#8CC0EB) with transparency */
+  --theme-hover-bg: rgba(140, 192, 235, 0.15);
 
   .abp-logo {
     background-repeat: no-repeat;
@@ -1532,4 +1532,213 @@ html:not([data-theme="dark"]) .vital-card {
 [data-theme="dark"] .account-dropdown-list::-webkit-scrollbar-thumb,
 .dark .account-dropdown-list::-webkit-scrollbar-thumb {
   background: #475569;
+}
+
+/* ========================================================
+   WARM MINIMALIST THEME (Matching Image Layout)
+   ======================================================== */
+html:not([data-theme="dark"]) {
+  --theme-bg-warm: #FDF9F1;
+  --theme-active-bg: #E4EBFA;
+  --theme-active-text: #1E3A8A;
+  
+  --lpx-content-bg: var(--theme-bg-warm) !important;
+  --lpx-page-bg: var(--theme-bg-warm) !important;
+  --lpx-body-bg: var(--theme-bg-warm) !important;
+  --lpx-header-bg: var(--theme-bg-warm) !important;
+  --lpx-sidebar-bg: var(--theme-bg-warm) !important;
+  --lpx-card-bg: #ffffff !important;
+  --lpx-text: #111827 !important;
+}
+
+html:not([data-theme="dark"]) body {
+  background-color: var(--theme-bg-warm) !important;
+  color: #000000 !important;
+}
+
+/* Force ALL text in light mode to be clear and dark */
+html:not([data-theme="dark"]) body,
+html:not([data-theme="dark"]) body p,
+html:not([data-theme="dark"]) body span,
+html:not([data-theme="dark"]) body div,
+html:not([data-theme="dark"]) body td,
+html:not([data-theme="dark"]) body th,
+html:not([data-theme="dark"]) body label,
+html:not([data-theme="dark"]) body input,
+html:not([data-theme="dark"]) body .text-muted,
+html:not([data-theme="dark"]) body .text-secondary {
+  color: #111827 !important;
+  font-weight: 500 !important;
+}
+
+html:not([data-theme="dark"]) body h1,
+html:not([data-theme="dark"]) body h2,
+html:not([data-theme="dark"]) body h3,
+html:not([data-theme="dark"]) body h4,
+html:not([data-theme="dark"]) body h5,
+html:not([data-theme="dark"]) body h6 {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+/* 1. Seamless Backgrounds & Remove Borders */
+html:not([data-theme="dark"]) body .lpx-content, 
+html:not([data-theme="dark"]) body .lpx-content-container,
+html:not([data-theme="dark"]) body main,
+html:not([data-theme="dark"]) body .lpx-sidebar,
+html:not([data-theme="dark"]) body .lpx-sidebar-container,
+html:not([data-theme="dark"]) body .lpx-sidebar-container .lpx-sidebar,
+html:not([data-theme="dark"]) body .lpx-nav,
+html:not([data-theme="dark"]) body .lpx-nav-menu,
+html:not([data-theme="dark"]) body .lpx-header,
+html:not([data-theme="dark"]) body .lpx-logo-container,
+html:not([data-theme="dark"]) body .lpx-header-container,
+html:not([data-theme="dark"]) body .lpx-toolbar-container {
+  background-color: var(--theme-bg-warm) !important;
+  border: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+/* 2. Nuke Default Sidebar Backgrounds */
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link > *,
+html:not([data-theme="dark"]) body .lpx-sidebar .menu-search-container,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-filter,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-container,
+html:not([data-theme="dark"]) body .lpx-sidebar div[class*="search"],
+html:not([data-theme="dark"]) body .lpx-sidebar div[class*="filter"] {
+  background-color: transparent !important;
+  color: #000000 !important;
+}
+
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link {
+  border-radius: 8px !important;
+  margin: 4px 12px !important;
+  padding: 10px 16px !important;
+  transition: all 0.2s ease !important;
+  font-weight: 600 !important;
+}
+
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link i,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link .lpx-icon {
+  color: #111827 !important;
+}
+
+/* Search Input */
+html:not([data-theme="dark"]) body .lpx-sidebar .menu-search-container input,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-filter input,
+html:not([data-theme="dark"]) body .lpx-sidebar input.form-control,
+html:not([data-theme="dark"]) body .lpx-sidebar div[class*="search"] input,
+html:not([data-theme="dark"]) body .lpx-sidebar div[class*="filter"] input {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #000000 !important;
+  border-radius: 8px !important;
+}
+
+/* Hover State */
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link:hover {
+  background-color: rgba(228, 235, 250, 0.5) !important;
+}
+
+/* 3. Active & Open States (The Blue Pill) */
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.active > .lpx-menu-item-link,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.selected > .lpx-menu-item-link,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link.active,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link.selected,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.open > .lpx-menu-item-link,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.show > .lpx-menu-item-link {
+  background-color: var(--theme-active-bg) !important;
+}
+
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.active > .lpx-menu-item-link *,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.selected > .lpx-menu-item-link *,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item-link.active *,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.open > .lpx-menu-item-link *,
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-menu-item.show > .lpx-menu-item-link * {
+  color: var(--theme-active-text) !important;
+  font-weight: 700 !important;
+}
+
+/* 4. Cards Styling */
+html:not([data-theme="dark"]) body .card {
+  background-color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(149, 157, 165, 0.1) !important;
+}
+
+/* Ensure Logo text is visible */
+html:not([data-theme="dark"]) body .lpx-sidebar .lpx-logo-container,
+html:not([data-theme="dark"]) body .lpx-brand-name {
+  color: #000000 !important;
+}
+
+/* 5. Fix Hardcoded Dark Components Leaking into Light Mode */
+/* Laboratory Catalog Header */
+html:not([data-theme="dark"]) body .catalog-header {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 12px rgba(149, 157, 165, 0.1) !important;
+}
+
+html:not([data-theme="dark"]) body .catalog-header h5,
+html:not([data-theme="dark"]) body .catalog-header small {
+  color: #111827 !important;
+}
+
+html:not([data-theme="dark"]) body .catalog-header .header-icon {
+  background: #E4EBFA !important;
+  color: #1E3A8A !important;
+  box-shadow: none !important;
+}
+
+html:not([data-theme="dark"]) body .catalog-header .search-input {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html:not([data-theme="dark"]) body .catalog-header .search-input::placeholder,
+html:not([data-theme="dark"]) body .catalog-header .search-icon {
+  color: #64748b !important;
+}
+
+/* Admin Notifications Page */
+html:not([data-theme="dark"]) body .admin-header-gradient {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 4px 12px rgba(149, 157, 165, 0.1) !important;
+}
+html:not([data-theme="dark"]) body .admin-header-content {
+  color: #111827 !important;
+}
+html:not([data-theme="dark"]) body .admin-stat-pill {
+  background: #f1f5f9 !important;
+  color: #111827 !important;
+}
+html:not([data-theme="dark"]) body .admin-stat-pill.warning {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
+html:not([data-theme="dark"]) body .admin-panel {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+html:not([data-theme="dark"]) body .admin-panel-header {
+  border-bottom: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+html:not([data-theme="dark"]) body .type-chip {
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+html:not([data-theme="dark"]) body .type-chip:hover,
+html:not([data-theme="dark"]) body .type-chip.selected {
+  border-color: var(--chip-color) !important;
+  color: var(--chip-color) !important;
+}
+html:not([data-theme="dark"]) body .type-chip.selected {
+  background: rgba(var(--chip-color), 0.1) !important;
 }

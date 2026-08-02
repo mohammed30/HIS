@@ -66,7 +66,12 @@ export class HomeComponent implements OnInit {
     ].map(m => this.localizationService.instant(`::Month:${m}`));
 
     this.visitsChartOption = {
-      tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', textStyle: { color: '#fff' } },
+      tooltip: { 
+        trigger: 'axis', 
+        backgroundColor: '#ffffff', 
+        textStyle: { color: '#111827', fontWeight: 'bold' },
+        extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; border-radius: 8px;'
+      },
       xAxis: { type: 'category', data: months, axisLine: { lineStyle: { color: '#94a3b8' } } },
       yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.2)' } }, axisLabel: { color: '#94a3b8' } },
       series: [
@@ -84,7 +89,12 @@ export class HomeComponent implements OnInit {
     };
 
     this.roomsChartOption = {
-      tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 23, 42, 0.9)', textStyle: { color: '#fff' } },
+      tooltip: { 
+        trigger: 'item', 
+        backgroundColor: '#ffffff', 
+        textStyle: { color: '#111827', fontWeight: 'bold' },
+        extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; border-radius: 8px;'
+      },
       legend: { top: 'bottom', textStyle: { color: '#94a3b8' } },
       series: [
         {
@@ -94,7 +104,7 @@ export class HomeComponent implements OnInit {
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 8,
-            borderColor: 'transparent',
+            borderColor: '#ffffff',
             borderWidth: 2
           },
           label: { show: false, position: 'center' },
