@@ -9,6 +9,8 @@ import {
   PosProductDto, PosSaleItemDto, PosInvoiceListDto, PosInvoiceItemDto,
   PosApproveDto, PosRejectDto, PosPartialRefundDto, PosRefundItemDto
 } from '../../proxy/pharmacy/dtos/models';
+import { InternalRequestService } from '../../proxy/inventory/internal-request.service';
+import { InternalRequestDto } from '../../proxy/inventory/dtos/models';
 
 declare var abp: any;
 
@@ -54,7 +56,7 @@ interface RefundSelection {
   returnQty: number;
 }
 
-type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'refunded-list';
+type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'refunded-list' | 'dispensed-list' | 'pending-returns';
 
 @Component({
   selector: 'app-pharmacy-pos',
@@ -510,22 +512,29 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
         <button class="pos-tab" [class.active]="activeTab==='refunded-list'" (click)="setTab('refunded-list')">
           <i class="fas fa-history"></i> الفواتير المرتجعة
         </button>
+        <button class="pos-tab" [class.active]="activeTab==='dispensed-list'" (click)="setTab('dispensed-list')">
+          <i class="fas fa-check-double"></i> تم الصرف
+        </button>
+        <button class="pos-tab" [class.active]="activeTab==='pending-returns'" (click)="setTab('pending-returns')">
+          <i class="fas fa-undo"></i> طلبات مرتجعة
+          <span *ngIf="pendingReturnsCount > 0" class="tab-badge green">{{ pendingReturnsCount }}</span>
+        </button>
       </div>
     </div>
 
     <!-- Global Filter Bar for list views -->
-    <div class="pos-card mb-3 p-1rem" style="display: flex; gap: 1rem; align-items: flex-end;" *ngIf="activeTab === 'pending-approval' || activeTab === 'to-dispense' || activeTab === 'refunded-list'">
+    <div class="pos-card mb-3 p-1rem" style="display: flex; gap: 1rem; align-items: flex-end;" *ngIf="activeTab === 'pending-approval' || activeTab === 'to-dispense' || activeTab === 'refunded-list' || activeTab === 'dispensed-list' || activeTab === 'pending-returns'">
       <div style="flex:1">
         <label class="inline-label">بحث برقم الفاتورة</label>
         <input class="inline-input" type="text" [(ngModel)]="filterText" placeholder="POS-xxxx..." (keyup.enter)="applyFilters()">
       </div>
       <div style="flex:1">
         <label class="inline-label">من تاريخ</label>
-        <input class="inline-input" type="date" [(ngModel)]="filterFromDate">
+        <input class="inline-input" type="date" [(ngModel)]="filterFromDate" (change)="applyFilters()">
       </div>
       <div style="flex:1">
         <label class="inline-label">إلى تاريخ</label>
-        <input class="inline-input" type="date" [(ngModel)]="filterToDate">
+        <input class="inline-input" type="date" [(ngModel)]="filterToDate" (change)="applyFilters()">
       </div>
       <div>
         <button class="btn-pos-ghost" style="border-color: var(--pos-accent); color: var(--pos-accent)" (click)="applyFilters()">
@@ -903,7 +912,96 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
     </div>
 
     <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- TAB 3: To Dispense                                        -->
+    <!-- TAB: Dispensed Invoices List                               -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab==='dispensed-list'">
+      <div class="section-head">
+        <div class="section-title"><i class="fas fa-check-double" style="color:var(--pos-accent)"></i> الفواتير المصروفة</div>
+        <button class="btn-pos-ghost" (click)="loadDispensedInvoices()" style="padding:0.45rem 1rem"><i class="fas fa-sync"></i> تحديث</button>
+      </div>
+
+      <div *ngIf="isLoading" class="text-center" style="padding:3rem">
+        <div class="pos-spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto;border-top-color:var(--pos-accent)"></div>
+      </div>
+      <div *ngIf="!isLoading && dispensedInvoices.length === 0" class="pos-card" style="text-align:center;padding:3rem">
+        <i class="fas fa-folder-open" style="font-size:2.5rem;color:var(--pos-muted);margin-bottom:0.75rem;display:block;opacity:0.4"></i>
+        <div class="text-muted-c">لا توجد فواتير مصروفة حالياً</div>
+      </div>
+
+      <div class="grid-4" *ngIf="!isLoading && dispensedInvoices.length > 0">
+        <div *ngFor="let inv of dispensedInvoices" class="inv-card">
+          <div class="inv-card-head">
+            <span class="inv-number">{{ inv.invoiceNumber }}</span>
+            <span class="inv-status status-paid">تم الصرف</span>
+          </div>
+          <div class="inv-card-body">
+            <div class="inv-meta"><i class="fas fa-user"></i> {{ inv.patientName || 'عميل نقدي' }}</div>
+            <div class="inv-meta"><i class="fas fa-calendar-alt"></i> {{ inv.invoiceDate | date:'yyyy/MM/dd – HH:mm' }}</div>
+            <div class="inv-items">
+              <div class="text-sm text-muted-c mb-1">الأصناف:</div>
+              <div *ngFor="let item of inv.items" class="inv-item-line">
+                {{ item.productName || item.description }} × {{ item.quantity }} =
+                <span style="font-family:'Outfit',sans-serif" class="text-accent"> {{ item.totalPrice | number:'1.2-2' }} ج.م</span>
+              </div>
+            </div>
+            <div class="inv-total">
+              <span class="text-sm text-muted-c">الإجمالي</span>
+              <span class="inv-total-val text-accent">{{ inv.totalAmount | number:'1.2-2' }} ج.م</span>
+            </div>
+          </div>
+          <div class="inv-card-foot d-flex gap-2">
+            <button class="btn-pos-ghost w-100" (click)="printInvoice(inv.id)"><i class="fas fa-print"></i> الإيصال</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ────────────────────────────────────────────────────────── -->
+    <!-- TAB: Pending Returns                                       -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='pending-returns'">
+      <div class="section-head">
+        <div class="section-title"><i class="fas fa-undo" style="color:var(--pos-accent)"></i> طلبات المرتجعات الداخلية</div>
+        <button class="btn-pos-ghost" (click)="loadPendingReturns()" style="padding:0.45rem 1rem"><i class="fas fa-sync"></i> تحديث</button>
+      </div>
+
+      <div *ngIf="isLoading" class="text-center" style="padding:3rem">
+        <div class="pos-spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto;border-top-color:var(--pos-accent)"></div>
+      </div>
+      <div *ngIf="!isLoading && pendingReturns.length === 0" class="pos-card" style="text-align:center;padding:3rem">
+        <i class="fas fa-folder-open" style="font-size:2.5rem;color:var(--pos-muted);margin-bottom:0.75rem;display:block;opacity:0.4"></i>
+        <div class="text-muted-c">لا توجد طلبات مرتجعة حالياً</div>
+      </div>
+
+      <div class="grid-4" *ngIf="!isLoading && pendingReturns.length > 0">
+        <div *ngFor="let req of pendingReturns" class="inv-card">
+          <div class="inv-card-head">
+            <span class="inv-number">{{ req.requestNumber }}</span>
+            <span class="inv-status status-pending">بانتظار الموافقة</span>
+          </div>
+          <div class="inv-card-body">
+            <div class="inv-meta"><i class="fas fa-user"></i> {{ req.patientName || 'غير معروف' }}</div>
+            <div class="inv-meta"><i class="fas fa-calendar-alt"></i> {{ req.requestDate | date:'yyyy/MM/dd – HH:mm' }}</div>
+            <div class="inv-items">
+              <div class="text-sm text-muted-c mb-1">الأصناف المرتجعة:</div>
+              <div *ngFor="let line of req.lines" class="inv-item-line">
+                {{ line.inventoryItemName }} × {{ line.returnQuantity }}
+              </div>
+            </div>
+            <div class="inv-total mt-2">
+              <span class="text-sm text-muted-c">ملاحظات:</span>
+              <span class="inv-total-val" style="font-size: 0.85rem">{{ req.notes }}</span>
+            </div>
+          </div>
+          <div class="inv-card-foot d-flex gap-2">
+            <button class="btn-pos-primary w-100" (click)="approvePendingReturn(req.id)" [disabled]="isBusy"><i class="fas fa-check"></i> موافقة واستلام</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!-- TAB 3: To Dispense                                        -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <div *ngIf="activeTab==='to-dispense'">
       <div class="section-head">
@@ -1079,6 +1177,7 @@ export class PharmacyPosComponent implements OnInit {
 
   // ── Pending Approval ─────────────────────────────────────────
   pendingInvoices: PosInvoiceListDto[] = [];
+  pendingReturns: InternalRequestDto[] = [];
   rejectedInvoices: PosInvoiceListDto[] = [];
   approvingInvoiceId: string | null = null;
   rejectingInvoiceId: string | null = null;
@@ -1100,18 +1199,25 @@ export class PharmacyPosComponent implements OnInit {
   filterFromDate = '';
   filterToDate = '';
   refundedInvoices: PosInvoiceListDto[] = [];
-
+  dispensedInvoices: PosInvoiceListDto[] = [];
   // ── Computed Counts ──────────────────────────────────────────
   get pendingApprovalCount() { return this.pendingInvoices.length; }
+  // ── Pending Returns ─────────────────────────────────────────────
   get toDispenseCount() { return this.approvedInvoices.length; }
+  get pendingReturnsCount() { return this.pendingReturns.length; }
 
   constructor(
     private posService: PosService,
     private settingsService: PharmacySettingsService,
+    private internalRequestService: InternalRequestService,
     private toaster: ToasterService
   ) {}
 
   ngOnInit() {
+    const d = new Date();
+    const today = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    this.filterFromDate = today;
+    this.filterToDate = today;
     this.settingsService.get().subscribe(s => { this.allowNegativeStock = s.allowNegativeStock; });
     this.loadAllQueues();
   }
@@ -1123,6 +1229,8 @@ export class PharmacyPosComponent implements OnInit {
     if (tab === 'pending-approval') { this.loadPendingApproval(); }
     if (tab === 'to-dispense') { this.loadToDispense(); }
     if (tab === 'refunded-list') { this.loadRefundedInvoices(); }
+    if (tab === 'dispensed-list') { this.loadDispensedInvoices(); }
+    if (tab === 'pending-returns') { this.loadPendingReturns(); }
   }
 
   applyFilters() {
@@ -1133,6 +1241,8 @@ export class PharmacyPosComponent implements OnInit {
     this.loadPendingApproval();
     this.loadToDispense();
     this.loadRefundedInvoices();
+    this.loadDispensedInvoices();
+    this.loadPendingReturns();
   }
 
   // ── Cart Operations ──────────────────────────────────────────
@@ -1223,10 +1333,25 @@ export class PharmacyPosComponent implements OnInit {
             this.loadAllQueues();
             abp.notify.success('تم إرسال الفاتورة للمحاسب', 'نجاح');
           },
-          error: () => { this.isBusy = false; this.toaster.error('فشل الإرسال', 'خطأ'); }
+          error: () => { this.isBusy = false; this.toaster.error('فشل اعتماد الصرف', 'خطأ'); }
         });
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل إنشاء الفاتورة', 'خطأ'); }
+    });
+  }
+
+  approvePendingReturn(requestId: string) {
+    this.isBusy = true;
+    this.internalRequestService.approveReturn(requestId).subscribe({
+      next: () => {
+        this.toaster.success('تمت الموافقة على المرتجع وعكس القيود بنجاح');
+        this.isBusy = false;
+        this.loadPendingReturns();
+      },
+      error: () => {
+        this.toaster.error('حدث خطأ أثناء الموافقة');
+        this.isBusy = false;
+      }
     });
   }
 
@@ -1253,6 +1378,17 @@ export class PharmacyPosComponent implements OnInit {
     });
   }
 
+  loadPendingReturns() {
+    this.isLoading = true;
+    this.internalRequestService.getPendingReturns({ maxResultCount: 100, skipCount: 0 } as any).subscribe({
+      next: (res) => {
+        this.pendingReturns = res.items;
+        this.isLoading = false;
+      },
+      error: () => this.isLoading = false
+    });
+  }
+
   startApprove(inv: PosInvoiceListDto) {
     this.approvingInvoiceId = inv.id;
     this.rejectingInvoiceId = null;
@@ -1271,6 +1407,9 @@ export class PharmacyPosComponent implements OnInit {
         this.pendingInvoices = this.pendingInvoices.filter(i => i.id !== inv.id);
         inv.status = 3; // Paid
         this.approvedInvoices = [inv, ...this.approvedInvoices];
+
+        // Refresh all queues from server
+        this.loadAllQueues();
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل الاعتماد', 'خطأ'); }
     });
@@ -1298,6 +1437,9 @@ export class PharmacyPosComponent implements OnInit {
         inv.status = 8; // Rejected
         inv.rejectionReason = reasonToSave;
         this.rejectedInvoices = [inv, ...this.rejectedInvoices];
+
+        // Refresh all queues from server
+        this.loadAllQueues();
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل الرفض', 'خطأ'); }
     });
@@ -1332,8 +1474,16 @@ export class PharmacyPosComponent implements OnInit {
 
   loadRefundedInvoices() {
     this.isLoading = true;
-    this.posService.getPosInvoices(9 /* Refunded */, this.filterText, this.filterFromDate, this.filterToDate).subscribe({
+    this.posService.getPosInvoices(6 /* Refunded */, this.filterText, this.filterFromDate, this.filterToDate).subscribe({
       next: (inv) => { this.refundedInvoices = inv; this.isLoading = false; },
+      error: () => this.isLoading = false
+    });
+  }
+
+  loadDispensedInvoices() {
+    this.isLoading = true;
+    this.posService.getPosInvoices(9 /* Dispensed */, this.filterText, this.filterFromDate, this.filterToDate).subscribe({
+      next: (inv) => { this.dispensedInvoices = inv; this.isLoading = false; },
       error: () => this.isLoading = false
     });
   }
@@ -1345,8 +1495,12 @@ export class PharmacyPosComponent implements OnInit {
         this.isBusy = false;
         abp.notify.success('تم صرف الأصناف بنجاح', 'صرف');
         
-        // Optimistically update status to Dispensed instead of removing
-        inv.status = 9; // Dispensed
+        // Remove from approved queue so it disappears from the current tab
+        this.approvedInvoices = this.approvedInvoices.filter(i => i.id !== inv.id);
+        
+        // Refresh all queues from server in the background
+        this.loadAllQueues();
+        
         this.printInvoice(inv.id);
       },
       error: () => { this.isBusy = false; this.toaster.error('فشل الصرف', 'خطأ'); }
@@ -1424,6 +1578,10 @@ export class PharmacyPosComponent implements OnInit {
         this.isBusy = false;
         this.refundResult = result as any;
         abp.notify.success('تم إجراء الارتجاع بنجاح', 'ارتجاع');
+        
+        // Refresh all queues from server
+        this.loadAllQueues();
+
         // Auto-print
         this.printReturnInvoice(result.refundInvoiceId!);
       },

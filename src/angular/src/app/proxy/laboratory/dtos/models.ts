@@ -13,7 +13,9 @@ export interface CreateLabAppointmentDto {
 
 export interface CreateLabRequestDto {
   patientId?: string;
-  doctorId?: string;
+  doctorId?: string | null;
+  isExternalDoctor?: boolean;
+  externalDoctorName?: string | null;
   serviceItemId?: string;
   notes?: string;
 }
@@ -53,8 +55,10 @@ export interface LabAppointmentDto extends AuditedEntityDto<string> {
 export interface LabRequestDto extends AuditedEntityDto<string> {
   patientId?: string;
   patientName?: string;
-  doctorId?: string;
-  doctorName?: string;
+  doctorId?: string | null;
+  doctorName?: string | null;
+  isExternalDoctor?: boolean;
+  externalDoctorName?: string | null;
   serviceItemId?: string;
   testName?: string;
   testCode?: string;

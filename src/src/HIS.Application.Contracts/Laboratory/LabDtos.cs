@@ -48,8 +48,10 @@ public class LabRequestDto : AuditedEntityDto<Guid>
 {
     public Guid PatientId { get; set; }
     public string PatientName { get; set; }
-    public Guid DoctorId { get; set; }
-    public string DoctorName { get; set; }
+    public Guid? DoctorId { get; set; }
+    public string? DoctorName { get; set; }
+    public bool IsExternalDoctor { get; set; }
+    public string? ExternalDoctorName { get; set; }
     public Guid ServiceItemId { get; set; }
     public string TestName { get; set; }
     public string TestCode { get; set; }
@@ -68,7 +70,9 @@ public class LabRequestDto : AuditedEntityDto<Guid>
 public class CreateLabRequestDto
 {
     public Guid PatientId { get; set; }
-    public Guid DoctorId { get; set; }
+    public Guid? DoctorId { get; set; }
+    public bool IsExternalDoctor { get; set; }
+    public string? ExternalDoctorName { get; set; }
     public Guid ServiceItemId { get; set; }
     public string Notes { get; set; }
 }

@@ -11,7 +11,9 @@ public class RadiologyRequestDto : FullAuditedEntityDto<Guid>
     public Guid PatientId { get; set; }
     public string PatientName { get; set; }
     public Guid? DoctorId { get; set; }
-    public string DoctorName { get; set; }
+    public string? DoctorName { get; set; }
+    public bool IsExternalDoctor { get; set; }
+    public string? ExternalDoctorName { get; set; }
     public Guid RadiologyItemId { get; set; }
     public string RadiologyItemName { get; set; }
     public DateTime RequestDate { get; set; }
@@ -28,6 +30,8 @@ public class CreateUpdateRadiologyRequestDto
 {
     public Guid PatientId { get; set; }
     public Guid? DoctorId { get; set; }
+    public bool IsExternalDoctor { get; set; }
+    public string? ExternalDoctorName { get; set; }
     public Guid RadiologyItemId { get; set; }
     public string ReportBody { get; set; }
     public string TechnicianNotes { get; set; }

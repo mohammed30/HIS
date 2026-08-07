@@ -7,7 +7,9 @@ using Volo.Abp.Guids;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
 
+using System.Linq;
 using Volo.Abp.PermissionManagement;
+using Volo.Abp.Authorization.Permissions;
 
 namespace HIS.Identity;
 
@@ -18,19 +20,22 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
     private readonly IGuidGenerator _guidGenerator;
     private readonly ICurrentTenant _currentTenant;
     private readonly IPermissionManager _permissionManager;
+    private readonly IPermissionDefinitionManager _permissionDefinitionManager;
 
     public IdentityDataSeedContributor(
         IdentityUserManager userManager,
         IdentityRoleManager roleManager,
         IGuidGenerator guidGenerator,
         ICurrentTenant currentTenant,
-        IPermissionManager permissionManager)
+        IPermissionManager permissionManager,
+        IPermissionDefinitionManager permissionDefinitionManager)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _guidGenerator = guidGenerator;
         _currentTenant = currentTenant;
         _permissionManager = permissionManager;
+        _permissionDefinitionManager = permissionDefinitionManager;
     }
 
     public async Task SeedAsync(DataSeedContext context)
@@ -76,105 +81,17 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
             "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.POS"
         });
 
-        await GrantPermissionsAsync("AdminStaff", new[] { 
-            // Settings
-            "HIS.Settings", "HIS.Settings.Pharmacy",
-            // Patients
-            "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
-            // Appointments
-            "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
-            // Reception
-            "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets",
-            "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
-            // Laboratory
-            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults",
-            "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
-            // Radiology
-            "HIS.Radiology", "HIS.Radiology.Requests",
-            // Emergency
-            "HIS.Emergency", "HIS.Emergency.Dashboard",
-            // Pharmacy
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock",
-            "HIS.Pharmacy.Drugs", "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete", "HIS.Pharmacy.POS",
-            // Billing & Accounting
-            "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries",
-            "HIS.Billing.Payments", "HIS.Billing.DeferredPayments",
-            "HIS.Billing.FinancialReports", "HIS.Billing.FinancialReports.DailyReport", "HIS.Billing.FinancialReports.CustomerDebtsReport",
-            "HIS.Billing.FinancialReports.DiscountsReport", "HIS.Billing.FinancialReports.IncomeStatement",
-            "HIS.Billing.FinancialReports.BalanceSheet", "HIS.Billing.FinancialReports.AccountStatement",
-            "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers", "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims",
-            // Definitions
-            "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
-            "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
-            "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods",
-            // Inventory
-            "HIS.Inventory", "HIS.Inventory.Dashboard", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations",
-            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseRequisitions", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
-            // Nursing
-            "HIS.Nursing", "HIS.Nursing.PatientList", "HIS.Nursing.VitalSigns", "HIS.Nursing.MedicationAdministration",
-            "HIS.Nursing.CarePlans", "HIS.Nursing.Assessments", "HIS.Nursing.FluidBalance", "HIS.Nursing.ShiftHandover",
-            // Inpatient
-            "HIS.Inpatient",
-            "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
-            "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
-            "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
-            "HIS.Inpatient.Dashboard",
-            // Operations
-            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report",
-            // HR
-            "HIS.HR", "HIS.HR.Employees", "HIS.HR.Employees.Create", "HIS.HR.Employees.Edit", "HIS.HR.Employees.Delete",
-            "HIS.HR.CompensationItems", "HIS.HR.LeaveTypes", "HIS.HR.EmployeeLeaves", "HIS.HR.Loans",
-            "HIS.HR.Payroll", "HIS.HR.Payroll.Process", "HIS.HR.Penalties", "HIS.HR.Attendance",
-            "HIS.HR.Reports", "HIS.HR.PaySlip"
-        });
-        
-        // Grant HR permissions to Admin too
-        await GrantPermissionsAsync("Admin", new[] {
-            "HIS.HR", "HIS.HR.Employees", "HIS.HR.Employees.Create", "HIS.HR.Employees.Edit", "HIS.HR.Employees.Delete",
-            "HIS.HR.CompensationItems", "HIS.HR.LeaveTypes", "HIS.HR.EmployeeLeaves", "HIS.HR.Loans",
-            "HIS.HR.Payroll", "HIS.HR.Payroll.Process", "HIS.HR.Penalties", "HIS.HR.Attendance",
-            "HIS.HR.Reports", "HIS.HR.PaySlip"
-        });
+        var allPermissions = await _permissionDefinitionManager.GetPermissionsAsync();
+        var allPermissionNames = allPermissions.Select(p => p.Name).ToArray();
+
+        // Grant ALL permissions to AdminStaff
+        await GrantPermissionsAsync("AdminStaff", allPermissionNames);
+
+        // Grant ALL permissions to admin
+        await GrantPermissionsAsync("admin", allPermissionNames);
         
         // Ensure Admin has EVERYTHING (Root + All Children)
-        await GrantPermissionsAsync("admin", new[] { 
-            "HIS.Settings", "HIS.Settings.Pharmacy",
-            "HIS.Patients", "HIS.Patients.Create", "HIS.Patients.Edit", "HIS.Patients.Delete",
-            "HIS.Appointments", "HIS.Appointments.Create", "HIS.Appointments.Edit", "HIS.Appointments.Delete",
-            "HIS.Reception", "HIS.Reception.LaboratoryReception", "HIS.Reception.Tickets", 
-            "HIS.Reception.InsuranceCompanies", "HIS.Reception.InsurancePlans", "HIS.Reception.Invoices", "HIS.Reception.Payments",
-            "HIS.Laboratory", "HIS.Laboratory.CreateSample", "HIS.Laboratory.UpdateResults", "HIS.Laboratory.ApproveResults", 
-            "HIS.Laboratory.Catalog", "HIS.Laboratory.Requests", "HIS.Laboratory.Appointments",
-            // Radiology (separate permission - fixed)
-            "HIS.Radiology", "HIS.Radiology.Requests",
-            "HIS.Emergency", "HIS.Emergency.Dashboard",
-            "HIS.Pharmacy", "HIS.Pharmacy.Prescriptions", "HIS.Pharmacy.Dispensing", "HIS.Pharmacy.Stock", "HIS.Pharmacy.Drugs",
-            "HIS.Pharmacy.Drugs.Create", "HIS.Pharmacy.Drugs.Edit", "HIS.Pharmacy.Drugs.Delete", "HIS.Pharmacy.POS",
-            "HIS.Inventory", "HIS.Inventory.Dashboard", "HIS.Inventory.ManageWarehouses", "HIS.Inventory.StockOperations", 
-            "HIS.Inventory.Suppliers", "HIS.Inventory.PurchaseRequisitions", "HIS.Inventory.PurchaseOrders", "HIS.Inventory.DepartmentalConsumption",
-            "HIS.Billing", "HIS.Billing.ManageInvoices", "HIS.Billing.ChartOfAccounts", "HIS.Billing.JournalEntries", 
-            "HIS.Billing.Payments", "HIS.Billing.DeferredPayments",
-            "HIS.Billing.FinancialReports", "HIS.Billing.FinancialReports.DailyReport", "HIS.Billing.FinancialReports.CustomerDebtsReport",
-            "HIS.Billing.FinancialReports.DiscountsReport", "HIS.Billing.FinancialReports.IncomeStatement",
-            "HIS.Billing.FinancialReports.BalanceSheet", "HIS.Billing.FinancialReports.AccountStatement",
-            "HIS.Billing.ReceiptVouchers", "HIS.Billing.PaymentVouchers", "HIS.Billing.BankTransactions", "HIS.Billing.ContractClaims",
-            "HIS.Definitions", "HIS.Definitions.Nationalities", "HIS.Definitions.Professions", "HIS.Definitions.Contracts", 
-            "HIS.Definitions.PatientCategories", "HIS.Definitions.ReferralSources", "HIS.Definitions.Services", 
-            "HIS.Definitions.Radiology", "HIS.Definitions.PriceLists", "HIS.Definitions.PaymentMethods",
-            "HIS.Nursing", "HIS.Nursing.PatientList", "HIS.Nursing.VitalSigns", "HIS.Nursing.MedicationAdministration", 
-            "HIS.Nursing.CarePlans", "HIS.Nursing.Assessments", "HIS.Nursing.FluidBalance", "HIS.Nursing.ShiftHandover",
-            "HIS.Inpatient", 
-            "HIS.Inpatient.Rooms", "HIS.Inpatient.Rooms.Create", "HIS.Inpatient.Rooms.Edit", "HIS.Inpatient.Rooms.Delete",
-            "HIS.Inpatient.Admissions", "HIS.Inpatient.Admissions.Create", "HIS.Inpatient.Admissions.Edit", "HIS.Inpatient.Admissions.Delete",
-            "HIS.Inpatient.Reservations", "HIS.Inpatient.Reservations.Create", "HIS.Inpatient.Reservations.Edit", "HIS.Inpatient.Reservations.Delete",
-            "HIS.Inpatient.Dashboard",
-            "HIS.Operations", "HIS.Operations.Manage", "HIS.Operations.PrintTicket", "HIS.Operations.Report",
-            // HR
-            "HIS.HR", "HIS.HR.Employees", "HIS.HR.Employees.Create", "HIS.HR.Employees.Edit", "HIS.HR.Employees.Delete",
-            "HIS.HR.CompensationItems", "HIS.HR.LeaveTypes", "HIS.HR.EmployeeLeaves", "HIS.HR.Loans",
-            "HIS.HR.Payroll", "HIS.HR.Payroll.Process", "HIS.HR.Penalties", "HIS.HR.Attendance",
-            "HIS.HR.Reports", "HIS.HR.PaySlip"
-        });
+        await GrantPermissionsAsync("Admin", allPermissionNames);
         
         await SetAdminPasswordAsync();
     }
@@ -201,7 +118,15 @@ public class IdentityDataSeedContributor : IDataSeedContributor, ITransientDepen
         {
             foreach (var permission in permissions)
             {
-                await _permissionManager.SetForRoleAsync(roleName, permission, true);
+                try
+                {
+                    await _permissionManager.SetForRoleAsync(roleName, permission, true);
+                }
+                catch (System.ApplicationException)
+                {
+                    // Some built-in ABP permissions (e.g. AbpIdentity.UserLookup) are
+                    // not compatible with the Role provider and must be skipped.
+                }
             }
         }
     }

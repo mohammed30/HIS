@@ -13,6 +13,27 @@
     </div>
   </div>
   <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-3 g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small fw-bold">من تاريخ</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="filterFromDate" (change)="getList()">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-bold">إلى تاريخ</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="filterToDate" (change)="getList()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small fw-bold">بحث برقم الطلب أو اسم المريض</label>
+        <input type="text" class="form-control form-control-sm" placeholder="ابحث هنا..." [(ngModel)]="filterText" (keyup.enter)="getList()">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary btn-sm w-100" (click)="getList()">
+          <i class="fa fa-search me-1"></i> بحث
+        </button>
+      </div>
+    </div>
+
     <ngx-datatable [rows]="data.items" [count]="data.totalCount" default>
       <ngx-datatable-column
         [name]="'::Actions' | abpLocalization"
@@ -58,9 +79,24 @@
               <i class="fa fa-trash"></i>
             </button>
           </div>
+          <!-- Return button for Received requests (medication/consumable only) -->
+          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Received && (row.requestType === 0 || row.requestType === 1)">
+            <button
+              class="btn btn-warning btn-sm"
+              (click)="openReturnModal(row)"
+              title="إرجاع كميات من الأصناف المستلمة"
+            >
+              <i class="fa fa-arrow-right me-1"></i> طلب ارتجاع
+            </button>
+          </div>
         </ng-template>
       </ngx-datatable-column>
 
+      <ngx-datatable-column name="نوع الطلب" prop="requestType">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          <span class="badge" [ngClass]="getRequestTypeClass(row.requestType)">{{ getRequestTypeText(row.requestType) }}</span>
+        </ng-template>
+      </ngx-datatable-column>
       <ngx-datatable-column name="رقم الطلب" prop="requestNumber"></ngx-datatable-column>
       <ngx-datatable-column name="تاريخ الطلب" prop="requestDate">
         <ng-template let-value="value" ngx-datatable-cell-template>
@@ -225,6 +261,73 @@
     <button class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
       <i class="fa fa-check me-1"></i>
       {{ '::Save' | abpLocalization }}
+    </button>
+  </ng-template>
+</abp-modal>
+
+<!-- Return Modal -->
+<abp-modal [(visible)]="isReturnModalOpen" [options]="{ size: 'lg' }">
+  <ng-template #abpHeader>
+    <h5 class="mb-0">
+      <i class="fa fa-undo me-2 text-warning"></i>
+      مرتجع - {{ selectedReturnRequest?.requestNumber }}
+    </h5>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 p-2">
+      <i class="fa fa-exclamation-triangle"></i>
+      <small>سيتم إعادة الكميات المُرجَعة إلى المستودع وخصمها من فاتورة المريض مع إنشاء قيد عكسي.</small>
+    </div>
+
+    <table class="table table-sm table-bordered align-middle">
+      <thead class="table-light">
+        <tr class="text-center small">
+          <th>الصنف</th>
+          <th style="width: 130px">الكمية المُعتمدة</th>
+          <th style="width: 130px">كمية الإرجاع</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let line of returnLines" class="text-center">
+          <td class="text-start fw-bold small">{{ line.inventoryItemName }}</td>
+          <td>
+            <span class="badge bg-secondary">{{ line.originalQuantity }}</span>
+          </td>
+          <td>
+            <input
+              type="number"
+              class="form-control form-control-sm text-center"
+              [class.is-invalid]="line.returnQuantity > line.originalQuantity || line.returnQuantity < 0"
+              [(ngModel)]="line.returnQuantity"
+              [min]="0"
+              [max]="line.originalQuantity"
+              style="width: 90px; margin: auto;"
+            />
+          </td>
+        </tr>
+        <tr *ngIf="!returnLines || returnLines.length === 0">
+          <td colspan="3" class="text-center text-muted py-3">لا توجد أصناف في هذا الطلب</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-3">
+      <label class="form-label fw-bold small">ملاحظات الإرجاع</label>
+      <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="returnNotes" placeholder="أدخل سبب الإرجاع..."></textarea>
+    </div>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <button type="button" class="btn btn-secondary" abpClose>
+      إلغاء
+    </button>
+    <button
+      class="btn btn-warning"
+      (click)="submitReturn()"
+      [disabled]="!hasReturnQuantity"
+    >
+      <i class="fa fa-undo me-1"></i> تأكيد المرتجع
     </button>
   </ng-template>
 </abp-modal>

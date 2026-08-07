@@ -152,7 +152,7 @@ public class InvoiceDocument : IDocument
                 row.RelativeItem().Element(c => ComposeSection(c, IsReturn ? "بيانات المرتجع" : "بيانات الفاتورة", comp =>
                 {
                     comp.Item().Text(text => { text.Span(IsReturn ? "رقم المرتجع: " : "رقم الفاتورة: ").Bold(); text.Span(InvoiceNumber ?? "-"); });
-                    comp.Item().Text(text => { text.Span("التاريخ: ").Bold(); text.Span(Date.ToString("yyyy/MM/dd")); });
+                    comp.Item().Text(text => { text.Span("التاريخ: ").Bold(); text.Span(Date.ToString("yyyy/MM/dd - HH:mm")); });
                     if (IsReturn && !string.IsNullOrEmpty(OriginalInvoiceNumber))
                         comp.Item().Text(text => { text.Span("فاتورة الأصل: ").Bold(); text.Span(OriginalInvoiceNumber); });
                     comp.Item().Text(text => { text.Span("الحالة: ").Bold(); text.Span(Status ?? "-"); });

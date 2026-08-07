@@ -1,4 +1,4 @@
-import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto } from '@abp/ng.core';
+import type { AuditedEntityDto, EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { AccountType } from '../account-type.enum';
 import type { AccountMappingType } from '../account-mapping-type.enum';
 import type { BankTransactionType } from '../bank-transaction-type.enum';
@@ -254,6 +254,11 @@ export interface FinancialReportLineDto {
   accountName?: string;
   amount?: number;
   previousAmount?: number;
+}
+
+export interface GetJournalEntriesInput extends PagedAndSortedResultRequestDto {
+  dateFrom?: string | null;
+  dateTo?: string | null;
 }
 
 export interface IncomeStatementDto {

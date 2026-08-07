@@ -16,7 +16,7 @@ using HIS.Radiology;
 namespace HIS.Inventory;
 
 [Authorize]
-public class InternalRequestAppService : CrudAppService<InternalRequest, InternalRequestDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateInternalRequestDto>, IInternalRequestAppService
+public class InternalRequestAppService : CrudAppService<InternalRequest, InternalRequestDto, Guid, InternalRequestGetListInput, CreateUpdateInternalRequestDto>, IInternalRequestAppService
 {
     private readonly InventoryManager _inventoryManager;
     private readonly IRepository<Warehouse, Guid> _warehouseRepository;
@@ -110,9 +110,27 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         return await MapToGetOutputDtoAsync(entity);
     }
 
-    protected override async Task<IQueryable<InternalRequest>> CreateFilteredQueryAsync(PagedAndSortedResultRequestDto input)
+    protected override async Task<IQueryable<InternalRequest>> CreateFilteredQueryAsync(InternalRequestGetListInput input)
     {
-        return await Repository.WithDetailsAsync(x => x.Lines);
+        var query = await Repository.WithDetailsAsync(x => x.Lines);
+
+        if (input.FromDate.HasValue)
+        {
+            query = query.Where(x => x.RequestDate >= input.FromDate.Value.Date);
+        }
+
+        if (input.ToDate.HasValue)
+        {
+            var toDate = input.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(x => x.RequestDate <= toDate);
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.FilterText))
+        {
+            query = query.Where(x => x.RequestNumber.Contains(input.FilterText));
+        }
+
+        return query;
     }
 
     protected override async Task<InternalRequest> GetEntityByIdAsync(Guid id)
@@ -675,5 +693,155 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         }
 
         return account;
+    }
+
+    public async Task<InternalRequestDto> ReturnItemsAsync(ReturnInternalRequestDto input)
+    {
+        var query = await Repository.WithDetailsAsync(x => x.Lines);
+        var entity = await AsyncExecuter.FirstOrDefaultAsync(query.Where(x => x.Id == input.RequestId));
+
+        if (entity == null)
+            throw new Volo.Abp.Domain.Entities.EntityNotFoundException(typeof(InternalRequest), input.RequestId);
+
+        if (entity.Status != InternalRequestStatus.Received && entity.Status != InternalRequestStatus.Approved)
+            throw new UserFriendlyException("يمكن إجراء المرتجع فقط على الطلبات في حالة (مستلم) أو (معتمد).");
+
+        if (entity.RequestType != InternalRequestType.Medication && entity.RequestType != InternalRequestType.Consumable)
+            throw new UserFriendlyException("المرتجع متاح فقط لطلبات الأدوية والمستهلكات.");
+
+        if (!entity.AdmissionId.HasValue)
+            throw new UserFriendlyException("لا يمكن إجراء مرتجع على طلب غير مرتبط بمريض منوم.");
+
+        var returnRequest = new InternalRequest(
+            GuidGenerator.Create(),
+            "RET-" + entity.RequestNumber,
+            entity.RequestingDepartmentId,
+            entity.FulfilledByWarehouseId,
+            Clock.Now
+        )
+        {
+            AdmissionId = entity.AdmissionId,
+            RequestType = entity.RequestType,
+            Status = InternalRequestStatus.Submitted, // Pending Approval
+            Notes = input.Notes,
+            IsReturn = true,
+            ParentRequestId = entity.Id
+        };
+
+        foreach (var returnLine in input.Lines)
+        {
+            if (returnLine.ReturnQuantity <= 0) continue;
+
+            var originalLine = entity.Lines.FirstOrDefault(l => l.InventoryItemId == returnLine.InventoryItemId);
+            if (originalLine != null && returnLine.ReturnQuantity > originalLine.ApprovedQuantity)
+                throw new UserFriendlyException($"كمية المرتجع ({returnLine.ReturnQuantity}) تتجاوز الكمية المعتمدة ({originalLine.ApprovedQuantity}).");
+
+            returnRequest.Lines.Add(new InternalRequestLine(
+                GuidGenerator.Create(),
+                returnRequest.Id,
+                returnLine.InventoryItemId,
+                returnLine.ReturnQuantity
+            ));
+        }
+
+        await Repository.InsertAsync(returnRequest);
+        return ObjectMapper.Map<InternalRequest, InternalRequestDto>(returnRequest);
+    }
+
+    public async Task<InternalRequestDto> ApproveReturnAsync(Guid requestId)
+    {
+        var query = await Repository.WithDetailsAsync(x => x.Lines);
+        var returnEntity = await AsyncExecuter.FirstOrDefaultAsync(query.Where(x => x.Id == requestId));
+        if (returnEntity == null || !returnEntity.IsReturn) throw new UserFriendlyException("الطلب غير موجود أو غير صالح.");
+        if (returnEntity.Status != InternalRequestStatus.Submitted) throw new UserFriendlyException("لقد تمت معالجة هذا المرتجع مسبقاً.");
+
+        var originalEntity = await AsyncExecuter.FirstOrDefaultAsync(query.Where(x => x.Id == returnEntity.ParentRequestId));
+
+        decimal totalRefund = 0m;
+        var inventoryItemRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Inventory.InventoryItem, Guid>>();
+        var serviceItemRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Services.ServiceItem, Guid>>();
+
+        foreach (var returnLine in returnEntity.Lines)
+        {
+            if (returnLine.RequestedQuantity <= 0) continue;
+
+            var inventoryItem = await inventoryItemRepo.FindAsync(returnLine.InventoryItemId);
+            if (inventoryItem == null) continue;
+
+            // 1. Return stock to warehouse
+            await _inventoryManager.ReceiveStockAsync(
+                returnEntity.FulfilledByWarehouseId,
+                inventoryItem.ProductId,
+                inventoryItem.ProductName,
+                inventoryItem.Type,
+                returnLine.RequestedQuantity,
+                inventoryItem.AverageCost,
+                $"موافقة مرتجع: {returnEntity.RequestNumber} - {returnEntity.Notes}"
+            );
+
+            // 2. Reduce patient invoice
+            var serviceItem = await serviceItemRepo.FirstOrDefaultAsync(s => s.Id == inventoryItem.ProductId || s.Name == inventoryItem.ProductName);
+            decimal price = serviceItem?.Price ?? inventoryItem.AverageCost;
+            if (price <= 0) price = 10.0m;
+            decimal lineRefund = price * returnLine.RequestedQuantity;
+            totalRefund += lineRefund;
+
+            var requestRef = originalEntity?.RequestNumber ?? "";
+            var serviceCode = serviceItem?.Code;
+            var productName = inventoryItem.ProductName;
+            var invoiceItems = await _invoiceItemRepository.GetListAsync(x =>
+                x.Notes != null && x.Notes.Contains(requestRef) &&
+                (x.ServiceCode == serviceCode || x.Notes.Contains(productName)));
+
+            foreach (var invItem in invoiceItems)
+            {
+                var invoice = await _invoiceRepository.FindAsync(invItem.InvoiceId);
+                if (invoice != null && invoice.Status == InvoiceStatus.Draft)
+                {
+                    decimal refundAmount = Math.Min(lineRefund, invItem.UnitPrice * invItem.Quantity);
+
+                    if (returnEntity.AdmissionId.HasValue)
+                    {
+                        var admission = await AdmissionRepository.GetAsync(returnEntity.AdmissionId.Value);
+                        admission.TotalAmount -= refundAmount;
+                        await AdmissionRepository.UpdateAsync(admission);
+                    }
+
+                    invoice.TotalAmount -= refundAmount;
+                    invoice.NetAmount = invoice.TotalAmount - invoice.DiscountAmount + invoice.TaxAmount;
+                    await _invoiceRepository.UpdateAsync(invoice);
+                    break;
+                }
+            }
+        }
+
+        // 3. Create reversal journal entry if there's a refund
+        if (totalRefund > 0 && originalEntity != null)
+        {
+            await CreateReversalJournalEntryAsync(originalEntity, totalRefund);
+
+            // Add note to original request
+            originalEntity.Notes = (originalEntity.Notes ?? "") + $"\n[موافقة مرتجع بتاريخ {DateTime.Now:yyyy-MM-dd} بقيمة {totalRefund:N2} - {returnEntity.Notes}]";
+            await Repository.UpdateAsync(originalEntity);
+        }
+
+        returnEntity.Status = InternalRequestStatus.Approved;
+        await Repository.UpdateAsync(returnEntity);
+
+        return await MapToGetOutputDtoAsync(returnEntity);
+    }
+
+    public async Task<Volo.Abp.Application.Dtos.PagedResultDto<InternalRequestDto>> GetPendingReturnsAsync(Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto input)
+    {
+        var query = await Repository.WithDetailsAsync(x => x.Lines);
+        var q = query.Where(x => x.IsReturn && x.Status == InternalRequestStatus.Submitted);
+        
+        var totalCount = await AsyncExecuter.CountAsync(q);
+        var items = await AsyncExecuter.ToListAsync(q.Skip(input.SkipCount).Take(input.MaxResultCount));
+        
+        return new Volo.Abp.Application.Dtos.PagedResultDto<InternalRequestDto>(
+            totalCount,
+            ObjectMapper.Map<List<InternalRequest>, List<InternalRequestDto>>(items)
+        );
     }
 }

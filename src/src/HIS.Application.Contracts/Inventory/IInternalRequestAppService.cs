@@ -6,7 +6,7 @@ using Volo.Abp.Application.Services;
 
 namespace HIS.Inventory;
 
-public interface IInternalRequestAppService : ICrudAppService<InternalRequestDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateInternalRequestDto>
+public interface IInternalRequestAppService : ICrudAppService<InternalRequestDto, Guid, InternalRequestGetListInput, CreateUpdateInternalRequestDto>
 {
     /// <summary>
     /// يتم استدعاؤه من قبل الصيدلية أو التمريض لإرسال الطلب للاعتماد
@@ -27,4 +27,19 @@ public interface IInternalRequestAppService : ICrudAppService<InternalRequestDto
     /// إلغاء الطلب من قبل التمريض وعكس القيود المالية إن وجدت
     /// </summary>
     Task<InternalRequestDto> CancelRequestAsync(Guid id);
+
+    /// <summary>
+    /// إرجاع كميات من أصناف سبق صرفها لمريض منوم (مرتجع) - ينشئ طلب مرتجع قيد الانتظار
+    /// </summary>
+    Task<InternalRequestDto> ReturnItemsAsync(ReturnInternalRequestDto input);
+
+    /// <summary>
+    /// يتم استدعاؤه من قبل الصيدلية للموافقة على المرتجع وتنفيذ الحركات المخزنية والمالية
+    /// </summary>
+    Task<InternalRequestDto> ApproveReturnAsync(Guid requestId);
+
+    /// <summary>
+    /// جلب طلبات المرتجعات المعلقة للموافقة
+    /// </summary>
+    Task<PagedResultDto<InternalRequestDto>> GetPendingReturnsAsync(PagedAndSortedResultRequestDto input);
 }

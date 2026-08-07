@@ -6,7 +6,9 @@ namespace HIS.Laboratory;
 public class LabRequest : FullAuditedAggregateRoot<Guid>
 {
     public Guid PatientId { get; private set; }
-    public Guid DoctorId { get; private set; }
+    public Guid? DoctorId { get; private set; }
+    public bool IsExternalDoctor { get; private set; }
+    public string? ExternalDoctorName { get; private set; }
     
     /// <summary>
     /// معرف الخدمة (التحليل) من جدول الخدمات الموحد
@@ -22,11 +24,13 @@ public class LabRequest : FullAuditedAggregateRoot<Guid>
 
     protected LabRequest() { }
 
-    public LabRequest(Guid id, Guid patientId, Guid doctorId, Guid serviceItemId) : base(id)
+    public LabRequest(Guid id, Guid patientId, Guid? doctorId, Guid serviceItemId, bool isExternalDoctor = false, string? externalDoctorName = null) : base(id)
     {
         PatientId = patientId;
         DoctorId = doctorId;
         ServiceItemId = serviceItemId;
+        IsExternalDoctor = isExternalDoctor;
+        ExternalDoctorName = externalDoctorName;
         RequestDate = DateTime.Now;
         Status = LabRequestStatus.Requested;
     }

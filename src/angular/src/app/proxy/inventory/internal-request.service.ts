@@ -1,4 +1,4 @@
-import type { CreateUpdateInternalRequestDto, InternalRequestDto } from './dtos/models';
+import type { CreateUpdateInternalRequestDto, InternalRequestDto, InternalRequestGetListInput, ReturnInternalRequestDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -15,6 +15,14 @@ export class InternalRequestService {
     this.restService.request<any, InternalRequestDto>({
       method: 'POST',
       url: `/api/app/internal-request/${id}/approve-and-fulfill`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  approveReturn = (requestId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InternalRequestDto>({
+      method: 'POST',
+      url: `/api/app/internal-request/approve-return/${requestId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -60,11 +68,29 @@ export class InternalRequestService {
     { apiName: this.apiName,...config });
   
 
-  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getList = (input: InternalRequestGetListInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<InternalRequestDto>>({
       method: 'GET',
       url: '/api/app/internal-request',
+      params: { fromDate: input.fromDate, toDate: input.toDate, filterText: input.filterText, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingReturns = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<InternalRequestDto>>({
+      method: 'GET',
+      url: '/api/app/internal-request/pending-returns',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  returnItems = (input: ReturnInternalRequestDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InternalRequestDto>({
+      method: 'POST',
+      url: '/api/app/internal-request/return-items',
+      body: input,
     },
     { apiName: this.apiName,...config });
   

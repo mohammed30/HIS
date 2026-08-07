@@ -242,7 +242,14 @@ public class LabAppService : ApplicationService, ILabAppService
         {
             var dto = ObjectMapper.Map<LabRequest, LabRequestDto>(x.request);
             dto.PatientName = $"{x.patient.FirstNameAr} {x.patient.LastNameAr}";
-            dto.DoctorName = x.doctor?.NameAr ?? "N/A";
+            if (x.request.IsExternalDoctor)
+            {
+                dto.DoctorName = x.request.ExternalDoctorName ?? "N/A";
+            }
+            else
+            {
+                dto.DoctorName = x.doctor?.NameAr ?? "N/A";
+            }
             dto.TestName = x.test.Name;
             dto.TestCode = x.test.Code;
             dto.ReferenceRange = x.test.ReferenceRange;
@@ -284,7 +291,9 @@ public class LabAppService : ApplicationService, ILabAppService
             GuidGenerator.Create(),
             input.PatientId,
             input.DoctorId,
-            input.ServiceItemId  // Using ServiceItemId from unified services
+            input.ServiceItemId,
+            input.IsExternalDoctor,
+            input.ExternalDoctorName
         )
         {
             Notes = input.Notes
@@ -375,7 +384,7 @@ public class LabAppService : ApplicationService, ILabAppService
         var request = await _requestRepository.GetAsync(id);
         
         var patient = await _patientRepository.GetAsync(request.PatientId);
-        var doctor = await _doctorRepository.GetAsync(request.DoctorId);
+        var doctor = request.DoctorId.HasValue ? await _doctorRepository.GetAsync(request.DoctorId.Value) : null;
         // Fetch from LabTests as we switched to it
         var test = await _testRepository.GetAsync(request.ServiceItemId);
         
@@ -387,7 +396,7 @@ public class LabAppService : ApplicationService, ILabAppService
         {
             PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
             PatientId = patient.Id.ToString().Substring(0, 8).ToUpper(),
-            DoctorName = doctor.NameAr,
+            DoctorName = request.IsExternalDoctor ? (request.ExternalDoctorName ?? "N/A") : (doctor?.NameAr ?? "N/A"),
             TestName = test.Name,
             TestCode = test.Code,
             RequestDate = request.RequestDate,
@@ -440,7 +449,7 @@ public class LabAppService : ApplicationService, ILabAppService
     {
         var request = await _requestRepository.GetAsync(id);
         var patient = await _patientRepository.GetAsync(request.PatientId);
-        var doctor = await _doctorRepository.GetAsync(request.DoctorId);
+        var doctor = request.DoctorId.HasValue ? await _doctorRepository.GetAsync(request.DoctorId.Value) : null;
         var test = await _testRepository.GetAsync(request.ServiceItemId);
         
         // Load logo from a centralized setting or domain service, not IWebHostEnvironment
@@ -451,7 +460,7 @@ public class LabAppService : ApplicationService, ILabAppService
         {
             PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
             PatientId = patient.Id.ToString().Substring(0, 8).ToUpper(),
-            DoctorName = doctor.NameAr,
+            DoctorName = request.IsExternalDoctor ? (request.ExternalDoctorName ?? "N/A") : (doctor?.NameAr ?? "N/A"),
             TestName = test.Name,
             TestCode = test.Code,
             RequestDate = request.RequestDate,

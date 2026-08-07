@@ -456,6 +456,8 @@ public class PosAppService : HISAppService, IPosAppService
     [Route("api/app/pos/invoices")]
     public async Task<List<PosInvoiceListDto>> GetPosInvoicesAsync(InvoiceStatus? status = null, string? filter = null, DateTime? fromDate = null, DateTime? toDate = null)
     {
+        if (toDate.HasValue) toDate = toDate.Value.Date.AddDays(1).AddTicks(-1);
+
         var invoices = await _invoiceRepository.GetListAsync(x =>
             (status == null || x.Status == status) &&
             (status != InvoiceStatus.Refunded || x.InvoiceType == InvoiceType.Return) &&
@@ -466,11 +468,19 @@ public class PosAppService : HISAppService, IPosAppService
 
         invoices = invoices.OrderByDescending(x => x.InvoiceDate).ToList();
 
+        var patientIds = invoices.Select(x => x.PatientId).Distinct().ToList();
+        var patients = patientIds.Any() ? await _patientRepository.GetListAsync(x => patientIds.Contains(x.Id)) : new List<Patient>();
+        var patientDict = patients.ToDictionary(x => x.Id, x => x);
+
+        var invoiceIds = invoices.Select(x => x.Id).ToList();
+        var allItems = invoiceIds.Any() ? await _invoiceItemRepository.GetListAsync(x => invoiceIds.Contains(x.InvoiceId)) : new List<InvoiceItem>();
+        var itemsGrouped = allItems.GroupBy(x => x.InvoiceId).ToDictionary(g => g.Key, g => g.ToList());
+
         var result = new List<PosInvoiceListDto>();
         foreach (var inv in invoices)
         {
-            var patient = await _patientRepository.FirstOrDefaultAsync(x => x.Id == inv.PatientId);
-            var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == inv.Id);
+            var patient = patientDict.ContainsKey(inv.PatientId) ? patientDict[inv.PatientId] : null;
+            var items = itemsGrouped.ContainsKey(inv.Id) ? itemsGrouped[inv.Id] : new List<InvoiceItem>();
 
             result.Add(new PosInvoiceListDto
             {
@@ -546,7 +556,7 @@ public class PosAppService : HISAppService, IPosAppService
             if (invoice != null)
             {
                 var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
-                foreach (var item in items) invoice.Items.Add(item);
+                if (!invoice.Items.Any()) { foreach (var item in items) invoice.Items.Add(item); }
             }
         }
         else
@@ -555,7 +565,7 @@ public class PosAppService : HISAppService, IPosAppService
             if (invoice != null)
             {
                 var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
-                foreach (var item in items) invoice.Items.Add(item);
+                if (!invoice.Items.Any()) { foreach (var item in items) invoice.Items.Add(item); }
             }
         }
 
@@ -572,7 +582,7 @@ public class PosAppService : HISAppService, IPosAppService
             throw new UserFriendlyException("هذه ليست فاتورة مرتجع");
 
         var items = await _invoiceItemRepository.GetListAsync(x => x.InvoiceId == invoice.Id);
-        foreach (var item in items) invoice.Items.Add(item);
+        if (!invoice.Items.Any()) { foreach (var item in items) invoice.Items.Add(item); }
 
         return await BuildInvoicePdfAsync(invoice, singleCopy: false); // Two copies
     }

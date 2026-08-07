@@ -1,11 +1,18 @@
 <!-- ═══════════════ LIST VIEW ═══════════════ -->
 <div class="card journal-card" *ngIf="!isEditorOpen">
-    <div class="card-header d-flex align-items-center justify-content-between">
-        <h4 class="m-0">{{ '::Menu:JournalEntries' | abpLocalization }}</h4>
-        <button class="btn btn-primary btn-new-entry" (click)="createEntry()">
-            <i class="fa fa-plus me-1"></i>
-            {{ '::JournalEntry:New' | abpLocalization }}
-        </button>
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <h4 class="m-0 text-white">{{ '::Menu:JournalEntries' | abpLocalization }}</h4>
+        <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end">
+            <div class="input-group input-group-sm" style="max-width: 350px;">
+                <input type="date" class="form-control" [(ngModel)]="dateFrom" [max]="dateTo" (change)="onDateFilterChange()" [title]="'::DateFrom' | abpLocalization">
+                <span class="input-group-text px-2 border-start-0 border-end-0 bg-transparent">-</span>
+                <input type="date" class="form-control" [(ngModel)]="dateTo" [min]="dateFrom" (change)="onDateFilterChange()" [title]="'::DateTo' | abpLocalization">
+            </div>
+            <button class="btn btn-primary btn-sm text-nowrap" (click)="createEntry()">
+                <i class="fa fa-plus me-1"></i>
+                {{ '::JournalEntry:New' | abpLocalization }}
+            </button>
+        </div>
     </div>
 
     <div class="card-body">
@@ -56,10 +63,12 @@
                             title="Edit">
                             <i class="fa fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-success" *ngIf="!row.isPosted" (click)="postEntry(row)"
-                            title="Post">
-                            <i class="fa fa-check-circle"></i>
-                        </button>
+                        <ng-container *abpPermission="'HIS.Billing.JournalEntries.Post'">
+                            <button class="btn btn-sm btn-outline-success" *ngIf="!row.isPosted" (click)="postEntry(row)"
+                                title="Post">
+                                <i class="fa fa-check-circle"></i>
+                            </button>
+                        </ng-container>
                         <button class="btn btn-sm btn-outline-danger" *ngIf="!row.isPosted" (click)="deleteEntry(row)"
                             title="Delete">
                             <i class="fa fa-trash"></i>
@@ -74,7 +83,7 @@
 <!-- ═══════════════ EDITOR VIEW ═══════════════ -->
 <div class="card editor-card" *ngIf="isEditorOpen">
     <div class="card-header d-flex align-items-center justify-content-between">
-        <h4 class="m-0">
+        <h4 class="m-0 text-white">
             <i class="fa fa-arrow-left me-2 cursor-pointer" (click)="closeEditor()" title="Back"></i>
             <ng-container *ngIf="isViewOnly">{{ '::JournalEntry:View' | abpLocalization }}</ng-container>
             <ng-container *ngIf="!isViewOnly && isEditing">{{ '::JournalEntry:Edit' | abpLocalization }}</ng-container>

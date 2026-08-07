@@ -19,7 +19,7 @@ namespace HIS.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("_Abp_DatabaseProvider", EfCoreDatabaseProvider.SqlServer)
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -4155,6 +4155,9 @@ namespace HIS.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
 
+                    b.Property<bool>("IsReturn")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("LastModificationTime");
@@ -4166,6 +4169,9 @@ namespace HIS.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
+
+                    b.Property<Guid?>("ParentRequestId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("datetime2");
@@ -5349,8 +5355,11 @@ namespace HIS.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
-                    b.Property<Guid>("DoctorId")
+                    b.Property<Guid?>("DoctorId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExternalDoctorName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
@@ -5362,6 +5371,9 @@ namespace HIS.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsExternalDoctor")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -7494,6 +7506,9 @@ namespace HIS.Migrations
                     b.Property<Guid?>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ExternalDoctorName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -7504,6 +7519,9 @@ namespace HIS.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsExternalDoctor")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -8640,8 +8658,8 @@ namespace HIS.Migrations
 
                     b.Property<string>("EntityTypeFullName")
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)")
                         .HasColumnName("EntityTypeFullName");
 
                     b.Property<string>("ExtraProperties")
@@ -8688,8 +8706,8 @@ namespace HIS.Migrations
 
                     b.Property<string>("PropertyTypeFullName")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)")
                         .HasColumnName("PropertyTypeFullName");
 
                     b.Property<Guid?>("TenantId")
@@ -8712,6 +8730,9 @@ namespace HIS.Migrations
                     b.Property<string>("ApplicationName")
                         .HasMaxLength(96)
                         .HasColumnType("nvarchar(96)");
+
+                    b.Property<DateTime?>("CompletionTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -8762,7 +8783,7 @@ namespace HIS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsAbandoned", "NextTryTime");
+                    b.HasIndex("ApplicationName", "CompletionTime", "IsAbandoned", "NextTryTime");
 
                     b.ToTable("AbpBackgroundJobs", (string)null);
                 });
@@ -9343,6 +9364,12 @@ namespace HIS.Migrations
 
                     b.Property<DateTimeOffset?>("LastSignInTime")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("Leaved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("Leaved");
 
                     b.Property<bool>("LockoutEnabled")
                         .ValueGeneratedOnAdd()
@@ -10603,19 +10630,14 @@ namespace HIS.Migrations
                             b1.Property<Guid>("DispensingId")
                                 .HasColumnType("uniqueidentifier");
 
-                            b1.Property<int>("Id")
+                            b1.Property<Guid>("InventoryBatchId")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("BatchNumber")
                                 .IsRequired()
                                 .HasMaxLength(64)
                                 .HasColumnType("nvarchar(64)");
-
-                            b1.Property<Guid>("InventoryBatchId")
-                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<Guid>("InventoryItemId")
                                 .HasColumnType("uniqueidentifier");
@@ -10628,7 +10650,7 @@ namespace HIS.Migrations
                                 .HasPrecision(18, 2)
                                 .HasColumnType("decimal(18,2)");
 
-                            b1.HasKey("DispensingId", "Id");
+                            b1.HasKey("DispensingId", "InventoryBatchId");
 
                             b1.ToTable("AppDispensedItems", (string)null);
 

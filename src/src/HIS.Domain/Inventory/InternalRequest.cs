@@ -22,6 +22,9 @@ public class InternalRequest : FullAuditedAggregateRoot<Guid>
     public InternalRequestType RequestType { get; set; }
     public InternalRequestStatus Status { get; set; }
     public string? Notes { get; set; }
+    
+    public bool IsReturn { get; set; }
+    public Guid? ParentRequestId { get; set; }
 
     public virtual ICollection<InternalRequestLine> Lines { get; set; }
 

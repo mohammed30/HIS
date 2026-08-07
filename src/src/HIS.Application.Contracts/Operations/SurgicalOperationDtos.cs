@@ -44,9 +44,11 @@ public class CreateUpdateSurgicalOperationDto
     public decimal PatientShare { get; set; }
     public OperationStatus Status { get; set; } = OperationStatus.Scheduled;
     public Guid? AdmissionId { get; set; }
+    [System.ComponentModel.DataAnnotations.Range(0, 100)]
     public decimal SurgeonFeePercentage { get; set; }
     public decimal SurgeonFeeAmount { get; set; }
     public Guid? AnesthesiologistId { get; set; }
+    [System.ComponentModel.DataAnnotations.Range(0, 100)]
     public decimal AnesthesiologistFeePercentage { get; set; }
     public decimal AnesthesiologistFeeAmount { get; set; }
     public decimal HospitalShareAmount { get; set; }

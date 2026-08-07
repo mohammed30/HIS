@@ -138,6 +138,11 @@ export class PurchaseInvoicesComponent implements OnInit {
   }
 
   save() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
     // Enable disabled fields before getting value so they are included
     this.form.enable();
     const request = this.form.value;

@@ -129,7 +129,15 @@ export interface InternalRequestDto extends FullAuditedEntityDto<string> {
   requestType?: InternalRequestType;
   status?: InternalRequestStatus;
   notes?: string;
+  isReturn?: boolean;
+  parentRequestId?: string | null;
   lines?: InternalRequestLineDto[];
+}
+
+export interface InternalRequestGetListInput extends PagedAndSortedResultRequestDto {
+  fromDate?: string | null;
+  toDate?: string | null;
+  filterText?: string | null;
 }
 
 export interface InternalRequestLineDto extends FullAuditedEntityDto<string> {
@@ -272,6 +280,19 @@ export interface ReceiveStockDto {
   unitCost: number;
   supplierId?: string | null;
   referenceNumber?: string;
+}
+
+export interface ReturnInternalRequestDto {
+  requestId?: string;
+  lines?: ReturnInternalRequestLineDto[];
+  notes?: string | null;
+}
+
+export interface ReturnInternalRequestLineDto {
+  inventoryItemId?: string;
+  inventoryItemName?: string;
+  originalQuantity?: number;
+  returnQuantity?: number;
 }
 
 export interface StagnantStockReportDto {

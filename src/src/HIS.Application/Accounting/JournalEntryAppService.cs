@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using HIS.Accounting.Dtos;
+using HIS.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -31,10 +33,19 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
         _guidGenerator = guidGenerator;
     }
 
-    public async Task<PagedResultDto<JournalEntryDto>> GetListAsync(PagedAndSortedResultRequestDto input)
+    public async Task<PagedResultDto<JournalEntryDto>> GetListAsync(GetJournalEntriesInput input)
     {
         // 1. Get queryable without details for Count
         var query = await _journalEntryRepository.GetQueryableAsync();
+        
+        if (input.DateFrom.HasValue)
+        {
+            query = query.Where(x => x.Date >= input.DateFrom.Value);
+        }
+        if (input.DateTo.HasValue)
+        {
+            query = query.Where(x => x.Date <= input.DateTo.Value);
+        }
         
         // 2. Count
         var totalCount = await AsyncExecuter.CountAsync(query);
@@ -208,6 +219,7 @@ public class JournalEntryAppService : ApplicationService, IJournalEntryAppServic
         await _journalEntryRepository.DeleteAsync(id);
     }
 
+    [Authorize(HISPermissions.Billing.JournalEntriesPost)]
     public async Task<JournalEntryDto> PostAsync(Guid id)
     {
         var query = await _journalEntryRepository.WithDetailsAsync(x => x.Lines);

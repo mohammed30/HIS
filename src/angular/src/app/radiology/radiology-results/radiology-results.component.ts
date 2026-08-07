@@ -92,14 +92,14 @@ import { PageModule } from '@abp/ng.components/page';
         </ng-template>
 
         <ng-template #abpBody>
-            <div class="p-3 border rounded bg-light mb-3">
+            <div class="p-3 border rounded mb-3 bg-opacity-10 bg-secondary">
                 <div class="row">
-                    <div class="col-md-6"><strong>{{ '::Patient' | abpLocalization }}:</strong> {{ selectedItem.patientName }}</div>
-                    <div class="col-md-6 text-end"><strong>{{ '::Date' | abpLocalization }}:</strong> {{ selectedItem.reportDate | date }}</div>
+                    <div class="col-md-6"><strong>{{ '::Patient' | abpLocalization }}:</strong> <span class="text-body">{{ selectedItem.patientName }}</span></div>
+                    <div class="col-md-6 text-end"><strong>{{ '::Date' | abpLocalization }}:</strong> <span class="text-body">{{ selectedItem.reportDate | date }}</span></div>
                 </div>
             </div>
             
-            <div class="medical-report-content" style="white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; min-height: 200px; padding: 15px; border: 1px solid #ddd; background: #fff;">
+            <div class="medical-report-content border rounded p-3" style="white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; min-height: 200px;">
                 {{ selectedItem.reportBody }}
             </div>
             

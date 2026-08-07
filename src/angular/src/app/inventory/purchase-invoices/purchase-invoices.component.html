@@ -12,7 +12,7 @@
     </div>
   </div>
   <div class="card-body">
-    <ngx-datatable [rows]="data.items" [count]="data.totalCount" class="material fullscreen">
+    <ngx-datatable [rows]="data.items" [count]="data.totalCount" class="material fullscreen" default>
       <ngx-datatable-column
         [name]="'::Actions' | abpLocalization"
         [maxWidth]="150"
@@ -73,18 +73,18 @@
     <form [formGroup]="form" (ngSubmit)="save()" *ngIf="form">
       <div class="row">
         <div class="col-md-6 mb-2">
-            <label>رقم فاتورة المورد</label>
-            <input type="text" class="form-control" formControlName="invoiceNumber" />
+            <label>رقم فاتورة المورد <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="invoiceNumber" [ngClass]="{'is-invalid': form.get('invoiceNumber').invalid && (form.get('invoiceNumber').dirty || form.get('invoiceNumber').touched)}" />
         </div>
         <div class="col-md-6 mb-2">
-            <label>المورد</label>
-            <select class="form-control" formControlName="supplierId">
+            <label>المورد <span class="text-danger">*</span></label>
+            <select class="form-control" formControlName="supplierId" [ngClass]="{'is-invalid': form.get('supplierId').invalid && (form.get('supplierId').dirty || form.get('supplierId').touched)}">
                 <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
             </select>
         </div>
         <div class="col-md-6 mb-2">
-            <label>تاريخ الفاتورة</label>
-            <input type="date" class="form-control" formControlName="invoiceDate" />
+            <label>تاريخ الفاتورة <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" formControlName="invoiceDate" [ngClass]="{'is-invalid': form.get('invoiceDate').invalid && (form.get('invoiceDate').dirty || form.get('invoiceDate').touched)}" />
         </div>
       </div>
 
@@ -93,8 +93,8 @@
           <div class="border p-3 mb-3 rounded bg-light" *ngFor="let item of lines.controls; let i=index" [formGroupName]="i">
               <div class="row align-items-end">
                   <div class="col-md-4 mb-2">
-                      <label class="form-label mb-1 fw-bold">الصنف</label>
-                      <input type="text" class="form-control form-control-sm" formControlName="productDisplay" list="productsList" (change)="onProductSelect($event, i)" placeholder="ابحث بالاسم أو الكود..." />
+                      <label class="form-label mb-1 fw-bold">الصنف <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control form-control-sm" formControlName="productDisplay" list="productsList" (change)="onProductSelect($event, i)" placeholder="ابحث بالاسم أو الكود..." [ngClass]="{'is-invalid': item.get('productId').invalid && (item.get('productDisplay').dirty || item.get('productDisplay').touched)}" />
                       <input type="hidden" formControlName="productId" />
                   </div>
                   <div class="col-md-3 mb-2">
@@ -106,14 +106,14 @@
                       <input type="date" class="form-control form-control-sm" formControlName="expiryDate" />
                   </div>
                   <div class="col-md-2 mb-2">
-                      <label class="form-label mb-1 fw-bold">الكمية</label>
-                      <input type="number" class="form-control form-control-sm" formControlName="quantity" />
+                      <label class="form-label mb-1 fw-bold">الكمية <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-sm" formControlName="quantity" [ngClass]="{'is-invalid': item.get('quantity').invalid && (item.get('quantity').dirty || item.get('quantity').touched)}" />
                   </div>
               </div>
               <div class="row align-items-end">
                   <div class="col-md-3 mb-2">
-                      <label class="form-label mb-1 fw-bold">التكلفة للوحدة</label>
-                      <input type="number" class="form-control form-control-sm" formControlName="unitCost" />
+                      <label class="form-label mb-1 fw-bold">التكلفة للوحدة <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-sm" formControlName="unitCost" [ngClass]="{'is-invalid': item.get('unitCost').invalid && (item.get('unitCost').dirty || item.get('unitCost').touched)}" />
                   </div>
                   <div class="col-md-3 mb-2">
                       <label class="form-label mb-1 fw-bold">هامش الربح %</label>
@@ -149,7 +149,7 @@
 
   <ng-template #abpFooter>
     <button type="button" class="btn btn-secondary" abpClose>إغلاق</button>
-    <button class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
+    <button class="btn btn-primary" (click)="save()">
       <i class="fa fa-check me-1"></i> حفظ كمسودة
     </button>
   </ng-template>

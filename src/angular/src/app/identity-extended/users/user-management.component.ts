@@ -150,8 +150,11 @@ import { PermissionManagementModule, PermissionManagementComponent } from '@abp/
             <input type="text" id="phoneNumber" class="form-control" formControlName="phoneNumber">
           </div>
           <!-- Password field logic is complex (required for create, optional for edit), simplified here -->
-          <div class="mb-3" *ngIf="!selectedUser?.id">
-             <label for="password" class="form-label">{{ 'AbpIdentity::Password' | abpLocalization }}</label>
+          <div class="mb-3">
+             <label for="password" class="form-label">
+                 {{ 'AbpIdentity::Password' | abpLocalization }}
+                 <span *ngIf="selectedUser?.id" class="text-muted small fw-normal ms-2">(اتركه فارغاً إذا لم ترغب بتغييره)</span>
+             </label>
              <input type="password" id="password" class="form-control" formControlName="password">
           </div>
         </form>
@@ -224,6 +227,7 @@ export class UserManagementComponent implements OnInit {
     this.service.get(id).subscribe(user => {
       this.selectedUser = user;
       
+      this.form.reset(); // Ensure previous values are cleared
       // Patch standard fields
       this.form.patchValue(user);
       

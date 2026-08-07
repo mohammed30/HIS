@@ -7,6 +7,8 @@ public class RadiologyRequest : FullAuditedAggregateRoot<Guid>
 {
     public Guid PatientId { get; private set; }
     public Guid? DoctorId { get; private set; }
+    public bool IsExternalDoctor { get; private set; }
+    public string? ExternalDoctorName { get; private set; }
     
     /// <summary>
     /// Service Item ID from RadiologyItems
@@ -33,12 +35,14 @@ public class RadiologyRequest : FullAuditedAggregateRoot<Guid>
 
     protected RadiologyRequest() { }
 
-    public RadiologyRequest(Guid id, Guid patientId, Guid? doctorId, Guid radiologyItemId, string? requestNumber = null) : base(id)
+    public RadiologyRequest(Guid id, Guid patientId, Guid? doctorId, Guid radiologyItemId, string? requestNumber = null, bool isExternalDoctor = false, string? externalDoctorName = null) : base(id)
     {
         PatientId = patientId;
         DoctorId = doctorId;
         RadiologyItemId = radiologyItemId;
         RequestNumber = requestNumber;
+        IsExternalDoctor = isExternalDoctor;
+        ExternalDoctorName = externalDoctorName;
         RequestDate = DateTime.Now;
         Status = RadiologyRequestStatus.Requested;
     }

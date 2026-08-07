@@ -4,6 +4,8 @@ import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/
 export interface CreateUpdateRadiologyRequestDto {
   patientId?: string;
   doctorId?: string | null;
+  isExternalDoctor?: boolean;
+  externalDoctorName?: string | null;
   radiologyItemId?: string;
   reportBody?: string;
   technicianNotes?: string;
@@ -19,7 +21,9 @@ export interface RadiologyRequestDto extends FullAuditedEntityDto<string> {
   patientId?: string;
   patientName?: string;
   doctorId?: string | null;
-  doctorName?: string;
+  doctorName?: string | null;
+  isExternalDoctor?: boolean;
+  externalDoctorName?: string | null;
   radiologyItemId?: string;
   radiologyItemName?: string;
   requestDate?: string;

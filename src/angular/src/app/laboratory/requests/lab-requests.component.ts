@@ -34,9 +34,18 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
 
     // Filters
+    private getLocalDate(date: Date): string {
+        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    }
+    private getLocalFirstDayOfMonth(): string {
+        const d = new Date();
+        d.setDate(1);
+        return this.getLocalDate(d);
+    }
+
     filterByDate = true;
-    fromDate = new Date().toISOString().split('T')[0];
-    toDate = new Date().toISOString().split('T')[0];
+    fromDate = this.getLocalDate(new Date());
+    toDate = this.getLocalDate(new Date());
     selectedStatus: LabRequestStatus | null = null;
     LabRequestStatus = LabRequestStatus;
 
@@ -140,7 +149,7 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
 
     // Create modal
     isCreateModalOpen = false;
-    newRequest = { patientId: '', doctorId: '', serviceItemId: '', notes: '' };
+    newRequest: any = { patientId: '', doctorId: '', serviceItemId: '', notes: '', isExternalDoctor: false, externalDoctorName: '' };
     patients: any[] = [];
     doctors: any[] = [];
     labTests: any[] = [];
@@ -231,17 +240,32 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     }
 
     openCreateModal() {
-        this.newRequest = { patientId: '', doctorId: '', serviceItemId: '', notes: '' };
+        this.newRequest = { patientId: '', doctorId: '', serviceItemId: '', notes: '', isExternalDoctor: false, externalDoctorName: '' };
         this.labTestSearch = '';
         this.filteredLabTests = [...this.labTests];
         this.isCreateModalOpen = true;
     }
 
     saveRequest() {
-        if (!this.newRequest.patientId || !this.newRequest.doctorId || !this.newRequest.serviceItemId) {
+        if (!this.newRequest.patientId || !this.newRequest.serviceItemId) {
             this.toaster.error('يرجى ملء جميع الحقول المطلوبة');
             return;
         }
+        
+        if (this.newRequest.isExternalDoctor) {
+            if (!this.newRequest.externalDoctorName) {
+                this.toaster.error('يرجى إدخال اسم الطبيب الخارجي');
+                return;
+            }
+            this.newRequest.doctorId = null; // Clear to avoid sending empty string
+        } else {
+            if (!this.newRequest.doctorId) {
+                this.toaster.error('يرجى اختيار الطبيب المعالج');
+                return;
+            }
+            this.newRequest.externalDoctorName = null;
+        }
+
         this.labService.createRequest(this.newRequest).subscribe(() => {
             this.toaster.success('تم إنشاء طلب التحليل بنجاح');
             this.isCreateModalOpen = false;

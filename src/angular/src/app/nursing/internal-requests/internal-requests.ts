@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { InternalRequestService, InternalRequestStatus } from '../../proxy/inventory';
-import { InternalRequestDto, CreateUpdateInternalRequestDto } from '../../proxy/inventory/dtos/models';
+import { InternalRequestDto, CreateUpdateInternalRequestDto, ReturnInternalRequestDto } from '../../proxy/inventory/dtos/models';
 import { PagedResultDto, CoreModule } from '@abp/ng.core';
 import { finalize, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
-import { ConfirmationService, Confirmation, ThemeSharedModule } from '@abp/ng.theme.shared';
+import { ConfirmationService, Confirmation, ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
 import { Observable, of, OperatorFunction } from 'rxjs';
 import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
@@ -40,10 +40,21 @@ export class InternalRequestsComponent implements OnInit {
   form: FormGroup;
   statusEnum = InternalRequestStatus;
   
+  filterFromDate: string;
+  filterToDate: string;
+  filterText: string = '';
+  
   activeAdmissions: AdmissionLookupDto[] = [];
   warehouses: any[] = [];
   requestingDepartments: LookupDto[] = [];
   pharmacyWarehouseId: string | null = null;
+
+  // Return modal
+  isReturnModalOpen = false;
+  selectedReturnRequest: InternalRequestDto | null = null;
+  returnLines: Array<{ inventoryItemId: string; inventoryItemName: string; originalQuantity: number; returnQuantity: number }> = [];
+  returnNotes = '';
+  returnPermission = 'HIS.Nursing.InternalRequestReturn';
   
   // Dynamic search data
   availableSearchData: any[] = [];
@@ -64,10 +75,15 @@ export class InternalRequestsComponent implements OnInit {
     private labService: LabService,
     private serviceItemService: ServiceItemService,
     private confirmation: ConfirmationService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toaster: ToasterService
   ) {}
 
   ngOnInit(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.filterFromDate = today;
+    this.filterToDate = today;
+    
     this.buildForm();
     this.getList();
     this.getWarehouses();
@@ -145,8 +161,14 @@ export class InternalRequestsComponent implements OnInit {
 
   getList() {
     this.isLoading = true;
-    // Real implementation would filter by requestingDepartmentId
-    this.internalRequestService.getList({ maxResultCount: 10, skipCount: 0, sorting: '' })
+    this.internalRequestService.getList({ 
+        maxResultCount: 10, 
+        skipCount: 0, 
+        sorting: '',
+        fromDate: this.filterFromDate,
+        toDate: this.filterToDate,
+        filterText: this.filterText 
+    } as any)
       .pipe(finalize(() => this.isLoading = false))
       .subscribe((res) => {
         this.data = res;
@@ -206,6 +228,48 @@ export class InternalRequestsComponent implements OnInit {
         });
       }
     });
+  }
+
+  openReturnModal(row: InternalRequestDto) {
+    this.selectedReturnRequest = row;
+    this.returnNotes = '';
+    this.returnLines = (row.lines || []).map(l => ({
+      inventoryItemId: l.inventoryItemId,
+      inventoryItemName: l.inventoryItemName,
+      originalQuantity: l.approvedQuantity,
+      returnQuantity: 0
+    }));
+    this.isReturnModalOpen = true;
+  }
+
+  submitReturn() {
+    if (!this.selectedReturnRequest) return;
+    const hasAny = this.returnLines.some(l => l.returnQuantity > 0);
+    if (!hasAny) return;
+
+    const hasInvalid = this.returnLines.some(l => l.returnQuantity > l.originalQuantity);
+    if (hasInvalid) {
+      this.confirmation.warn('كمية الإرجاع لا يمكن أن تكون أكبر من الكمية المعتمدة للصنف.', 'تنبيه');
+      return;
+    }
+
+    const input: ReturnInternalRequestDto = {
+      requestId: this.selectedReturnRequest.id,
+      lines: this.returnLines.filter(l => l.returnQuantity > 0),
+      notes: this.returnNotes
+    };
+
+    this.internalRequestService.returnItems(input).subscribe(() => {
+      this.isReturnModalOpen = false;
+      this.toaster.success('تم إرسال طلب المرتجع بنجاح وهو بانتظار موافقة الصيدلية', 'مرتجع جديد');
+      this.getList();
+    });
+  }
+
+  get hasReturnQuantity(): boolean {
+    const hasAny = this.returnLines.some(l => l.returnQuantity > 0);
+    const hasInvalid = this.returnLines.some(l => l.returnQuantity > l.originalQuantity || l.returnQuantity < 0);
+    return hasAny && !hasInvalid;
   }
 
   delete(id: string) {
@@ -300,6 +364,27 @@ export class InternalRequestsComponent implements OnInit {
       case InternalRequestStatus.Rejected: return 'مرفوض';
       case InternalRequestStatus.Cancelled: return 'ملغي';
       default: return 'غير معروف';
+    }
+  }
+
+  getRequestTypeText(type: number) {
+    switch (type) {
+      case InternalRequestType.Medication: return 'أدوية';
+      case InternalRequestType.Consumable: return 'مستلزمات';
+      case InternalRequestType.Laboratory: return 'تحاليل';
+      case InternalRequestType.Radiology: return 'أشعة';
+      case InternalRequestType.Other: return 'أخرى';
+      default: return 'غير معروف';
+    }
+  }
+
+  getRequestTypeClass(type: number) {
+    switch (type) {
+      case InternalRequestType.Medication: return 'bg-success';
+      case InternalRequestType.Consumable: return 'bg-info';
+      case InternalRequestType.Laboratory: return 'bg-primary';
+      case InternalRequestType.Radiology: return 'bg-danger';
+      default: return 'bg-secondary';
     }
   }
 }

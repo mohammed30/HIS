@@ -1,0 +1,43 @@
+﻿    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- TAB: Pending Returns                                       -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='pending-returns'">
+      <div class="section-head">
+        <div class="section-title"><i class="fas fa-undo" style="color:var(--pos-accent)"></i> طلبات المرتجعات الداخلية</div>
+        <button class="btn-pos-ghost" (click)="loadPendingReturns()" style="padding:0.45rem 1rem"><i class="fas fa-sync"></i> تحديث</button>
+      </div>
+
+      <div *ngIf="isLoading" class="text-center" style="padding:3rem">
+        <div class="pos-spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto;border-top-color:var(--pos-accent)"></div>
+      </div>
+      <div *ngIf="!isLoading && pendingReturns.length === 0" class="pos-card" style="text-align:center;padding:3rem">
+        <i class="fas fa-folder-open" style="font-size:2.5rem;color:var(--pos-muted);margin-bottom:0.75rem;display:block;opacity:0.4"></i>
+        <div class="text-muted-c">لا توجد طلبات مرتجعة حالياً</div>
+      </div>
+
+      <div class="grid-4" *ngIf="!isLoading && pendingReturns.length > 0">
+        <div *ngFor="let req of pendingReturns" class="inv-card">
+          <div class="inv-card-head">
+            <span class="inv-number">{{ req.requestNumber }}</span>
+            <span class="inv-status status-pending">بانتظار الموافقة</span>
+          </div>
+          <div class="inv-card-body">
+            <div class="inv-meta"><i class="fas fa-user"></i> {{ req.patientName || 'غير معروف' }}</div>
+            <div class="inv-meta"><i class="fas fa-calendar-alt"></i> {{ req.requestDate | date:'yyyy/MM/dd – HH:mm' }}</div>
+            <div class="inv-items">
+              <div class="text-sm text-muted-c mb-1">الأصناف المرتجعة:</div>
+              <div *ngFor="let line of req.lines" class="inv-item-line">
+                {{ line.inventoryItemName }} × {{ line.returnQuantity }}
+              </div>
+            </div>
+            <div class="inv-total mt-2">
+              <span class="text-sm text-muted-c">ملاحظات:</span>
+              <span class="inv-total-val" style="font-size: 0.85rem">{{ req.notes }}</span>
+            </div>
+          </div>
+          <div class="inv-card-foot d-flex gap-2">
+            <button class="btn-pos-primary w-100" (click)="approvePendingReturn(req.id)" [disabled]="isBusy"><i class="fas fa-check"></i> موافقة واستلام</button>
+          </div>
+        </div>
+      </div>
+    </div>

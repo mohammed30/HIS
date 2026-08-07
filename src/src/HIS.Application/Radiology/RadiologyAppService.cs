@@ -90,7 +90,11 @@ public class RadiologyAppService : CrudAppService<RadiologyRequest, RadiologyReq
         var patient = await _patientRepository.FindAsync(entity.PatientId);
         dto.PatientName = patient?.FullNameAr ?? patient?.FullNameEn ?? "N/A";
 
-        if (entity.DoctorId.HasValue)
+        if (entity.IsExternalDoctor)
+        {
+            dto.DoctorName = entity.ExternalDoctorName ?? "N/A";
+        }
+        else if (entity.DoctorId.HasValue)
         {
             var doctor = await _doctorRepository.FindAsync(entity.DoctorId.Value);
             dto.DoctorName = doctor?.NameAr ?? doctor?.NameEn ?? "N/A";
@@ -198,7 +202,11 @@ public class RadiologyAppService : CrudAppService<RadiologyRequest, RadiologyReq
         var radItem = await _radiologyItemRepository.GetAsync(entity.RadiologyItemId);
         
         string doctorName = "-";
-        if (entity.DoctorId.HasValue)
+        if (entity.IsExternalDoctor)
+        {
+            doctorName = entity.ExternalDoctorName ?? "-";
+        }
+        else if (entity.DoctorId.HasValue)
         {
             var doctor = await _doctorRepository.FindAsync(entity.DoctorId.Value);
             doctorName = doctor?.NameAr ?? doctor?.NameEn ?? "-";

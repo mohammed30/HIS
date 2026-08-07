@@ -9,7 +9,7 @@ namespace HIS.Accounting;
 
 public interface IJournalEntryAppService : IApplicationService
 {
-    Task<PagedResultDto<JournalEntryDto>> GetListAsync(PagedAndSortedResultRequestDto input);
+    Task<PagedResultDto<JournalEntryDto>> GetListAsync(GetJournalEntriesInput input);
     Task<JournalEntryDto> GetAsync(Guid id);
     Task<JournalEntryDto> CreateAsync(CreateUpdateJournalEntryDto input);
     Task<JournalEntryDto> UpdateAsync(Guid id, CreateUpdateJournalEntryDto input);

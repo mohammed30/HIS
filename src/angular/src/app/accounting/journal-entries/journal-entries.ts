@@ -26,6 +26,8 @@ interface TreeAccountNode extends AccountLookupDto {
 export class JournalEntriesComponent implements OnInit {
   // List View
   journalEntries = { items: [], totalCount: 0 } as PagedResultDto<JournalEntryDto>;
+  dateFrom: string | null = null;
+  dateTo: string | null = null;
 
   // Editor State
   isEditorOpen = false;
@@ -51,10 +53,26 @@ export class JournalEntriesComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    const hookFn = (query: any) => this.journalEntryService.getList(query);
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    // Format dates to YYYY-MM-DD
+    this.dateFrom = firstDay.toISOString().substring(0, 10);
+    this.dateTo = lastDay.toISOString().substring(0, 10);
+
+    const hookFn = (query: any) => this.journalEntryService.getList({ ...query, dateFrom: this.dateFrom, dateTo: this.dateTo });
     this.list.hookToQuery(hookFn).subscribe((response) => {
       this.journalEntries = response;
     });
+  }
+
+  onDateFilterChange() {
+    if (this.dateFrom && this.dateTo && new Date(this.dateFrom) > new Date(this.dateTo)) {
+      this.toaster.warn('::JournalEntry:InvalidDateRange', 'تنبيه');
+      return;
+    }
+    this.list.get();
   }
 
   // ─── List Actions ──────────────────────────────────────────

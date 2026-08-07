@@ -128,8 +128,8 @@ export class SurgicalOperations implements OnInit {
       operationName: [this.selectedTask.operationName || '', Validators.required],
       operationDate: [this.selectedTask.operationDate ? this.selectedTask.operationDate.substring(0, 16) : '', Validators.required],
       status: [this.selectedTask.status || OperationStatus.Scheduled, Validators.required],
-      surgeonFeePercentage: [this.selectedTask.surgeonFeePercentage || 0],
-      anesthesiologistFeePercentage: [this.selectedTask.anesthesiologistFeePercentage || 0],
+      surgeonFeePercentage: [this.selectedTask.surgeonFeePercentage || 0, [Validators.min(0), Validators.max(100)]],
+      anesthesiologistFeePercentage: [this.selectedTask.anesthesiologistFeePercentage || 0, [Validators.min(0), Validators.max(100)]],
       totalAmount: [this.selectedTask.totalAmount || 0, [Validators.required, Validators.min(0)]],
       notes: [this.selectedTask.notes || '']
     });

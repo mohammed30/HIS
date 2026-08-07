@@ -72,6 +72,7 @@ public static class HISPermissions
         public const string ManageInvoices = Default + ".ManageInvoices";
         public const string ChartOfAccounts = Default + ".ChartOfAccounts";
         public const string JournalEntries = Default + ".JournalEntries";
+        public const string JournalEntriesPost = JournalEntries + ".Post";
         public const string Payments = Default + ".Payments";
         public const string DeferredPayments = Default + ".DeferredPayments";
         public const string FinancialReports = Default + ".FinancialReports";
@@ -124,6 +125,7 @@ public static class HISPermissions
         public const string Assessments = Default + ".Assessments";
         public const string FluidBalance = Default + ".FluidBalance";
         public const string ShiftHandover = Default + ".ShiftHandover";
+        public const string InternalRequestReturn = Default + ".InternalRequestReturn";
     }
 
     public static class Inpatient

@@ -107,11 +107,17 @@
             </div>
             <div class="col-md-4 mb-3">
                 <label class="form-label">{{ '::SurgeonFeePercentage' | abpLocalization }}</label>
-                <input type="number" class="form-control" formControlName="surgeonFeePercentage" />
+                <input type="number" class="form-control" formControlName="surgeonFeePercentage" [class.is-invalid]="form.get('surgeonFeePercentage').invalid && form.get('surgeonFeePercentage').touched" />
+                <div class="invalid-feedback" *ngIf="form.get('surgeonFeePercentage').errors?.min || form.get('surgeonFeePercentage').errors?.max">
+                    يجب أن تكون النسبة بين 0 و 100
+                </div>
             </div>
             <div class="col-md-4 mb-3">
                 <label class="form-label">{{ '::AnesthesiologistFeePercentage' | abpLocalization }}</label>
-                <input type="number" class="form-control" formControlName="anesthesiologistFeePercentage" />
+                <input type="number" class="form-control" formControlName="anesthesiologistFeePercentage" [class.is-invalid]="form.get('anesthesiologistFeePercentage').invalid && form.get('anesthesiologistFeePercentage').touched" />
+                <div class="invalid-feedback" *ngIf="form.get('anesthesiologistFeePercentage').errors?.min || form.get('anesthesiologistFeePercentage').errors?.max">
+                    يجب أن تكون النسبة بين 0 و 100
+                </div>
             </div>
             <div class="col-md-12 mb-3">
                 <label class="form-label">{{ '::Notes' | abpLocalization }}</label>

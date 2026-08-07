@@ -19,6 +19,9 @@ public class InternalRequestDto : FullAuditedEntityDto<Guid>
     public InternalRequestType RequestType { get; set; }
     public InternalRequestStatus Status { get; set; }
     public string Notes { get; set; }
+    
+    public bool IsReturn { get; set; }
+    public Guid? ParentRequestId { get; set; }
 
     public List<InternalRequestLineDto> Lines { get; set; }
 }
@@ -50,4 +53,22 @@ public class CreateUpdateInternalRequestLineDto
     public Guid InventoryItemId { get; set; }
     public decimal RequestedQuantity { get; set; }
     public string Notes { get; set; }
+}
+
+/// <summary>
+/// طلب إرجاع كميات من أصناف سبق صرفها لمريض منوم
+/// </summary>
+public class ReturnInternalRequestDto
+{
+    public Guid RequestId { get; set; }
+    public List<ReturnInternalRequestLineDto> Lines { get; set; } = new();
+    public string? Notes { get; set; }
+}
+
+public class ReturnInternalRequestLineDto
+{
+    public Guid InventoryItemId { get; set; }
+    public string InventoryItemName { get; set; }
+    public decimal OriginalQuantity { get; set; }
+    public decimal ReturnQuantity { get; set; }
 }

@@ -17,15 +17,15 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
 
         // Patients
         var patients = hisGroup.AddPermission(HISPermissions.Patients.Default, L("Permission:Patients"));
-        patients.AddChild(HISPermissions.Patients.Create, L("Permission:Create"));
-        patients.AddChild(HISPermissions.Patients.Edit, L("Permission:Edit"));
-        patients.AddChild(HISPermissions.Patients.Delete, L("Permission:Delete"));
+        patients.AddChild(HISPermissions.Patients.Create, L("Permission:PatientsCreate"));
+        patients.AddChild(HISPermissions.Patients.Edit, L("Permission:PatientsEdit"));
+        patients.AddChild(HISPermissions.Patients.Delete, L("Permission:PatientsDelete"));
 
         // Appointments
         var appointments = hisGroup.AddPermission(HISPermissions.Appointments.Default, L("Permission:Appointments"));
-        appointments.AddChild(HISPermissions.Appointments.Create, L("Permission:Create"));
-        appointments.AddChild(HISPermissions.Appointments.Edit, L("Permission:Edit"));
-        appointments.AddChild(HISPermissions.Appointments.Delete, L("Permission:Delete"));
+        appointments.AddChild(HISPermissions.Appointments.Create, L("Permission:AppointmentsCreate"));
+        appointments.AddChild(HISPermissions.Appointments.Edit, L("Permission:AppointmentsEdit"));
+        appointments.AddChild(HISPermissions.Appointments.Delete, L("Permission:AppointmentsDelete"));
 
         // Reception
         var reception = hisGroup.AddPermission(HISPermissions.Reception.Default, L("Permission:Reception"));
@@ -67,7 +67,8 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         var billing = hisGroup.AddPermission(HISPermissions.Billing.Default, L("Permission:Billing"));
         billing.AddChild(HISPermissions.Billing.ManageInvoices, L("Permission:ManageInvoices"));
         billing.AddChild(HISPermissions.Billing.ChartOfAccounts, L("Permission:ChartOfAccounts"));
-        billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
+        var journalEntries = billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
+        journalEntries.AddChild(HISPermissions.Billing.JournalEntriesPost, L("Permission:JournalEntriesPost"));
         billing.AddChild(HISPermissions.Billing.Payments, L("Permission:Payments"));
         billing.AddChild(HISPermissions.Billing.DeferredPayments, L("Permission:DeferredPayments"));
         var financialReports = billing.AddChild(HISPermissions.Billing.FinancialReports, L("Permission:FinancialReports"));
@@ -101,9 +102,9 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         pharmacy.AddChild(HISPermissions.Pharmacy.Stock, L("Permission:Stock"));
 
         var drugs = pharmacy.AddChild(HISPermissions.Pharmacy.Drugs, L("Permission:Drugs"));
-        drugs.AddChild(HISPermissions.Pharmacy.DrugsCreate, L("Permission:Create"));
-        drugs.AddChild(HISPermissions.Pharmacy.DrugsEdit, L("Permission:Edit"));
-        drugs.AddChild(HISPermissions.Pharmacy.DrugsDelete, L("Permission:Delete"));
+        drugs.AddChild(HISPermissions.Pharmacy.DrugsCreate, L("Permission:DrugsCreate"));
+        drugs.AddChild(HISPermissions.Pharmacy.DrugsEdit, L("Permission:DrugsEdit"));
+        drugs.AddChild(HISPermissions.Pharmacy.DrugsDelete, L("Permission:DrugsDelete"));
         pharmacy.AddChild(HISPermissions.Pharmacy.POS, L("Permission:PharmacyPOS"));
 
         // Nursing
@@ -115,23 +116,24 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         nursing.AddChild(HISPermissions.Nursing.Assessments, L("Permission:Assessments"));
         nursing.AddChild(HISPermissions.Nursing.FluidBalance, L("Permission:FluidBalance"));
         nursing.AddChild(HISPermissions.Nursing.ShiftHandover, L("Permission:ShiftHandover"));
+        nursing.AddChild(HISPermissions.Nursing.InternalRequestReturn, L("Permission:InternalRequestReturn"));
 
         // Inpatient
         var inpatient = hisGroup.AddPermission(HISPermissions.Inpatient.Default, L("Permission:Inpatient"));
         var rooms = inpatient.AddChild(HISPermissions.Inpatient.Rooms, L("Permission:RoomManagement"));
-        rooms.AddChild(HISPermissions.Inpatient.RoomsCreate, L("Permission:Create"));
-        rooms.AddChild(HISPermissions.Inpatient.RoomsEdit, L("Permission:Edit"));
-        rooms.AddChild(HISPermissions.Inpatient.RoomsDelete, L("Permission:Delete"));
+        rooms.AddChild(HISPermissions.Inpatient.RoomsCreate, L("Permission:RoomsCreate"));
+        rooms.AddChild(HISPermissions.Inpatient.RoomsEdit, L("Permission:RoomsEdit"));
+        rooms.AddChild(HISPermissions.Inpatient.RoomsDelete, L("Permission:RoomsDelete"));
         
         var admissions = inpatient.AddChild(HISPermissions.Inpatient.Admissions, L("Permission:Admissions"));
-        admissions.AddChild(HISPermissions.Inpatient.AdmissionsCreate, L("Permission:Create"));
-        admissions.AddChild(HISPermissions.Inpatient.AdmissionsEdit, L("Permission:Edit"));
-        admissions.AddChild(HISPermissions.Inpatient.AdmissionsDelete, L("Permission:Delete"));
+        admissions.AddChild(HISPermissions.Inpatient.AdmissionsCreate, L("Permission:AdmissionsCreate"));
+        admissions.AddChild(HISPermissions.Inpatient.AdmissionsEdit, L("Permission:AdmissionsEdit"));
+        admissions.AddChild(HISPermissions.Inpatient.AdmissionsDelete, L("Permission:AdmissionsDelete"));
 
         var reservations = inpatient.AddChild(HISPermissions.Inpatient.Reservations, L("Permission:Reservations"));
-        reservations.AddChild(HISPermissions.Inpatient.ReservationsCreate, L("Permission:Create"));
-        reservations.AddChild(HISPermissions.Inpatient.ReservationsEdit, L("Permission:Edit"));
-        reservations.AddChild(HISPermissions.Inpatient.ReservationsDelete, L("Permission:Delete"));
+        reservations.AddChild(HISPermissions.Inpatient.ReservationsCreate, L("Permission:ReservationsCreate"));
+        reservations.AddChild(HISPermissions.Inpatient.ReservationsEdit, L("Permission:ReservationsEdit"));
+        reservations.AddChild(HISPermissions.Inpatient.ReservationsDelete, L("Permission:ReservationsDelete"));
         
         inpatient.AddChild(HISPermissions.Inpatient.Dashboard, L("Permission:InpatientDashboard"));
 
@@ -144,9 +146,9 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         // HR (شؤون العاملين)
         var hr = hisGroup.AddPermission(HISPermissions.HR.Default, L("Permission:HR"));
         var hrEmployees = hr.AddChild(HISPermissions.HR.Employees, L("Permission:HREmployees"));
-        hrEmployees.AddChild(HISPermissions.HR.EmployeesCreate, L("Permission:Create"));
-        hrEmployees.AddChild(HISPermissions.HR.EmployeesEdit, L("Permission:Edit"));
-        hrEmployees.AddChild(HISPermissions.HR.EmployeesDelete, L("Permission:Delete"));
+        hrEmployees.AddChild(HISPermissions.HR.EmployeesCreate, L("Permission:EmployeesCreate"));
+        hrEmployees.AddChild(HISPermissions.HR.EmployeesEdit, L("Permission:EmployeesEdit"));
+        hrEmployees.AddChild(HISPermissions.HR.EmployeesDelete, L("Permission:EmployeesDelete"));
         hr.AddChild(HISPermissions.HR.CompensationItems, L("Permission:HRCompensationItems"));
         hr.AddChild(HISPermissions.HR.LeaveTypes, L("Permission:HRLeaveTypes"));
         hr.AddChild(HISPermissions.HR.EmployeeLeaves, L("Permission:HREmployeeLeaves"));
