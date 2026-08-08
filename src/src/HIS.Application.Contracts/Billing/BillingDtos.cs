@@ -64,6 +64,7 @@ public class InvoiceItemDto
     public decimal DiscountAmount { get; set; }
     public decimal TotalPrice { get; set; }
     public bool IsCoveredByInsurance { get; set; }
+    public decimal InsurancePercentage { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -77,6 +78,7 @@ public class CreateUpdateInvoiceItemDto
     public decimal DiscountPercentage { get; set; }
     public decimal DiscountAmount { get; set; }
     public bool IsCoveredByInsurance { get; set; } = true;
+    public decimal InsurancePercentage { get; set; } = 0;
     public string? Notes { get; set; }
 }
 #endregion

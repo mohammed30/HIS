@@ -131,6 +131,7 @@ export interface InternalRequestDto extends FullAuditedEntityDto<string> {
   notes?: string;
   isReturn?: boolean;
   parentRequestId?: string | null;
+  isFullyReturned?: boolean;
   lines?: InternalRequestLineDto[];
 }
 

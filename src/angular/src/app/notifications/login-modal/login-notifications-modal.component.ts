@@ -70,7 +70,7 @@ import { NotificationService } from '../services/notification.service';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .login-modal-backdrop {
       position: fixed;
       inset: 0;
@@ -86,14 +86,45 @@ import { NotificationService } from '../services/notification.service';
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
     .login-modal-panel {
-      width: 460px;
+      --lm-bg: #ffffff;
+      --lm-border: #f1f5f9;
+      --lm-text-title: #1e293b;
+      --lm-text-msg: #64748b;
+      --lm-text-time: #94a3b8;
+      --lm-hover: #f8fafc;
+      --lm-footer-bg: #fcfcfd;
+      --lm-btn-border: #e2e8f0;
+      --lm-btn-text: #475569;
+      --lm-btn-hover-bg: #f1f5f9;
+      --lm-btn-hover-text: #1e293b;
+      --lm-shadow: rgba(0,0,0,0.12);
+
+      width: 480px;
       max-width: 95vw;
-      background: #ffffff;
+      background: var(--lm-bg);
       border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-      border: 1px solid #f1f5f9;
-      animation: slideUp 0.35s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 25px 50px -12px var(--lm-shadow);
+      border: 1px solid var(--lm-border);
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    :host-context([data-theme="dark"]) .login-modal-panel,
+    :host-context(.dark) .login-modal-panel,
+    :host-context(.lpx-theme-dark) .login-modal-panel {
+      --lm-bg: #151923;
+      --lm-border: #2a3143;
+      --lm-text-title: #f1f5f9;
+      --lm-text-msg: #94a3b8;
+      --lm-text-time: #64748b;
+      --lm-hover: #1e2332;
+      --lm-footer-bg: #11141c;
+      --lm-btn-border: #334155;
+      --lm-btn-text: #cbd5e1;
+      --lm-btn-hover-bg: #2a3143;
+      --lm-btn-hover-text: #f8fafc;
+      --lm-shadow: rgba(0,0,0,0.5);
     }
 
     @keyframes slideUp {
@@ -105,40 +136,69 @@ import { NotificationService } from '../services/notification.service';
     .lm-header {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 22px 24px;
-      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      gap: 16px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lm-header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+      animation: rotateBg 15s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotateBg {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .lm-header-icon {
       position: relative;
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.15);
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .lm-badge {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: -6px;
+      right: -6px;
       background: #ef4444;
       color: #fff;
       border-radius: 99px;
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      min-width: 18px;
-      height: 18px;
+      min-width: 20px;
+      height: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 4px;
+      padding: 0 5px;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+      animation: pulseBadge 2s infinite;
+    }
+
+    @keyframes pulseBadge {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
 
     .lm-close-btn {
@@ -146,82 +206,171 @@ import { NotificationService } from '../services/notification.service';
       background: rgba(255,255,255,0.15);
       border: none;
       color: #fff;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
     }
 
-    .lm-close-btn:hover { background: rgba(255,255,255,0.25); }
+    .lm-close-btn:hover { 
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
+    }
+    
+    .lm-close-btn:active {
+      transform: scale(0.95);
+    }
 
     /* Body */
     .lm-body {
-      max-height: 360px;
+      max-height: 400px;
       overflow-y: auto;
-      padding: 12px 0;
+      padding: 16px 0;
     }
+
+    /* Scrollbar styling */
+    .lm-body::-webkit-scrollbar { width: 6px; }
+    .lm-body::-webkit-scrollbar-track { background: transparent; }
+    .lm-body::-webkit-scrollbar-thumb { background: var(--lm-border); border-radius: 10px; }
+    .lm-body::-webkit-scrollbar-thumb:hover { background: var(--lm-text-time); }
 
     .lm-notif-item {
       display: flex;
       align-items: flex-start;
-      gap: 12px;
-      padding: 12px 22px;
+      gap: 16px;
+      padding: 16px 20px;
+      margin: 4px 16px;
+      border-radius: 16px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
     }
 
-    .lm-notif-item:hover { background: #f8fafc; }
+    .lm-notif-item:hover { 
+      background: var(--lm-hover);
+      border-color: var(--lm-border);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--lm-shadow);
+    }
 
     .lm-notif-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .lm-notif-item:hover .lm-notif-icon {
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    .lm-notif-content {
+      flex: 1;
     }
 
     .lm-notif-title {
       font-weight: 700;
-      font-size: 0.9rem;
-      color: #1e293b;
-      margin-bottom: 2px;
+      font-size: 0.95rem;
+      color: var(--lm-text-title);
+      margin-bottom: 4px;
+      transition: color 0.3s ease;
     }
 
     .lm-notif-msg {
-      font-size: 0.8rem;
-      color: #64748b;
-      line-height: 1.4;
+      font-size: 0.85rem;
+      color: var(--lm-text-msg);
+      line-height: 1.5;
+      transition: color 0.3s ease;
     }
 
-    .lm-notif-time { font-size: 0.72rem; margin-top: 4px; color: #94a3b8; }
+    .lm-notif-time { 
+      font-size: 0.75rem; 
+      margin-top: 6px; 
+      color: var(--lm-text-time);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.3s ease;
+    }
 
     .lm-more {
       text-align: center;
-      padding: 8px;
-      color: #64748b;
-      font-size: 0.8rem;
+      padding: 12px;
+      color: var(--lm-text-msg);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
     }
 
     /* Footer */
     .lm-footer {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 16px 22px;
-      border-top: 1px solid #f1f5f9;
-      background: #ffffff;
+      gap: 10px;
+      padding: 20px 28px;
+      border-top: 1px solid var(--lm-border);
+      background: var(--lm-footer-bg);
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
-    .lm-footer .btn { border-radius: 10px; font-weight: 600; }
-    .lm-footer .btn-outline-secondary { border-color: #e2e8f0; color: #475569; }
-    .lm-footer .btn-outline-secondary:hover { background: #f8fafc; color: #1e293b; }
+    .lm-footer .btn { 
+      border-radius: 12px; 
+      font-weight: 600; 
+      padding: 10px 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .lm-footer .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+      color: #fff;
+    }
+    
+    .lm-footer .btn-primary:hover {
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .lm-footer .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .lm-footer .btn-outline-secondary { 
+      border: 1px solid var(--lm-btn-border); 
+      color: var(--lm-btn-text); 
+      background: transparent;
+    }
+    
+    .lm-footer .btn-outline-secondary:hover { 
+      background: var(--lm-btn-hover-bg); 
+      color: var(--lm-btn-hover-text); 
+      border-color: var(--lm-btn-hover-text);
+    }
+
+    .lm-footer .btn-link {
+      color: var(--lm-text-time);
+      text-decoration: none;
+    }
+
+    .lm-footer .btn-link:hover {
+      color: var(--lm-text-title);
+      text-decoration: underline;
+    }
   `]
 })
+
 export class LoginNotificationsModalComponent implements OnInit {
   private notifService = inject(NotificationService);
   private router       = inject(Router);

@@ -54,6 +54,13 @@ public class InsurancePlanDto : FullAuditedEntityDto<Guid>
     public InsurancePlanType PlanType { get; set; }
     public InsurancePlanClass PlanClass { get; set; }
     public decimal CoveragePercentage { get; set; }
+    public decimal MedicationsCoveragePercentage { get; set; } = 80;
+    public decimal ConsultationCoveragePercentage { get; set; } = 80;
+    public decimal OperationsCoveragePercentage { get; set; } = 80;
+    public decimal MedicalServiceCoveragePercentage { get; set; } = 80;
+    public decimal LabCoveragePercentage { get; set; } = 80;
+    public decimal RadiologyCoveragePercentage { get; set; } = 80;
+    public decimal InpatientCoveragePercentage { get; set; } = 80;
     public decimal? MaxCoverageAmount { get; set; }
     public decimal CoPaymentPercentage { get; set; }
     public decimal DeductibleAmount { get; set; }
@@ -75,6 +82,13 @@ public class CreateUpdateInsurancePlanDto
     public InsurancePlanType PlanType { get; set; } = InsurancePlanType.Individual;
     public InsurancePlanClass PlanClass { get; set; } = InsurancePlanClass.ClassB;
     public decimal CoveragePercentage { get; set; } = 80;
+    public decimal MedicationsCoveragePercentage { get; set; } = 80;
+    public decimal ConsultationCoveragePercentage { get; set; } = 80;
+    public decimal OperationsCoveragePercentage { get; set; } = 80;
+    public decimal MedicalServiceCoveragePercentage { get; set; } = 80;
+    public decimal LabCoveragePercentage { get; set; } = 80;
+    public decimal RadiologyCoveragePercentage { get; set; } = 80;
+    public decimal InpatientCoveragePercentage { get; set; } = 80;
     public decimal? MaxCoverageAmount { get; set; }
     public decimal CoPaymentPercentage { get; set; } = 20;
     public decimal DeductibleAmount { get; set; } = 0;

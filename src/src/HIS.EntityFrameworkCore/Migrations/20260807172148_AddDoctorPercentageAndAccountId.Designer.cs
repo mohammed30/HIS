@@ -4,6 +4,7 @@ using HIS.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace HIS.Migrations
 {
     [DbContext(typeof(HISDbContext))]
-    partial class HISDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807172148_AddDoctorPercentageAndAccountId")]
+    partial class AddDoctorPercentageAndAccountId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1531,9 +1534,6 @@ namespace HIS.Migrations
                     b.Property<decimal>("DiscountPercentage")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal>("InsurancePercentage")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("InvoiceId")
                         .HasColumnType("uniqueidentifier");
@@ -3847,9 +3847,6 @@ namespace HIS.Migrations
                         .HasColumnType("nvarchar(40)")
                         .HasColumnName("ConcurrencyStamp");
 
-                    b.Property<decimal>("ConsultationCoveragePercentage")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("CoveragePercentage")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
@@ -3891,9 +3888,6 @@ namespace HIS.Migrations
                     b.Property<bool>("IncludesRadiology")
                         .HasColumnType("bit");
 
-                    b.Property<decimal>("InpatientCoveragePercentage")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<Guid>("InsuranceCompanyId")
                         .HasColumnType("uniqueidentifier");
 
@@ -3906,9 +3900,6 @@ namespace HIS.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
 
-                    b.Property<decimal>("LabCoveragePercentage")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("LastModificationTime");
@@ -3919,12 +3910,6 @@ namespace HIS.Migrations
 
                     b.Property<decimal?>("MaxCoverageAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MedicalServiceCoveragePercentage")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MedicationsCoveragePercentage")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("NameAr")
@@ -3939,17 +3924,11 @@ namespace HIS.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("OperationsCoveragePercentage")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("PlanClass")
                         .HasColumnType("int");
 
                     b.Property<int>("PlanType")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("RadiologyCoveragePercentage")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");

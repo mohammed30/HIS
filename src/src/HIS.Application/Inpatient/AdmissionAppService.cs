@@ -113,6 +113,8 @@ public class AdmissionAppService : CrudAppService<
             PharmacyPercentage = input.PharmacyPercentage,
             IsServicesStopped = input.IsServicesStopped,
             Notes = input.Notes,
+            NumberOfDays = input.NumberOfDays,
+            PaidAmount = input.PaidAmount,
             PatientInsuranceId = input.PatientInsuranceId
         };
 
@@ -191,6 +193,26 @@ public class AdmissionAppService : CrudAppService<
             }
 
             await _journalEntryRepository.InsertAsync(je);
+
+            // Create InpatientDeposit record so payment shows in deposits list
+            if (input.PaidAmount > 0)
+            {
+                var receiptNum = $"DEP-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+                var deposit = new HIS.Billing.InpatientDeposit(
+                    GuidGenerator.Create(),
+                    CurrentTenant.Id,
+                    admission.PatientId,
+                    admission.Id,
+                    receiptNum,
+                    input.PaidAmount
+                )
+                {
+                    JournalEntryId = je.Id,
+                    ReceivedBy = CurrentUser.UserName,
+                    Notes = $"دفعة مقدمة عند تسجيل التنويم - {patientName}"
+                };
+                await _inpatientDepositRepository.InsertAsync(deposit);
+            }
         }
 
         // --- Trigger Notification ---
@@ -720,7 +742,73 @@ public class AdmissionAppService : CrudAppService<
             .WhereIf(input.ToDate.HasValue, x => x.AdmissionDate <= input.ToDate!.Value);
     }
 
+    public override async Task<AdmissionDto> UpdateAsync(Guid id, CreateUpdateAdmissionDto input)
+    {
+        var admission = await Repository.GetAsync(id);
+        
+        decimal amountDifference = input.PaidAmount - admission.PaidAmount;
+        
+        admission.CompanionName = input.CompanionName;
+        admission.CompanionPhone = input.CompanionPhone;
+        admission.CompanionAddress = input.CompanionAddress;
+        admission.Purpose = input.Purpose;
+        admission.PharmacyPercentage = input.PharmacyPercentage;
+        admission.IsServicesStopped = input.IsServicesStopped;
+        admission.Notes = input.Notes;
+        admission.NumberOfDays = input.NumberOfDays;
+        admission.PaidAmount = input.PaidAmount;
+        admission.PatientInsuranceId = input.PatientInsuranceId;
+
+        if (amountDifference > 0)
+        {
+            var patient = await _patientRepository.GetAsync(input.PatientId);
+            var patientName = !string.IsNullOrWhiteSpace(patient.FullNameAr) ? patient.FullNameAr : patient.MRN;
+
+            var cashMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == HIS.Accounting.AccountMappingType.CashAccount);
+            var cashAccount = cashMapping?.AccountId.HasValue == true
+                ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == cashMapping.AccountId.Value)
+                : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1110");
+
+            var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120"); // Accounts Receivable
+            
+            cashAccount = await GetLeafAccountAsync(cashAccount);
+            arAccount = await GetLeafAccountAsync(arAccount);
+
+            if (cashAccount != null && arAccount != null)
+            {
+                var jeNumber = $"ADM-UPD-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+                
+                var je = new HIS.Accounting.JournalEntry(
+                    GuidGenerator.Create(),
+                    DateTime.Now,
+                    jeNumber,
+                    $"زيادة دفعة تنويم - المريض: {patientName}",
+                    isAutomatic: true
+                );
+
+                je.AddLine(GuidGenerator, cashAccount.Id, amountDifference, 0);
+                je.AddLine(GuidGenerator, arAccount.Id, 0, amountDifference);
+                
+                await _journalEntryRepository.InsertAsync(je);
+            }
+
+            var receiptNum = $"DEP-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+            var deposit = new HIS.Billing.InpatientDeposit(GuidGenerator.Create(), CurrentTenant.Id, admission.PatientId, admission.Id, receiptNum, amountDifference)
+            {
+                DepositDate = DateTime.Now,
+                Status = HIS.Billing.DepositStatus.Active
+            };
+            await _inpatientDepositRepository.InsertAsync(deposit);
+        }
+
+        await Repository.UpdateAsync(admission);
+        var dto = ObjectMapper.Map<Admission, AdmissionDto>(admission);
+        await EnrichAdmissionDtoAsync(dto);
+        return dto;
+    }
+
     protected override IQueryable<Admission> ApplyDefaultSorting(IQueryable<Admission> query)
+
     {
         return query.OrderByDescending(x => x.AdmissionDate);
     }
@@ -844,5 +932,37 @@ public class AdmissionAppService : CrudAppService<
         }
 
         return account;
+    }
+
+    public async Task<PatientAdmissionStatusDto> GetPatientAdmissionStatusAsync(Guid patientId)
+    {
+        var admissionQuery = await Repository.GetQueryableAsync();
+        var activeAdmission = admissionQuery.FirstOrDefault(a => a.PatientId == patientId && a.Status == AdmissionStatus.Active);
+
+        if (activeAdmission == null)
+        {
+            return new PatientAdmissionStatusDto
+            {
+                IsAdmitted = false
+            };
+        }
+
+        // Calculate actual available balance
+        // The PaidAmount is the deposit. The TotalAmount is total consumed.
+        // If Insurance is handling some of the TotalAmount, we could subtract InsuranceAmount from TotalAmount.
+        var dueAmount = activeAdmission.TotalAmount - activeAdmission.InsuranceAmount;
+        var availableBalance = activeAdmission.PaidAmount - dueAmount;
+
+        return new PatientAdmissionStatusDto
+        {
+            IsAdmitted = true,
+            AdmissionId = activeAdmission.Id,
+            IsServicesStopped = activeAdmission.IsServicesStopped,
+            PharmacyPercentage = activeAdmission.PharmacyPercentage,
+            InsuranceCeiling = activeAdmission.InsuranceCeiling,
+            PaidAmount = activeAdmission.PaidAmount,
+            TotalAmount = activeAdmission.TotalAmount,
+            AvailableBalance = availableBalance
+        };
     }
 }

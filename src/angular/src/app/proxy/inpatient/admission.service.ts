@@ -1,4 +1,4 @@
-import type { AdmissionDto, AdmissionLookupDto, CreatePatientTransferDto, CreateUpdateAdmissionDto, DischargeAdmissionDto, GetAdmissionsInput } from './models';
+import type { AdmissionDto, AdmissionLookupDto, CreatePatientTransferDto, CreateUpdateAdmissionDto, DischargeAdmissionDto, GetAdmissionsInput, PatientAdmissionStatusDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
@@ -59,6 +59,14 @@ export class AdmissionService {
       method: 'GET',
       url: '/api/app/admission',
       params: { searchText: input.searchText, patientId: input.patientId, status: input.status, roomId: input.roomId, roomTypeId: input.roomTypeId, fromDate: input.fromDate, toDate: input.toDate, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPatientAdmissionStatus = (patientId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PatientAdmissionStatusDto>({
+      method: 'GET',
+      url: `/api/app/admission/patient-admission-status/${patientId}`,
     },
     { apiName: this.apiName,...config });
   

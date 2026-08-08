@@ -7,40 +7,51 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="gauge-container" [title]="tooltipText">
-      <svg viewBox="0 0 100 50" class="gauge-svg">
-        <!-- Background Track -->
+      <svg viewBox="0 0 100 60" class="gauge-svg">
+        <!-- Segment 1: Red (0-20%) -->
         <path d="M 10 50 A 40 40 0 0 1 90 50" 
               fill="none" 
-              stroke="#e0e0e0" 
+              stroke="#dc3545" 
               stroke-width="12" 
-              stroke-linecap="round" />
-        
-        <!-- Active Value Track -->
-        <path d="M 10 50 A 40 40 0 0 1 90 50" 
-              fill="none" 
-              [attr.stroke]="gaugeColor" 
-              stroke-width="12" 
-              stroke-linecap="round" 
-              [style.stroke-dasharray]="dashArray" 
-              [style.stroke-dashoffset]="dashOffset" />
+              stroke-linecap="butt"
+              stroke-dasharray="25.13 1000"
+              stroke-dashoffset="0" />
               
+        <!-- Segment 2: Yellow (20-50%) -->
+        <path d="M 10 50 A 40 40 0 0 1 90 50" 
+              fill="none" 
+              stroke="#ffc107" 
+              stroke-width="12" 
+              stroke-linecap="butt"
+              stroke-dasharray="37.7 1000"
+              stroke-dashoffset="-25.13" />
+
+        <!-- Segment 3: Green (50-100%) -->
+        <path d="M 10 50 A 40 40 0 0 1 90 50" 
+              fill="none" 
+              stroke="#28a745" 
+              stroke-width="12" 
+              stroke-linecap="butt"
+              stroke-dasharray="62.83 1000"
+              stroke-dashoffset="-62.83" />
+
         <!-- Needle -->
-        <g [style.transform]="needleTransform" style="transform-origin: 50px 50px;">
-           <circle cx="50" cy="50" r="4" fill="#333" />
-           <polygon points="48,50 52,50 50,15" fill="#333" />
+        <g [style.transform]="needleTransform" style="transform-origin: 50px 50px;" class="gauge-needle">
+           <circle cx="50" cy="50" r="4" />
+           <polygon points="48,50 52,50 50,15" />
         </g>
       </svg>
-      <div class="gauge-text" [style.color]="gaugeColor">
+      <div class="gauge-text">
         {{ percentage | number:'1.0-0' }}%
       </div>
-      <div class="gauge-subtext text-muted small" *ngIf="showDetails">
+      <div class="gauge-subtext text-muted small" *ngIf="showDetails" dir="ltr">
         {{ utilizedAmount | number:'1.0-0' }} / {{ creditLimit | number:'1.0-0' }}
       </div>
     </div>
   `,
   styles: [`
     .gauge-container {
-      width: 120px;
+      width: 140px;
       text-align: center;
       position: relative;
       display: inline-block;
@@ -50,19 +61,21 @@ import { CommonModule } from '@angular/common';
       height: auto;
       overflow: visible;
     }
+    .gauge-needle circle, .gauge-needle polygon {
+      fill: var(--theme-text-primary, #212529);
+      transition: fill 0.3s ease;
+    }
     .gauge-text {
-      font-size: 14px;
+      font-size: 18px;
       font-weight: bold;
-      margin-top: -10px;
+      margin-top: -5px;
+      color: var(--theme-text-primary, #212529);
     }
     .gauge-subtext {
-      font-size: 10px;
-    }
-    path {
-      transition: stroke-dashoffset 0.5s ease-in-out, stroke 0.3s;
+      font-size: 11px;
     }
     g {
-      transition: transform 0.5s ease-in-out;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
   `]
 })
@@ -72,9 +85,6 @@ export class CreditLimitGaugeComponent implements OnChanges {
   @Input() showDetails: boolean = true;
 
   percentage: number = 0;
-  dashArray: number = 125.6; // pi * 40 (radius)
-  dashOffset: number = 125.6;
-  gaugeColor: string = '#28a745'; // success green
   needleTransform: string = 'rotate(-90deg)';
   tooltipText: string = '';
 
@@ -86,28 +96,13 @@ export class CreditLimitGaugeComponent implements OnChanges {
     if (!this.creditLimit || this.creditLimit <= 0) {
       this.percentage = 0;
     } else {
-      this.percentage = (this.utilizedAmount / this.creditLimit) * 100;
+      this.percentage = ((this.creditLimit - this.utilizedAmount) / this.creditLimit) * 100;
     }
 
-    // Cap at 100% for visual purposes
     const displayPercentage = Math.min(Math.max(this.percentage, 0), 100);
-    
-    // Calculate SVG dash offset
-    this.dashOffset = this.dashArray - (this.dashArray * displayPercentage / 100);
-
-    // Calculate needle rotation (-90deg to +90deg)
     const degrees = -90 + (180 * displayPercentage / 100);
     this.needleTransform = `rotate(${degrees}deg)`;
-
-    // Set color based on percentage
-    if (this.percentage < 50) {
-      this.gaugeColor = '#28a745'; // Green
-    } else if (this.percentage < 85) {
-      this.gaugeColor = '#ffc107'; // Yellow
-    } else {
-      this.gaugeColor = '#dc3545'; // Red
-    }
-
-    this.tooltipText = `الحد الائتماني: ${this.creditLimit}\nالمستخدم: ${this.utilizedAmount}\nالنسبة: ${this.percentage.toFixed(1)}%`;
+    
+    this.tooltipText = `الحد الائتماني: ${this.creditLimit}\nالمستخدم: ${this.utilizedAmount}\nالرصيد المتاح: ${this.percentage.toFixed(1)}%`;
   }
 }

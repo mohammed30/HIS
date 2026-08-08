@@ -26,6 +26,13 @@ export interface CreateUpdateInsurancePlanDto {
   planType?: InsurancePlanType;
   planClass?: InsurancePlanClass;
   coveragePercentage?: number;
+  medicationsCoveragePercentage?: number;
+  consultationCoveragePercentage?: number;
+  operationsCoveragePercentage?: number;
+  medicalServiceCoveragePercentage?: number;
+  labCoveragePercentage?: number;
+  radiologyCoveragePercentage?: number;
+  inpatientCoveragePercentage?: number;
   maxCoverageAmount?: number | null;
   coPaymentPercentage?: number;
   deductibleAmount?: number;
@@ -126,6 +133,13 @@ export interface InsurancePlanDto extends FullAuditedEntityDto<string> {
   planType?: InsurancePlanType;
   planClass?: InsurancePlanClass;
   coveragePercentage?: number;
+  medicationsCoveragePercentage?: number;
+  consultationCoveragePercentage?: number;
+  operationsCoveragePercentage?: number;
+  medicalServiceCoveragePercentage?: number;
+  labCoveragePercentage?: number;
+  radiologyCoveragePercentage?: number;
+  inpatientCoveragePercentage?: number;
   maxCoverageAmount?: number | null;
   coPaymentPercentage?: number;
   deductibleAmount?: number;

@@ -143,6 +143,12 @@ public class DoctorDto : FullAuditedEntityDto<Guid>
     public Guid? UserId { get; set; }
     public bool IsActive { get; set; }
     public int SortOrder { get; set; }
+    /// <summary>نسبة حق الطبيب من إجمالي الخدمات (0-100)</summary>
+    public decimal DoctorPercentage { get; set; }
+    /// <summary>نسبة المستشفى = 100 - DoctorPercentage</summary>
+    public decimal HospitalPercentage { get; set; }
+    /// <summary>معرّف حساب الطبيب في شجرة الحسابات</summary>
+    public Guid? AccountId { get; set; }
 }
 
 public class CreateUpdateDoctorDto
@@ -167,6 +173,8 @@ public class CreateUpdateDoctorDto
     public Guid? UserId { get; set; }
     public bool IsActive { get; set; } = true;
     public int SortOrder { get; set; }
+    /// <summary>نسبة حق الطبيب من إجمالي الخدمات (0-100)</summary>
+    public decimal DoctorPercentage { get; set; } = 60;
 }
 
 public class GetDoctorsInput : PagedAndSortedResultRequestDto

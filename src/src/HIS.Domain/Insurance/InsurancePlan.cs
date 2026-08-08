@@ -46,6 +46,14 @@ public class InsurancePlan : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public decimal CoveragePercentage { get; set; } = 80;
 
+    public decimal MedicationsCoveragePercentage { get; set; } = 80;
+    public decimal ConsultationCoveragePercentage { get; set; } = 80;
+    public decimal OperationsCoveragePercentage { get; set; } = 80;
+    public decimal MedicalServiceCoveragePercentage { get; set; } = 80;
+    public decimal LabCoveragePercentage { get; set; } = 80;
+    public decimal RadiologyCoveragePercentage { get; set; } = 80;
+    public decimal InpatientCoveragePercentage { get; set; } = 80;
+
     /// <summary>
     /// الحد الأقصى للتغطية
     /// </summary>

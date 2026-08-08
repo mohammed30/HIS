@@ -105,7 +105,13 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         drugs.AddChild(HISPermissions.Pharmacy.DrugsCreate, L("Permission:DrugsCreate"));
         drugs.AddChild(HISPermissions.Pharmacy.DrugsEdit, L("Permission:DrugsEdit"));
         drugs.AddChild(HISPermissions.Pharmacy.DrugsDelete, L("Permission:DrugsDelete"));
-        pharmacy.AddChild(HISPermissions.Pharmacy.POS, L("Permission:PharmacyPOS"));
+        var pos = pharmacy.AddChild(HISPermissions.Pharmacy.POS, L("Permission:PharmacyPOS"));
+        pos.AddChild(HISPermissions.Pharmacy.POS_Approval, L("Permission:PharmacyPOS_Approval"));
+        pos.AddChild(HISPermissions.Pharmacy.POS_ToDispense, L("Permission:PharmacyPOS_ToDispense"));
+        pos.AddChild(HISPermissions.Pharmacy.POS_Returns, L("Permission:PharmacyPOS_Returns"));
+        pos.AddChild(HISPermissions.Pharmacy.POS_ReturnedInvoices, L("Permission:PharmacyPOS_ReturnedInvoices"));
+        pos.AddChild(HISPermissions.Pharmacy.POS_Dispensed, L("Permission:PharmacyPOS_Dispensed"));
+        pos.AddChild(HISPermissions.Pharmacy.POS_ReturnedRequests, L("Permission:PharmacyPOS_ReturnedRequests"));
 
         // Nursing
         var nursing = hisGroup.AddPermission(HISPermissions.Nursing.Default, L("Permission:Nursing"));

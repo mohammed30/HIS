@@ -22,6 +22,7 @@ public class InternalRequestDto : FullAuditedEntityDto<Guid>
     
     public bool IsReturn { get; set; }
     public Guid? ParentRequestId { get; set; }
+    public bool IsFullyReturned { get; set; }
 
     public List<InternalRequestLineDto> Lines { get; set; }
 }

@@ -116,6 +116,21 @@ public class Doctor : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public int SortOrder { get; set; }
 
+    /// <summary>
+    /// نسبة حق الطبيب من إجمالي الخدمات (0-100)
+    /// </summary>
+    public decimal DoctorPercentage { get; set; } = 60;
+
+    /// <summary>
+    /// نسبة المستشفى = 100 - DoctorPercentage (للعرض فقط، تُحسب تلقائياً)
+    /// </summary>
+    public decimal HospitalPercentage => 100 - DoctorPercentage;
+
+    /// <summary>
+    /// معرّف حساب الطبيب في شجرة الحسابات (يُنشأ تلقائياً عند إضافة الطبيب)
+    /// </summary>
+    public Guid? AccountId { get; set; }
+
     protected Doctor()
     {
     }

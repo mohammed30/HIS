@@ -67,6 +67,11 @@ public class InvoiceItem : FullAuditedEntity<Guid>, IMultiTenant
     public bool IsCoveredByInsurance { get; set; } = true;
 
     /// <summary>
+    /// نسبة تغطية التأمين المطبقة
+    /// </summary>
+    public decimal InsurancePercentage { get; set; } = 0;
+
+    /// <summary>
     /// ملاحظات
     /// </summary>
     public string? Notes { get; set; }

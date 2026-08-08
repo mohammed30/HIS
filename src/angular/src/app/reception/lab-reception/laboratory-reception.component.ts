@@ -27,6 +27,7 @@ import { ServiceType } from '../../proxy/billing/service-type.enum';
 import { ToasterService } from '@abp/ng.theme.shared';
 
 // New Imports
+import { InpatientDepositService } from '../../proxy/billing/inpatient-deposit.service';
 import { AdmissionService } from '../../proxy/inpatient/admission.service';
 import { RoomService } from '../../proxy/rooms/room.service';
 import { SurgicalOperationService } from '../../proxy/operations/surgical-operation.service';
@@ -36,6 +37,9 @@ import { OperationStatus } from '../../proxy/operations/operation-status.enum';
 import { BedDto } from '../../proxy/rooms/models';
 import { BedStatus } from '../../proxy/rooms/bed-status.enum';
 import { LabService } from '../../proxy/laboratory/lab.service';
+import { InsuranceCompanyService } from '../../proxy/insurance/insurance-company.service';
+import { InsurancePlanService } from '../../proxy/insurance/insurance-plan.service';
+import { PatientBalanceGuardService } from '../../shared/patient-balance-guard.service';
 
 @Component({
     selector: 'app-laboratory-reception',
@@ -53,6 +57,7 @@ export class LaboratoryReceptionComponent implements OnInit {
     private contractService = inject(ContractService);
     private paymentMethodService = inject(PaymentMethodService);
     private paymentService = inject(PaymentService);
+    private inpatientDepositService = inject(InpatientDepositService);
     private referralSourceService = inject(ReferralSourceService);
     private patientService = inject(PatientService);
     private serviceItemService = inject(ServiceItemService);
@@ -61,9 +66,12 @@ export class LaboratoryReceptionComponent implements OnInit {
     private admissionService = inject(AdmissionService);
     private roomService = inject(RoomService);
     private operationService = inject(SurgicalOperationService);
+    private insuranceCompanyService = inject(InsuranceCompanyService);
+    private insurancePlanService = inject(InsurancePlanService);
     private doctorService = inject(DoctorService);
     private clinicService = inject(ClinicService);
     private labService = inject(LabService);
+    public patientBalanceGuard = inject(PatientBalanceGuardService);
     private confirmation = inject(ConfirmationService);
     private configState = inject(ConfigStateService);
 
@@ -75,6 +83,15 @@ export class LaboratoryReceptionComponent implements OnInit {
     contracts: ContractDto[] = [];
     paymentMethods: PaymentMethodDto[] = [];
     referralSources: ReferralSourceDto[] = [];
+    insuranceCompanies: any[] = [];
+    insurancePlans: any[] = [];
+    
+    // Tab Insurance Percentages
+    labInsurancePercentage = 0;
+    clinicsInsurancePercentage = 0;
+    medicalServicesInsurancePercentage = 0;
+    operationsInsurancePercentage = 0;
+    inpatientInsurancePercentage = 0;
 
     // Role-Based Access
     isAdminOrAdminStaff: boolean = false;
@@ -245,6 +262,8 @@ export class LaboratoryReceptionComponent implements OnInit {
             emergencyContactRelation: '',
             taxFile: '',
             contractId: null,
+            insuranceCompanyId: null,
+            insurancePlanId: null,
             paymentMethodId: null,
             cardNumber: '',
             referralSourceId: null,
@@ -316,6 +335,7 @@ export class LaboratoryReceptionComponent implements OnInit {
             }
         });
         this.referralSourceService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.referralSources = res.items || []);
+        this.insuranceCompanyService.getList({ maxResultCount: 1000 } as any).subscribe(res => this.insuranceCompanies = res.items || []);
     }
 
     loadAllDoctors() {
@@ -327,23 +347,130 @@ export class LaboratoryReceptionComponent implements OnInit {
         });
     }
 
-    updateConsultationFee() {
-        if (!this.booking.doctorId) {
-            this.booking.payAmount = 0;
+    onInsuranceCompanyChange(companyId: string) {
+        if (!companyId) {
+            this.insurancePlans = [];
+            this.patientInfo.insurancePlanId = null;
             return;
         }
+        this.insurancePlanService.getList({ insuranceCompanyId: companyId, maxResultCount: 1000 } as any).subscribe(res => {
+            this.insurancePlans = res.items || [];
+        });
+    }
 
-        const doctor = this.doctors.find(d => d.id === this.booking.doctorId);
-        if (!doctor) return;
+    onInsurancePlanChange(planId: string) {
+        const plan = this.insurancePlans.find(p => p.id === planId);
+        if (plan) {
+            this.labInsurancePercentage = plan.labCoveragePercentage || 0;
+            this.clinicsInsurancePercentage = plan.consultationCoveragePercentage || 0;
+            this.medicalServicesInsurancePercentage = plan.medicalServiceCoveragePercentage || 0;
+            this.operationsInsurancePercentage = plan.operationsCoveragePercentage || 0;
+            this.inpatientInsurancePercentage = plan.inpatientCoveragePercentage || 0;
+        } else {
+            this.labInsurancePercentage = 0;
+            this.clinicsInsurancePercentage = 0;
+            this.medicalServicesInsurancePercentage = 0;
+            this.operationsInsurancePercentage = 0;
+            this.inpatientInsurancePercentage = 0;
+        }
+    }
 
-        // If a service item is selected, it should have priority (already handled by service logic potentially, 
-        // but here we focus on the doctor fee)
+    currentDoctorSharePercent: number = 0;
+
+    getDoctorShare(): number {
+        if (!this.booking.doctorId) return 0;
+        const amount = (this.booking.payAmount || 0) - (this.booking.discount || 0);
+        return (amount * this.currentDoctorSharePercent) / 100;
+    }
+
+    getHospitalShare(): number {
+        const amount = (this.booking.payAmount || 0) - (this.booking.discount || 0);
+        return amount - this.getDoctorShare();
+    }
+
+    getClinicCompanyShare(): number {
+        if (this.clinicsInsurancePercentage > 0) {
+            const amount = (this.booking.payAmount || 0) - (this.booking.discount || 0);
+            return Math.round(amount * (this.clinicsInsurancePercentage / 100));
+        }
+        return 0;
+    }
+
+    getClinicPatientShare(): number {
+        const amount = (this.booking.payAmount || 0) - (this.booking.discount || 0);
+        return amount - this.getClinicCompanyShare();
+    }
+
+    updateConsultationFee() {
+        // If a service item is selected, it should have priority for the fee
         if (this.booking.serviceItemId) {
             const service = this.services.find(s => s.id === this.booking.serviceItemId);
             if (service) {
                 this.booking.payAmount = service.price || 0;
-                return;
             }
+        }
+
+        if (!this.booking.doctorId) {
+            if (!this.booking.serviceItemId) {
+                this.booking.payAmount = 0;
+            }
+            this.currentDoctorSharePercent = 0;
+            return;
+        }
+
+        const doctor = this.doctors.find(d => d.id === this.booking.doctorId);
+        if (!doctor) {
+            this.currentDoctorSharePercent = 0;
+            return;
+        }
+
+        const fillDeptAndClinic = (deptId?: string, clinicId?: string, doctorPercentage?: number) => {
+            this.currentDoctorSharePercent = doctorPercentage || 0;
+            
+            if (deptId) {
+                const matchingDept = this.departments.find(d => d.id.toLowerCase() === deptId.toLowerCase());
+                if (matchingDept && this.selectedDepartmentId !== matchingDept.id) {
+                    this.selectedDepartmentId = matchingDept.id;
+                    // Fetch clinics for this department without clearing doctor
+                    this.clinicService.getByDepartment(matchingDept.id).subscribe(res => {
+                        this.clinics = (res || []).map(x => ({ ...x, name: x.nameAr || x.nameEn || (x as any).name }))
+                            .sort((a, b) => a.name.localeCompare(b.name));
+                        
+                        if (clinicId) {
+                            const matchingClinic = this.clinics.find(c => c.id.toLowerCase() === clinicId.toLowerCase());
+                            if (matchingClinic) {
+                                this.booking.clinicId = matchingClinic.id;
+                            }
+                        } else if (this.clinics.length === 1) {
+                            this.booking.clinicId = this.clinics[0].id;
+                        }
+                    });
+                } else if (matchingDept && this.selectedDepartmentId === matchingDept.id) {
+                    // Department is already correct
+                    if (clinicId) {
+                        const matchingClinic = this.clinics.find(c => c.id.toLowerCase() === clinicId.toLowerCase());
+                        if (matchingClinic) {
+                            this.booking.clinicId = matchingClinic.id;
+                        }
+                    } else if (this.clinics.length === 1) {
+                        this.booking.clinicId = this.clinics[0].id;
+                    }
+                }
+            } else if (clinicId) {
+                const matchingClinic = this.clinics.find(c => c.id.toLowerCase() === clinicId.toLowerCase());
+                if (matchingClinic && this.booking.clinicId !== matchingClinic.id) {
+                    this.booking.clinicId = matchingClinic.id;
+                }
+            }
+        };
+
+        if (doctor.departmentId !== undefined) {
+            fillDeptAndClinic(doctor.departmentId, doctor.clinicId, doctor.doctorPercentage);
+        } else {
+            // Auto-fill department and clinic by fetching full doctor details to be absolutely sure
+            this.doctorService.get(this.booking.doctorId).subscribe(doc => {
+                fillDeptAndClinic(doc.departmentId, doc.clinicId, doc.doctorPercentage);
+            });
         }
 
         const appointmentDate = new Date(this.booking.appointmentDate);
@@ -357,7 +484,9 @@ export class LaboratoryReceptionComponent implements OnInit {
             fee = doctor.eveningConsultationFee || doctor.consultationFee || 0;
         }
 
-        this.booking.payAmount = fee;
+        if (!this.booking.serviceItemId) {
+            this.booking.payAmount = fee;
+        }
     }
 
     loadLabTests() {
@@ -502,6 +631,10 @@ export class LaboratoryReceptionComponent implements OnInit {
                 this.patientInfo = res;
                 this.calculateAge();
                 this.searchResults = [];
+                
+                // Track patient balance/status if admitted
+                this.patientBalanceGuard.checkPatient(id);
+                
                 this.loadInpatientList();
                 this.loadOperationsList();
                 this.toaster.success('تم تحميل بيانات المريض', 'نجاح');
@@ -555,10 +688,15 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
 
+        if (!this.patientBalanceGuard.canProceedWithService(this.billingDetails.patientShare)) {
+            return;
+        }
+
         const invoice = {
             patientId: this.patientInfo.id,
             dueDate: new Date().toISOString(),
             notes: 'Lab Request',
+            patientInsuranceId: this.patientInfo.insurancePlanId, // pass plan id 
             items: this.selectedTests.map(test => ({
                 serviceType: ServiceType.Laboratory,
                 serviceCode: test.code,
@@ -566,7 +704,8 @@ export class LaboratoryReceptionComponent implements OnInit {
                 quantity: 1,
                 unitPrice: test.price,
                 discountPercentage: 0,
-                isCoveredByInsurance: false, // Default
+                isCoveredByInsurance: (this.labInsurancePercentage > 0) ? true : false,
+                insurancePercentage: (this.labInsurancePercentage > 0) ? this.labInsurancePercentage : 0,
                 notes: ''
             }))
         };
@@ -701,11 +840,10 @@ export class LaboratoryReceptionComponent implements OnInit {
                     .sort((a, b) => a.name.localeCompare(b.name));
             });
 
-            // Filter Doctors by Department (directly)
-            // Use null instead of undefined for clinicId to avoid 400 error
-            this.appointmentService.getDoctorLookup(null, this.selectedDepartmentId).subscribe(res => {
-                this.doctors = ((res as any) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
-                    .sort((a, b) => a.name.localeCompare(b.name));
+            // Filter Doctors by Department (directly) using getList for full DTOs
+            this.doctorService.getList({ departmentId: this.selectedDepartmentId, maxResultCount: 1000 } as any).subscribe(res => {
+                this.doctors = (res.items || []).map(x => ({ ...x, name: x.nameAr || x.nameEn || (x as any).name }))
+                    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             });
         } else {
             // Load all if no department selected
@@ -720,18 +858,18 @@ export class LaboratoryReceptionComponent implements OnInit {
     onClinicChange() {
         this.booking.doctorId = '';
         if (this.booking.clinicId) {
-            // Pass both clinic and selectedDepartmentId to narrow down
-            this.appointmentService.getDoctorLookup(this.booking.clinicId, this.selectedDepartmentId || undefined).subscribe(res => {
-                this.doctors = ((res as any) || []).map(x => ({ 
+            // Pass both clinic and selectedDepartmentId to narrow down using getList for full DTOs
+            this.doctorService.getList({ clinicId: this.booking.clinicId, departmentId: this.selectedDepartmentId || undefined, maxResultCount: 1000 } as any).subscribe(res => {
+                this.doctors = (res.items || []).map(x => ({ 
                     ...x, 
-                    name: x.nameAr || x.nameEn || x.name || (x as any).name 
+                    name: x.nameAr || x.nameEn || (x as any).name 
                 })).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             });
         } else if (this.selectedDepartmentId) {
             // Fallback to department doctors if clinic is cleared
-            this.appointmentService.getDoctorLookup(null, this.selectedDepartmentId).subscribe(res => {
-                this.doctors = ((res as any) || []).map(x => ({ ...x, name: x.name || x.nameAr || x.nameEn }))
-                    .sort((a, b) => a.name.localeCompare(b.name));
+            this.doctorService.getList({ departmentId: this.selectedDepartmentId, maxResultCount: 1000 } as any).subscribe(res => {
+                this.doctors = (res.items || []).map(x => ({ ...x, name: x.nameAr || x.nameEn || (x as any).name }))
+                    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             });
         } else {
             this.doctors = [];
@@ -748,6 +886,10 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
 
+        if (!this.patientBalanceGuard.canProceedWithService(this.getClinicPatientShare())) {
+            return;
+        }
+
         const input: any = {
             patientId: this.patientInfo.id,
             clinicId: this.booking.clinicId,
@@ -756,20 +898,21 @@ export class LaboratoryReceptionComponent implements OnInit {
             appointmentDate: this.booking.appointmentDate,
             createInvoice: type !== 'followup', // Don't create invoice for simple follow-up unless specified
             paymentMethod: this.booking.paymentMethod,
-            discount: this.booking.discount
+            discount: this.booking.discount,
+            insurancePercentage: this.clinicsInsurancePercentage,
+            patientInsuranceId: this.patientInfo.insurancePlanId
         };
 
-        // Payment Logic based on type
-        if (type === 'bond') {
-            // Pay full amount (or entered amount)
-            input.paidAmount = this.booking.payAmount;
-        } else if (type === 'statement') {
-            // Credit / Deferred - No immediate payment
-            input.paidAmount = 0;
-        } else {
+        // Payment Logic
+        // Always pass the paid amount if the user entered it, regardless of button clicked.
+        // The difference between statement and bond is primarily what gets printed/reported.
+        if (type === 'followup') {
             // Follow-up: usually free or pre-paid
             input.paidAmount = 0;
             // You might want to flag this as a follow-up in the backend if the API supports it
+        } else {
+            // For both 'bond' and 'statement', process the entered payment amount
+            input.paidAmount = this.booking.payAmount || 0;
         }
 
         this.appointmentService.bookClinicAppointment(input).subscribe({
@@ -922,6 +1065,100 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     selectAdmission(item: any) {
         this.selectedAdmission = item;
+        
+        // Find roomType ID from roomTypeName since backend returns roomTypeName
+        let rtId = null;
+        if (item.roomTypeName) {
+            const rtObj = this.roomTypes.find(rt => rt.name === item.roomTypeName);
+            if (rtObj) rtId = rtObj.id;
+        }
+
+        // Populate the form fields with existing admission data
+        this.admission = {
+            roomType: rtId,
+            roomId: item.roomId ?? null,
+            bedId: item.bedId ?? null,
+            insuranceCeiling: item.insuranceCeiling ?? 0,
+            companionName: item.companionName ?? '',
+            companionPhone: item.companionPhone ?? '',
+            companionAddress: item.companionAddress ?? '',
+            purpose: item.purpose ?? '',
+            pharmacyPercentage: item.pharmacyPercentage ?? 0,
+            isServicesStopped: item.isServicesStopped ?? false,
+            notes: item.notes ?? '',
+            numberOfDays: item.numberOfDays ?? 0,
+            paidAmount: item.paidAmount ?? 0,
+            admissionDate: item.admissionDate ? new Date(item.admissionDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
+        };
+        // Load rooms for selected type so dropdowns are populated
+        if (rtId !== null) {
+            this.roomService.getAvailableRooms(rtId).subscribe(res => {
+                this.availableRooms = res || [];
+                if (item.roomId) {
+                    this.admission.roomId = item.roomId;
+                    this.roomService.get(item.roomId).subscribe(roomRes => {
+                        // Include both occupied and available beds so current bed shows
+                        this.availableBedsList = (roomRes.beds || []).filter((b: any) =>
+                            b.status === BedStatus.Available || b.id === item.bedId
+                        );
+                        this.admission.bedId = item.bedId ?? null;
+                    });
+                }
+            });
+        }
+    }
+
+    updateAdmission() {
+        if (!this.selectedAdmission) return;
+        this.isSavingAdmission = true;
+        const updateDto = {
+            ...this.selectedAdmission,
+            companionName: this.admission.companionName,
+            companionPhone: this.admission.companionPhone,
+            companionAddress: this.admission.companionAddress,
+            purpose: this.admission.purpose,
+            pharmacyPercentage: this.admission.pharmacyPercentage,
+            isServicesStopped: this.admission.isServicesStopped,
+            notes: this.admission.notes,
+            numberOfDays: this.admission.numberOfDays,
+            paidAmount: this.admission.paidAmount,
+            patientInsuranceId: this.selectedAdmission.patientInsuranceId
+        };
+        this.admissionService.update(this.selectedAdmission.id, updateDto).subscribe({
+            next: (updated) => {
+                this.isSavingAdmission = false;
+                this.toaster.success('تم التعديل بنجاح', 'نجاح');
+                this.selectedAdmission = updated;
+                this.patientBalanceGuard.checkPatient(this.patientInfo.id);
+                this.loadInpatientList();
+            },
+            error: (err) => {
+                this.isSavingAdmission = false;
+                console.error(err);
+                this.toaster.error('فشل التعديل', 'خطأ');
+            }
+        });
+    }
+
+    clearAdmissionSelection() {
+        this.selectedAdmission = null;
+        this.admission = {
+            roomType: null,
+            roomId: null,
+            bedId: null,
+            insuranceCeiling: 0,
+            companionName: '',
+            companionPhone: '',
+            companionAddress: '',
+            purpose: '',
+            pharmacyPercentage: 0,
+            isServicesStopped: false,
+            notes: '',
+            numberOfDays: 0,
+            paidAmount: 0
+        };
+        this.availableRooms = [];
+        this.availableBedsList = [];
     }
 
     printAdmissionInvoice() {
@@ -1163,6 +1400,19 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     updateMedicalServicesTotals() {
         this.medicalServicesTotal = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.price, 0);
+
+        if (this.medicalServicesInsurancePercentage > 0) {
+            this.selectedMedicalServices.forEach(curr => {
+                curr.insuranceShare = Math.round(curr.price * (this.medicalServicesInsurancePercentage / 100));
+                curr.patientShare = curr.price - curr.insuranceShare;
+            });
+        } else {
+            this.selectedMedicalServices.forEach(curr => {
+                curr.insuranceShare = 0;
+                curr.patientShare = curr.price;
+            });
+        }
+
         this.medicalServicesPatientShare = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.patientShare, 0);
         this.medicalServicesInsuranceShare = this.selectedMedicalServices.reduce((acc, curr) => acc + curr.insuranceShare, 0);
 
@@ -1181,11 +1431,17 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
 
+        const patientTotalShare = this.selectedMedicalServices.reduce((acc, curr) => acc + (curr.patientShare || curr.price), 0);
+        if (!this.patientBalanceGuard.canProceedWithService(patientTotalShare)) {
+            return;
+        }
+
         const invoiceInput: any = {
             patientId: this.patientInfo.id,
             dueDate: new Date().toISOString(),
             discountAmount: this.medicalServicesPayment.discount,
             taxPercentage: 0, // Should be from config
+            patientInsuranceId: this.patientInfo.insurancePlanId,
             items: this.selectedMedicalServices.map(x => ({
                 serviceItemId: x.id,
                 serviceType: x.serviceType,
@@ -1193,7 +1449,8 @@ export class LaboratoryReceptionComponent implements OnInit {
                 quantity: 1,
                 unitPrice: x.price,
                 discountPercentage: 0, // Line item discount?
-                isCoveredByInsurance: false
+                isCoveredByInsurance: (this.medicalServicesInsurancePercentage > 0) ? true : false,
+                insurancePercentage: (this.medicalServicesInsurancePercentage > 0) ? this.medicalServicesInsurancePercentage : 0
             }))
         };
 
@@ -1318,9 +1575,15 @@ export class LaboratoryReceptionComponent implements OnInit {
         // Logic: Grand Total = Total - Discount + Tax
         this.billingDetails.grandTotal = (this.billingDetails.total - (this.billingDetails.discount || 0)) + this.billingDetails.tax;
 
-        // Temporary Insurance Calculation (to be enhanced with actual insurance plans)
-        this.billingDetails.insuranceShare = 0;
-        this.billingDetails.patientShare = this.billingDetails.grandTotal;
+        // Insurance Calculation using the percentage
+        if (this.labInsurancePercentage > 0) {
+            // Apply percentage on the Total (before discount/tax)
+            this.billingDetails.insuranceShare = Math.round(this.billingDetails.total * (this.labInsurancePercentage / 100));
+        } else {
+            this.billingDetails.insuranceShare = 0;
+        }
+
+        this.billingDetails.patientShare = this.billingDetails.grandTotal - this.billingDetails.insuranceShare;
 
         // Recalculate Active Payment Type Amount if needed (to keep it in sync with new Grand Total)
         // If we are currently editing one, maybe update it? 
@@ -1398,11 +1661,18 @@ export class LaboratoryReceptionComponent implements OnInit {
             maxResultCount: 1000
         } as any);
 
+        const deposits$ = this.inpatientDepositService.getList({
+            patientId: this.patientInfo.id,
+            fromDate: from,
+            toDate: to,
+            maxResultCount: 1000
+        } as any);
+
         console.log('Fetching Patient Statement:', { patientId: this.patientInfo.id, from, to });
 
-        forkJoin([invoices$, payments$]).subscribe({
-            next: ([invRes, payRes]) => {
-                console.log('Statement Results:', { invoices: invRes.items?.length, payments: payRes.items?.length });
+        forkJoin([invoices$, payments$, deposits$]).subscribe({
+            next: ([invRes, payRes, depRes]) => {
+                console.log('Statement Results:', { invoices: invRes.items?.length, payments: payRes.items?.length, deposits: depRes.items?.length });
                 const invoices = (invRes.items || []).map(i => ({
                     id: i.id,
                     date: i.invoiceDate,
@@ -1431,10 +1701,24 @@ export class LaboratoryReceptionComponent implements OnInit {
                     originalItem: p
                 }));
 
+                const deposits = (depRes.items || []).map(d => ({
+                    id: d.id,
+                    date: d.depositDate,
+                    type: 'Deposit / دفعة تنويم',
+                    reference: d.receiptNumber,
+                    debit: 0,
+                    credit: d.amount || 0,
+                    balance: 0,
+                    status: d.status,
+                    notes: 'دفعة مقدمة - تنويم',
+                    serviceName: '-',
+                    originalItem: d
+                }));
+
                 // Merge and Sort
                 let runningBalance = 0;
                 this.patientStatement = [];
-                const combined = [...invoices, ...payments].sort((a, b) => {
+                const combined = [...invoices, ...payments, ...deposits].sort((a, b) => {
                     const dateA = a.date ? new Date(a.date).getTime() : 0;
                     const dateB = b.date ? new Date(b.date).getTime() : 0;
                     return dateA - dateB;

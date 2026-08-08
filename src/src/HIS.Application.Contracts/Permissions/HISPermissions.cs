@@ -113,6 +113,12 @@ public static class HISPermissions
         public const string DrugsEdit = Drugs + ".Edit";
         public const string DrugsDelete = Drugs + ".Delete";
         public const string POS = Default + ".POS";
+        public const string POS_Approval = POS + ".Approval";
+        public const string POS_ToDispense = POS + ".ToDispense";
+        public const string POS_Returns = POS + ".Returns";
+        public const string POS_ReturnedInvoices = POS + ".ReturnedInvoices";
+        public const string POS_Dispensed = POS + ".Dispensed";
+        public const string POS_ReturnedRequests = POS + ".ReturnedRequests";
     }
 
     public static class Nursing

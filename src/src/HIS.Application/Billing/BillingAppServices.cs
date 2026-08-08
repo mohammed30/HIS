@@ -88,6 +88,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
 
             // Calculate totals from items
             decimal totalAmount = 0;
+            decimal insuranceCoverageAmount = 0;
             if (input.Items != null)
             {
                 foreach (var itemDto in input.Items)
@@ -135,19 +136,27 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                         DiscountPercentage = itemDto.DiscountPercentage,
                         DiscountAmount = discountAmount,
                         IsCoveredByInsurance = itemDto.IsCoveredByInsurance,
+                        InsurancePercentage = itemDto.InsurancePercentage,
                         Notes = itemDto.Notes,
                         DepartmentId = departmentId
                     };
                     await _itemRepository.InsertAsync(item);
                     totalAmount += item.TotalPrice;
+                    
+                    if (item.IsCoveredByInsurance && item.InsurancePercentage > 0)
+                    {
+                        insuranceCoverageAmount += (item.TotalPrice * item.InsurancePercentage / 100);
+                    }
                 }
             }
 
             invoice.TotalAmount = totalAmount;
             invoice.TaxAmount = (totalAmount - input.DiscountAmount) * (input.TaxPercentage / 100);
             invoice.NetAmount = totalAmount - input.DiscountAmount + invoice.TaxAmount;
+            invoice.InsuranceCoverage = insuranceCoverageAmount;
+            invoice.CoPaymentAmount = invoice.NetAmount - insuranceCoverageAmount;
 
-            await Repository.InsertAsync(invoice);
+            await Repository.InsertAsync(invoice, autoSave: true);
 
             // Auto-Create Journal Entry (Debit AR 1120, Credit Revenue 4100)
             await CreateInvoiceJournalEntryAsync(invoice, totalAmount);
@@ -231,6 +240,25 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             
             // Debit AR for Gross + Tax
             je.AddLine(GuidGenerator, arAccount.Id, grossAmount + invoice.TaxAmount, 0);
+
+            // Calculate Doctor Share Info
+            decimal doctorPercentage = 0;
+            Guid? doctorAccountId = null;
+            if (invoice.AppointmentId.HasValue)
+            {
+                var appointmentRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Appointments.Appointment, Guid>>();
+                var doctorRepo = LazyServiceProvider.LazyGetRequiredService<IRepository<HIS.Settings.Doctor, Guid>>();
+                var appointment = await appointmentRepo.FindAsync(invoice.AppointmentId.Value);
+                if (appointment != null)
+                {
+                    var doctor = await doctorRepo.FindAsync(appointment.DoctorId);
+                    if (doctor != null && doctor.AccountId.HasValue && doctor.DoctorPercentage > 0)
+                    {
+                        doctorPercentage = (decimal)doctor.DoctorPercentage;
+                        doctorAccountId = doctor.AccountId.Value;
+                    }
+                }
+            }
             
             // If there are items, we group them. If not (shouldn't happen), fallback to 4100
             if (invoiceItems.Any())
@@ -292,8 +320,27 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                             }
                         }
                         revenueAccount = await GetLeafAccountAsync(revenueAccount);
-                        // Credit Revenue (Net)
-                        je.AddLine(GuidGenerator, revenueAccount.Id, 0, group.SubTotal, costCenterId);
+
+                        decimal groupRevenueAmount = group.SubTotal;
+                        decimal groupDoctorShare = 0;
+
+                        if (doctorAccountId.HasValue && doctorPercentage > 0)
+                        {
+                            groupDoctorShare = Math.Round(group.SubTotal * (doctorPercentage / 100m), 2);
+                            groupRevenueAmount -= groupDoctorShare;
+                        }
+
+                        // Credit Revenue (Net after doctor share)
+                        if (groupRevenueAmount > 0)
+                        {
+                            je.AddLine(GuidGenerator, revenueAccount.Id, 0, groupRevenueAmount, costCenterId);
+                        }
+                        
+                        // Credit Doctor Account
+                        if (groupDoctorShare > 0 && doctorAccountId.HasValue)
+                        {
+                            je.AddLine(GuidGenerator, doctorAccountId.Value, 0, groupDoctorShare, costCenterId);
+                        }
                     }
                 }
             }
@@ -305,7 +352,16 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 {
                     fallbackRevenueAccount = await GetLeafAccountAsync(fallbackRevenueAccount);
                     var revenueAmount = invoice.TotalAmount - invoice.DiscountAmount;
-                    je.AddLine(GuidGenerator, fallbackRevenueAccount.Id, 0, revenueAmount);
+                    var doctorShare = 0m;
+
+                    if (doctorAccountId.HasValue && doctorPercentage > 0)
+                    {
+                        doctorShare = Math.Round(revenueAmount * (doctorPercentage / 100m), 2);
+                        revenueAmount -= doctorShare;
+                    }
+
+                    if (revenueAmount > 0) je.AddLine(GuidGenerator, fallbackRevenueAccount.Id, 0, revenueAmount);
+                    if (doctorShare > 0 && doctorAccountId.HasValue) je.AddLine(GuidGenerator, doctorAccountId.Value, 0, doctorShare);
                 }
             }
 

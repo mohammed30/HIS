@@ -69,6 +69,14 @@ export class DoctorService {
     { apiName: this.apiName,...config });
   
 
+  syncOldDoctorsAccounts = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/doctor/sync-old-doctors-accounts',
+    },
+    { apiName: this.apiName,...config });
+  
+
   update = (id: string, input: CreateUpdateDoctorDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, DoctorDto>({
       method: 'PUT',

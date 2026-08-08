@@ -87,6 +87,19 @@ public interface IAdmissionAppService : Volo.Abp.Application.Services.ICrudAppSe
     Task<AdmissionDto> TransferPatientAsync(Guid id, CreatePatientTransferDto input);
     Task<HIS.Billing.InvoiceDto> GetProvisionalInvoiceAsync(Guid id);
     Task<List<AdmissionLookupDto>> GetActiveAdmissionsLookupAsync();
+    Task<PatientAdmissionStatusDto> GetPatientAdmissionStatusAsync(Guid patientId);
+}
+
+public class PatientAdmissionStatusDto
+{
+    public bool IsAdmitted { get; set; }
+    public Guid? AdmissionId { get; set; }
+    public bool IsServicesStopped { get; set; }
+    public decimal PharmacyPercentage { get; set; }
+    public decimal InsuranceCeiling { get; set; }
+    public decimal PaidAmount { get; set; }
+    public decimal TotalAmount { get; set; }
+    public decimal AvailableBalance { get; set; }
 }
 
 public class AdmissionLookupDto

@@ -40,6 +40,7 @@ public interface IDoctorAppService : ICrudAppService<DoctorDto, Guid, GetDoctors
     Task<List<LookupDto>> GetLookupAsync();
     Task<List<DoctorDto>> GetBySpecialtyAsync(Guid specialtyId);
     Task<List<DoctorDto>> GetByDepartmentAsync(Guid departmentId);
+    Task SyncOldDoctorsAccountsAsync();
 }
 
 /// <summary>

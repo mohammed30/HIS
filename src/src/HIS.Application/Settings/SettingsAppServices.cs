@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using HIS.Permissions;
 
 using HIS.Accounting;
+using Volo.Abp.Guids;
 
 namespace HIS.Settings;
 
@@ -313,16 +314,19 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
     private readonly IRepository<Clinic, Guid> _clinicRepository;
     private readonly IRepository<Department, Guid> _departmentRepository;
     private readonly IRepository<Specialty, Guid> _specialtyRepository;
+    private readonly IRepository<Account, Guid> _accountRepository;
 
     public DoctorAppService(
         IRepository<Doctor, Guid> repository,
         IRepository<Clinic, Guid> clinicRepository,
         IRepository<Department, Guid> departmentRepository,
-        IRepository<Specialty, Guid> specialtyRepository) : base(repository)
+        IRepository<Specialty, Guid> specialtyRepository,
+        IRepository<Account, Guid> accountRepository) : base(repository)
     {
         _clinicRepository = clinicRepository;
         _departmentRepository = departmentRepository;
         _specialtyRepository = specialtyRepository;
+        _accountRepository = accountRepository;
     }
 
     public override async Task<DoctorDto> CreateAsync(CreateUpdateDoctorDto input)
@@ -331,7 +335,77 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
         {
             input.Code = $"DOC-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
         }
-        return await base.CreateAsync(input);
+        var dto = await base.CreateAsync(input);
+
+        // Auto-create accounting account under 2150 (Doctors Payable)
+        await CreateDoctorAccountAsync(dto.Id, dto.Code, dto.NameAr);
+
+        return await GetAsync(dto.Id);
+    }
+
+    public async Task SyncOldDoctorsAccountsAsync()
+    {
+        var doctors = await Repository.GetListAsync(x => x.AccountId == null);
+        foreach (var doctor in doctors)
+        {
+            await CreateDoctorAccountAsync(doctor.Id, doctor.Code, doctor.NameAr);
+        }
+    }
+
+    /// <summary>
+    /// إنشاء حساب محاسبي للطبيب تلقائياً تحت حقوق الأطباء (2150)
+    /// </summary>
+    private async Task CreateDoctorAccountAsync(Guid doctorId, string doctorCode, string doctorNameAr)
+    {
+        try
+        {
+            var doctorsPayableParent = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2150");
+            if (doctorsPayableParent == null)
+            {
+                var currentLiabilities = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2100");
+                if (currentLiabilities != null)
+                {
+                    doctorsPayableParent = new Account(
+                        GuidGenerator.Create(),
+                        "2150",
+                        "Doctors Payable",
+                        "حقوق الأطباء",
+                        AccountType.Liability,
+                        currentLiabilities.Id
+                    );
+                    await _accountRepository.InsertAsync(doctorsPayableParent, autoSave: true);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // Generate next available code under 2150
+            var children = await _accountRepository.GetListAsync(x => x.ParentId == doctorsPayableParent.Id);
+            var existingCodes = children.Select(x => x.Code).ToList();
+            int nextNum = 2151;
+            while (existingCodes.Contains(nextNum.ToString())) nextNum++;
+
+            var account = new Account(
+                GuidGenerator.Create(),
+                nextNum.ToString(),
+                $"Dr. {doctorCode}",
+                $"حق د. {doctorNameAr}",
+                AccountType.Liability,
+                doctorsPayableParent.Id
+            );
+            await _accountRepository.InsertAsync(account);
+
+            // Link back to doctor
+            var doctor = await Repository.GetAsync(doctorId);
+            doctor.AccountId = account.Id;
+            await Repository.UpdateAsync(doctor);
+        }
+        catch (Exception)
+        {
+            // Non-critical - don't fail doctor creation if account creation fails
+        }
     }
 
     public async Task<List<LookupDto>> GetLookupAsync()
@@ -383,6 +457,14 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
         var specialty = await _specialtyRepository.FindAsync(entity.SpecialtyId);
         dto.SpecialtyName = specialty?.NameAr;
 
+        dto.HospitalPercentage = 100 - entity.DoctorPercentage;
+
+        if (entity.AccountId.HasValue)
+        {
+            var account = await _accountRepository.FindAsync(entity.AccountId.Value);
+            dto.AccountId = account?.Id;
+        }
+
         return dto;
     }
 
@@ -413,6 +495,97 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
     protected override IQueryable<Doctor> ApplyDefaultSorting(IQueryable<Doctor> query)
     {
         return query.OrderBy(x => x.SortOrder).ThenBy(x => x.NameAr);
+    }
+}
+
+/// <summary>
+/// تقرير حق الطبيب والمستشفى
+/// </summary>
+[Authorize(HISPermissions.Settings.Default)]
+public class DoctorRevenueReportAppService : ApplicationService, IDoctorRevenueReportAppService
+{
+    private readonly IRepository<Doctor, Guid> _doctorRepository;
+    private readonly IRepository<Account, Guid> _accountRepository;
+    private readonly IRepository<JournalEntry, Guid> _journalEntryRepository;
+    private readonly IRepository<JournalEntryLine, Guid> _journalEntryLineRepository;
+
+    public DoctorRevenueReportAppService(
+        IRepository<Doctor, Guid> doctorRepository,
+        IRepository<Account, Guid> accountRepository,
+        IRepository<JournalEntry, Guid> journalEntryRepository,
+        IRepository<JournalEntryLine, Guid> journalEntryLineRepository)
+    {
+        _doctorRepository = doctorRepository;
+        _accountRepository = accountRepository;
+        _journalEntryRepository = journalEntryRepository;
+        _journalEntryLineRepository = journalEntryLineRepository;
+    }
+
+    public async Task<DoctorRevenueReportDto> GetReportAsync(DoctorRevenueReportInput input)
+    {
+        var fromDate = input.FromDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        var toDate = input.ToDate ?? DateTime.Now;
+        toDate = toDate.Date.AddDays(1).AddTicks(-1);
+
+        var doctors = await _doctorRepository.GetListAsync(x => x.IsActive && x.DoctorPercentage > 0);
+        if (input.DoctorId.HasValue)
+            doctors = doctors.Where(x => x.Id == input.DoctorId.Value).ToList();
+
+        var report = new DoctorRevenueReportDto
+        {
+            FromDate = fromDate,
+            ToDate = toDate
+        };
+
+        foreach (var doctor in doctors.OrderBy(x => x.NameAr))
+        {
+            // Get doctor account code
+            string? accountCode = null;
+            if (doctor.AccountId.HasValue)
+            {
+                var account = await _accountRepository.FindAsync(doctor.AccountId.Value);
+                accountCode = account?.Code;
+            }
+
+            // Calculate revenue from journal entries credited to doctor's account
+            decimal totalDoctorCredit = 0;
+            if (doctor.AccountId.HasValue)
+            {
+                var jLines = await _journalEntryLineRepository.GetListAsync(x => x.AccountId == doctor.AccountId.Value);
+                var journalIds = jLines.Select(x => x.JournalEntryId).ToList();
+                var journals = await _journalEntryRepository.GetListAsync(x =>
+                    journalIds.Contains(x.Id) && x.Date >= fromDate && x.Date <= toDate && x.IsPosted);
+                var filteredJournalIds = journals.Select(x => x.Id).ToHashSet();
+                totalDoctorCredit = jLines
+                    .Where(x => filteredJournalIds.Contains(x.JournalEntryId))
+                    .Sum(x => x.Credit);
+            }
+
+            // Compute hospital amount from percentage
+            decimal totalRevenue = doctor.DoctorPercentage > 0
+                ? totalDoctorCredit / (doctor.DoctorPercentage / 100m)
+                : 0;
+
+            var line = new DoctorRevenueLineDto
+            {
+                DoctorId = doctor.Id,
+                DoctorName = doctor.NameAr,
+                DoctorCode = doctor.Code,
+                DoctorPercentage = doctor.DoctorPercentage,
+                HospitalPercentage = 100 - doctor.DoctorPercentage,
+                TotalRevenue = totalRevenue,
+                DoctorAmount = totalDoctorCredit,
+                HospitalAmount = totalRevenue - totalDoctorCredit,
+                AccountCode = accountCode
+            };
+
+            report.Lines.Add(line);
+            report.TotalRevenue += line.TotalRevenue;
+            report.TotalDoctorAmount += line.DoctorAmount;
+            report.TotalHospitalAmount += line.HospitalAmount;
+        }
+
+        return report;
     }
 }
 

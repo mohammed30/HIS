@@ -625,6 +625,20 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
             }
         }
 
+        if (!entity.IsReturn && (entity.RequestType == InternalRequestType.Medication || entity.RequestType == InternalRequestType.Consumable))
+        {
+            var totalApproved = entity.Lines.Sum(x => x.ApprovedQuantity);
+            if (totalApproved > 0)
+            {
+                var query = await Repository.WithDetailsAsync(x => x.Lines);
+                var allReturns = await AsyncExecuter.ToListAsync(
+                    query.Where(x => x.ParentRequestId == entity.Id && x.IsReturn && (x.Status == InternalRequestStatus.Approved || x.Status == InternalRequestStatus.Received))
+                );
+                var totalReturned = allReturns.SelectMany(x => x.Lines).Sum(x => x.RequestedQuantity);
+                dto.IsFullyReturned = totalReturned >= totalApproved;
+            }
+        }
+
         return dto;
     }
 

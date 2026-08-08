@@ -68,6 +68,7 @@ export interface CreateUpdateDoctorDto {
   userId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
+  doctorPercentage?: number;
 }
 
 export interface CreateUpdateLaboratoryDto {
@@ -134,6 +135,36 @@ export interface DoctorDto extends FullAuditedEntityDto<string> {
   userId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
+  doctorPercentage?: number;
+  hospitalPercentage?: number;
+  accountId?: string | null;
+}
+
+export interface DoctorRevenueLineDto {
+  doctorId?: string;
+  doctorName?: string;
+  doctorCode?: string;
+  doctorPercentage?: number;
+  hospitalPercentage?: number;
+  totalRevenue?: number;
+  doctorAmount?: number;
+  hospitalAmount?: number;
+  accountCode?: string | null;
+}
+
+export interface DoctorRevenueReportDto {
+  fromDate?: string;
+  toDate?: string;
+  lines?: DoctorRevenueLineDto[];
+  totalRevenue?: number;
+  totalDoctorAmount?: number;
+  totalHospitalAmount?: number;
+}
+
+export interface DoctorRevenueReportInput {
+  doctorId?: string | null;
+  fromDate?: string | null;
+  toDate?: string | null;
 }
 
 export interface GetClinicsInput extends PagedAndSortedResultRequestDto {

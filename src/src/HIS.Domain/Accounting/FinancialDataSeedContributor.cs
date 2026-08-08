@@ -111,6 +111,7 @@ public class FinancialDataSeedContributor : IDataSeedContributor, ITransientDepe
         var currentLiabs = await EnsureAccountExistsAsync("2100", "Current Liabilities", "خصوم متداولة", AccountType.Liability, liabilities.Id);
         await UpdateNameArAsync("2110", "الدائنون", true);
         await EnsureAccountExistsAsync("2200", "VAT Payable", "ضريبة القيمة المضافة المستحقة", AccountType.Liability, currentLiabs.Id);
+        await EnsureAccountExistsAsync("2150", "Doctors Payable", "حقوق الأطباء", AccountType.Liability, currentLiabs.Id);
 
         await UpdateNameArAsync("3100", "رأس المال", true);
         await UpdateNameArAsync("3200", "أرباح مبقاة", true);

@@ -154,7 +154,9 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
                 UnitPrice = unitPrice,
                 Quantity = 1,
                 ServiceType = HIS.Billing.ServiceType.Consultation, 
-                ServiceCode = input.ServiceItemId?.ToString() ?? string.Empty
+                ServiceCode = input.ServiceItemId?.ToString() ?? string.Empty,
+                IsCoveredByInsurance = input.InsurancePercentage > 0,
+                InsurancePercentage = input.InsurancePercentage
             });
 
             var invoiceDto = await _invoiceAppService.CreateAsync(new HIS.Billing.CreateUpdateInvoiceDto
@@ -163,7 +165,8 @@ public class AppointmentAppService : ApplicationService, IAppointmentAppService
                 AppointmentId = appt.Id,
                 DiscountAmount = input.Discount ?? 0,
                 Items = invoiceItems,
-                Notes = $"Invoice for Appointment {appt.Id.ToString().Substring(0,8)}"
+                Notes = $"Invoice for Appointment {appt.Id.ToString().Substring(0,8)}",
+                PatientInsuranceId = input.PatientInsuranceId
             });
 
             // 3. Create Payment or Deferred based on method

@@ -498,24 +498,24 @@ type ActiveTab = 'new-sale' | 'pending-approval' | 'to-dispense' | 'return' | 'r
         <button class="pos-tab" [class.active]="activeTab==='new-sale'" (click)="setTab('new-sale')">
           <i class="fas fa-plus"></i> فاتورة جديدة
         </button>
-        <button class="pos-tab" [class.active]="activeTab==='pending-approval'" (click)="setTab('pending-approval')">
+        <button *abpPermission="'HIS.Pharmacy.POS.Approval'" class="pos-tab" [class.active]="activeTab==='pending-approval'" (click)="setTab('pending-approval')">
           <i class="fas fa-clock"></i> الاعتماد
           <span *ngIf="pendingApprovalCount > 0" class="tab-badge">{{ pendingApprovalCount }}</span>
         </button>
-        <button class="pos-tab" [class.active]="activeTab==='to-dispense'" (click)="setTab('to-dispense')">
+        <button *abpPermission="'HIS.Pharmacy.POS.ToDispense'" class="pos-tab" [class.active]="activeTab==='to-dispense'" (click)="setTab('to-dispense')">
           <i class="fas fa-pills"></i> للصرف
           <span *ngIf="toDispenseCount > 0" class="tab-badge green">{{ toDispenseCount }}</span>
         </button>
-        <button class="pos-tab" [class.active]="activeTab==='return'" (click)="setTab('return')">
+        <button *abpPermission="'HIS.Pharmacy.POS.Returns'" class="pos-tab" [class.active]="activeTab==='return'" (click)="setTab('return')">
           <i class="fas fa-undo"></i> الارتجاع
         </button>
-        <button class="pos-tab" [class.active]="activeTab==='refunded-list'" (click)="setTab('refunded-list')">
+        <button *abpPermission="'HIS.Pharmacy.POS.ReturnedInvoices'" class="pos-tab" [class.active]="activeTab==='refunded-list'" (click)="setTab('refunded-list')">
           <i class="fas fa-history"></i> الفواتير المرتجعة
         </button>
-        <button class="pos-tab" [class.active]="activeTab==='dispensed-list'" (click)="setTab('dispensed-list')">
+        <button *abpPermission="'HIS.Pharmacy.POS.Dispensed'" class="pos-tab" [class.active]="activeTab==='dispensed-list'" (click)="setTab('dispensed-list')">
           <i class="fas fa-check-double"></i> تم الصرف
         </button>
-        <button class="pos-tab" [class.active]="activeTab==='pending-returns'" (click)="setTab('pending-returns')">
+        <button *abpPermission="'HIS.Pharmacy.POS.ReturnedRequests'" class="pos-tab" [class.active]="activeTab==='pending-returns'" (click)="setTab('pending-returns')">
           <i class="fas fa-undo"></i> طلبات مرتجعة
           <span *ngIf="pendingReturnsCount > 0" class="tab-badge green">{{ pendingReturnsCount }}</span>
         </button>

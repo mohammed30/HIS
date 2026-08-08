@@ -66,7 +66,7 @@
                                     <td>{{ i + 1 }}</td>
                                     <td class="fw-bold">{{ row.patientName }}</td>
                                     <td><small class="text-muted">{{ row.patientFileNumber }}</small></td>
-                                    <td>{{ getRoomTypeName(row.roomTypeName) }}</td>
+                                    <td>{{ row.roomTypeName || 'غير معروف' }}</td>
                                     <td><span class="badge bg-light text-dark border">{{ row.roomNumber }}</span></td>
                                     <td>{{ row.admissionDate | date:'shortDate' }}</td>
                                     <td>
@@ -87,7 +87,7 @@
                             <h5 class="m-0">{{ '::AdmissionDetails' | abpLocalization }}</h5>
                             <app-credit-limit-gauge 
                                 *ngIf="creditLimitSettingsLoaded"
-                                [creditLimit]="defaultCreditLimit"
+                                [creditLimit]="selectedAdmission?.paidAmount ?? defaultCreditLimit"
                                 [utilizedAmount]="provisionalInvoice?.summaryTotal || 0"
                                 [showDetails]="true">
                             </app-credit-limit-gauge>
@@ -126,12 +126,7 @@
                                 </div>
                                 <div class="card-body p-2">
                                     <div class="row">
-                                        <div class="col-6 mb-2">
-                                            <label class="small text-muted">{{ '::InsuranceCeiling' | abpLocalization
-                                                }}</label>
-                                            <input type="number" class="form-control form-control-sm"
-                                                formControlName="insuranceCeiling">
-                                        </div>
+
                                         <div class="col-6 mb-2">
                                             <label class="small text-muted">{{ '::PharmacyPercentage' | abpLocalization
                                                 }}</label>
@@ -510,10 +505,7 @@
                         <label class="form-label">{{ '::Purpose' | abpLocalization }}</label>
                         <input type="text" class="form-control" formControlName="purpose">
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">{{ '::InsuranceCeiling' | abpLocalization }}</label>
-                        <input type="number" class="form-control" formControlName="insuranceCeiling">
-                    </div>
+
                     <div class="col-md-3 mb-3">
                         <label class="form-label">{{ '::PharmacyPercentage' | abpLocalization }}</label>
                         <input type="number" class="form-control" formControlName="pharmacyPercentage">

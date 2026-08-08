@@ -204,6 +204,7 @@ export class AdmissionListComponent implements OnInit {
       pharmacyPercentage: admission.pharmacyPercentage || 0,
       purpose: admission.purpose || '',
       notes: admission.notes || '',
+      paidAmount: admission.paidAmount || 0,
       patientInsuranceId: admission.patientInsuranceId || null
     });
     this.detailForm.markAsPristine();

@@ -55,6 +55,7 @@ export interface CreateUpdateInvoiceItemDto {
   discountPercentage?: number;
   discountAmount?: number;
   isCoveredByInsurance?: boolean;
+  insurancePercentage?: number;
   notes?: string | null;
 }
 
@@ -155,6 +156,7 @@ export interface InvoiceItemDto {
   discountAmount?: number;
   totalPrice?: number;
   isCoveredByInsurance?: boolean;
+  insurancePercentage?: number;
   notes?: string | null;
 }
 

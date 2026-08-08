@@ -76,4 +76,7 @@ public class BookClinicAppointmentDto
     public string PaymentMethod { get; set; } = "Cash"; // Cash, Card, etc.
     public decimal? PaidAmount { get; set; }
     public decimal? Discount { get; set; }
+    
+    public decimal InsurancePercentage { get; set; }
+    public Guid? PatientInsuranceId { get; set; }
 }

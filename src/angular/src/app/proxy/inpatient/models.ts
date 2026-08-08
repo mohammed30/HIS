@@ -92,6 +92,17 @@ export interface GetReservationsInput extends PagedAndSortedResultRequestDto {
   status?: ReservationStatus | null;
 }
 
+export interface PatientAdmissionStatusDto {
+  isAdmitted?: boolean;
+  admissionId?: string | null;
+  isServicesStopped?: boolean;
+  pharmacyPercentage?: number;
+  insuranceCeiling?: number;
+  paidAmount?: number;
+  totalAmount?: number;
+  availableBalance?: number;
+}
+
 export interface ReservationDto extends FullAuditedEntityDto<string> {
   patientId?: string;
   patientName?: string | null;

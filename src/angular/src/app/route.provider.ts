@@ -213,6 +213,15 @@ function configureRoutes() {
       layout: eLayoutType.application,
       requiredPolicy: 'HIS.Billing.FinancialReports.AccountStatement',
     },
+    {
+      path: '/accounting/reports/doctor-revenue',
+      name: '::Menu:DoctorRevenueReport',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-user-md',
+      order: 44,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Settings',
+    },
     // Insurance
     {
       name: '::Menu:Insurance',

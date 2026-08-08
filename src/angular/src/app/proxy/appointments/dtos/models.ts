@@ -30,6 +30,8 @@ export interface BookClinicAppointmentDto {
   paymentMethod?: string;
   paidAmount?: number | null;
   discount?: number | null;
+  insurancePercentage?: number;
+  patientInsuranceId?: string | null;
 }
 
 export interface CreateAppointmentDto {

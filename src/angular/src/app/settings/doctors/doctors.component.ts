@@ -24,6 +24,8 @@ interface Doctor {
   morningConsultationFee: number;
   eveningConsultationFee: number;
   isActive: boolean;
+  doctorPercentage?: number;
+  accountId?: string;
 }
 
 interface Lookup {
@@ -245,6 +247,59 @@ interface Lookup {
                   <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" id="isActive">
                   <label class="form-check-label" for="isActive">نشط</label>
                 </div>
+
+                <!-- نسبة الطبيب والمستشفى -->
+                <div class="card border-primary mb-3">
+                  <div class="card-header bg-primary text-white py-2">
+                    <i class="fas fa-percent me-1"></i> توزيع الإيرادات
+                  </div>
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-md-5 mb-3">
+                        <label class="form-label fw-bold">نسبة الطبيب %</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" [(ngModel)]="formData.doctorPercentage"
+                            (input)="onPercentageChange()"
+                            min="0" max="100" step="1">
+                          <span class="input-group-text">%</span>
+                        </div>
+                      </div>
+                      <div class="col-md-2 text-center d-none d-md-block">
+                        <div class="text-muted small">من 100%</div>
+                      </div>
+                      <div class="col-md-5 mb-3">
+                        <label class="form-label fw-bold">نسبة المستشفى %</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control bg-light" [value]="hospitalPercentage" readonly>
+                          <span class="input-group-text">%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- شريط التوزيع البصري -->
+                    <div class="mb-2">
+                      <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-success fw-bold">الطبيب: {{ formData.doctorPercentage || 0 }}%</span>
+                        <span class="text-primary fw-bold">المستشفى: {{ hospitalPercentage }}%</span>
+                      </div>
+                      <div class="progress" style="height: 20px; border-radius: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                          [style.width.%]="formData.doctorPercentage || 0"
+                          style="transition: width 0.3s ease; border-radius: 10px 0 0 10px;">
+                          <span *ngIf="(formData.doctorPercentage || 0) > 10">{{ formData.doctorPercentage }}%</span>
+                        </div>
+                        <div class="progress-bar bg-primary" role="progressbar"
+                          [style.width.%]="hospitalPercentage"
+                          style="transition: width 0.3s ease; border-radius: 0 10px 10px 0;">
+                          <span *ngIf="hospitalPercentage > 10">{{ hospitalPercentage }}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-muted small mt-1">
+                      <i class="fas fa-info-circle me-1"></i>
+                      تطبق هذه النسبة على جميع إيرادات الطبيب (كشف، مختبر، أشعة، عمليات...)
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="showForm = false">إلغاء</button>
@@ -327,8 +382,17 @@ export class DoctorsComponent implements OnInit {
     });
   }
 
+  get hospitalPercentage(): number {
+    return 100 - (this.formData.doctorPercentage || 0);
+  }
+
+  onPercentageChange() {
+    if ((this.formData.doctorPercentage ?? 0) > 100) this.formData.doctorPercentage = 100;
+    if ((this.formData.doctorPercentage ?? 0) < 0) this.formData.doctorPercentage = 0;
+  }
+
   getEmptyForm(): Partial<Doctor> {
-    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', clinicId: '', mobile: '', email: '', nationalId: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true };
+    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', clinicId: '', mobile: '', email: '', nationalId: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true, doctorPercentage: 60 };
   }
 
   resetForm() { this.formData = this.getEmptyForm(); }

@@ -366,6 +366,12 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
       },
       {
+        path: 'reports/doctor-revenue',
+        loadComponent: () => import('./reports/doctor-revenue/doctor-revenue-report.component').then(c => c.DoctorRevenueReportComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Settings' }
+      },
+      {
         path: 'reports',
         loadComponent: () => import('./accounting/reports/financial-reports.component').then(c => c.FinancialReportsComponent),
         canActivate: [permissionGuard],

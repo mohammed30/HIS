@@ -676,4 +676,183 @@ public abstract class InternalRequestAppServiceTests<TStartupModule> : HISTestBa
             });
         });
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Tests for Uncovered Cases (Cancel, Delete, GetList, Create Validation)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task CreateAsync_Without_AdmissionId_Should_Throw()
+    {
+        var dto = new CreateUpdateInternalRequestDto
+        {
+            RequestingDepartmentId = Guid.NewGuid(),
+            FulfilledByWarehouseId = Guid.NewGuid(),
+            RequestType = InternalRequestType.Consumable,
+            RequestDate = DateTime.Now,
+            Lines = new List<CreateUpdateInternalRequestLineDto>()
+        };
+
+        await Should.ThrowAsync<UserFriendlyException>(async () =>
+        {
+            await _internalRequestAppService.CreateAsync(dto);
+        });
+    }
+
+    [Fact]
+    public async Task CancelRequestAsync_Should_Cancel_Request()
+    {
+        Guid reqDeptId = Guid.NewGuid();
+        Guid srcWhId = Guid.NewGuid();
+        Guid requestId = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _departmentRepository.InsertAsync(new Department(reqDeptId, null, "DEP01", "Pharmacy Dep"));
+            await _warehouseRepository.InsertAsync(new Warehouse(srcWhId, "Main Store", "Location", "MAIN"));
+            
+            var req = new InternalRequest(requestId, "REQ-01", reqDeptId, srcWhId, DateTime.Now);
+            await _internalRequestRepository.InsertAsync(req);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var res = await _internalRequestAppService.CancelRequestAsync(requestId);
+            res.Status.ShouldBe(InternalRequestStatus.Cancelled);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var updated = await _internalRequestRepository.GetAsync(requestId);
+            updated.Status.ShouldBe(InternalRequestStatus.Cancelled);
+        });
+    }
+
+    [Fact]
+    public async Task CancelRequestAsync_Already_Cancelled_Should_Throw()
+    {
+        Guid reqDeptId = Guid.NewGuid();
+        Guid srcWhId = Guid.NewGuid();
+        Guid requestId = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _departmentRepository.InsertAsync(new Department(reqDeptId, null, "DEP01", "Pharmacy Dep"));
+            await _warehouseRepository.InsertAsync(new Warehouse(srcWhId, "Main Store", "Location", "MAIN"));
+            
+            var req = new InternalRequest(requestId, "REQ-01", reqDeptId, srcWhId, DateTime.Now)
+            {
+                Status = InternalRequestStatus.Cancelled
+            };
+            await _internalRequestRepository.InsertAsync(req);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await Should.ThrowAsync<UserFriendlyException>(async () =>
+            {
+                await _internalRequestAppService.CancelRequestAsync(requestId);
+            });
+        });
+    }
+
+    [Fact]
+    public async Task CancelRequestAsync_Discharged_Patient_Should_Throw()
+    {
+        Guid reqDeptId = Guid.NewGuid();
+        Guid srcWhId = Guid.NewGuid();
+        Guid requestId = Guid.NewGuid();
+        Guid patientId = Guid.NewGuid();
+        Guid admissionId = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _departmentRepository.InsertAsync(new Department(reqDeptId, null, "DEP01", "Pharmacy Dep"));
+            await _warehouseRepository.InsertAsync(new Warehouse(srcWhId, "Main Store", "Location", "MAIN"));
+            
+            var pt = new Patient(patientId, null, "PT-01", "Ahmed", "Ali", new DateTime(1990, 1, 1), Gender.Male, IdentityType.NationalId, "123", "050");
+            await _patientRepository.InsertAsync(pt);
+            
+            var admission = new Admission(admissionId, null, patientId, Guid.NewGuid(), Guid.NewGuid())
+            {
+                Status = AdmissionStatus.Discharged
+            };
+            await _admissionRepository.InsertAsync(admission);
+
+            var req = new InternalRequest(requestId, "REQ-01", reqDeptId, srcWhId, DateTime.Now)
+            {
+                AdmissionId = admissionId
+            };
+            await _internalRequestRepository.InsertAsync(req);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await Should.ThrowAsync<UserFriendlyException>(async () =>
+            {
+                await _internalRequestAppService.CancelRequestAsync(requestId);
+            });
+        });
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Should_Delete_Request()
+    {
+        Guid reqDeptId = Guid.NewGuid();
+        Guid srcWhId = Guid.NewGuid();
+        Guid requestId = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _departmentRepository.InsertAsync(new Department(reqDeptId, null, "DEP01", "Pharmacy Dep"));
+            await _warehouseRepository.InsertAsync(new Warehouse(srcWhId, "Main Store", "Location", "MAIN"));
+            
+            var req = new InternalRequest(requestId, "REQ-01", reqDeptId, srcWhId, DateTime.Now);
+            await _internalRequestRepository.InsertAsync(req);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _internalRequestAppService.DeleteAsync(requestId);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var exists = await _internalRequestRepository.FindAsync(requestId);
+            exists.ShouldBeNull();
+        });
+    }
+
+    [Fact]
+    public async Task GetListAsync_Should_Return_Filtered_Requests()
+    {
+        Guid reqDeptId = Guid.NewGuid();
+        Guid srcWhId = Guid.NewGuid();
+        Guid requestId1 = Guid.NewGuid();
+        Guid requestId2 = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _departmentRepository.InsertAsync(new Department(reqDeptId, null, "DEP01", "Pharmacy Dep"));
+            await _warehouseRepository.InsertAsync(new Warehouse(srcWhId, "Main Store", "Location", "MAIN"));
+            
+            var req1 = new InternalRequest(requestId1, "REQ-0001", reqDeptId, srcWhId, new DateTime(2023, 1, 1));
+            var req2 = new InternalRequest(requestId2, "REQ-0002", reqDeptId, srcWhId, new DateTime(2023, 1, 5));
+            await _internalRequestRepository.InsertAsync(req1);
+            await _internalRequestRepository.InsertAsync(req2);
+        });
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var result = await _internalRequestAppService.GetListAsync(new InternalRequestGetListInput
+            {
+                FromDate = new DateTime(2023, 1, 2),
+                ToDate = new DateTime(2023, 1, 10),
+                FilterText = "REQ-0002"
+            });
+
+            result.TotalCount.ShouldBe(1);
+            result.Items[0].Id.ShouldBe(requestId2);
+        });
+    }
 }

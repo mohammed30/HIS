@@ -19,13 +19,13 @@ public class NotificationAppService : ApplicationService, INotificationAppServic
     private readonly IRepository<Notification, Guid> _notificationRepo;
     private readonly IRepository<UserNotificationSettings, Guid> _settingsRepo;
     private readonly NotificationSender _notificationSender;
-    private readonly IIdentityUserRepository _identityUserRepository;
+    private readonly IRepository<IdentityUser, Guid> _identityUserRepository;
 
     public NotificationAppService(
         IRepository<Notification, Guid> notificationRepo,
         IRepository<UserNotificationSettings, Guid> settingsRepo,
         NotificationSender notificationSender,
-        IIdentityUserRepository identityUserRepository)
+        IRepository<IdentityUser, Guid> identityUserRepository)
     {
         _notificationRepo = notificationRepo;
         _settingsRepo = settingsRepo;

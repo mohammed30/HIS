@@ -80,14 +80,8 @@
             </button>
           </div>
           <!-- Return button for Received requests (medication/consumable only) -->
-          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Received && (row.requestType === 0 || row.requestType === 1)">
-            <button
-              class="btn btn-warning btn-sm"
-              (click)="openReturnModal(row)"
-              title="إرجاع كميات من الأصناف المستلمة"
-            >
-              <i class="fa fa-arrow-right me-1"></i> طلب ارتجاع
-            </button>
+          <div class="d-flex gap-1" *ngIf="row.status === statusEnum.Received && (row.requestType === 0 || row.requestType === 1) && !row.isReturn">
+            <button class="btn btn-sm" [ngClass]="row.isFullyReturned ? 'btn-secondary' : 'btn-warning'" [disabled]="row.isFullyReturned" (click)="openReturnModal(row)" title="إرجاع كميات من الأصناف المستلمة"> <i class="fa fa-arrow-right me-1"></i> {{ row.isFullyReturned ? 'تم الارجاع' : 'طلب ارتجاع' }} </button>
           </div>
         </ng-template>
       </ngx-datatable-column>
