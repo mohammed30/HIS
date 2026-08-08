@@ -28,3 +28,7 @@ public class EfCoreLaboratoryAppServiceTests : LaboratoryAppServiceTests<HISEnti
 {
 }
 
+[Collection("HIS_Db_Collection")]
+public class EfCoreDoctorRevenueReportAppServiceTests : DoctorRevenueReportAppServiceTests<HISEntityFrameworkCoreTestModule>
+{
+}

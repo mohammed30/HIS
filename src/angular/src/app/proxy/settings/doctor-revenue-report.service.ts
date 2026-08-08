@@ -14,9 +14,10 @@ export class DoctorRevenueReportService {
     this.restService.request<any, DoctorRevenueReportDto>({
       method: 'GET',
       url: '/api/app/doctor-revenue-report/report',
-      params: { doctorId: input.doctorId, fromDate: input.fromDate, toDate: input.toDate },
+      params: { doctorId: input.doctorId, fromDate: input.fromDate, toDate: input.toDate, isHospitalReport: input.isHospitalReport },
     },
     { apiName: this.apiName,...config });
+  
 
   getReportPdf = (input: DoctorRevenueReportInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, Blob>({

@@ -288,6 +288,12 @@ export const APP_ROUTES: Routes = [
         data: { requiredPolicy: 'HIS.Billing.FinancialReports' }
       }, */
       {
+        path: 'approvals',
+        loadComponent: () => import('./accounting/approvals/approvals.component').then(c => c.ApprovalsComponent),
+        canActivate: [permissionGuard],
+        data: { requiredPolicy: 'HIS.Billing' }
+      },
+      {
         path: 'chart-of-accounts',
         loadComponent: () => import('./accounting/chart-of-accounts/chart-of-accounts.component').then(c => c.ChartOfAccountsComponent),
         canActivate: [permissionGuard],

@@ -91,6 +91,7 @@ interface DoctorRevenueReport {
         <div id="printable-area">
           <!-- Print Header -->
           <div class="print-only text-center mb-4">
+            <img src="/assets/images/logo/LogoAsiaDark.png" alt="Hospital Logo" style="max-height: 80px;" class="mb-3">
             <h4 class="fw-bold">تقرير حق الطبيب والمستشفى</h4>
             <p class="text-muted">من {{ report.fromDate | date:'yyyy/MM/dd' }} إلى {{ report.toDate | date:'yyyy/MM/dd' }}</p>
           </div>

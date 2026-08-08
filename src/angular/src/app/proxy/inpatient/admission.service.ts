@@ -78,6 +78,7 @@ export class AdmissionService {
     },
     { apiName: this.apiName,...config });
   
+
   getProvisionalInvoicePdf = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, Blob>({
       method: 'GET',
@@ -85,7 +86,7 @@ export class AdmissionService {
       url: `/api/app/admission/${id}/provisional-invoice-pdf`,
     },
     { apiName: this.apiName,...config });
-
+  
 
   transferPatient = (id: string, input: CreatePatientTransferDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AdmissionDto>({

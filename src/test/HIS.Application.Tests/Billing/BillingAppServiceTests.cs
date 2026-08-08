@@ -152,7 +152,158 @@ public abstract class BillingAppServiceTests<TStartupModule> : BillingTestBase<T
             invoice.PaidAmount.ShouldBe(500m);
 
             var journalEntries = await _journalEntryRepository.GetListAsync();
-            journalEntries.ShouldContain(je => je.ReferenceNumber.StartsWith("PAY") && je.Description.Contains("سند قبض"));
+            var paymentJv = journalEntries.FirstOrDefault(je => je.ReferenceNumber.StartsWith("PAY") && je.Description.Contains("سند قبض"));
+            paymentJv.ShouldNotBeNull();
+            paymentJv.IsPosted.ShouldBeTrue();
+        });
+    }
+    [Fact]
+    public async Task CreateAsync_Should_Create_Posted_JournalEntry()
+    {
+        // 1. Arrange
+        Guid patientId = Guid.NewGuid();
+        Guid serviceItemId = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await EnsureAccountMappingsAreFilledAsync();
+
+            var patient = new Patient(patientId, null, "MRN003", "علي", "أحمد", new DateTime(1990, 1, 1), Gender.Male, IdentityType.NationalId, "1234567891", "0500000001");
+            await _patientRepository.InsertAsync(patient);
+
+            var serviceItem = new ServiceItem(serviceItemId, "S002", "Checkup", ServiceCategory.Consultation) { Price = 100m };
+            await _serviceItemRepository.InsertAsync(serviceItem);
+        });
+
+        // 2. Act
+        InvoiceDto result = null;
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var createDto = new CreateUpdateInvoiceDto
+            {
+                PatientId = patientId,
+                DueDate = DateTime.Now,
+                Items = new List<CreateUpdateInvoiceItemDto>
+                {
+                    new CreateUpdateInvoiceItemDto
+                    {
+                        ServiceCode = "S002",
+                        Description = "Checkup",
+                        Quantity = 1,
+                        UnitPrice = 100m
+                    }
+                }
+            };
+            result = await _invoiceAppService.CreateAsync(createDto);
+        });
+
+        // 3. Assert
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var journalEntries = await _journalEntryRepository.GetListAsync();
+            var invoiceJv = journalEntries.FirstOrDefault(je => je.ReferenceNumber == result.InvoiceNumber);
+            
+            invoiceJv.ShouldNotBeNull();
+            invoiceJv.IsPosted.ShouldBeTrue(); // Must be posted
+        });
+    }
+
+    [Fact]
+    public async Task GetPendingApprovalsAsync_Should_Return_Pending_Invoices()
+    {
+        // 1. Arrange
+        Guid patientId = Guid.NewGuid();
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var patient = new Patient(patientId, null, "MRN_PEND", "مريض", "معلق", new DateTime(1990, 1, 1), Gender.Male, IdentityType.NationalId, "2234567891", "0500000002");
+            await _patientRepository.InsertAsync(patient);
+
+            var invoice = new Invoice(Guid.NewGuid(), null, patientId, "INV-PEND-01")
+            {
+                Status = InvoiceStatus.PendingApproval,
+                TotalAmount = 500m,
+                NetAmount = 500m
+            };
+            await _invoiceRepository.InsertAsync(invoice);
+        });
+
+        // 2. Act
+        List<InvoiceDto> pendingInvoices = null;
+        await WithUnitOfWorkAsync(async () =>
+        {
+            pendingInvoices = await _invoiceAppService.GetPendingApprovalsAsync();
+        });
+
+        // 3. Assert
+        pendingInvoices.ShouldNotBeNull();
+        pendingInvoices.ShouldContain(i => i.InvoiceNumber == "INV-PEND-01");
+        pendingInvoices.All(i => i.Status == InvoiceStatus.PendingApproval).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ApproveInvoiceAsync_Should_Change_Status_To_Issued()
+    {
+        // 1. Arrange
+        Guid invoiceId = Guid.NewGuid();
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await EnsureAccountMappingsAreFilledAsync();
+            var patient = new Patient(Guid.NewGuid(), null, "MRN_APP", "مريض", "معتمد", new DateTime(1990, 1, 1), Gender.Male, IdentityType.NationalId, "3234567891", "0500000003");
+            await _patientRepository.InsertAsync(patient);
+
+            var invoice = new Invoice(invoiceId, null, patient.Id, "INV-APP-01")
+            {
+                Status = InvoiceStatus.PendingApproval,
+                TotalAmount = 500m,
+                NetAmount = 500m
+            };
+            await _invoiceRepository.InsertAsync(invoice);
+        });
+
+        // 2. Act
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _invoiceAppService.ApproveInvoiceAsync(invoiceId);
+        });
+
+        // 3. Assert
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var invoice = await _invoiceRepository.GetAsync(invoiceId);
+            invoice.Status.ShouldBe(InvoiceStatus.Issued);
+        });
+    }
+
+    [Fact]
+    public async Task RejectInvoiceAsync_Should_Change_Status_To_Rejected()
+    {
+        // 1. Arrange
+        Guid invoiceId = Guid.NewGuid();
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var patient = new Patient(Guid.NewGuid(), null, "MRN_REJ", "مريض", "مرفوض", new DateTime(1990, 1, 1), Gender.Male, IdentityType.NationalId, "4234567891", "0500000004");
+            await _patientRepository.InsertAsync(patient);
+
+            var invoice = new Invoice(invoiceId, null, patient.Id, "INV-REJ-01")
+            {
+                Status = InvoiceStatus.PendingApproval,
+                TotalAmount = 500m,
+                NetAmount = 500m
+            };
+            await _invoiceRepository.InsertAsync(invoice);
+        });
+
+        // 2. Act
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _invoiceAppService.RejectInvoiceAsync(invoiceId);
+        });
+
+        // 3. Assert
+        await WithUnitOfWorkAsync(async () =>
+        {
+            var invoice = await _invoiceRepository.GetAsync(invoiceId);
+            invoice.Status.ShouldBe(InvoiceStatus.Rejected);
         });
     }
 }

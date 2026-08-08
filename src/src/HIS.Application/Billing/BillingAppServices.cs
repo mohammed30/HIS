@@ -413,6 +413,43 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
     }
 
+    [Authorize(HISPermissions.Billing.Default)]
+    public async Task<List<InvoiceDto>> GetPendingApprovalsAsync()
+    {
+        var queryable = await Repository.GetQueryableAsync();
+        var invoices = await AsyncExecuter.ToListAsync(
+            queryable.Where(x => x.Status == InvoiceStatus.PendingApproval)
+                     .OrderByDescending(x => x.CreationTime)
+        );
+        return ObjectMapper.Map<List<Invoice>, List<InvoiceDto>>(invoices);
+    }
+
+    [Authorize(HISPermissions.Billing.ManageInvoices)]
+    public async Task<InvoiceDto> ApproveInvoiceAsync(Guid id)
+    {
+        var invoice = await Repository.GetAsync(id);
+        if (invoice.Status != InvoiceStatus.PendingApproval)
+        {
+            throw new UserFriendlyException("Invoice is not pending approval.");
+        }
+        invoice.Status = InvoiceStatus.Issued; // Or another appropriate status after approval
+        await Repository.UpdateAsync(invoice);
+        return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
+    }
+
+    [Authorize(HISPermissions.Billing.ManageInvoices)]
+    public async Task<InvoiceDto> RejectInvoiceAsync(Guid id)
+    {
+        var invoice = await Repository.GetAsync(id);
+        if (invoice.Status != InvoiceStatus.PendingApproval)
+        {
+            throw new UserFriendlyException("Invoice is not pending approval.");
+        }
+        invoice.Status = InvoiceStatus.Rejected;
+        await Repository.UpdateAsync(invoice);
+        return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
+    }
+
     [Authorize(HISPermissions.Billing.ManageInvoices)]
     public async Task<InvoiceDto> CancelAsync(Guid id)
     {
@@ -1038,6 +1075,9 @@ public interface IInvoiceAppService : ICrudAppService<InvoiceDto, Guid, GetInvoi
     Task<InvoiceDto> GetWithItemsAsync(Guid id);
     Task<InvoiceDto> UpdateStatusAsync(Guid id, InvoiceStatus status);
     Task<InvoiceDto> CancelAsync(Guid id);
+    Task<List<InvoiceDto>> GetPendingApprovalsAsync();
+    Task<InvoiceDto> ApproveInvoiceAsync(Guid id);
+    Task<InvoiceDto> RejectInvoiceAsync(Guid id);
 }
 
 public interface IPaymentAppService : ICrudAppService<PaymentDto, Guid, GetPaymentsInput, CreatePaymentDto>

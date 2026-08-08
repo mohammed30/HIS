@@ -1277,6 +1277,11 @@
     "Permission:PharmacyPOS_ReturnedInvoices": "تبويب الفواتير المرتجعة",
     "Permission:PharmacyPOS_Dispensed": "تبويب تم الصرف",
     "Permission:PharmacyPOS_ReturnedRequests": "تبويب طلبات مرتجعة",
-    "Menu:DoctorRevenueReport": "تقرير حق الطبيب"
+    "Menu:DoctorRevenueReport": "تقرير حق الطبيب",
+    "Menu:Approvals": "طلب موافقات",
+    "ViewDetails": "عرض التفاصيل",
+    "ApprovalDetails": "تفاصيل الطلب",
+    "ServiceOrItem": "الخدمة / الصنف",
+    "Items": "الأصناف"
   }
 }

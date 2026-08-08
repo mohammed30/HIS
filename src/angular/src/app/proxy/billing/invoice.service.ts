@@ -12,6 +12,14 @@ export class InvoiceService {
   apiName = 'Default';
   
 
+  approveInvoice = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InvoiceDto>({
+      method: 'POST',
+      url: `/api/app/invoice/${id}/approve-invoice`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   cancel = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, InvoiceDto>({
       method: 'POST',
@@ -63,10 +71,26 @@ export class InvoiceService {
     { apiName: this.apiName,...config });
   
 
+  getPendingApprovals = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InvoiceDto[]>({
+      method: 'GET',
+      url: '/api/app/invoice/pending-approvals',
+    },
+    { apiName: this.apiName,...config });
+  
+
   getWithItems = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, InvoiceDto>({
       method: 'GET',
       url: `/api/app/invoice/${id}/with-items`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectInvoice = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, InvoiceDto>({
+      method: 'POST',
+      url: `/api/app/invoice/${id}/reject-invoice`,
     },
     { apiName: this.apiName,...config });
   

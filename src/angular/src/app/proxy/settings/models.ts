@@ -140,15 +140,6 @@ export interface DoctorDto extends FullAuditedEntityDto<string> {
   accountId?: string | null;
 }
 
-export interface DoctorRevenueServiceDetailDto {
-  date?: string;
-  invoiceNumber?: string;
-  patientName?: string;
-  serviceName?: string;
-  servicePrice?: number;
-  doctorAmount?: number;
-}
-
 export interface DoctorRevenueLineDto {
   doctorId?: string;
   doctorName?: string;
@@ -176,6 +167,15 @@ export interface DoctorRevenueReportInput {
   fromDate?: string | null;
   toDate?: string | null;
   isHospitalReport?: boolean;
+}
+
+export interface DoctorRevenueServiceDetailDto {
+  date?: string;
+  invoiceNumber?: string;
+  patientName?: string;
+  serviceName?: string;
+  servicePrice?: number;
+  doctorAmount?: number;
 }
 
 export interface GetClinicsInput extends PagedAndSortedResultRequestDto {

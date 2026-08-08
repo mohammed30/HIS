@@ -1,0 +1,101 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col col-md-6">
+        <h5 class="card-title">
+          {{ '::Menu:Approvals' | abpLocalization }}
+        </h5>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div *ngIf="isLoading" class="text-center p-3">
+        <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
+    </div>
+    
+    <div class="table-responsive" *ngIf="!isLoading">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>{{ '::InvoiceNumber' | abpLocalization }}</th>
+                    <th>{{ '::Date' | abpLocalization }}</th>
+                    <th>{{ '::TotalAmount' | abpLocalization }}</th>
+                    <th class="text-center">{{ '::Actions' | abpLocalization }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of items">
+                    <td>{{ item.invoiceNumber }}</td>
+                    <td>{{ item.invoiceDate | date:'short' }}</td>
+                    <td>{{ item.totalAmount | number:'1.2-2' }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-info text-white me-2" (click)="showDetails(item)">
+                            <i class="fa fa-eye"></i> {{ '::ViewDetails' | abpLocalization }}
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="items.length === 0">
+                    <td colspan="4" class="text-center text-muted">لا يوجد طلبات موافقة معلقة</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+
+<abp-modal [(visible)]="isDetailsModalOpen" size="lg">
+  <ng-template #abpHeader>
+    <h3>{{ '::ApprovalDetails' | abpLocalization }} - {{ selectedInvoice?.invoiceNumber }}</h3>
+  </ng-template>
+
+  <ng-template #abpBody>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <strong>{{ '::TotalAmount' | abpLocalization }}: </strong>
+            <span>{{ selectedInvoice?.totalAmount | number:'1.2-2' }}</span>
+        </div>
+        <div class="col-md-6">
+            <strong>{{ '::Notes' | abpLocalization }}: </strong>
+            <span>{{ selectedInvoice?.notes }}</span>
+        </div>
+    </div>
+    
+    <h5>{{ '::Items' | abpLocalization }}</h5>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+            <thead>
+                <tr>
+                    <th>{{ '::ServiceOrItem' | abpLocalization }}</th>
+                    <th>{{ '::Quantity' | abpLocalization }}</th>
+                    <th>{{ '::UnitPrice' | abpLocalization }}</th>
+                    <th>{{ '::Total' | abpLocalization }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let line of selectedInvoice?.items">
+                    <td>{{ line.description || line.serviceCode || 'صنف غير معروف' }}</td>
+                    <td>{{ line.quantity }}</td>
+                    <td>{{ line.unitPrice | number:'1.2-2' }}</td>
+                    <td>{{ line.totalPrice | number:'1.2-2' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+  </ng-template>
+
+  <ng-template #abpFooter>
+    <div class="d-flex justify-content-between w-100">
+      <div>
+        <button type="button" class="btn btn-success text-white me-2" (click)="approve(selectedInvoice?.id)">
+          <i class="fa fa-check"></i> {{ '::Approve' | abpLocalization }}
+        </button>
+        <button type="button" class="btn btn-danger text-white" (click)="reject(selectedInvoice?.id)">
+          <i class="fa fa-times"></i> {{ '::Reject' | abpLocalization }}
+        </button>
+      </div>
+      <button type="button" class="btn btn-secondary" abpClose>
+        {{ '::Close' | abpLocalization }}
+      </button>
+    </div>
+  </ng-template>
+</abp-modal>
