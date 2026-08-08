@@ -86,6 +86,7 @@ public interface IAdmissionAppService : Volo.Abp.Application.Services.ICrudAppSe
     Task<AdmissionDto> UpdateDaysAsync(Guid id, int numberOfDays);
     Task<AdmissionDto> TransferPatientAsync(Guid id, CreatePatientTransferDto input);
     Task<HIS.Billing.InvoiceDto> GetProvisionalInvoiceAsync(Guid id);
+    Task<Volo.Abp.Content.IRemoteStreamContent> GetProvisionalInvoicePdfAsync(Guid id);
     Task<List<AdmissionLookupDto>> GetActiveAdmissionsLookupAsync();
     Task<PatientAdmissionStatusDto> GetPatientAdmissionStatusAsync(Guid patientId);
 }

@@ -230,6 +230,8 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 isAutomatic: true
             );
             
+            je.IsPosted = true;
+            
             // Debit AR for Gross + Tax (to match Asia Hospital requirement for Gross AR and Contra-Asset Discount)
             var itemsQueryable = await _itemRepository.GetQueryableAsync();
             var invoiceItems = await AsyncExecuter.ToListAsync(itemsQueryable.Where(x => x.InvoiceId == invoice.Id));
@@ -720,6 +722,8 @@ public class PaymentAppService : CrudAppService<Payment, PaymentDto, Guid, GetPa
                 $"سند قبض رقم {payment.PaymentNumber} - المريض: {payerName}",
                 isAutomatic: true
             );
+            
+            je.IsPosted = true;
 
             // Debit Cash/Bank
             je.AddLine(GuidGenerator, debitAccount.Id, payment.Amount, 0);

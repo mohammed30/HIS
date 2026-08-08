@@ -58,6 +58,7 @@
                                     <th>{{ '::RoomNumber' | abpLocalization }}</th>
                                     <th>{{ '::AdmissionDate' | abpLocalization }}</th>
                                     <th>{{ '::Status' | abpLocalization }}</th>
+                                    <th class="text-center" style="width: 80px;">{{ '::Details' | abpLocalization }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -73,6 +74,13 @@
                                         <span class="badge" [ngClass]="getStatusSeverityClass(row.status)">
                                             {{ getStatusName(row.status) | abpLocalization }}
                                         </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-dark border-0" 
+                                            (click)="$event.stopPropagation(); selectAdmissionAndOpenInvoice(row, provisionalInvoiceModal)" 
+                                            title="عرض حساب المريض">
+                                            <i class="fa fa-file-invoice-dollar"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -736,7 +744,7 @@
     </div>
     <div class="modal-footer bg-light">
         <button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">{{ '::Close' | abpLocalization }}</button>
-        <button type="button" class="btn btn-primary" (click)="modal.close('Print')">
+        <button type="button" class="btn btn-primary" (click)="printProvisionalInvoice()">
             <i class="fa fa-print me-1"></i> {{ '::Print' | abpLocalization }}
         </button>
     </div>

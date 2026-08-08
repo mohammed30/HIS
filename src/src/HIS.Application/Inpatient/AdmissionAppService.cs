@@ -617,6 +617,45 @@ public class AdmissionAppService : CrudAppService<
     }
 
     /// <summary>
+    /// عرض الفاتورة المبدئية كـ PDF
+    /// </summary>
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetProvisionalInvoicePdfAsync(Guid id)
+    {
+        var invoiceDto = await GetProvisionalInvoiceAsync(id);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
+        var document = new HIS.Billing.Printing.InvoiceDocument
+        {
+            InvoiceNumber = "مبدئية",
+            Date = DateTime.Now,
+            PatientName = invoiceDto.PatientName,
+            PatientNumber = "-",
+            Status = "مبدئية",
+            IsReturn = false,
+            SubTotal = invoiceDto.TotalAmount,
+            Discount = invoiceDto.TotalAmount - invoiceDto.NetAmount,
+            Tax = 0,
+            Total = invoiceDto.DueAmount,
+            Items = invoiceDto.Items.Select(x => new HIS.Billing.Printing.InvoiceDocument.InvoiceItemModel
+            {
+                Service = x.Description,
+                Quantity = x.Quantity,
+                UnitPrice = x.UnitPrice,
+                Total = x.TotalPrice
+            }).ToList()
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+
+        return new Volo.Abp.Content.RemoteStreamContent(
+            new System.IO.MemoryStream(pdfBytes),
+            "ProvisionalInvoice.pdf",
+            "application/pdf"
+        );
+    }
+
+    /// <summary>
     /// تحديث عدد أيام الإقامة
     /// </summary>
     public async Task<AdmissionDto> UpdateDaysAsync(Guid id, int numberOfDays)

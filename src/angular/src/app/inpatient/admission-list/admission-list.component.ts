@@ -257,6 +257,39 @@ export class AdmissionListComponent implements OnInit {
     });
   }
 
+  selectAdmissionAndOpenInvoice(admission: AdmissionDto, content: any) {
+    this.selectAdmission(admission);
+    this.openProvisionalInvoiceModal(content);
+  }
+
+  printProvisionalInvoice() {
+    if (!this.selectedAdmission) return;
+
+    this.toaster.info('جاري إعداد الفاتورة للطباعة...', 'طباعة');
+    
+    this.admissionService.getProvisionalInvoicePdf(this.selectedAdmission.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        iframe.contentWindow?.print();
+
+        // Cleanup
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          window.URL.revokeObjectURL(url);
+        }, 10000);
+      },
+      error: (err) => {
+        console.error('Error generating PDF', err);
+        this.toaster.error('حدث خطأ أثناء إنشاء الفاتورة بصيغة PDF', 'خطأ');
+      }
+    });
+  }
+
+
   confirmDischarge() {
     if (!this.selectedAdmission || this.dischargeForm.invalid) return;
 

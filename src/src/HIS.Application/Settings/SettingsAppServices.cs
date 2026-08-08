@@ -537,6 +537,10 @@ public class DoctorRevenueReportAppService : ApplicationService, IDoctorRevenueR
             ToDate = toDate
         };
 
+        var invoiceRepo = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Domain.Repositories.IRepository<HIS.Billing.Invoice, Guid>>();
+        var patientRepo = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Domain.Repositories.IRepository<HIS.Patients.Patient, Guid>>();
+        var invoiceItemRepo = LazyServiceProvider.LazyGetRequiredService<Volo.Abp.Domain.Repositories.IRepository<HIS.Billing.InvoiceItem, Guid>>();
+
         foreach (var doctor in doctors.OrderBy(x => x.NameAr))
         {
             // Get doctor account code
@@ -547,25 +551,6 @@ public class DoctorRevenueReportAppService : ApplicationService, IDoctorRevenueR
                 accountCode = account?.Code;
             }
 
-            // Calculate revenue from journal entries credited to doctor's account
-            decimal totalDoctorCredit = 0;
-            if (doctor.AccountId.HasValue)
-            {
-                var jLines = await _journalEntryLineRepository.GetListAsync(x => x.AccountId == doctor.AccountId.Value);
-                var journalIds = jLines.Select(x => x.JournalEntryId).ToList();
-                var journals = await _journalEntryRepository.GetListAsync(x =>
-                    journalIds.Contains(x.Id) && x.Date >= fromDate && x.Date <= toDate && x.IsPosted);
-                var filteredJournalIds = journals.Select(x => x.Id).ToHashSet();
-                totalDoctorCredit = jLines
-                    .Where(x => filteredJournalIds.Contains(x.JournalEntryId))
-                    .Sum(x => x.Credit);
-            }
-
-            // Compute hospital amount from percentage
-            decimal totalRevenue = doctor.DoctorPercentage > 0
-                ? totalDoctorCredit / (doctor.DoctorPercentage / 100m)
-                : 0;
-
             var line = new DoctorRevenueLineDto
             {
                 DoctorId = doctor.Id,
@@ -573,11 +558,69 @@ public class DoctorRevenueReportAppService : ApplicationService, IDoctorRevenueR
                 DoctorCode = doctor.Code,
                 DoctorPercentage = doctor.DoctorPercentage,
                 HospitalPercentage = 100 - doctor.DoctorPercentage,
-                TotalRevenue = totalRevenue,
-                DoctorAmount = totalDoctorCredit,
-                HospitalAmount = totalRevenue - totalDoctorCredit,
                 AccountCode = accountCode
             };
+
+            // Calculate revenue from journal entries credited to doctor's account
+            if (doctor.AccountId.HasValue)
+            {
+                var jLines = await _journalEntryLineRepository.GetListAsync(x => x.AccountId == doctor.AccountId.Value);
+                var journalIds = jLines.Select(x => x.JournalEntryId).ToList();
+                var journals = await _journalEntryRepository.GetListAsync(x =>
+                    journalIds.Contains(x.Id) && x.Date >= fromDate && x.Date <= toDate);
+                
+                var filteredJournalIds = journals.Select(x => x.Id).ToHashSet();
+                var doctorJLines = jLines.Where(x => filteredJournalIds.Contains(x.JournalEntryId) && x.Credit > 0).ToList();
+                
+                line.DoctorAmount = doctorJLines.Sum(x => x.Credit);
+                line.TotalRevenue = doctor.DoctorPercentage > 0
+                    ? line.DoctorAmount / (doctor.DoctorPercentage / 100m)
+                    : 0;
+                line.HospitalAmount = line.TotalRevenue - line.DoctorAmount;
+
+                // Details
+                foreach (var jl in doctorJLines)
+                {
+                    var je = journals.First(x => x.Id == jl.JournalEntryId);
+                    var invoice = await invoiceRepo.FirstOrDefaultAsync(x => x.InvoiceNumber == je.ReferenceNumber);
+                    
+                    if (invoice != null)
+                    {
+                        var patient = await patientRepo.FindAsync(invoice.PatientId);
+                        var items = await invoiceItemRepo.GetListAsync(x => x.InvoiceId == invoice.Id);
+                        
+                        foreach (var item in items)
+                        {
+                            var itemRev = (item.Quantity * item.UnitPrice) - item.DiscountAmount;
+                            var itemDocShare = Math.Round(itemRev * (doctor.DoctorPercentage / 100m), 2);
+                            if (itemDocShare > 0)
+                            {
+                                line.Details.Add(new DoctorRevenueServiceDetailDto
+                                {
+                                    Date = je.Date,
+                                    InvoiceNumber = invoice.InvoiceNumber,
+                                    PatientName = patient?.FullNameAr ?? "مريض",
+                                    ServiceName = item.Description ?? "خدمة",
+                                    ServicePrice = itemRev,
+                                    DoctorAmount = itemDocShare
+                                });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        line.Details.Add(new DoctorRevenueServiceDetailDto
+                        {
+                            Date = je.Date,
+                            InvoiceNumber = je.ReferenceNumber,
+                            PatientName = "-",
+                            ServiceName = je.Description,
+                            ServicePrice = doctor.DoctorPercentage > 0 ? jl.Credit / (doctor.DoctorPercentage / 100m) : 0,
+                            DoctorAmount = jl.Credit
+                        });
+                    }
+                }
+            }
 
             report.Lines.Add(line);
             report.TotalRevenue += line.TotalRevenue;
@@ -586,6 +629,27 @@ public class DoctorRevenueReportAppService : ApplicationService, IDoctorRevenueR
         }
 
         return report;
+    }
+
+    public async Task<Volo.Abp.Content.IRemoteStreamContent> GetReportPdfAsync(DoctorRevenueReportInput input)
+    {
+        var reportData = await GetReportAsync(input);
+
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+        
+        var document = new HIS.Settings.Printing.DoctorRevenueReportDocument
+        {
+            ReportData = reportData,
+            IsHospitalReport = input.IsHospitalReport
+        };
+
+        var pdfBytes = QuestPDF.Fluent.GenerateExtensions.GeneratePdf(document);
+
+        return new Volo.Abp.Content.RemoteStreamContent(
+            new System.IO.MemoryStream(pdfBytes),
+            "DoctorRevenueReport.pdf",
+            "application/pdf"
+        );
     }
 }
 
