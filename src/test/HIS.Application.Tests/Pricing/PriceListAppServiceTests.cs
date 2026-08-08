@@ -30,10 +30,9 @@ public abstract class PriceListAppServiceTests<TStartupModule> : HISTestBase<TSt
         // Arrange
         var input = new CreateUpdatePriceListDto
         {
-            Code = "PL-001",
-            NameAr = "قائمة الأسعار الافتراضية",
-            NameEn = "Default Price List",
-            IsActive = true
+            Name = "قائمة الأسعار الافتراضية",
+            IsDefault = true,
+            EffectiveFrom = DateTime.Now
         };
 
         // Act
@@ -41,7 +40,7 @@ public abstract class PriceListAppServiceTests<TStartupModule> : HISTestBase<TSt
 
         // Assert
         result.ShouldNotBeNull();
-        result.Code.ShouldBe("PL-001");
+        result.Name.ShouldBe("قائمة الأسعار الافتراضية");
         
         var listInDb = await _priceListRepository.GetAsync(result.Id);
         listInDb.ShouldNotBeNull();

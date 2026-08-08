@@ -77,7 +77,7 @@ public abstract class InsuranceAppServiceTests<TStartupModule> : HISTestBase<TSt
             InsuranceCompanyId = companyId,
             Code = "PLAN-A",
             NameAr = "خطة الفئة أ",
-            PatientDeductiblePercentage = 10, // 10%
+            ConsultationCoveragePercentage = 90, // 90% coverage means 10% deductible
             IsActive = true
         };
 
@@ -87,7 +87,7 @@ public abstract class InsuranceAppServiceTests<TStartupModule> : HISTestBase<TSt
         // Assert
         result.ShouldNotBeNull();
         result.InsuranceCompanyId.ShouldBe(companyId);
-        result.PatientDeductiblePercentage.ShouldBe(10);
+        result.ConsultationCoveragePercentage.ShouldBe(90);
 
         var planInDb = await _insurancePlanRepository.GetAsync(result.Id);
         planInDb.ShouldNotBeNull();
@@ -105,8 +105,7 @@ public abstract class InsuranceAppServiceTests<TStartupModule> : HISTestBase<TSt
         {
             await _insuranceCompanyRepository.InsertAsync(new InsuranceCompany(companyId, null, "INS-003", "تأمين 3"));
             await _insurancePlanRepository.InsertAsync(new InsurancePlan(planId, null, companyId, "P-3", "خطة 3"));
-            
-            var patient = new Patient(patientId, null, "PAT-001", "أحمد علي", "Ahmed Ali", new DateTime(1990, 1, 1), HIS.Patients.Enums.Gender.Male, HIS.Patients.Enums.IdentityType.NationalId, "1000000000", "0500000000");
+            var patient = new Patient(patientId, null, "PAT-001", "أحمد علي", "Ahmed Ali", new DateTime(1990, 1, 1), HIS.Patients.Gender.Male, HIS.Patients.IdentityType.NationalId, "1000000000", "0500000000");
             await _patientRepository.InsertAsync(patient);
         });
 

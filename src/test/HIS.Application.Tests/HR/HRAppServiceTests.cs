@@ -43,7 +43,7 @@ public abstract class HRAppServiceTests<TStartupModule> : HRTestBase<TStartupMod
         Guid departmentId = Guid.NewGuid();
         await WithUnitOfWorkAsync(async () =>
         {
-            await _departmentRepository.InsertAsync(new Department(departmentId, "IT", "Information Technology", null));
+            await _departmentRepository.InsertAsync(new Department(departmentId, null, "IT", "Information Technology"));
         });
 
         var input = new CreateUpdateEmployeeDto
@@ -80,7 +80,7 @@ public abstract class HRAppServiceTests<TStartupModule> : HRTestBase<TStartupMod
         await WithUnitOfWorkAsync(async () =>
         {
             await _employeeRepository.InsertAsync(new Employee(employeeId, null, "EMP-002", "سالم"));
-            await _compensationItemRepository.InsertAsync(new CompensationItem(compItemId, null, "Basic Salary", CompensationType.Earning, true));
+            await _compensationItemRepository.InsertAsync(new CompensationItem(compItemId, null, "Basic Salary", CompensationNature.Allowance));
         });
 
         var input = new CreateUpdateSalarySetupDto

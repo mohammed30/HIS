@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { RestService } from '@abp/ng.core';
 
 @Component({
   selector: 'app-footer',
@@ -10,7 +11,7 @@ import { Component } from '@angular/core';
           <a href="https://asiahospital.com/" target="_blank"> Asia Hospital </a>
         </div>
         <div class="lpx-footbar-solo-links">
-          <!-- Add any specific links here if needed, keeping empty for now to match default if no links configured -->
+          <span class="text-muted" style="font-size: 0.85em;">v{{ version }}</span>
         </div>
       </div>
     </div>
@@ -38,6 +39,19 @@ import { Component } from '@angular/core';
   `],
   standalone: true
 })
-export class AppFooterComponent {
+export class AppFooterComponent implements OnInit {
   currentYear = new Date().getFullYear();
+  version = '...';
+
+  private restService = inject(RestService);
+
+  ngOnInit() {
+    this.restService.request<any, string>({
+      method: 'GET',
+      url: '/api/app/version',
+      responseType: 'text'
+    }).subscribe(v => {
+      this.version = v;
+    });
+  }
 }
