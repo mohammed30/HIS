@@ -21,4 +21,9 @@ public static class HISSettings
         public const string AdmissionDepositAmount = Prefix + ".Inpatient.AdmissionDepositAmount";
         public const string RequireAdvancePayment = Prefix + ".Inpatient.RequireAdvancePayment";
     }
+
+    public static class User
+    {
+        public const string Theme = Prefix + ".User.Theme";
+    }
 }

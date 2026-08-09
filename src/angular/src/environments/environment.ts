@@ -34,6 +34,6 @@ export const environment = {
   },
   localization: {
     defaultResourceName: 'HIS',
-    defaultCulture: 'ar',
+    defaultCulture: 'ar-EG',
   },
 } as Environment;

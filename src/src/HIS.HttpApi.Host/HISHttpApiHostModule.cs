@@ -167,9 +167,9 @@ public class HISHttpApiHostModule : AbpModule
         
         Configure<RequestLocalizationOptions>(options =>
         {
-            options.SetDefaultCulture("ar");
-            options.AddSupportedCultures("ar", "en");
-            options.AddSupportedUICultures("ar", "en");
+            options.SetDefaultCulture("ar-EG");
+            options.AddSupportedCultures("ar-EG", "en");
+            options.AddSupportedUICultures("ar-EG", "en");
             options.FallBackToParentCultures = true;
             options.FallBackToParentUICultures = true;
 

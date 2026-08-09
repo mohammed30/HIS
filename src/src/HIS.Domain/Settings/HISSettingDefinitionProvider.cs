@@ -37,7 +37,10 @@ public class HISSettingDefinitionProvider : SettingDefinitionProvider
             new SettingDefinition("Notifications.Subscribers.Payments", ""),
             new SettingDefinition("Notifications.Subscribers.Nursing", ""),
             new SettingDefinition("Notifications.Subscribers.Insurance", ""),
-            new SettingDefinition("Notifications.Subscribers.Patients", "")
+            new SettingDefinition("Notifications.Subscribers.Patients", ""),
+
+            // User Settings
+            new SettingDefinition(HISSettings.User.Theme, "light", isVisibleToClients: true)
         );
     }
 }

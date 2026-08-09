@@ -45,7 +45,6 @@ import { NavItemsService } from '@abp/ng.theme.shared';
   imports: [
     LoaderBarComponent,
     DynamicLayoutComponent,
-    ThemeToggleComponent,
     LoginNotificationsModalComponent,
     SidebarSearchComponent,
   ],
@@ -89,7 +88,7 @@ export class AppComponent implements OnInit {
 
     // Set Arabic as the default language if not already set
     if (!this.session.getLanguage()) {
-      this.session.setLanguage('ar');
+      this.session.setLanguage('ar-EG');
     }
 
     // Connect SignalR hub when authenticated

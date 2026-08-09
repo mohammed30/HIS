@@ -16,6 +16,10 @@ const oAuthConfig = {
 
 export const environment = {
   production: true,
+  localization: {
+    defaultResourceName: 'HIS',
+    defaultCulture: 'ar-EG',
+  },
   application: {
     baseUrl,
     name: 'Asia Hospital',

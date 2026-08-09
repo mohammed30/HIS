@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ConfigStateService, RestService } from '@abp/ng.core';
 
 @Component({
     selector: 'app-theme-toggle',
@@ -35,18 +36,27 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 })
 export class ThemeToggleComponent implements OnInit {
     private platformId = inject(PLATFORM_ID);
+    private configState = inject(ConfigStateService);
+    private restService = inject(RestService);
+    
     isDarkMode = false;
     private readonly THEME_KEY = 'his-theme-mode';
 
     ngOnInit() {
         if (isPlatformBrowser(this.platformId)) {
-            // Check saved preference or system preference
-            const savedTheme = localStorage.getItem(this.THEME_KEY);
-            if (savedTheme) {
-                this.isDarkMode = savedTheme === 'dark';
+            // Load theme from database setting if available
+            const dbTheme = this.configState.getSetting('HIS.User.Theme');
+            if (dbTheme) {
+                this.isDarkMode = dbTheme === 'dark';
+                localStorage.setItem(this.THEME_KEY, dbTheme);
             } else {
-                // Check system preference
-                this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                // Fallback to localStorage or default to White (light)
+                const savedTheme = localStorage.getItem(this.THEME_KEY);
+                if (savedTheme) {
+                    this.isDarkMode = savedTheme === 'dark';
+                } else {
+                    this.isDarkMode = false; // Default to light mode
+                }
             }
             this.applyTheme();
         }
@@ -55,9 +65,20 @@ export class ThemeToggleComponent implements OnInit {
     toggleTheme() {
         this.isDarkMode = !this.isDarkMode;
         this.applyTheme();
+        
+        const themeString = this.isDarkMode ? 'dark' : 'light';
+        
         if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem(this.THEME_KEY, this.isDarkMode ? 'dark' : 'light');
+            localStorage.setItem(this.THEME_KEY, themeString);
         }
+
+        // Save theme choice to database
+        this.restService.request<void, void>({
+            method: 'POST',
+            url: `/api/app/user-settings/set-theme?theme=${themeString}`
+        }, { skipHandleError: true }).subscribe({
+            error: (err) => console.error('Failed to save theme to database', err)
+        });
     }
 
     private applyTheme() {

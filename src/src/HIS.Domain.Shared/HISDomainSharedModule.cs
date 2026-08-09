@@ -45,14 +45,14 @@ public class HISDomainSharedModule : AbpModule
         Configure<AbpLocalizationOptions>(options =>
         {
             options.Resources
-                .Add<HISResource>("ar")  // Arabic as default
+                .Add<HISResource>("ar-EG")  // Arabic as default
                 .AddBaseTypes(typeof(AbpValidationResource))
                 .AddVirtualJson("/Localization/HIS");
 
             options.DefaultResourceType = typeof(HISResource);
             
             // Arabic as primary language, English as secondary
-            options.Languages.Add(new LanguageInfo("ar", "ar", "العربية")); 
+            options.Languages.Add(new LanguageInfo("ar-EG", "ar-EG", "العربية")); 
             options.Languages.Add(new LanguageInfo("en", "en", "English")); 
 
         });

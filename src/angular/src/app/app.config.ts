@@ -24,13 +24,16 @@ export const appConfig: ApplicationConfig = {
     provideRouter(APP_ROUTES),
     APP_ROUTE_PROVIDER,
     provideAnimations(),
-    { provide: LOCALE_ID, useValue: 'ar' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'EGP' },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     provideAbpCore(
       withOptions({
         environment,
-        registerLocaleFn: registerLocaleForEsBuild(),
+        registerLocaleFn: registerLocaleForEsBuild({
+          cultureNameLocaleFileMap: {
+            'ar-EG': 'ar'
+          }
+        }),
       }),
     ),
     provideAbpOAuth(),
