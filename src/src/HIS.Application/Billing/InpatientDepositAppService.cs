@@ -90,6 +90,17 @@ public class InpatientDepositAppService : CrudAppService<
 
         // Update Admission PaidAmount
         admission.PaidAmount += input.Amount;
+        
+        decimal limit = admission.PaidAmount + admission.InsuranceCeiling;
+        if ((limit > 0 && admission.TotalAmount >= limit) || (limit <= 0 && admission.TotalAmount > 0))
+        {
+            admission.IsServicesStopped = true;
+        }
+        else
+        {
+            admission.IsServicesStopped = false;
+        }
+        
         await _admissionRepository.UpdateAsync(admission);
 
         var dto = ObjectMapper.Map<InpatientDeposit, InpatientDepositDto>(deposit);
