@@ -311,7 +311,7 @@ public class AdmissionAppService : CrudAppService<
         if (activeDeposits.Any())
         {
             decimal totalDeposits = activeDeposits.Sum(d => d.Amount);
-            admission.PaidAmount += totalDeposits;
+            // PaidAmount already includes these deposits. We just mark them as consumed.
 
             foreach (var deposit in activeDeposits)
             {
@@ -609,7 +609,8 @@ public class AdmissionAppService : CrudAppService<
         var activeDeposits = await _inpatientDepositRepository.GetListAsync(d => d.AdmissionId == id && d.Status == HIS.Billing.DepositStatus.Active);
         decimal totalDeposits = activeDeposits.Sum(d => d.Amount);
         
-        invoiceDto.PaidAmount = admission.PaidAmount + totalDeposits;
+        // admission.PaidAmount already includes all deposits, so we shouldn't add totalDeposits again
+        invoiceDto.PaidAmount = admission.PaidAmount;
         invoiceDto.DueAmount = invoiceDto.NetAmount - invoiceDto.PaidAmount;
         if (invoiceDto.DueAmount < 0) invoiceDto.DueAmount = 0;
 
