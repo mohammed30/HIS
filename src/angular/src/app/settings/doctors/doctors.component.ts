@@ -45,9 +45,14 @@ interface Lookup {
             <i class="fas fa-user-md me-2"></i>
             الأطباء - Doctors
           </h5>
-          <button class="btn btn-primary" (click)="showForm = true; editingItem = null; resetForm()">
-            <i class="fas fa-plus me-1"></i> إضافة
-          </button>
+          <div>
+            <button class="btn btn-warning me-2" (click)="syncAccounts()">
+              <i class="fas fa-sync-alt me-1"></i> مزامنة حسابات الأطباء القدامى
+            </button>
+            <button class="btn btn-primary" (click)="showForm = true; editingItem = null; resetForm()">
+              <i class="fas fa-plus me-1"></i> إضافة
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <!-- Search -->
@@ -433,6 +438,23 @@ export class DoctorsComponent implements OnInit {
   search() {
     this.page = 1;
     this.loadData();
+  }
+
+  syncAccounts() {
+    this.confirmation.info('هل أنت متأكد من مزامنة حسابات الأطباء القدامى؟ (سيقوم النظام بإنشاء حسابات لكل طبيب ليس لديه حساب)', 'تأكيد المزامنة').subscribe((status) => {
+      if (status === Confirmation.Status.confirm) {
+        this.http.post(`${this.apiUrl}/sync-old-doctors-accounts`, {}).subscribe({
+          next: () => {
+            alert('تم إنشاء وربط الحسابات بنجاح!');
+            this.loadData();
+          },
+          error: (err) => {
+            console.error(err);
+            alert('حدث خطأ أثناء المزامنة.');
+          }
+        });
+      }
+    });
   }
 
   edit(item: Doctor) {
