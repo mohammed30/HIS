@@ -96,7 +96,7 @@
                             <app-credit-limit-gauge 
                                 *ngIf="creditLimitSettingsLoaded"
                                 [creditLimit]="selectedAdmission?.paidAmount ?? defaultCreditLimit"
-                                [utilizedAmount]="provisionalInvoice?.summaryTotal || 0"
+                                [utilizedAmount]="provisionalInvoice?.totalAmount || 0"
                                 [showDetails]="true">
                             </app-credit-limit-gauge>
                         </div>

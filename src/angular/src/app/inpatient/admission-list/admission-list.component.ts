@@ -208,6 +208,12 @@ export class AdmissionListComponent implements OnInit {
       patientInsuranceId: admission.patientInsuranceId || null
     });
     this.detailForm.markAsPristine();
+    
+    // Fetch provisional invoice to update the gauge
+    this.admissionService.getProvisionalInvoice(admission.id).subscribe((res) => {
+      this.provisionalInvoice = res;
+    });
+
     if (admission.patientId) {
       this.patientInsuranceService.getByPatient(admission.patientId).subscribe(res => {
         this.patientInsurances = res || [];
