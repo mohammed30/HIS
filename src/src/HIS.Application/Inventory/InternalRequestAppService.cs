@@ -79,6 +79,24 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
             }
         }
 
+        var admission = await AdmissionRepository.GetAsync(input.AdmissionId.Value);
+
+        // Automatic Services Stopping Validation
+        decimal limit = admission.PaidAmount + admission.InsuranceCeiling;
+        if (admission.TotalAmount >= limit && limit > 0)
+        {
+            throw new UserFriendlyException($"إيقاف خدمات تلقائي: لا يمكن طلب خدمات جديدة. إجمالي حساب المريض ({admission.TotalAmount}) تجاوز الرصيد المتاح ({limit}).");
+        }
+        else if (admission.TotalAmount > 0 && limit <= 0)
+        {
+            throw new UserFriendlyException($"إيقاف خدمات تلقائي: لا يمكن طلب خدمات جديدة. لا يوجد رصيد للمريض وإجمالي الحساب ({admission.TotalAmount}).");
+        }
+        else if (admission.IsServicesStopped)
+        {
+            // Fallback for manual toggle if it was set
+            throw new UserFriendlyException("تم إيقاف الخدمات لهذا المريض مسبقاً.");
+        }
+
         var requestNumber = $"REQ-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
 
         var entity = new InternalRequest(
@@ -324,6 +342,17 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
                 decimal amount = item.UnitPrice * item.Quantity;
                 
                 admission.TotalAmount -= amount;
+                
+                decimal limit = admission.PaidAmount + admission.InsuranceCeiling;
+                if ((limit > 0 && admission.TotalAmount >= limit) || (limit <= 0 && admission.TotalAmount > 0))
+                {
+                    admission.IsServicesStopped = true;
+                }
+                else
+                {
+                    admission.IsServicesStopped = false;
+                }
+
                 await AdmissionRepository.UpdateAsync(admission);
                 
                 invoice.TotalAmount -= amount;
@@ -556,6 +585,18 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
         // Update totals
         decimal amount = price * quantity;
         admission.TotalAmount += amount;
+        
+        // Automatically check if services should be stopped
+        decimal limit = admission.PaidAmount + admission.InsuranceCeiling;
+        if ((limit > 0 && admission.TotalAmount >= limit) || (limit <= 0 && admission.TotalAmount > 0))
+        {
+            admission.IsServicesStopped = true;
+        }
+        else
+        {
+            admission.IsServicesStopped = false;
+        }
+
         await AdmissionRepository.UpdateAsync(admission);
 
         invoice.TotalAmount += amount;
@@ -662,6 +703,17 @@ public class InternalRequestAppService : CrudAppService<InternalRequest, Interna
                 if (admission != null)
                 {
                     admission.TotalAmount -= amount;
+                    
+                    decimal limit = admission.PaidAmount + admission.InsuranceCeiling;
+                    if ((limit > 0 && admission.TotalAmount >= limit) || (limit <= 0 && admission.TotalAmount > 0))
+                    {
+                        admission.IsServicesStopped = true;
+                    }
+                    else
+                    {
+                        admission.IsServicesStopped = false;
+                    }
+
                     await AdmissionRepository.UpdateAsync(admission);
                 }
                 

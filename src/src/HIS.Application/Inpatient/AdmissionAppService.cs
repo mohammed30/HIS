@@ -111,7 +111,7 @@ public class AdmissionAppService : CrudAppService<
             CompanionAddress = input.CompanionAddress,
             Purpose = input.Purpose,
             PharmacyPercentage = input.PharmacyPercentage,
-            IsServicesStopped = input.IsServicesStopped,
+            IsServicesStopped = (input.PaidAmount + input.InsuranceCeiling <= 0),
             Notes = input.Notes,
             NumberOfDays = input.NumberOfDays,
             PaidAmount = input.PaidAmount,
@@ -792,10 +792,19 @@ public class AdmissionAppService : CrudAppService<
         admission.CompanionAddress = input.CompanionAddress;
         admission.Purpose = input.Purpose;
         admission.PharmacyPercentage = input.PharmacyPercentage;
-        admission.IsServicesStopped = input.IsServicesStopped;
         admission.Notes = input.Notes;
         admission.NumberOfDays = input.NumberOfDays;
         admission.PaidAmount = input.PaidAmount;
+        
+        decimal limit = admission.PaidAmount + admission.InsuranceCeiling;
+        if ((limit > 0 && admission.TotalAmount >= limit) || (limit <= 0 && admission.TotalAmount > 0))
+        {
+            admission.IsServicesStopped = true;
+        }
+        else
+        {
+            admission.IsServicesStopped = false;
+        }
         admission.PatientInsuranceId = input.PatientInsuranceId;
 
         if (amountDifference > 0)
