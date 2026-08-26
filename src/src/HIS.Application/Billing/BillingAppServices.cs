@@ -450,9 +450,12 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
     }
 
-    [Authorize(HISPermissions.Billing.ManageInvoices)]
-    public async Task<InvoiceDto> CancelAsync(Guid id)
+    [Authorize(HISPermissions.Billing.CancelInvoices)]
+    public async Task<InvoiceDto> CancelAsync(Guid id, string reason)
     {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new UserFriendlyException("يجب إدخال سبب الإلغاء");
+
         var invoice = await Repository.GetAsync(id);
 
         if (invoice.Status == InvoiceStatus.Cancelled)
@@ -461,6 +464,9 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         }
 
         invoice.Status = InvoiceStatus.Cancelled;
+        invoice.CancellationReason = reason;
+        invoice.CancelledAt = Clock.Now;
+        invoice.CancelledByUserName = CurrentUser.UserName ?? CurrentUser.Name ?? "Unknown";
         await Repository.UpdateAsync(invoice);
 
         // Reverse Accounting Entry
@@ -473,7 +479,7 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
         var paymentAppService = LazyServiceProvider.LazyGetRequiredService<IPaymentAppService>();
         foreach (var payment in payments)
         {
-            await paymentAppService.RefundAsync(payment.Id, "Invoice Cancelled");
+            await paymentAppService.RefundAsync(payment.Id, reason);
         }
 
         return ObjectMapper.Map<Invoice, InvoiceDto>(invoice);
@@ -550,14 +556,18 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
              Status = invoice.Status.ToString(),
              PatientName = $"{patient.FirstNameAr} {patient.LastNameAr}",
              PatientNumber = patient.Id.ToString().Substring(0, 8).ToUpper(),
-             SubTotal = invoice.TotalAmount, // Assuming TotalAmount is subtotal in logic above (sum of items)
+             SubTotal = invoice.TotalAmount,
              Discount = invoice.DiscountAmount,
              Tax = invoice.TaxAmount,
              Total = invoice.NetAmount,
              LogoBytes = logoBytes,
+             IsCancelled = invoice.Status == InvoiceStatus.Cancelled,
+             CancellationReason = invoice.CancellationReason,
+             CancelledByUserName = invoice.CancelledByUserName,
+             CancelledAt = invoice.CancelledAt,
              Items = items.Select(x => new HIS.Billing.Printing.InvoiceDocument.InvoiceItemModel 
              {
-                 Service = x.Description, // Or ServiceCode map to Name
+                 Service = x.Description,
                  Quantity = x.Quantity,
                  UnitPrice = x.UnitPrice,
                  Total = x.TotalPrice
@@ -1074,7 +1084,7 @@ public interface IInvoiceAppService : ICrudAppService<InvoiceDto, Guid, GetInvoi
 {
     Task<InvoiceDto> GetWithItemsAsync(Guid id);
     Task<InvoiceDto> UpdateStatusAsync(Guid id, InvoiceStatus status);
-    Task<InvoiceDto> CancelAsync(Guid id);
+    Task<InvoiceDto> CancelAsync(Guid id, string reason);
     Task<List<InvoiceDto>> GetPendingApprovalsAsync();
     Task<InvoiceDto> ApproveInvoiceAsync(Guid id);
     Task<InvoiceDto> RejectInvoiceAsync(Guid id);

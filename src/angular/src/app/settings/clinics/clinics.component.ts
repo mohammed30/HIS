@@ -12,6 +12,7 @@ interface Clinic {
   nameAr: string;
   nameEn?: string;
   departmentId?: string;
+  departmentName?: string;
   location?: string;
   roomNumber?: string;
   extensionNumber?: string;
@@ -34,11 +35,11 @@ interface Lookup {
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
-          <h5 class="card-title mb-0">{{ '::Menu:Clinics' | abpLocalization }}</h5>
-          <small class="text-muted">Manage hospital clinics and rooms</small>
+          <h5 class="card-title mb-0">العيادات - Clinics</h5>
+          <small class="text-muted">إدارة عيادات وغرف المستشفى</small>
         </div>
         <button class="btn btn-primary" (click)="create()">
-          <i class="fas fa-plus me-1"></i> {{ '::New' | abpLocalization }}
+          <i class="fas fa-plus me-1"></i> إضافة
         </button>
       </div>
       <div class="card-body">
@@ -46,25 +47,30 @@ interface Lookup {
           <div class="col-md-4">
             <div class="input-group">
               <span class="input-group-text"><i class="fas fa-search"></i></span>
-              <input type="text" class="form-control" [placeholder]="'::Search' | abpLocalization" 
+              <input type="text" class="form-control" placeholder="بحث..." 
                      [(ngModel)]="searchText" (input)="search()">
             </div>
           </div>
         </div>
 
         <ngx-datatable [rows]="items" [count]="totalCount" [list]="list" default>
-          <ngx-datatable-column [name]="'::Code' | abpLocalization" prop="code"></ngx-datatable-column>
-          <ngx-datatable-column [name]="'::Name' | abpLocalization" prop="nameAr"></ngx-datatable-column>
-          <ngx-datatable-column [name]="'::Location' | abpLocalization" prop="location"></ngx-datatable-column>
-          <ngx-datatable-column [name]="'::RoomNumber' | abpLocalization" prop="roomNumber"></ngx-datatable-column>
-          <ngx-datatable-column [name]="'::Status' | abpLocalization" prop="isActive">
+          <ngx-datatable-column name="الكود" prop="code"></ngx-datatable-column>
+          <ngx-datatable-column name="الاسم" prop="nameAr"></ngx-datatable-column>
+          <ngx-datatable-column name="القسم" prop="departmentName">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              {{ value || '-' }}
+            </ng-template>
+          </ngx-datatable-column>
+          <ngx-datatable-column name="مكان العيادة" prop="location"></ngx-datatable-column>
+          <ngx-datatable-column name="رقم الغرفة" prop="roomNumber"></ngx-datatable-column>
+          <ngx-datatable-column name="الحالة" prop="isActive">
             <ng-template let-value="value" ngx-datatable-cell-template>
               <span class="badge" [class.bg-success]="value" [class.bg-secondary]="!value">
-                {{ value ? ('::Active' | abpLocalization) : ('::Inactive' | abpLocalization) }}
+                {{ value ? 'نشط' : 'غير نشط' }}
               </span>
             </ng-template>
           </ngx-datatable-column>
-          <ngx-datatable-column [name]="'::Actions' | abpLocalization" sortable="false">
+          <ngx-datatable-column name="الإجراءات" sortable="false">
             <ng-template let-row="row" ngx-datatable-cell-template>
               <button class="btn btn-sm btn-outline-primary me-1" (click)="edit(row)">
                 <i class="fas fa-pencil-alt"></i>
@@ -80,63 +86,53 @@ interface Lookup {
 
     <abp-modal [(visible)]="showForm">
       <ng-template #abpHeader>
-        <h3>{{ (editingItem ? '::Edit' : '::New') | abpLocalization }} {{ '::Menu:Clinics' | abpLocalization }}</h3>
+        <h3>{{ editingItem ? 'تعديل' : 'إضافة' }} عيادة</h3>
       </ng-template>
 
       <ng-template #abpBody>
         <form #clinicForm="ngForm">
           <div class="mb-3">
-            <label class="form-label">{{ '::Department' | abpLocalization }}</label>
+            <label class="form-label">القسم</label>
             <select class="form-select" [(ngModel)]="formData.departmentId" name="departmentId">
-              <option value="">{{ '::SelectDepartment' | abpLocalization }}</option>
+              <option value="">اختر القسم</option>
               <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
             </select>
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label">{{ '::Name' | abpLocalization }} (Ar) *</label>
+              <label class="form-label">الاسم بالعربية *</label>
               <input type="text" class="form-control" [(ngModel)]="formData.nameAr" name="nameAr" required>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">{{ '::Name' | abpLocalization }} (En)</label>
+              <label class="form-label">الاسم بالإنجليزية</label>
               <input type="text" class="form-control" [(ngModel)]="formData.nameEn" name="nameEn">
             </div>
           </div>
           <div class="row">
             <div class="col-md-4 mb-3">
-              <label class="form-label">{{ '::Location' | abpLocalization }}</label>
+              <label class="form-label">مكان العيادة</label>
               <input type="text" class="form-control" [(ngModel)]="formData.location" name="location">
             </div>
             <div class="col-md-4 mb-3">
-              <label class="form-label">{{ '::RoomNumber' | abpLocalization }}</label>
+              <label class="form-label">رقم الغرفة</label>
               <input type="text" class="form-control" [(ngModel)]="formData.roomNumber" name="roomNumber">
             </div>
             <div class="col-md-4 mb-3">
-              <label class="form-label">{{ '::ExtensionNumber' | abpLocalization }}</label>
+              <label class="form-label">التحويلة</label>
               <input type="text" class="form-control" [(ngModel)]="formData.extensionNumber" name="extensionNumber">
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">{{ '::ConsultationFee' | abpLocalization }}</label>
-              <input type="number" class="form-control" [(ngModel)]="formData.consultationFee" name="consultationFee">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">{{ '::SortOrder' | abpLocalization }}</label>
-              <input type="number" class="form-control" [(ngModel)]="formData.sortOrder" name="sortOrder">
-            </div>
-          </div>
-          <div class="form-check">
+          <div class="form-check mt-3">
             <input type="checkbox" class="form-check-input" [(ngModel)]="formData.isActive" name="isActive" id="isActive">
-            <label class="form-check-label" for="isActive">{{ '::Active' | abpLocalization }}</label>
+            <label class="form-check-label" for="isActive">نشط</label>
           </div>
         </form>
       </ng-template>
 
       <ng-template #abpFooter>
-        <button type="button" class="btn btn-secondary" (click)="showForm = false">{{ '::Cancel' | abpLocalization }}</button>
+        <button type="button" class="btn btn-secondary" (click)="showForm = false">إلغاء</button>
         <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form?.invalid">
-          <i class="fas fa-save me-1"></i> {{ '::Save' | abpLocalization }}
+          <i class="fas fa-save me-1"></i> حفظ
         </button>
       </ng-template>
     </abp-modal>

@@ -31,6 +31,15 @@ public class InvoiceDocument : IDocument
     public string? OriginalInvoiceNumber { get; set; }
     /// <summary>طباعة نسختين (أصل وصورة)</summary>
     public bool PrintTwoCopies { get; set; } = false;
+
+    /// <summary>هل الفاتورة ملغاة؟</summary>
+    public bool IsCancelled { get; set; } = false;
+    /// <summary>سبب الإلغاء</summary>
+    public string? CancellationReason { get; set; }
+    /// <summary>اسم الموظف الذي ألغى</summary>
+    public string? CancelledByUserName { get; set; }
+    /// <summary>تاريخ الإلغاء</summary>
+    public DateTime? CancelledAt { get; set; }
     
     public List<InvoiceItemModel> Items { get; set; } = new();
     
@@ -64,6 +73,17 @@ public class InvoiceDocument : IDocument
             page.DefaultTextStyle(x => x.FontSize(12).FontColor(TextDark));
             page.ContentFromRightToLeft();
 
+            if (IsCancelled)
+            {
+                page.Background()
+                    .AlignCenter()
+                    .AlignMiddle()
+                    .Text("ملغـية - CANCELLED")
+                    .FontSize(80)
+                    .FontColor(Colors.Red.Lighten4)
+                    .Bold();
+            }
+
             page.Header().Element(c => ComposeHeader(c, "أصل / ORIGINAL"));
             page.Content().Element(ComposeContent);
             page.Footer().Element(ComposeFooter);
@@ -79,6 +99,17 @@ public class InvoiceDocument : IDocument
                 page.PageColor(Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(12).FontColor(TextDark));
                 page.ContentFromRightToLeft();
+
+                if (IsCancelled)
+                {
+                    page.Background()
+                        .AlignCenter()
+                        .AlignMiddle()
+                        .Text("ملغـية - CANCELLED")
+                        .FontSize(80)
+                        .FontColor(Colors.Red.Lighten4)
+                        .Bold();
+                }
 
                 page.Header().Element(c => ComposeHeader(c, "صورة / COPY"));
                 page.Content().Element(ComposeContent);
@@ -160,6 +191,34 @@ public class InvoiceDocument : IDocument
             });
 
             column.Item().Height(20);
+
+            // Cancellation Notice Block
+            if (IsCancelled)
+            {
+                column.Item().PaddingBottom(10)
+                    .Background(Colors.Red.Lighten5)
+                    .Border(2).BorderColor(Colors.Red.Medium)
+                    .Padding(10).Column(cancel =>
+                {
+                    cancel.Item().Text("تنبيه: هذه الفاتورة ملغاة")
+                        .FontSize(14).Bold().FontColor(Colors.Red.Darken2);
+                    cancel.Item().PaddingTop(5).Text(t =>
+                    {
+                        t.Span("سبب الإلغاء: ").Bold().FontColor(Colors.Red.Darken2);
+                        t.Span(CancellationReason ?? "-").FontColor(Colors.Red.Darken2);
+                    });
+                    cancel.Item().PaddingTop(3).Text(t =>
+                    {
+                        t.Span("بواسطة: ").Bold().FontColor(Colors.Red.Darken2);
+                        t.Span(CancelledByUserName ?? "-").FontColor(Colors.Red.Darken2);
+                    });
+                    cancel.Item().PaddingTop(3).Text(t =>
+                    {
+                        t.Span("بتاريخ: ").Bold().FontColor(Colors.Red.Darken2);
+                        t.Span(CancelledAt.HasValue ? CancelledAt.Value.ToString("yyyy/MM/dd - HH:mm") : "-").FontColor(Colors.Red.Darken2);
+                    });
+                });
+            }
 
             // Lines Table
             column.Item().Table(table =>

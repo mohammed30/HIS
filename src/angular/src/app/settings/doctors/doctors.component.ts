@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ThemeSharedModule, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { ViewEncapsulation } from '@angular/core';
 
 interface Doctor {
   id: string;
@@ -17,9 +18,9 @@ interface Doctor {
   departmentName?: string;
   clinicId?: string;
   clinicName?: string;
-  mobile?: string;
+  mobileNumber?: string;
   email?: string;
-  nationalId?: string;
+  licenseNumber?: string;
   consultationFee: number;
   morningConsultationFee: number;
   eveningConsultationFee: number;
@@ -125,7 +126,8 @@ interface Lookup {
                     <td>{{ item.nameEn }}</td>
                     <td>{{ getSpecialtyName(item.specialtyId) }}</td>
                     <td>{{ getDepartmentName(item.departmentId) }}</td>
-                    <td>{{ item.mobile }}</td>
+                    <td>{{ item.clinicName || '-' }}</td>
+                    <td>{{ item.mobileNumber }}</td>
                     <td>
                       <span [class]="item.isActive ? 'badge bg-success' : 'badge bg-secondary'">
                         {{ item.isActive ? 'نشط' : 'غير نشط' }}
@@ -187,50 +189,102 @@ interface Lookup {
                 </div>
                 
                 <div class="row">
-                   <div class="col-md-6 mb-3">
+                     <div class="col-md-6 mb-3 position-relative" (clickOutside)="isSpecDropdownOpen = false">
                     <label class="form-label">التخصص *</label>
-                    <select class="form-select" [(ngModel)]="formData.specialtyId" required>
-                      <option value="">اختر التخصص</option>
-                      @for (spec of specialties; track spec.id) {
-                        <option [value]="spec.id">{{ spec.name }}</option>
-                      }
-                    </select>
+                    <div class="dropdown">
+                      <input type="text" class="form-control cursor-pointer" 
+                             [class.selected-placeholder]="!!selectedSpecName"
+                             [placeholder]="selectedSpecName || 'اختر التخصص (بحث...)'" 
+                             [(ngModel)]="specSearchText" 
+                             (click)="isSpecDropdownOpen = !isSpecDropdownOpen"
+                             (input)="isSpecDropdownOpen = true; filterSpecialties()"
+                             name="specSearch"
+                             autocomplete="off"
+                             required>
+                      <div class="dropdown-menu w-100 shadow" [class.show]="isSpecDropdownOpen" style="max-height: 250px; overflow-y: auto;">
+                        @for (spec of filteredSpecialties; track spec.id) {
+                          <button type="button" class="dropdown-item" (click)="selectSpecialty(spec)">
+                            {{ spec.name }}
+                          </button>
+                        }
+                        @if (filteredSpecialties.length === 0) {
+                          <span class="dropdown-item text-muted">لا يوجد نتائج</span>
+                        }
+                      </div>
+                    </div>
                   </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-3 position-relative" (clickOutside)="isDeptDropdownOpen = false">
                     <label class="form-label">القسم *</label>
-                    <select class="form-select" [(ngModel)]="formData.departmentId" (change)="onDepartmentChange()" required>
-                      <option value="">اختر القسم</option>
-                      @for (dept of departments; track dept.id) {
-                        <option [value]="dept.id">{{ dept.name }}</option>
-                      }
-                    </select>
+                    <div class="dropdown">
+                      <input type="text" class="form-control cursor-pointer" 
+                             [class.selected-placeholder]="!!selectedDeptName"
+                             [placeholder]="selectedDeptName || 'اختر القسم (بحث بالكود أو الاسم)'" 
+                             [(ngModel)]="deptSearchText" 
+                             (click)="isDeptDropdownOpen = !isDeptDropdownOpen"
+                             (input)="isDeptDropdownOpen = true; filterDepartments()"
+                             name="deptSearch"
+                             autocomplete="off">
+                      <div class="dropdown-menu w-100 shadow" [class.show]="isDeptDropdownOpen" style="max-height: 250px; overflow-y: auto;">
+                        @for (dept of filteredDepartments; track dept.id) {
+                          <button type="button" class="dropdown-item" (click)="selectDepartment(dept)">
+                            {{ dept.name }}
+                          </button>
+                        }
+                        @if (filteredDepartments.length === 0) {
+                          <span class="dropdown-item text-muted">لا يوجد نتائج</span>
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <div class="row">
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-6 mb-3 position-relative" (clickOutside)="isClinicDropdownOpen = false">
                     <label class="form-label">العيادة</label>
-                    <select class="form-select" [(ngModel)]="formData.clinicId">
-                      <option value="">اختر العيادة (اختياري)</option>
-                      @for (clinic of filteredClinics; track clinic.id) {
-                        <option [value]="clinic.id">{{ clinic.name }}</option>
-                      }
-                    </select>
+                    <div class="dropdown">
+                      <input type="text" class="form-control cursor-pointer" 
+                             [class.selected-placeholder]="!!selectedClinicName"
+                             [placeholder]="selectedClinicName || 'اختر العيادة (اختياري)'" 
+                             [(ngModel)]="clinicSearchText" 
+                             (click)="isClinicDropdownOpen = !isClinicDropdownOpen"
+                             (input)="isClinicDropdownOpen = true; filterClinicsList()"
+                             name="clinicSearch"
+                             autocomplete="off"
+                             [disabled]="!formData.departmentId">
+                      <div class="dropdown-menu w-100 shadow" [class.show]="isClinicDropdownOpen" style="max-height: 250px; overflow-y: auto;">
+                        @if (formData.departmentId) {
+                          @for (clinic of visibleClinics; track clinic.id) {
+                            <button type="button" class="dropdown-item" (click)="selectClinic(clinic)">
+                              {{ clinic.name }}
+                            </button>
+                          }
+                          @if (visibleClinics.length === 0) {
+                            <span class="dropdown-item text-muted">لا يوجد نتائج</span>
+                          }
+                        } @else {
+                          <span class="dropdown-item text-muted">الرجاء اختيار القسم أولاً</span>
+                        }
+                      </div>
+                    </div>
                   </div>
-                   <div class="col-md-6 mb-3">
+                  <div class="col-md-6 mb-3">
                     <label class="form-label">الجوال</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.mobile">
+                    <input type="text" class="form-control" [(ngModel)]="formData.mobileNumber">
                   </div>
                 </div>
+                
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">البريد الإلكتروني</label>
-                    <input type="email" class="form-control" [(ngModel)]="formData.email">
-                  </div>
-                  <div class="col-md-6 mb-3">
                     <label class="form-label">رقم الهوية</label>
-                    <input type="text" class="form-control" [(ngModel)]="formData.nationalId">
+                    <input type="text" class="form-control" [(ngModel)]="formData.licenseNumber">
                   </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">البريد الإلكتروني</label>
+                      <input type="email" class="form-control" [(ngModel)]="formData.email" name="email" #emailCtrl="ngModel" email>
+                      @if (emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)) {
+                        <div class="text-danger small mt-1">الرجاء إدخال بريد إلكتروني صحيح</div>
+                      }
+                    </div>
                 </div>
 
                 <div class="row">
@@ -318,7 +372,12 @@ interface Lookup {
       }
     </div>
   `,
-  styles: [`.modal { z-index: 1050; }`]
+  encapsulation: ViewEncapsulation.None,
+  styles: [
+    `.modal { z-index: 1050; }`,
+    `.selected-placeholder::placeholder { color: #000 !important; opacity: 1 !important; }`,
+    `html[data-theme="dark"] body .selected-placeholder::placeholder { color: #fff !important; }`
+  ]
 })
 export class DoctorsComponent implements OnInit {
   private http = inject(HttpClient);
@@ -327,9 +386,23 @@ export class DoctorsComponent implements OnInit {
 
   items: Doctor[] = [];
   departments: Lookup[] = [];
+  filteredDepartments: Lookup[] = [];
+  deptSearchText = '';
+  selectedDeptName = '';
+  isDeptDropdownOpen = false;
+
   specialties: Lookup[] = [];
+  filteredSpecialties: Lookup[] = [];
+  specSearchText = '';
+  selectedSpecName = '';
+  isSpecDropdownOpen = false;
+
   allClinics: any[] = [];
   filteredClinics: Lookup[] = [];
+  visibleClinics: Lookup[] = [];
+  clinicSearchText = '';
+  selectedClinicName = '';
+  isClinicDropdownOpen = false;
 
   searchText = '';
   showForm = false;
@@ -349,13 +422,18 @@ export class DoctorsComponent implements OnInit {
   }
 
   loadLookups() {
-    // Load only medical departments for doctor assignment
     this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/department/medical-departments-lookup').subscribe({
-      next: (res) => this.departments = res,
+      next: (res) => {
+        this.departments = res;
+        this.filteredDepartments = res;
+      },
       error: (err) => console.error(err)
     });
     this.http.get<Lookup[]>(environment.apis.default.url + '/api/app/specialty/lookup').subscribe({
-      next: (res) => this.specialties = res,
+      next: (res) => {
+        this.specialties = res;
+        this.filteredSpecialties = res;
+      },
       error: (err) => console.error(err)
     });
     // Load clinics but keep them all for filtering
@@ -368,9 +446,63 @@ export class DoctorsComponent implements OnInit {
     });
   }
 
+  filterDepartments() {
+    if (!this.deptSearchText) {
+      this.filteredDepartments = this.departments;
+    } else {
+      const term = this.deptSearchText.toLowerCase();
+      this.filteredDepartments = this.departments.filter(d => d.name.toLowerCase().includes(term));
+    }
+  }
+
+  selectDepartment(dept: Lookup) {
+    this.formData.departmentId = dept.id;
+    this.selectedDeptName = dept.name;
+    this.deptSearchText = '';
+    this.isDeptDropdownOpen = false;
+    this.filterDepartments(); // reset filter
+    this.onDepartmentChange();
+  }
+
   onDepartmentChange() {
-    this.formData.clinicId = '';
+    this.formData.clinicId = null as any;
+    this.selectedClinicName = '';
+    this.clinicSearchText = '';
     this.filterClinics();
+  }
+
+  filterSpecialties() {
+    if (!this.specSearchText) {
+      this.filteredSpecialties = this.specialties;
+    } else {
+      const term = this.specSearchText.toLowerCase();
+      this.filteredSpecialties = this.specialties.filter(d => d.name.toLowerCase().includes(term));
+    }
+  }
+
+  selectSpecialty(spec: Lookup) {
+    this.formData.specialtyId = spec.id;
+    this.selectedSpecName = spec.name;
+    this.specSearchText = '';
+    this.isSpecDropdownOpen = false;
+    this.filterSpecialties(); // reset filter
+  }
+
+  filterClinicsList() {
+    if (!this.clinicSearchText) {
+      this.visibleClinics = this.filteredClinics;
+    } else {
+      const term = this.clinicSearchText.toLowerCase();
+      this.visibleClinics = this.filteredClinics.filter(d => d.name.toLowerCase().includes(term));
+    }
+  }
+
+  selectClinic(clinic: Lookup) {
+    this.formData.clinicId = clinic.id;
+    this.selectedClinicName = clinic.name;
+    this.clinicSearchText = '';
+    this.isClinicDropdownOpen = false;
+    this.filterClinicsList(); // reset filter
   }
 
   filterClinics() {
@@ -381,8 +513,16 @@ export class DoctorsComponent implements OnInit {
     // we need to know which department each clinic belongs to.
     // The lookup might not have it. Let's check the Clinic DTO.
     // Actually, I should probably call GetByDepartment if the lookup doesn't have it.
-    this.http.get<Lookup[]>(`${environment.apis.default.url}/api/app/clinic/by-department?departmentId=${this.formData.departmentId}`).subscribe({
-      next: (res) => this.filteredClinics = res,
+    this.http.get<any>(`${environment.apis.default.url}/api/app/clinic?departmentId=${this.formData.departmentId}&maxResultCount=1000`).subscribe({
+      next: (res) => {
+        console.log('Clinics Response:', res);
+        const data = res.items ? res.items : res;
+        this.filteredClinics = data.map(c => ({ 
+          id: c.id || c.Id, 
+          name: c.nameAr || c.NameAr || c.name || c.Name || 'مجهول' 
+        }));
+        this.visibleClinics = this.filteredClinics;
+      },
       error: (err) => console.error(err)
     });
   }
@@ -397,10 +537,18 @@ export class DoctorsComponent implements OnInit {
   }
 
   getEmptyForm(): Partial<Doctor> {
-    return { code: '', nameAr: '', nameEn: '', specialtyId: '', departmentId: '', clinicId: '', mobile: '', email: '', nationalId: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true, doctorPercentage: 60 };
+    return { code: '', nameAr: '', nameEn: '', specialtyId: null as any, departmentId: null as any, clinicId: null as any, mobileNumber: '', email: '', licenseNumber: '', consultationFee: 0, morningConsultationFee: 0, eveningConsultationFee: 0, isActive: true, doctorPercentage: 60 };
   }
 
-  resetForm() { this.formData = this.getEmptyForm(); }
+  resetForm() { 
+    this.formData = this.getEmptyForm(); 
+    this.selectedDeptName = '';
+    this.deptSearchText = '';
+    this.selectedSpecName = '';
+    this.specSearchText = '';
+    this.selectedClinicName = '';
+    this.clinicSearchText = '';
+  }
 
   loadData() {
     const skipCount = (this.page - 1) * this.pageSize;
@@ -460,8 +608,13 @@ export class DoctorsComponent implements OnInit {
   edit(item: Doctor) {
     this.editingItem = item;
     this.formData = { ...item };
+    this.selectedDeptName = (item as any).departmentName || this.getDepartmentName(item.departmentId);
+    this.selectedSpecName = (item as any).specialtyName || this.getSpecialtyName(item.specialtyId);
+    this.selectedClinicName = (item as any).clinicName || '';
     this.showForm = true;
-    this.filterClinics(); // Load clinics for the doctor's department
+    if (this.formData.departmentId) {
+      this.filterClinics();
+    }
   }
 
   getDepartmentName(id?: string): string {
@@ -473,6 +626,11 @@ export class DoctorsComponent implements OnInit {
   }
 
   save() {
+    if (this.formData.email && !/^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\.[a-zA-Z]{2,4}$/.test(this.formData.email)) {
+      alert('الرجاء إدخال بريد إلكتروني صحيح.');
+      return;
+    }
+
     const req = this.editingItem
       ? this.http.put(`${this.apiUrl}/${this.editingItem.id}`, this.formData)
       : this.http.post(this.apiUrl, this.formData);

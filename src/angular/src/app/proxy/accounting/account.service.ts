@@ -30,7 +30,7 @@ export class AccountService {
 
   fixParents = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, string>({
-      method: 'GET',
+      method: 'POST',
       responseType: 'text',
       url: '/api/app/account/fix-parents',
     },

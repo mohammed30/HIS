@@ -1785,4 +1785,7 @@ html:not([data-theme="dark"]) body .type-chip.selected {
   right: auto !important;
   left: 0 !important;
   padding: 0 0 0 5px !important;
-}
+}@import "@ng-select/ng-select/themes/default.theme.css";
+
+.ng-dropdown-panel { z-index: 9999 !important; }
+

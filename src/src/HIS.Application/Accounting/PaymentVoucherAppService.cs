@@ -23,7 +23,7 @@ namespace HIS.Accounting
             PaymentVoucher, 
             PaymentVoucherDto, 
             Guid, 
-            PagedAndSortedResultRequestDto, 
+            VoucherFilterDto, 
             CreateUpdatePaymentVoucherDto>, 
         IPaymentVoucherAppService
     {
@@ -58,12 +58,10 @@ namespace HIS.Accounting
             _notificationRepo = notificationRepo;
             _notificationSender = notificationSender;
             _userRepository = userRepository;
+            UpdatePolicyName = HISPermissions.Billing.EditPaymentVouchers;
         }
 
-        protected override async Task<IQueryable<PaymentVoucher>> CreateFilteredQueryAsync(PagedAndSortedResultRequestDto input)
-        {
-            return await Repository.WithDetailsAsync(x => x.Lines);
-        }
+
 
         public override async Task<PaymentVoucherDto> GetAsync(Guid id)
         {
@@ -95,13 +93,44 @@ namespace HIS.Accounting
             return dto;
         }
 
+        protected override async Task<IQueryable<PaymentVoucher>> CreateFilteredQueryAsync(VoucherFilterDto input)
+        {
+            var query = await Repository.WithDetailsAsync(x => x.Lines);
+
+            if (!string.IsNullOrWhiteSpace(input.Filter))
+            {
+                long? parsedFilter = null;
+                if (long.TryParse(input.Filter, out long parsed)) parsedFilter = parsed;
+
+                var accountQuery = await _accountRepository.GetQueryableAsync();
+                var matchingAccountIds = accountQuery.Where(a => 
+                    (a.Code != null && a.Code.Contains(input.Filter)) ||
+                    (a.NameAr != null && a.NameAr.Contains(input.Filter)) ||
+                    (a.Name != null && a.Name.Contains(input.Filter))
+                ).Select(a => a.Id).ToList();
+
+                query = query.Where(x => 
+                    (parsedFilter.HasValue && x.SerialNumber == parsedFilter.Value) ||
+                    (x.VoucherNumber != null && x.VoucherNumber.Contains(input.Filter)) ||
+                    (x.PayeeName != null && x.PayeeName.Contains(input.Filter)) ||
+                    (x.Description != null && x.Description.Contains(input.Filter)) ||
+                    (x.Lines.Any(l => matchingAccountIds.Contains(l.AccountId)))
+                );
+            }
+
+            return query;
+        }
+
         public override async Task<PaymentVoucherDto> CreateAsync(CreateUpdatePaymentVoucherDto input)
         {
             await CheckCreatePolicyAsync();
 
-            string voucherNumber = "PV-" + DateTime.Now.Ticks.ToString().Substring(10); 
+            var maxSerial = await Repository.MaxAsync(x => (long?)x.SerialNumber) ?? 0;
+            long nextSerial = maxSerial + 1;
+            string voucherNumber = "PV-" + nextSerial.ToString("D6"); 
 
             var entity = MapToEntity(input);
+            entity.SerialNumber = nextSerial;
             entity.VoucherNumber = voucherNumber;
             
             await Repository.InsertAsync(entity, autoSave: true);
@@ -146,6 +175,53 @@ namespace HIS.Accounting
             }
 
             return await GetAsync(entity.Id);
+        }
+
+        [Microsoft.AspNetCore.Authorization.Authorize(HISPermissions.Billing.CancelPaymentVouchers)]
+        [Microsoft.AspNetCore.Mvc.HttpPost]
+        [Microsoft.AspNetCore.Mvc.Route("api/app/payment-voucher/{id}/cancel")]
+        public async Task CancelAsync(Guid id, string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new Volo.Abp.UserFriendlyException("Cancellation reason is required.");
+
+            var voucher = await Repository.GetAsync(id);
+            if (voucher.IsCancelled)
+                throw new Volo.Abp.UserFriendlyException("Voucher is already cancelled.");
+
+            voucher.IsCancelled = true;
+            voucher.CancellationReason = reason;
+            voucher.CancellationTime = Clock.Now;
+            voucher.CancelledByUserId = CurrentUser.Id;
+            voucher.CancelledByUserName = CurrentUser.UserName;
+
+            await Repository.UpdateAsync(voucher, autoSave: true);
+
+            // Create Reversing Journal Entry
+            var originalJe = await _journalEntryRepository.FirstOrDefaultAsync(x => x.ReferenceNumber == voucher.VoucherNumber && !x.Description.Contains("Reversal"));
+            if (originalJe != null)
+            {
+                var reversingJe = new JournalEntry(
+                    GuidGenerator.Create(),
+                    Clock.Now,
+                    voucher.VoucherNumber,
+                    $"Reversal of Payment Voucher {voucher.VoucherNumber} - Reason: {reason}",
+                    isAutomatic: true
+                );
+
+                var linesQuery = await _journalEntryRepository.WithDetailsAsync(x => x.Lines);
+                var originalJeWithLines = linesQuery.FirstOrDefault(x => x.Id == originalJe.Id);
+
+                if (originalJeWithLines != null)
+                {
+                    foreach (var line in originalJeWithLines.Lines)
+                    {
+                        // Swap debit and credit
+                        reversingJe.AddLine(GuidGenerator, line.AccountId, line.Credit, line.Debit);
+                    }
+                    await _journalEntryRepository.InsertAsync(reversingJe, autoSave: true);
+                }
+            }
         }
 
         private async Task CreateJournalEntryAsync(PaymentVoucher voucher, CreateUpdatePaymentVoucherDto input)
@@ -212,7 +288,9 @@ namespace HIS.Accounting
                 PartyName = dto.SupplierId.HasValue ? dto.SupplierName : dto.PayeeName,
                 PaymentMethodName = dto.PaymentMethodName,
                 TotalAmount = dto.Amount,
-                AmountInWords = $"{dto.Amount} جنيه فقط لا غير", // Need to implement Tafqeet for proper words if required later
+                AmountInWords = $"{dto.Amount} جنيه فقط لا غير",
+                IsCancelled = dto.IsCancelled,
+                CancellationReason = dto.CancellationReason,
                 Description = dto.Description,
                 Lines = dto.Lines.Select(l => new HIS.Accounting.Printing.VoucherDocument.VoucherLineModel
                 {

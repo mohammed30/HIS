@@ -15,6 +15,11 @@ namespace HIS.Accounting.Dtos
         public string Description { get; set; }
         public Guid? PaymentMethodId { get; set; }
         public string PaymentMethodName { get; set; }
+        public long SerialNumber { get; set; }
+        public bool IsCancelled { get; set; }
+        public string? CancelledByUserName { get; set; }
+        public DateTime? CancellationTime { get; set; }
+        public string? CancellationReason { get; set; }
         public List<PaymentVoucherLineDto> Lines { get; set; }
     }
 

@@ -5,7 +5,11 @@
                 <h5 class="card-title">{{ '::ReceiptVouchers' | abpLocalization }}</h5>
             </div>
             <div class="text-end col col-md-6">
-                <div class="text-lg-end pt-2">
+                <div class="text-lg-end pt-2 d-flex justify-content-end align-items-center">
+                    <div class="input-group w-auto me-3">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        <input type="text" class="form-control" placeholder="بحث..." [(ngModel)]="list.filter" />
+                    </div>
                     <button id="create" class="btn btn-primary" type="button" (click)="create()">
                         <i class="fa fa-plus me-1"></i>
                         <span>{{ '::NewReceiptVoucher' | abpLocalization }}</span>
@@ -18,32 +22,48 @@
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>{{ '::VoucherNumber' | abpLocalization }}</th>
-                    <th>{{ '::Date' | abpLocalization }}</th>
-                    <th>{{ '::Payer' | abpLocalization }}</th>
-                    <th>{{ '::Amount' | abpLocalization }}</th>
+                    <th style="cursor: pointer;" (click)="sort('SerialNumber')">السيريال <i *ngIf="list.sortKey==='SerialNumber'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
+                    <th style="cursor: pointer;" (click)="sort('VoucherNumber')">{{ '::VoucherNumber' | abpLocalization }} <i *ngIf="list.sortKey==='VoucherNumber'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
+                    <th style="cursor: pointer;" (click)="sort('Date')">{{ '::Date' | abpLocalization }} <i *ngIf="list.sortKey==='Date'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
+                    <th style="cursor: pointer;" (click)="sort('PayerName')">{{ '::Payer' | abpLocalization }} <i *ngIf="list.sortKey==='PayerName'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
+                    <th style="cursor: pointer;" (click)="sort('Amount')">{{ '::Amount' | abpLocalization }} <i *ngIf="list.sortKey==='Amount'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
+                    <th style="cursor: pointer;" (click)="sort('Description')">{{ '::Description' | abpLocalization }} <i *ngIf="list.sortKey==='Description'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
+                    <th style="cursor: pointer;" (click)="sort('IsCancelled')">الحالة <i *ngIf="list.sortKey==='IsCancelled'" class="fa" [ngClass]="{'fa-sort-up': list.sortOrder==='asc', 'fa-sort-down': list.sortOrder==='desc'}"></i></th>
                     <th>{{ '::Actions' | abpLocalization }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of items">
+                    <td><span class="badge bg-secondary">{{ item.serialNumber || '-' }}</span></td>
                     <td>{{ item.voucherNumber }}</td>
                     <td>{{ item.date | date }}</td>
                     <td>{{ item.payerName || item.patientName }}</td>
                     <td>{{ item.amount | currency }}</td>
                     <td>
+                        <span class="badge bg-success" *ngIf="!item.isCancelled">نشط</span>
+                        <span class="badge bg-danger" *ngIf="item.isCancelled" title="{{ 'سبب الإلغاء: ' + item.cancellationReason + '\nبواسطة: ' + item.cancelledByUserName + '\nبتاريخ: ' + (item.cancellationTime | date:'short') }}">
+                            ملغى
+                            <i class="fa fa-info-circle ms-1"></i>
+                        </span>
+                    </td>
+                    <td>
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-info" (click)="edit(item.id)"
-                                title="{{ '::Edit' | abpLocalization }}">
-                                <i class="fa fa-pencil"></i>
-                            </button>
+                            <ng-container *abpPermission="'HIS.Billing.ReceiptVouchers.Edit'">
+                                <button class="btn btn-sm btn-info" (click)="edit(item.id)"
+                                    *ngIf="!item.isCancelled"
+                                    title="{{ '::Edit' | abpLocalization }}">
+                                    <i class="fa fa-pencil"></i>
+                                </button>
+                            </ng-container>
                             <button class="btn btn-sm btn-secondary mx-1" (click)="print(item.id)"
                                 title="{{ '::Print' | abpLocalization }}">
                                 <i class="fa fa-print"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger" (click)="delete(item.id)"
-                                title="{{ '::Delete' | abpLocalization }}">
-                                <i class="fa fa-trash"></i>
+                            <button class="btn btn-sm btn-warning me-1" (click)="openCancelModal(item.id)"
+                                *abpPermission="'HIS.Billing.ReceiptVouchers.Cancel'"
+                                [disabled]="item.isCancelled"
+                                title="إلغاء السند">
+                                <i class="fa fa-times-circle"></i>
                             </button>
                         </div>
                     </td>
@@ -60,6 +80,11 @@
 
     <ng-template #abpBody>
         <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="mb-3" *ngIf="form.value.id">
+                <label class="form-label">السيريال</label>
+                <input type="text" class="form-control bg-light" formControlName="serialNumber" readonly disabled>
+            </div>
+            
             <div class="mb-3">
                 <label class="form-label">{{ '::Date' | abpLocalization }}</label>
                 <div class="input-group">
@@ -114,6 +139,34 @@
         <button type="button" class="btn btn-primary" (click)="save()" [disabled]="form.invalid">
             <i class="fa fa-check me-1"></i>
             {{ '::Save' | abpLocalization }}
+        </button>
+    </ng-template>
+</abp-modal>
+
+<abp-modal [(visible)]="isCancelModalOpen">
+    <ng-template #abpHeader>
+        <h3>إلغاء السند</h3>
+    </ng-template>
+    <ng-template #abpBody>
+        <form [formGroup]="cancelForm" (ngSubmit)="submitCancel()">
+            <div class="mb-3">
+                <label class="form-label text-danger">يرجى إدخال سبب الإلغاء (إجباري)</label>
+                <textarea class="form-control" formControlName="reason" rows="3" placeholder="اكتب سبب الإلغاء هنا..."></textarea>
+                <div *ngIf="cancelForm.get('reason')?.invalid && (cancelForm.get('reason')?.dirty || cancelForm.get('reason')?.touched)" class="text-danger small mt-1">
+                    سبب الإلغاء مطلوب لإتمام العملية.
+                </div>
+            </div>
+            <div class="alert alert-warning text-dark mb-0">
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                سيتم إنشاء قيد محاسبي عكسي تلقائياً لتصفير قيمة هذا السند. هذه العملية لا يمكن التراجع عنها.
+            </div>
+        </form>
+    </ng-template>
+    <ng-template #abpFooter>
+        <button type="button" class="btn btn-secondary" abpClose>تراجع</button>
+        <button type="button" class="btn btn-danger" (click)="submitCancel()" [disabled]="cancelForm.invalid">
+            <i class="fa fa-times-circle me-1"></i>
+            تأكيد الإلغاء
         </button>
     </ng-template>
 </abp-modal>

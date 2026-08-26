@@ -65,7 +65,9 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
 
         // Billing
         var billing = hisGroup.AddPermission(HISPermissions.Billing.Default, L("Permission:Billing"));
-        billing.AddChild(HISPermissions.Billing.ManageInvoices, L("Permission:ManageInvoices"));
+        var manageInvoices = billing.AddChild(HISPermissions.Billing.ManageInvoices, L("Permission:ManageInvoices"));
+        manageInvoices.AddChild(HISPermissions.Billing.CancelInvoices, L("Permission:CancelInvoices"));
+        manageInvoices.AddChild(HISPermissions.Billing.EditInvoices, L("Permission:EditInvoices"));
         billing.AddChild(HISPermissions.Billing.ChartOfAccounts, L("Permission:ChartOfAccounts"));
         var journalEntries = billing.AddChild(HISPermissions.Billing.JournalEntries, L("Permission:JournalEntries"));
         journalEntries.AddChild(HISPermissions.Billing.JournalEntriesPost, L("Permission:JournalEntriesPost"));
@@ -78,8 +80,12 @@ public class HISPermissionDefinitionProvider : PermissionDefinitionProvider
         financialReports.AddChild(HISPermissions.Billing.IncomeStatement, L("Permission:IncomeStatement"));
         financialReports.AddChild(HISPermissions.Billing.BalanceSheet, L("Permission:BalanceSheet"));
         financialReports.AddChild(HISPermissions.Billing.AccountStatement, L("Permission:AccountStatement"));
-        billing.AddChild(HISPermissions.Billing.ReceiptVouchers, L("Permission:ReceiptVouchers"));
-        billing.AddChild(HISPermissions.Billing.PaymentVouchers, L("Permission:PaymentVouchers"));
+        var receiptVouchers = billing.AddChild(HISPermissions.Billing.ReceiptVouchers, L("Permission:ReceiptVouchers"));
+        receiptVouchers.AddChild(HISPermissions.Billing.EditReceiptVouchers, L("Permission:EditReceiptVouchers"));
+        receiptVouchers.AddChild(HISPermissions.Billing.CancelReceiptVouchers, L("Permission:CancelReceiptVouchers"));
+        var paymentVouchers = billing.AddChild(HISPermissions.Billing.PaymentVouchers, L("Permission:PaymentVouchers"));
+        paymentVouchers.AddChild(HISPermissions.Billing.EditPaymentVouchers, L("Permission:EditPaymentVouchers"));
+        paymentVouchers.AddChild(HISPermissions.Billing.CancelPaymentVouchers, L("Permission:CancelPaymentVouchers"));
         billing.AddChild(HISPermissions.Billing.BankTransactions, L("Permission:BankTransactions"));
         billing.AddChild(HISPermissions.Billing.ContractClaims, L("Permission:ContractClaims"));
 

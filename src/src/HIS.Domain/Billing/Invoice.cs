@@ -98,6 +98,21 @@ public class Invoice : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public string? RejectionReason { get; set; }
 
     /// <summary>
+    /// سبب الإلغاء
+    /// </summary>
+    public string? CancellationReason { get; set; }
+
+    /// <summary>
+    /// تاريخ ووقت الإلغاء
+    /// </summary>
+    public DateTime? CancelledAt { get; set; }
+
+    /// <summary>
+    /// المستخدم الذي قام بالإلغاء
+    /// </summary>
+    public string? CancelledByUserName { get; set; }
+
+    /// <summary>
     /// معرف الفاتورة الأصلية (لفواتير الارتجاع)
     /// </summary>
     public Guid? OriginalInvoiceId { get; set; }

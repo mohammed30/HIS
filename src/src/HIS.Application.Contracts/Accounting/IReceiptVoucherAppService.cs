@@ -9,7 +9,7 @@ namespace HIS.Accounting
         ICrudAppService<
             ReceiptVoucherDto, 
             Guid, 
-            PagedAndSortedResultRequestDto, 
+            VoucherFilterDto, 
             CreateUpdateReceiptVoucherDto>
     {
     }

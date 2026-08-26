@@ -1,10 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ToasterService, ConfirmationService, Confirmation } from '@abp/ng.theme.shared';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { PermissionDirective } from '@abp/ng.core';
 
 interface Invoice {
   id: string;
@@ -36,7 +37,7 @@ const statusColors: { [key: number]: string } = {
 @Component({
   selector: 'app-invoices',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbPaginationModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgbPaginationModule, PermissionDirective],
   template: `
     <div class="container-fluid py-4">
       <div class="card">
@@ -159,10 +160,13 @@ const statusColors: { [key: number]: string } = {
                       <button class="btn btn-sm btn-outline-info me-1" (click)="printInvoice(item)" title="طباعة">
                         <i class="fas fa-print"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-danger" *ngIf="item.status !== 4" 
-                              (click)="cancelInvoice(item)" title="إلغاء">
-                        <i class="fas fa-ban"></i>
-                      </button>
+                      <ng-container *abpPermission="'HIS.Billing.ManageInvoices.Cancel'">
+                        <button class="btn btn-sm btn-outline-danger" 
+                                *ngIf="item.status !== 4" 
+                                (click)="openCancelModal(item)" title="إلغاء">
+                          <i class="fas fa-ban"></i>
+                        </button>
+                      </ng-container>
 
                     </td>
                   </tr>
@@ -314,6 +318,45 @@ const statusColors: { [key: number]: string } = {
         </div>
       }
     </div>
+
+    <!-- Cancel Invoice Modal -->
+    @if (showCancelModal && invoiceToCancel) {
+      <div class="modal show d-block" style="background: rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title">
+                <i class="fas fa-ban me-2"></i>\u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629
+              </h5>
+              <button type="button" class="btn-close btn-close-white" (click)="showCancelModal = false"></button>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-warning text-dark mb-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                \u0633\u064a\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629 <strong>{{ invoiceToCancel.invoiceNumber }}</strong> \u0648\u0639\u0643\u0633 \u062c\u0645\u064a\u0639 \u0627\u0644\u0642\u064a\u0648\u062f \u0627\u0644\u0645\u062d\u0627\u0633\u0628\u064a\u0629.
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">\u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621 <span class="text-danger">*</span></label>
+                <textarea class="form-control" rows="3" 
+                          [(ngModel)]="cancelReason" 
+                          placeholder="\u0627\u0643\u062a\u0628 \u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621 \u0628\u0627\u0644\u062a\u0641\u0635\u064a\u0644..."></textarea>
+                <div class="text-danger small mt-1" *ngIf="!cancelReason.trim()">
+                  \u0633\u0628\u0628 \u0627\u0644\u0625\u0644\u063a\u0627\u0621 \u0645\u0637\u0644\u0648\u0628
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" (click)="showCancelModal = false">\u062a\u0631\u0627\u062c\u0639</button>
+              <button class="btn btn-danger" 
+                      [disabled]="!cancelReason.trim()"
+                      (click)="cancelInvoice(invoiceToCancel)">
+                <i class="fas fa-ban me-1"></i>\u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0625\u0644\u063a\u0627\u0621
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [`.modal { z-index: 1050; }`]
 })
@@ -337,6 +380,11 @@ export class InvoicesComponent implements OnInit {
   summaryPaid = 0;
   summaryDue = 0;
   summaryInsurance = 0;
+
+  // Cancel Modal
+  showCancelModal = false;
+  cancelReason = '';
+  invoiceToCancel: Invoice | null = null;
 
   // Payment Modal
   showPaymentModal = false;
@@ -462,22 +510,28 @@ export class InvoicesComponent implements OnInit {
     }
   }
 
+  openCancelModal(item: Invoice) {
+    this.invoiceToCancel = item;
+    this.cancelReason = '';
+    this.showCancelModal = true;
+  }
+
   cancelInvoice(item: Invoice) {
-    this.confirmation.warn(
-      `هل أنت متأكد من إلغاء الفاتورة رقم ${item.invoiceNumber}؟ سيتم عكس القيود المحاسبية واسترداد المدفوعات.`,
-      'تأكيد الإلغاء'
-    ).subscribe((status: Confirmation.Status) => {
-      if (status === Confirmation.Status.confirm) {
-        this.http.post(`${this.apiUrl}/${item.id}/cancel`, {}).subscribe({
-          next: () => {
-            this.loadData();
-            this.toaster.success('تم إلغاء الفاتورة بنجاح!', 'نجاح');
-          },
-          error: (err) => {
-            console.error(err);
-            this.toaster.error('حدث خطأ أثناء إلغاء الفاتورة', 'خطأ');
-          }
-        });
+    if (!this.cancelReason.trim()) {
+      this.toaster.warn('يجب إدخال سبب الإلغاء', 'تحذير');
+      return;
+    }
+    this.http.post(`${this.apiUrl}/${item.id}/cancel`, {}, { params: { reason: this.cancelReason } }).subscribe({
+      next: () => {
+        this.showCancelModal = false;
+        this.invoiceToCancel = null;
+        this.cancelReason = '';
+        this.loadData();
+        this.toaster.success('تم إلغاء الفاتورة بنجاح!', 'نجاح');
+      },
+      error: (err) => {
+        console.error(err);
+        this.toaster.error(err?.error?.error?.message || 'حدث خطأ أثناء إلغاء الفاتورة', 'خطأ');
       }
     });
   }

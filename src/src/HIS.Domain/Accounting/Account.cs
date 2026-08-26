@@ -12,7 +12,10 @@ public class Account : FullAuditedAggregateRoot<Guid>
     public Guid? ParentId { get; set; }
     public bool IsActive { get; set; }
 
-    protected Account() { }
+    protected Account() 
+    {
+        IsActive = true;
+    }
 
     public Account(Guid id, string code, string name, string nameAr, AccountType type, Guid? parentId = null)
         : base(id)

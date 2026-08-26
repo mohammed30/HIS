@@ -197,7 +197,7 @@ public class SurgicalOperationAppService : CrudAppService<
         {
             try
             {
-                await _invoiceAppService.CancelAsync(operation.InvoiceId.Value);
+                await _invoiceAppService.CancelAsync(operation.InvoiceId.Value, "\u0625\u0644\u063a\u0627\u0621 \u0646\u062a\u064a\u062c\u0629 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0639\u0645\u0644\u064a\u0629 \u0627\u0644\u062c\u0631\u0627\u062d\u064a\u0629");
             }
             catch (Exception ex)
             {

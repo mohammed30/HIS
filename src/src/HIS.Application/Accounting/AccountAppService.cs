@@ -949,7 +949,7 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
     }
 
     [AllowAnonymous]
-    [HttpGet]
+    [HttpPost]
     [Route("api/app/account/fix-parents")]
     public async Task<string> FixParentsAsync()
     {
@@ -968,9 +968,10 @@ public class AccountAppService : CrudAppService<Account, AccountDto, Guid, Paged
 
             var correctParentId = parent?.Id;
 
-            if (account.ParentId != correctParentId)
+            if (account.ParentId != correctParentId || !account.IsActive)
             {
                 account.ParentId = correctParentId;
+                account.IsActive = true;
                 await Repository.UpdateAsync(account);
                 fixedCount++;
             }

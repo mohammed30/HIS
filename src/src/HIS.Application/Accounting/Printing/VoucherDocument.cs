@@ -30,6 +30,9 @@ public class VoucherDocument : IDocument
     public string Description { get; set; }
     public string PaymentMethodName { get; set; }
 
+    public bool IsCancelled { get; set; }
+    public string CancellationReason { get; set; }
+
     public byte[] LogoBytes { get; set; }
     
     public List<VoucherLineModel> Lines { get; set; } = new();
@@ -57,6 +60,17 @@ public class VoucherDocument : IDocument
                 page.PageColor(Colors.White);
                 page.DefaultTextStyle(x => x.FontSize(11).FontColor(TextDark));
                 page.ContentFromRightToLeft(); // RTL for Arabic
+
+                if (IsCancelled)
+                {
+                    page.Background()
+                        .AlignCenter()
+                        .AlignMiddle()
+                        .Text("ملغـي - CANCELLED")
+                        .FontSize(70)
+                        .FontColor(Colors.Red.Lighten4)
+                        .Bold();
+                }
 
                 page.Header().Element(ComposeHeader);
                 page.Content().Element(ComposeContent);
@@ -131,6 +145,15 @@ public class VoucherDocument : IDocument
 
             column.Item().PaddingTop(10).Text(t => { t.Span("مبلغ وقدره (فقط): ").Bold(); t.Span(AmountInWords ?? "-"); });
             column.Item().PaddingTop(5).Text(t => { t.Span("وذلك عن: ").Bold(); t.Span(Description ?? "-"); });
+
+            if (IsCancelled)
+            {
+                column.Item().PaddingTop(10).Background(Colors.Red.Lighten5).Border(1).BorderColor(Colors.Red.Medium).Padding(5).Text(t => 
+                { 
+                    t.Span("سبب الإلغاء: ").Bold().FontColor(Colors.Red.Darken2); 
+                    t.Span(CancellationReason ?? "-").FontColor(Colors.Red.Darken2); 
+                });
+            }
 
             column.Item().PaddingVertical(10).LineHorizontal(1).LineColor(BorderGray);
 

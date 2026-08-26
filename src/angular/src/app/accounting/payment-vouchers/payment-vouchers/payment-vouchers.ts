@@ -12,6 +12,7 @@ import { AccountService } from '../../../proxy/accounting/account.service';
 import { PaymentMethodService } from '../../../proxy/general/payment-method.service';
 import { AccountDto } from '../../../proxy/accounting/dtos/models';
 import { PaymentMethodDto } from '../../../proxy/general/dtos/models';
+import { PermissionDirective } from '@abp/ng.core';
 
 @Component({
   selector: 'app-payment-vouchers',
@@ -22,7 +23,8 @@ import { PaymentMethodDto } from '../../../proxy/general/dtos/models';
     NgbDatepickerModule,
     NgbDropdownModule,
     ReactiveFormsModule,
-    CommonModule
+    CommonModule,
+    PermissionDirective
   ],
   templateUrl: './payment-vouchers.html',
   styleUrl: './payment-vouchers.scss',
@@ -33,9 +35,12 @@ export class PaymentVouchers implements OnInit {
   accounts: AccountDto[] = [];
   paymentMethods: PaymentMethodDto[] = [];
   form: FormGroup;
+  cancelForm: FormGroup;
   isModalOpen = false;
+  isCancelModalOpen = false;
+  selectedVoucherId: string | null = null;
 
-  private readonly list = inject(ListService);
+  public readonly list = inject(ListService);
   private readonly service = inject(PaymentVoucherService);
   private readonly accountService = inject(AccountService);
   private readonly paymentMethodService = inject(PaymentMethodService);
@@ -56,6 +61,10 @@ export class PaymentVouchers implements OnInit {
 
     this.paymentMethodService.getList({ maxResultCount: 1000 } as any).subscribe(res => {
       this.paymentMethods = res.items;
+    });
+
+    this.cancelForm = this.fb.group({
+      reason: ['', Validators.required]
     });
   }
 
@@ -95,6 +104,7 @@ export class PaymentVouchers implements OnInit {
       paymentMethodId: [null, Validators.required],
       accountId: [null, Validators.required],
       payeeName: [''],
+      serialNumber: [{value: '', disabled: true}]
     });
   }
 
@@ -132,5 +142,31 @@ export class PaymentVouchers implements OnInit {
       const url = window.URL.createObjectURL(blob);
       window.open(url, '_blank');
     });
+  }
+
+  openCancelModal(id: string) {
+    this.selectedVoucherId = id;
+    this.cancelForm.reset();
+    this.isCancelModalOpen = true;
+  }
+
+  submitCancel() {
+    if (this.cancelForm.invalid || !this.selectedVoucherId) return;
+
+    this.service.cancel(this.selectedVoucherId, this.cancelForm.value.reason).subscribe(() => {
+      this.isCancelModalOpen = false;
+      this.selectedVoucherId = null;
+      this.list.get();
+    });
+  }
+
+  sort(key: string) {
+    if (this.list.sortKey === key) {
+      this.list.sortOrder = this.list.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.list.sortKey = key;
+      this.list.sortOrder = 'asc';
+    }
+    this.list.get();
   }
 }

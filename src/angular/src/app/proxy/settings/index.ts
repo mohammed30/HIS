@@ -10,4 +10,5 @@ export * from './laboratory.service';
 export * from './models';
 export * from './pharmacy-settings.service';
 export * from './specialty.service';
+export * from './user-settings.service';
 export { Dtos };

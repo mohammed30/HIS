@@ -15,6 +15,13 @@ namespace HIS.Accounting
         public string Description { get; set; }
         public Guid? PaymentMethodId { get; set; }
         
+        public long SerialNumber { get; set; }
+        public bool IsCancelled { get; set; }
+        public Guid? CancelledByUserId { get; set; }
+        public string? CancelledByUserName { get; set; }
+        public DateTime? CancellationTime { get; set; }
+        public string? CancellationReason { get; set; }
+
         public ICollection<PaymentVoucherLine> Lines { get; set; }
 
         public PaymentVoucher()

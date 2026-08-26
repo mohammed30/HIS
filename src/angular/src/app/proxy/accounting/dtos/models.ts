@@ -305,6 +305,11 @@ export interface PaymentVoucherDto extends AuditedEntityDto<string> {
   description?: string;
   paymentMethodId?: string | null;
   paymentMethodName?: string;
+  serialNumber?: number;
+  isCancelled?: boolean;
+  cancelledByUserName?: string | null;
+  cancellationTime?: string | null;
+  cancellationReason?: string | null;
   lines?: PaymentVoucherLineDto[];
 }
 
@@ -325,6 +330,11 @@ export interface ReceiptVoucherDto extends AuditedEntityDto<string> {
   description?: string;
   paymentMethodId?: string | null;
   paymentMethodName?: string;
+  serialNumber?: number;
+  isCancelled?: boolean;
+  cancelledByUserName?: string | null;
+  cancellationTime?: string | null;
+  cancellationReason?: string | null;
   lines?: ReceiptVoucherLineDto[];
 }
 

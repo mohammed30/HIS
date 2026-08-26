@@ -5,7 +5,7 @@ import { CoreModule } from '@abp/ng.core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { AccountMappingService } from '../../proxy/accounting/account-mapping.service';
 import { AccountService } from '../../proxy/accounting/account.service';
-import { AccountDto, AccountMappingDto } from '../../proxy/accounting/dtos/models';
+import { AccountLookupDto, AccountMappingDto } from '../../proxy/accounting/dtos/models';
 
 declare var abp: any;
 
@@ -18,8 +18,8 @@ declare var abp: any;
 })
 export class AccountMappingComponent implements OnInit {
   mappings: AccountMappingDto[] = [];
-  accounts: AccountDto[] = [];
-  filteredAccounts: AccountDto[] = [];
+  accounts: AccountLookupDto[] = [];
+  filteredAccounts: AccountLookupDto[] = [];
   editingMapping: AccountMappingDto | null = null;
   form: FormGroup;
   isSaving = false;
@@ -105,11 +105,10 @@ export class AccountMappingComponent implements OnInit {
       }
     });
 
-    this.accountService.getList({ maxResultCount: 5000, skipCount: 0 }).subscribe({
+    this.accountService.getLookup().subscribe({
       next: (response) => {
-        // Load all active accounts across all levels
-        this.accounts = response.items
-          .filter(x => x.isActive)
+        // Load all accounts across all levels
+        this.accounts = response
           .sort((a, b) => (a.code || '').localeCompare(b.code || ''));
         this.filteredAccounts = [...this.accounts];
       }
@@ -140,7 +139,7 @@ export class AccountMappingComponent implements OnInit {
     this.showDropdown = true;
   }
 
-  selectAccount(acc: AccountDto): void {
+  selectAccount(acc: AccountLookupDto): void {
     this.form.patchValue({ accountId: acc.id });
     this.searchTerm = `[${acc.code}] - ${acc.nameAr || acc.name}`;
     this.showDropdown = false;
@@ -153,6 +152,21 @@ export class AccountMappingComponent implements OnInit {
     this.showDropdown = false;
   }
 
+  onSearchFocus(): void {
+    if (!this.searchTerm) {
+      this.filteredAccounts = [...this.accounts];
+    }
+    this.showDropdown = true;
+  }
+
+  toggleDropdown(): void {
+    if (this.showDropdown) {
+      this.showDropdown = false;
+    } else {
+      this.onSearchFocus();
+    }
+  }
+
   getSelectedAccountLabel(): string {
     const id = this.form.value.accountId;
     if (!id) return '';
@@ -160,12 +174,7 @@ export class AccountMappingComponent implements OnInit {
     return acc ? `[${acc.code}] - ${acc.nameAr || acc.name}` : '';
   }
 
-  onSearchFocus(): void {
-    this.showDropdown = true;
-    if (!this.searchTerm) {
-      this.filteredAccounts = [...this.accounts];
-    }
-  }
+
 
   closeDropdown(): void {
     setTimeout(() => { this.showDropdown = false; }, 200);

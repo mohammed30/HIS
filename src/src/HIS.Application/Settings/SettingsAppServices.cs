@@ -153,7 +153,7 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
         var items = await AsyncExecuter.ToListAsync(
             queryable.Where(x => x.IsActive && x.IsMedical).OrderBy(x => x.SortOrder).ThenBy(x => x.NameAr));
         
-        return items.Select(x => new LookupDto { Id = x.Id, Name = x.NameAr }).ToList();
+        return items.Select(x => new LookupDto { Id = x.Id, Name = $"{x.Code} - {x.NameAr}" }).ToList();
     }
 
     protected override async Task<IQueryable<Department>> CreateFilteredQueryAsync(GetDepartmentsInput input)
@@ -248,6 +248,19 @@ public class ClinicAppService : CrudAppService<Clinic, ClinicDto, Guid, GetClini
         IRepository<Department, Guid> departmentRepository) : base(repository)
     {
         _departmentRepository = departmentRepository;
+    }
+
+    protected override async Task<ClinicDto> MapToGetOutputDtoAsync(Clinic entity)
+    {
+        var dto = await base.MapToGetOutputDtoAsync(entity);
+        var dept = await _departmentRepository.FindAsync(entity.DepartmentId);
+        dto.DepartmentName = dept?.NameAr;
+        return dto;
+    }
+
+    protected override async Task<ClinicDto> MapToGetListOutputDtoAsync(Clinic entity)
+    {
+        return await MapToGetOutputDtoAsync(entity);
     }
 
     public override async Task<ClinicDto> CreateAsync(CreateUpdateClinicDto input)

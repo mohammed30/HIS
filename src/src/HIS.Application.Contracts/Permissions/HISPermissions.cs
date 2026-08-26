@@ -70,6 +70,8 @@ public static class HISPermissions
     {
         public const string Default = GroupName + ".Billing";
         public const string ManageInvoices = Default + ".ManageInvoices";
+        public const string CancelInvoices = ManageInvoices + ".Cancel";
+        public const string EditInvoices = ManageInvoices + ".Edit";
         public const string ChartOfAccounts = Default + ".ChartOfAccounts";
         public const string JournalEntries = Default + ".JournalEntries";
         public const string JournalEntriesPost = JournalEntries + ".Post";
@@ -83,7 +85,11 @@ public static class HISPermissions
         public const string BalanceSheet = FinancialReports + ".BalanceSheet";
         public const string AccountStatement = FinancialReports + ".AccountStatement";
         public const string ReceiptVouchers = Default + ".ReceiptVouchers";
+        public const string EditReceiptVouchers = ReceiptVouchers + ".Edit";
+        public const string CancelReceiptVouchers = ReceiptVouchers + ".Cancel";
         public const string PaymentVouchers = Default + ".PaymentVouchers";
+        public const string EditPaymentVouchers = PaymentVouchers + ".Edit";
+        public const string CancelPaymentVouchers = PaymentVouchers + ".Cancel";
         public const string BankTransactions = Default + ".BankTransactions";
         public const string ContractClaims = Default + ".ContractClaims";
     }

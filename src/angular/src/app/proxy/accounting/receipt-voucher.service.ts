@@ -11,6 +11,15 @@ export class ReceiptVoucherService {
   apiName = 'Default';
   
 
+  cancel = (id: string, reason: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/receipt-voucher/${id}/cancel`,
+      params: { reason },
+    },
+    { apiName: this.apiName,...config });
+  
+
   create = (input: CreateUpdateReceiptVoucherDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ReceiptVoucherDto>({
       method: 'POST',
@@ -36,11 +45,11 @@ export class ReceiptVoucherService {
     { apiName: this.apiName,...config });
   
 
-  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getList = (input: any, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ReceiptVoucherDto>>({
       method: 'GET',
       url: '/api/app/receipt-voucher',
-      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
