@@ -11,8 +11,27 @@ import { ThemeSharedModule, ToasterService } from '@abp/ng.theme.shared';
 import { LocalizationModule } from '@abp/ng.core';
 import { PatientService } from '../../proxy/patients/patient.service';
 import { DoctorService } from '../../proxy/settings/doctor.service';
-import { ReferenceRange, ResultStatus } from '../catalog/lab-catalog.component';
+// Define interfaces directly to avoid import issues
+export interface ReferenceRange {
+    label: string;
+    min: number | null;
+    max: number | null;
+    criticalMin: number | null;
+    criticalMax: number | null;
+    unit: string;
+}
 
+export type ResultStatus = 'normal' | 'warning' | 'danger' | 'unknown';
+
+interface PatientGroup {
+    patientId: string;
+    patientName: string;
+    patientMrn?: string | null;
+    requestingDepartmentName?: string | null;
+    admissionRoom?: string | null;
+    isExpanded: boolean;
+    requests: LabRequestDto[];
+}
 
 @Component({
     selector: 'app-lab-requests',
@@ -29,6 +48,7 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     toaster = inject(ToasterService);
 
     data: PagedResultDto<LabRequestDto> = { items: [], totalCount: 0 };
+    groupedRequests: PatientGroup[] = [];
     searchText = '';
     private searchSubject = new Subject<string>();
     private destroy$ = new Subject<void>();
@@ -181,6 +201,7 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
             return this.labService.getRequests(params);
         }).subscribe(res => {
             this.data = res;
+            this.groupRequests();
         });
 
         this.searchSubject.pipe(
@@ -197,6 +218,42 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    groupRequests() {
+        const groups = new Map<string, PatientGroup>();
+        for (const req of this.data.items) {
+            const pid = req.patientId || 'unknown';
+            if (!groups.has(pid)) {
+                let mrn = null;
+                if (pid !== 'unknown') {
+                    const p = this.patients.find(x => x.id === pid);
+                    mrn = p ? p.mrn : null;
+                }
+                groups.set(pid, {
+                    patientId: pid,
+                    patientName: req.patientName || 'غير معروف',
+                    patientMrn: mrn,
+                    requestingDepartmentName: req.requestingDepartmentName,
+                    admissionRoom: req.admissionRoom,
+                    isExpanded: false,
+                    requests: []
+                });
+            }
+            groups.get(pid)!.requests.push(req);
+        }
+        
+        const oldState = new Map(this.groupedRequests.map(g => [g.patientId, g.isExpanded]));
+        this.groupedRequests = Array.from(groups.values());
+        for (const g of this.groupedRequests) {
+             if (oldState.has(g.patientId)) {
+                 g.isExpanded = oldState.get(g.patientId)!;
+             }
+        }
+    }
+    
+    toggleGroup(group: PatientGroup) {
+        group.isExpanded = !group.isExpanded;
     }
 
     onSearch(value: string | any) {
@@ -223,6 +280,9 @@ export class LabRequestsComponent implements OnInit, OnDestroy {
         // Load patients
         this.patientService.getList({ maxResultCount: 1000 }).subscribe(res => {
             this.patients = res.items;
+            if (this.data.items.length > 0) {
+                this.groupRequests();
+            }
         });
         // Load doctors
         this.doctorService.getList({ maxResultCount: 1000 }).subscribe(res => {

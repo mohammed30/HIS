@@ -222,8 +222,6 @@ public class LabAppService : ApplicationService, ILabAppService
             requestQuery = requestQuery.Where(x => x.Status == input.Status.Value);
         }
 
-        var totalCount = await AsyncExecuter.CountAsync(requestQuery);
-
         // Perform joins (Left join for doctor to handle non-doctor submitters)
         var combinedQuery = from request in requestQuery
                             join patient in patientQuery on request.PatientId equals patient.Id
@@ -231,6 +229,22 @@ public class LabAppService : ApplicationService, ILabAppService
                             from doctor in doctorGroup.DefaultIfEmpty()
                             join test in testQuery on request.ServiceItemId equals test.Id
                             select new { request, patient, doctor, test };
+
+        if (!string.IsNullOrWhiteSpace(input.Filter))
+        {
+            var filter = input.Filter.ToLower();
+            combinedQuery = combinedQuery.Where(x =>
+                (x.patient.FirstNameAr != null && x.patient.FirstNameAr.ToLower().Contains(filter)) ||
+                (x.patient.LastNameAr != null && x.patient.LastNameAr.ToLower().Contains(filter)) ||
+                (x.patient.MRN != null && x.patient.MRN.ToLower().Contains(filter)) ||
+                (x.test.Name != null && x.test.Name.ToLower().Contains(filter)) ||
+                (x.test.Code != null && x.test.Code.ToLower().Contains(filter)) ||
+                (x.request.IsExternalDoctor && x.request.ExternalDoctorName != null && x.request.ExternalDoctorName.ToLower().Contains(filter)) ||
+                (!x.request.IsExternalDoctor && x.doctor != null && x.doctor.NameAr != null && x.doctor.NameAr.ToLower().Contains(filter))
+            );
+        }
+
+        var totalCount = await AsyncExecuter.CountAsync(combinedQuery);
 
         combinedQuery = combinedQuery.OrderBy(input.Sorting != null ? "request." + input.Sorting : "request.RequestDate DESC")
                                      .PageBy(input);

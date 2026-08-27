@@ -82,72 +82,95 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let row of data.items" class="request-row">
-                            <td class="ps-4">
-                                <div class="font-weight-bold text-dark">{{ row.requestDate | date:'mediumDate' }}</div>
-                                <div class="text-muted x-small">{{ row.requestDate | date:'shortTime' }}</div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm me-3 bg-soft-primary text-primary rounded-circle d-flex align-items-center justify-content-center">
-                                        {{ row.patientName ? row.patientName.charAt(0) : 'P' }}
-                                    </div>
-                                    <div>
-                                        <div class="font-weight-bold text-dark">{{ row.patientName }}</div>
-                                        <div class="text-muted small d-flex align-items-center gap-1" *ngIf="row.requestingDepartmentName">
-                                            <i class="fas fa-hospital-alt x-small opacity-50"></i> 
-                                            {{ row.requestingDepartmentName }} 
-                                            <span class="badge bg-soft-info text-info border-info border-opacity-10 py-0 ms-1" *ngIf="row.admissionRoom">
-                                                <i class="fas fa-bed x-small"></i> {{ row.admissionRoom }}
-                                            </span>
+                        <ng-container *ngFor="let group of groupedRequests">
+                            <!-- Group Header Row -->
+                            <tr class="table-light border-bottom" (click)="toggleGroup(group)" style="cursor: pointer;">
+                                <td colspan="6" class="py-2 px-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-chevron-down text-muted me-3" style="transition: transform 0.2s;" [style.transform]="group.isExpanded ? 'rotate(0deg)' : 'rotate(90deg)'"></i>
+                                            <div class="avatar-sm me-3 bg-soft-primary text-primary rounded-circle d-flex align-items-center justify-content-center">
+                                                {{ group.patientName ? group.patientName.charAt(0) : 'P' }}
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-bold text-dark fs-6">
+                                                    {{ group.patientName }}
+                                                    <span *ngIf="group.patientMrn" class="text-muted small ms-2">({{ group.patientMrn }})</span>
+                                                </div>
+                                                <div class="text-muted small d-flex align-items-center gap-1" *ngIf="group.requestingDepartmentName">
+                                                    <i class="fas fa-hospital-alt x-small opacity-50"></i> 
+                                                    {{ group.requestingDepartmentName }} 
+                                                    <span class="badge bg-soft-info text-info border-info border-opacity-10 py-0 ms-1" *ngIf="group.admissionRoom">
+                                                        <i class="fas fa-bed x-small"></i> {{ group.admissionRoom }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">{{ group.requests.length }} طلبات</span>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="badge bg-soft-secondary text-secondary mb-1 p-1 px-2 border border-secondary border-opacity-10">
-                                    {{ row.testCode }}
-                                </div>
-                                <div class="font-weight-bold text-dark">{{ row.testName }}</div>
-                                <div class="text-muted x-small text-truncate" style="max-width: 200px;" [title]="row.notes" *ngIf="row.notes">
-                                    <i class="fas fa-sticky-note me-1 opacity-50"></i> {{ row.notes }}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-dark">{{ row.doctorName }}</div>
-                                <div class="text-muted x-small opacity-75">{{ '::Submitter' | abpLocalization }}</div>
-                            </td>
-                            <td>
-                                <span class="badge rounded-pill px-3 py-2" [ngClass]="getStatusClass(row.status)">
-                                    {{ getStatusLabel(row.status) | abpLocalization }}
-                                </span>
-                            </td>
-                            <td class="text-end pe-4">
-                                <div class="d-flex justify-content-end gap-1">
-                                    <!-- Print Actions -->
-                                    <button class="btn btn-icon-only text-primary" (click)="printBarcode(row.id)" [title]="'::PrintBarcode' | abpLocalization">
-                                        <i class="fas fa-barcode"></i>
-                                    </button>
-                                    
-                                    <!-- Status Actions -->
-                                    <button class="btn btn-sm btn-outline-info" 
-                                            *ngIf="row.status === 0"
-                                            (click)="collectSample(row.id)">
-                                        <i class="fas fa-vial me-1"></i> {{ '::CollectSample' | abpLocalization }}
-                                    </button>
-                                    <button class="btn btn-sm btn-primary" 
-                                            *ngIf="row.status === 1 || row.status === 2"
-                                            (click)="openResultModal(row)">
-                                        <i class="fas fa-file-signature me-1"></i> {{ '::EnterResult' | abpLocalization }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" 
-                                            *ngIf="row.status === 3"
-                                            (click)="printResult(row)">
-                                        <i class="fas fa-print me-1"></i> {{ '::PrintReport' | abpLocalization }}
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                            <!-- Group Items -->
+                            <ng-container *ngIf="group.isExpanded">
+                                <tr *ngFor="let row of group.requests" class="request-row bg-white">
+                                    <td class="ps-4 border-end">
+                                        <div class="font-weight-bold text-dark">{{ row.requestDate | date:'mediumDate' }}</div>
+                                        <div class="text-muted x-small">{{ row.requestDate | date:'shortTime' }}</div>
+                                    </td>
+                                    <td>
+                                        <!-- Empty column to keep alignment -->
+                                        <div class="text-muted small d-flex justify-content-center align-items-center h-100 opacity-25">
+                                            <i class="fas fa-level-up-alt fa-rotate-90"></i>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge bg-soft-secondary text-secondary mb-1 p-1 px-2 border border-secondary border-opacity-10">
+                                            {{ row.testCode }}
+                                        </div>
+                                        <div class="font-weight-bold text-dark">{{ row.testName }}</div>
+                                        <div class="text-muted x-small text-truncate" style="max-width: 200px;" [title]="row.notes" *ngIf="row.notes">
+                                            <i class="fas fa-sticky-note me-1 opacity-50"></i> {{ row.notes }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark">{{ row.doctorName }}</div>
+                                        <div class="text-muted x-small opacity-75">{{ '::Submitter' | abpLocalization }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2" [ngClass]="getStatusClass(row.status)">
+                                            {{ getStatusLabel(row.status) | abpLocalization }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <!-- Print Actions -->
+                                            <button class="btn btn-icon-only text-primary" (click)="printBarcode(row.id)" [title]="'::PrintBarcode' | abpLocalization">
+                                                <i class="fas fa-barcode"></i>
+                                            </button>
+                                            
+                                            <!-- Status Actions -->
+                                            <button class="btn btn-sm btn-outline-info" 
+                                                    *ngIf="row.status === 0"
+                                                    (click)="collectSample(row.id)">
+                                                <i class="fas fa-vial me-1"></i> {{ '::CollectSample' | abpLocalization }}
+                                            </button>
+                                            <button class="btn btn-sm btn-primary" 
+                                                    *ngIf="row.status === 1 || row.status === 2"
+                                                    (click)="openResultModal(row)">
+                                                <i class="fas fa-file-signature me-1"></i> {{ '::EnterResult' | abpLocalization }}
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    *ngIf="row.status === 3"
+                                                    (click)="printResult(row)">
+                                                <i class="fas fa-print me-1"></i> {{ '::PrintReport' | abpLocalization }}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
                         <tr *ngIf="data.totalCount === 0">
                             <td colspan="6" class="text-center py-5">
                                 <div class="py-4">

@@ -170,7 +170,29 @@ export class LaboratoryReceptionComponent implements OnInit {
 
     // Patient Statement
     patientStatement: any[] = [];
-    statementSummary = { totalDebit: 0, totalCredit: 0, balance: 0 };
+    // View mode for statement
+    statementViewMode: 'detailed' | 'summary' | 'both' = 'both';
+
+    // Statement summary by type
+    statementSummaryByType = {
+        consultations: 0,
+        medications: 0,
+        laboratory: 0,
+        radiology: 0,
+        procedures: 0,
+        inpatient: 0,
+        operations: 0,
+        other: 0,
+        totalInsurance: 0,
+        totalPayments: 0,
+        totalDeposits: 0
+    };
+
+    statementSummary = {
+        totalDebit: 0,
+        totalCredit: 0,
+        balance: 0
+    };
 
     // Operation Model
     operation: any = {
@@ -406,6 +428,9 @@ export class LaboratoryReceptionComponent implements OnInit {
         if (this.booking.serviceItemId) {
             const service = this.services.find(s => s.id === this.booking.serviceItemId);
             if (service) {
+                if (service.price === null || service.price === undefined || service.price === '') {
+                    this.toaster.warn('\u062a\u0646\u0628\u064a\u0647: \u0644\u0627 \u064a\u0648\u062c\u062f \u0633\u0639\u0631 \u0645\u062d\u062f\u062f \u0644\u0647\u0630\u0647 \u0627\u0644\u062e\u062f\u0645\u0629 \u0641\u064a \u0634\u0627\u0634\u0629 \u0627\u0644\u062a\u0639\u0631\u064a\u0641\u0627\u062a', '\u062a\u062d\u0630\u064a\u0631');
+                }
                 this.booking.payAmount = service.price || 0;
             }
         }
@@ -647,10 +672,13 @@ export class LaboratoryReceptionComponent implements OnInit {
     }
 
     addTestToOrder(test: any) {
+        if (test.price === null || test.price === undefined || test.price === '') {
+            this.toaster.warn('\u062a\u0646\u0628\u064a\u0647: \u0644\u0627 \u064a\u0648\u062c\u062f \u0633\u0639\u0631 \u0645\u062d\u062f\u062f \u0644\u0647\u0630\u0627 \u0627\u0644\u0641\u062d\u0635 \u0641\u064a \u0634\u0627\u0634\u0629 \u0627\u0644\u062a\u0639\u0631\u064a\u0641\u0627\u062a', '\u062a\u062d\u0630\u064a\u0631');
+        }
         if (!this.selectedTests.find(t => t.id === test.id)) {
             this.selectedTests.push({
                 ...test,
-                contractPrice: test.price // Default to list price, would be calculated based on contract
+                contractPrice: test.price || 0
             });
             this.calculateBillingTotals();
         }
@@ -1367,6 +1395,10 @@ export class LaboratoryReceptionComponent implements OnInit {
             return;
         }
 
+        if (item.price === null || item.price === undefined || item.price === '') {
+            this.toaster.warn('\u062a\u0646\u0628\u064a\u0647: \u0644\u0627 \u064a\u0648\u062c\u062f \u0633\u0639\u0631 \u0645\u062d\u062f\u062f \u0644\u0647\u0630\u0647 \u0627\u0644\u062e\u062f\u0645\u0629 \u0641\u064a \u0634\u0627\u0634\u0629 \u0627\u0644\u062a\u0639\u0631\u064a\u0641\u0627\u062a', '\u062a\u062d\u0630\u064a\u0631');
+        }
+
         const price = item.price || 0;
         this.selectedMedicalServices.push({
             id: item.id,
@@ -1673,47 +1705,82 @@ export class LaboratoryReceptionComponent implements OnInit {
         forkJoin([invoices$, payments$, deposits$]).subscribe({
             next: ([invRes, payRes, depRes]) => {
                 console.log('Statement Results:', { invoices: invRes.items?.length, payments: payRes.items?.length, deposits: depRes.items?.length });
-                const invoices = (invRes.items || []).map(i => ({
-                    id: i.id,
-                    date: i.invoiceDate,
-                    type: 'Invoice / فاتورة',
-                    reference: i.invoiceNumber,
-                    debit: i.totalAmount || 0,
-                    credit: 0,
-                    balance: 0,
-                    status: i.status,
-                    notes: i.items?.map(x => x.serviceCode).join(', '),
-                    serviceName: i.items?.map(x => x.description || x.serviceCode).join(' + '),
-                    originalItem: i
-                }));
+                
+                // Reset summary
+                this.statementSummaryByType = {
+                    consultations: 0, medications: 0, laboratory: 0, radiology: 0,
+                    procedures: 0, inpatient: 0, operations: 0, other: 0,
+                    totalInsurance: 0, totalPayments: 0, totalDeposits: 0
+                };
 
-                const payments = (payRes.items || []).map(p => ({
-                    id: p.id,
-                    date: p.paymentDate,
-                    type: 'Payment / سند قبض',
-                    reference: p.paymentNumber,
-                    debit: 0,
-                    credit: p.amount || 0,
-                    balance: 0,
-                    status: p.status,
-                    notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : ''),
-                    serviceName: '-',
-                    originalItem: p
-                }));
+                const invoices = (invRes.items || []).map(i => {
+                    if (i.items) {
+                        i.items.forEach(item => {
+                            switch (item.serviceType) {
+                                case ServiceType.Consultation: this.statementSummaryByType.consultations += item.totalPrice; break;
+                                case ServiceType.Medication: this.statementSummaryByType.medications += item.totalPrice; break;
+                                case ServiceType.Laboratory: this.statementSummaryByType.laboratory += item.totalPrice; break;
+                                case ServiceType.Radiology: this.statementSummaryByType.radiology += item.totalPrice; break;
+                                case ServiceType.Procedure: this.statementSummaryByType.procedures += item.totalPrice; break;
+                                case ServiceType.Inpatient: this.statementSummaryByType.inpatient += item.totalPrice; break;
+                                case ServiceType.Surgery: this.statementSummaryByType.operations += item.totalPrice; break;
+                                default: this.statementSummaryByType.other += item.totalPrice; break;
+                            }
+                        });
+                    }
+                    this.statementSummaryByType.totalInsurance += (i.insuranceCoverage || 0);
 
-                const deposits = (depRes.items || []).map(d => ({
-                    id: d.id,
-                    date: d.depositDate,
-                    type: 'Deposit / دفعة تنويم',
-                    reference: d.receiptNumber,
-                    debit: 0,
-                    credit: d.amount || 0,
-                    balance: 0,
-                    status: d.status,
-                    notes: 'دفعة مقدمة - تنويم',
-                    serviceName: '-',
-                    originalItem: d
-                }));
+                    return {
+                        id: i.id,
+                        date: i.invoiceDate,
+                        type: 'Invoice / فاتورة',
+                        reference: i.invoiceNumber,
+                        debit: i.totalAmount || 0,
+                        credit: 0,
+                        insurance: i.insuranceCoverage || 0,
+                        balance: 0,
+                        status: i.status,
+                        notes: i.items?.map(x => x.serviceCode).join(', '),
+                        serviceName: i.items?.map(x => x.description || x.serviceCode).join(' + '),
+                        originalItem: i
+                    };
+                });
+
+                const payments = (payRes.items || []).map(p => {
+                    this.statementSummaryByType.totalPayments += (p.amount || 0);
+                    return {
+                        id: p.id,
+                        date: p.paymentDate,
+                        type: 'Payment / سند قبض',
+                        reference: p.paymentNumber,
+                        debit: 0,
+                        credit: p.amount || 0,
+                        insurance: 0,
+                        balance: 0,
+                        status: p.status,
+                        notes: p.paymentMethod + (p.referenceNumber ? ' - ' + p.referenceNumber : ''),
+                        serviceName: '-',
+                        originalItem: p
+                    };
+                });
+
+                const deposits = (depRes.items || []).map(d => {
+                    this.statementSummaryByType.totalDeposits += (d.amount || 0);
+                    return {
+                        id: d.id,
+                        date: d.depositDate,
+                        type: 'Deposit / دفعة تنويم',
+                        reference: d.receiptNumber,
+                        debit: 0,
+                        credit: d.amount || 0,
+                        insurance: 0,
+                        balance: 0,
+                        status: d.status,
+                        notes: 'دفعة مقدمة - تنويم',
+                        serviceName: '-',
+                        originalItem: d
+                    };
+                });
 
                 // Merge and Sort
                 let runningBalance = 0;

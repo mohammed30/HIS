@@ -330,7 +330,7 @@
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.cash" (ngModelChange)="calculateBillingTotals()"
-                                    placeholder="0" [readonly]="activePaymentType !== 'Cash'">
+                                    placeholder="0" disabled>
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
@@ -338,7 +338,7 @@
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.card" (ngModelChange)="calculateBillingTotals()"
-                                    placeholder="0" [readonly]="activePaymentType !== 'Card'">
+                                    placeholder="0" disabled>
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
@@ -346,7 +346,7 @@
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.transfer" (ngModelChange)="calculateBillingTotals()"
-                                    placeholder="0" [readonly]="activePaymentType !== 'Transfer'">
+                                    placeholder="0" disabled>
                             </div>
                         </div>
                         <div class="row g-1 mb-0 align-items-center">
@@ -354,8 +354,7 @@
                             <div class="col-8">
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="billingDetails.clientBalance"
-                                    (ngModelChange)="calculateBillingTotals()" placeholder="0"
-                                    [readonly]="activePaymentType !== 'ClientBalance'">
+                                    (ngModelChange)="calculateBillingTotals()" placeholder="0" disabled>
                             </div>
                         </div>
                     </div>
@@ -379,7 +378,7 @@
                             <label class="col-4 small text-end fw-bold fs-5">تخفيض</label>
                             <div class="col-8"><input type="number"
                                     class="form-control form-control-sm text-center fw-bold fs-5" placeholder="0"
-                                    [(ngModel)]="billingDetails.discount" (ngModelChange)="calculateBillingTotals()">
+                                    [(ngModel)]="billingDetails.discount" (ngModelChange)="calculateBillingTotals()" disabled>
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
@@ -401,7 +400,7 @@
                             <label class="col-4 small text-end fw-bold">نسبة التأمين (%)</label>
                             <div class="col-8"><input type="number"
                                     class="form-control form-control-sm text-center fw-bold text-success"
-                                    [(ngModel)]="labInsurancePercentage" (ngModelChange)="calculateBillingTotals()" placeholder="0">
+                                    [(ngModel)]="labInsurancePercentage" (ngModelChange)="calculateBillingTotals()" placeholder="0" disabled>
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
@@ -420,7 +419,7 @@
                             <label class="col-4 small text-end fw-bold">الضريبة</label>
                             <div class="col-8 d-flex gap-2">
                                 <input type="checkbox" class="form-check-input" [(ngModel)]="billingDetails.applyTax"
-                                    (change)="calculateBillingTotals()">
+                                    (change)="calculateBillingTotals()" disabled>
                                 <input type="text" class="form-control form-control-sm text-center fw-bold" readonly
                                     placeholder="0" [value]="billingDetails.tax">
                             </div>
@@ -570,7 +569,65 @@
                     </div>
                 </div>
 
-                <div class="flex-grow-1 overflow-auto border rounded shadow-sm mb-3">
+                <!-- View Mode Toggle -->
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="btn-group shadow-sm" role="group">
+                        <button type="button" class="btn btn-sm" [class.btn-primary]="statementViewMode === 'both'" [class.btn-outline-primary]="statementViewMode !== 'both'" (click)="statementViewMode = 'both'">الكل</button>
+                        <button type="button" class="btn btn-sm" [class.btn-primary]="statementViewMode === 'summary'" [class.btn-outline-primary]="statementViewMode !== 'summary'" (click)="statementViewMode = 'summary'">إجمالي فقط</button>
+                        <button type="button" class="btn btn-sm" [class.btn-primary]="statementViewMode === 'detailed'" [class.btn-outline-primary]="statementViewMode !== 'detailed'" (click)="statementViewMode = 'detailed'">تفصيلي فقط</button>
+                    </div>
+                </div>
+
+                <!-- Summary View -->
+                <div *ngIf="statementViewMode === 'summary' || statementViewMode === 'both'" class="mb-3">
+                    <div class="card shadow-sm border-primary border-top border-3">
+                        <div class="card-header bg-white fw-bold text-primary d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-chart-pie me-2"></i>ملخص كشف الحساب (إجمالي الخدمات)</span>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row text-center g-3">
+                                <div class="col-md-2 col-sm-4">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="text-muted small mb-1">التحاليل</div>
+                                        <div class="fw-bold">{{ statementSummaryByType.laboratory | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-4">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="text-muted small mb-1">الأشعة</div>
+                                        <div class="fw-bold">{{ statementSummaryByType.radiology | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-4">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="text-muted small mb-1">العمليات</div>
+                                        <div class="fw-bold">{{ statementSummaryByType.operations | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-4">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="text-muted small mb-1">التنويم</div>
+                                        <div class="fw-bold">{{ statementSummaryByType.inpatient | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-4">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="text-muted small mb-1">أخرى</div>
+                                        <div class="fw-bold">{{ (statementSummaryByType.consultations + statementSummaryByType.medications + statementSummaryByType.procedures + statementSummaryByType.other) | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-4">
+                                    <div class="p-2 border rounded bg-info text-white">
+                                        <div class="small mb-1">التأمين المدفوع</div>
+                                        <div class="fw-bold fs-6">{{ statementSummaryByType.totalInsurance | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="statementViewMode === 'detailed' || statementViewMode === 'both'" class="flex-grow-1 overflow-auto border rounded shadow-sm mb-3">
                     <table
                         class="table table-sm table-striped table-hover table-bordered mb-0 small text-center sticky-header">
                         <thead class="bg-primary text-white custom-sticky-top">
@@ -581,6 +638,7 @@
                                 <th>الخدمة المقدمة</th>
                                 <th>رقم المرجع</th>
                                 <th>مدين (Debit)</th>
+                                <th>تأمين (Insurance)</th>
                                 <th>دائن (Credit)</th>
                                 <th>الرصيد</th>
                                 <th>ملاحظات</th>
@@ -599,6 +657,7 @@
                                 </td>
                                 <td>{{ item.reference }}</td>
                                 <td class="text-danger">{{ item.debit | number:'1.2-2' }}</td>
+                                <td class="text-info fw-bold">{{ item.insurance | number:'1.2-2' }}</td>
                                 <td class="text-success">{{ item.credit | number:'1.2-2' }}</td>
                                 <td class="fw-bold" [class.text-danger]="item.balance > 0"
                                     [class.text-success]="item.balance < 0">
@@ -627,13 +686,13 @@
                                 </td>
                             </tr>
                             <tr *ngIf="patientStatement.length === 0">
-                                <td colspan="8" class="text-muted py-4">لا توجد بيانات للعرض</td>
+                                <td colspan="11" class="text-muted py-4">لا توجد بيانات للعرض</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="card shadow-sm border-0 bg-light">
+                <div *ngIf="statementViewMode === 'detailed' || statementViewMode === 'both'" class="card shadow-sm border-0 bg-light">
                     <div class="card-body p-2">
                         <div class="row text-center fw-bold">
                             <div class="col-md-4">
@@ -1033,7 +1092,7 @@
                             <td>
                                 <input type="number" class="form-control form-control-sm text-center"
                                     [(ngModel)]="s.price"
-                                    (ngModelChange)="s.patientShare = s.price; updateMedicalServicesTotals()">
+                                    (ngModelChange)="s.patientShare = s.price; updateMedicalServicesTotals()" disabled>
                             </td>
                         </tr>
                         <tr *ngIf="selectedMedicalServices.length === 0" class="text-muted">
@@ -1269,19 +1328,19 @@
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <label class="col-auto small fw-bold">مبلغ العملية</label>
                             <div class="col-md-8"><input type="number" class="form-control form-control-sm"
-                                    [(ngModel)]="operation.totalAmount">
+                                    [(ngModel)]="operation.totalAmount" disabled>
                             </div>
                         </div>
                         <div class="row g-2 mb-2 align-items-center justify-content-end">
                             <div class="col-md-4">
                                 <label class="small fw-bold mb-1 d-block text-end">تحمل الشركة</label>
                                 <input type="number" class="form-control form-control-sm"
-                                    [(ngModel)]="operation.companyShare">
+                                    [(ngModel)]="operation.companyShare" disabled>
                             </div>
                             <div class="col-md-4">
                                 <label class="small fw-bold mb-1 d-block text-end">تحمل المريض</label>
                                 <input type="number" class="form-control form-control-sm"
-                                    [(ngModel)]="operation.patientShare">
+                                    [(ngModel)]="operation.patientShare" disabled>
                             </div>
                         </div>
                     </div>
