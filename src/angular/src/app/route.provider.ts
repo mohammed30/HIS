@@ -1011,6 +1011,15 @@ function configureRoutes() {
       requiredPolicy: 'HIS.HR.Reports',
     },
     {
+      path: '/reports/insurance-claims-report',
+      name: 'تقرير مطالبات شركات التأمين',
+      parentName: '::Menu:Reports',
+      iconClass: 'fas fa-file-invoice',
+      order: 8,
+      layout: eLayoutType.application,
+      requiredPolicy: 'HIS.Reception.InsuranceCompanies',
+    },
+    {
       path: '/setting-management',
       name: '::Menu:Settings',
       iconClass: 'fas fa-cog',

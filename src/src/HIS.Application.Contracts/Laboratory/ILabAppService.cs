@@ -24,6 +24,7 @@ public interface ILabAppService : IApplicationService
     Task<LabRequestDto> CreateRequestAsync(CreateLabRequestDto input);
     Task<LabRequestDto> CollectSampleAsync(Guid id);
     Task<LabRequestDto> CompleteRequestAsync(Guid id, UpdateLabResultDto input);
+    Task<bool> EvaluateResultIsAbnormalAsync(Guid labTestId, string result, HIS.Patients.Gender patientGender, int patientAgeInDays);
     Task<Volo.Abp.Content.IRemoteStreamContent> GetResultPdfAsync(Guid id);
     Task<Volo.Abp.Content.IRemoteStreamContent> GetSampleBarcodePdfAsync(Guid id);
     Task<Volo.Abp.Content.IRemoteStreamContent> GetRequestOrderPdfAsync(Guid id);

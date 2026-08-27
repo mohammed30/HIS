@@ -18,4 +18,13 @@ export class UserFinancialReportService {
       params: { userId: input.userId, moduleName: input.moduleName, startDate: input.startDate, endDate: input.endDate, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
+  
+
+  getPrintDocument = (input: GetUserFinancialTransactionsInput, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'GET',
+      url: '/api/app/user-financial-report/print-document',
+      params: { userId: input.userId, moduleName: input.moduleName, startDate: input.startDate, endDate: input.endDate, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
 }

@@ -9,6 +9,7 @@ export * from './claim-status.enum';
 export * from './contract-claim.service';
 export * from './financial-report.service';
 export * from './journal-entry.service';
+export * from './models';
 export * from './payment-voucher.service';
 export * from './receipt-voucher.service';
 export { Dtos };

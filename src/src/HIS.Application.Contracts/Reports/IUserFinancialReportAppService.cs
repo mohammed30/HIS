@@ -7,5 +7,6 @@ namespace HIS.Reports
     public interface IUserFinancialReportAppService : IApplicationService
     {
         Task<PagedResultDto<UserFinancialTransactionDto>> GetListAsync(GetUserFinancialTransactionsInput input);
+        Task<byte[]> GetPrintDocumentAsync(GetUserFinancialTransactionsInput input);
     }
 }

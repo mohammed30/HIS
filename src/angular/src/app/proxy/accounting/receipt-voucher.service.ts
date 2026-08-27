@@ -1,6 +1,7 @@
 import type { CreateUpdateReceiptVoucherDto, ReceiptVoucherDto } from './dtos/models';
+import type { VoucherFilterDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
-import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
+import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
 
 @Injectable({
@@ -45,7 +46,7 @@ export class ReceiptVoucherService {
     { apiName: this.apiName,...config });
   
 
-  getList = (input: any, config?: Partial<Rest.Config>) =>
+  getList = (input: VoucherFilterDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ReceiptVoucherDto>>({
       method: 'GET',
       url: '/api/app/receipt-voucher',

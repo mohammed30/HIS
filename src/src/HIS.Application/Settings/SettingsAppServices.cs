@@ -358,62 +358,78 @@ public class DoctorAppService : CrudAppService<Doctor, DoctorDto, Guid, GetDocto
 
     public async Task SyncOldDoctorsAccountsAsync()
     {
-        var doctors = await Repository.GetListAsync(x => x.AccountId == null);
+        var doctors = await Repository.GetListAsync();
+        
+        var creditorsParent = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2110");
+        if (creditorsParent == null) return;
+
         foreach (var doctor in doctors)
         {
-            await CreateDoctorAccountAsync(doctor.Id, doctor.Code, doctor.NameAr);
+            if (doctor.AccountId == null)
+            {
+                await CreateDoctorAccountAsync(doctor.Id, doctor.Code, doctor.NameAr);
+            }
+            else
+            {
+                // Fix existing account
+                var account = await _accountRepository.FindAsync(doctor.AccountId.Value);
+                if (account != null)
+                {
+                    bool needUpdate = false;
+                    
+                    if (account.ParentId != creditorsParent.Id)
+                    {
+                        account.ParentId = creditorsParent.Id;
+                        account.Type = AccountType.Liability;
+                        string docCode = doctor.Id.ToString().Substring(0, 4).ToUpper();
+                        account.Code = creditorsParent.Code + "-DR-" + docCode;
+                        needUpdate = true;
+                    }
+
+                    var expectedNameAr = $"مستحقات - {doctor.NameAr ?? doctor.NameEn}";
+                    var expectedName = $"Dr. {doctor.NameAr ?? doctor.NameEn} Dues";
+                    
+                    if (account.NameAr != expectedNameAr || account.Name != expectedName)
+                    {
+                        account.NameAr = expectedNameAr;
+                        account.Name = expectedName;
+                        needUpdate = true;
+                    }
+
+                    if (needUpdate)
+                    {
+                        await _accountRepository.UpdateAsync(account);
+                    }
+                }
+            }
         }
     }
 
-    /// <summary>
-    /// إنشاء حساب محاسبي للطبيب تلقائياً تحت حقوق الأطباء (2150)
-    /// </summary>
     private async Task CreateDoctorAccountAsync(Guid doctorId, string doctorCode, string doctorNameAr)
     {
         try
         {
-            var doctorsPayableParent = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2150");
-            if (doctorsPayableParent == null)
-            {
-                var currentLiabilities = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2100");
-                if (currentLiabilities != null)
-                {
-                    doctorsPayableParent = new Account(
-                        GuidGenerator.Create(),
-                        "2150",
-                        "Doctors Payable",
-                        "حقوق الأطباء",
-                        AccountType.Liability,
-                        currentLiabilities.Id
-                    );
-                    await _accountRepository.InsertAsync(doctorsPayableParent, autoSave: true);
-                }
-                else
-                {
-                    return;
-                }
-            }
+            var creditorsParent = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2110");
+            if (creditorsParent == null) return;
 
-            // Generate next available code under 2150
-            var children = await _accountRepository.GetListAsync(x => x.ParentId == doctorsPayableParent.Id);
-            var existingCodes = children.Select(x => x.Code).ToList();
-            int nextNum = 2151;
-            while (existingCodes.Contains(nextNum.ToString())) nextNum++;
+            string docCode = doctorId.ToString().Substring(0, 4).ToUpper();
+            var expectedNameAr = $"مستحقات - {doctorNameAr}";
+            var expectedName = $"Dr. {doctorNameAr} Dues";
 
             var account = new Account(
                 GuidGenerator.Create(),
-                nextNum.ToString(),
-                $"Dr. {doctorCode}",
-                $"حق د. {doctorNameAr}",
+                creditorsParent.Code + "-DR-" + docCode,
+                expectedName,
+                expectedNameAr,
                 AccountType.Liability,
-                doctorsPayableParent.Id
+                creditorsParent.Id
             );
-            await _accountRepository.InsertAsync(account);
+            await _accountRepository.InsertAsync(account, autoSave: true);
 
             // Link back to doctor
             var doctor = await Repository.GetAsync(doctorId);
             doctor.AccountId = account.Id;
-            await Repository.UpdateAsync(doctor);
+            await Repository.UpdateAsync(doctor, autoSave: true);
         }
         catch (Exception)
         {

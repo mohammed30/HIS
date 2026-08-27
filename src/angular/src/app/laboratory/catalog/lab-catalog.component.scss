@@ -196,14 +196,14 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        background: rgba(30, 41, 59, 0.8);
+        background: rgba(99, 102, 241, 0.08);
         border: 1px solid rgba(99, 102, 241, 0.2);
         border-radius: 6px;
         padding: 2px 8px;
         font-size: 11px;
 
-        .chip-label  { color: #94a3b8; }
-        .chip-normal { color: #34d399; font-weight: 700; }
+        .chip-label  { color: #4f46e5; font-weight: 600; }
+        .chip-normal { color: #059669; font-weight: 700; }
         .chip-unit   { color: #64748b; font-style: italic; }
     }
 
@@ -222,7 +222,7 @@
 
         &.edit-btn {
             background: rgba(99, 102, 241, 0.15);
-            color: #818cf8;
+            color: #4f46e5;
             &:hover {
                 background: rgba(99, 102, 241, 0.3);
                 transform: translateY(-1px);
@@ -231,7 +231,7 @@
 
         &.delete-btn {
             background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
+            color: #ef4444;
             &:hover {
                 background: rgba(239, 68, 68, 0.25);
                 transform: translateY(-1px);
@@ -254,33 +254,33 @@
 }
 
 .modal-section {
-    background: var(--bs-tertiary-bg, rgba(30, 41, 59, 0.03));
-    border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 16px;
 
     .section-title {
         font-size: 13px;
         font-weight: 700;
-        color: var(--bs-heading-color, #475569);
+        color: #334155;
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 14px;
         padding-bottom: 10px;
-        border-bottom: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .field-label {
         font-size: 12px;
         font-weight: 600;
-        color: var(--bs-body-color, #475569);
+        color: #475569;
         margin-bottom: 4px;
     }
 
     .field-disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        background-color: var(--bs-secondary-bg);
+        background-color: #f1f5f9;
     }
 }
 
@@ -291,7 +291,7 @@
         align-items: center;
         gap: 5px;
         font-size: 12px;
-        color: var(--bs-body-color, #64748b);
+        color: #64748b;
     }
 }
 
@@ -312,40 +312,40 @@
 .ranges-table-wrap {
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid var(--bs-border-color);
+    border: 1px solid #e2e8f0;
     margin-bottom: 10px;
 }
 
 .ranges-table {
     thead tr {
-        background: var(--bs-secondary-bg);
+        background: #f8fafc;
 
         th {
             font-size: 11px;
             font-weight: 700;
-            color: var(--bs-heading-color);
+            color: #334155;
             padding: 10px;
             text-align: center;
-            border-bottom: 1px solid var(--bs-border-color) !important;
+            border-bottom: 1px solid #e2e8f0;
             white-space: nowrap;
         }
     }
 
     tbody tr.range-row {
-        background: var(--bs-body-bg);
+        background: #ffffff;
         transition: background 0.15s;
 
-        &:hover { background: var(--bs-tertiary-bg); }
+        &:hover { background: #f8fafc; }
 
         td {
             padding: 8px 6px;
-            border-bottom: 1px solid var(--bs-border-color) !important;
+            border-bottom: 1px solid #e2e8f0;
             vertical-align: middle;
 
             .form-control, .form-select {
-                background-color: var(--bs-body-bg);
-                border: 1px solid var(--bs-border-color);
-                color: var(--bs-body-color);
+                background-color: #ffffff;
+                border: 1px solid #cbd5e1;
+                color: #1e293b;
                 font-size: 12px;
                 
                 &:focus {
@@ -380,7 +380,7 @@
         color: #4338ca;
     }
 }
-[data-theme="dark"] .btn-add-range {
+::ng-deep html[data-theme="dark"] .btn-add-range, ::ng-deep body.lpx-theme-dark .btn-add-range {
     color: #818cf8;
     &:hover { color: #c7d2fe; }
 }
@@ -405,20 +405,20 @@
 .empty-ranges-state {
     text-align: center;
     padding: 24px 16px;
-    color: var(--bs-secondary-color);
+    color: #64748b;
     font-size: 13px;
-    border: 1px dashed var(--bs-border-color);
+    border: 1px dashed #cbd5e1;
     border-radius: 8px;
-    background: var(--bs-tertiary-bg);
+    background: #f8fafc;
     margin-bottom: 10px;
 
-    small { font-size: 11px; color: var(--bs-tertiary-color); }
+    small { font-size: 11px; color: #94a3b8; }
 }
 
 // ── Preview Cards ─────────────────────────────────────────────────────────────
 .ranges-preview {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(241, 245, 249, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.8);
     border-radius: 8px;
     padding: 12px;
 
@@ -433,16 +433,17 @@
 }
 
 .preview-card {
-    background: rgba(30, 41, 59, 0.7);
+    background: #ffffff;
     border: 1px solid rgba(99, 102, 241, 0.2);
     border-radius: 8px;
     padding: 8px 12px;
     min-width: 140px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 
     .preview-card-label {
         font-size: 11px;
         font-weight: 700;
-        color: #818cf8;
+        color: #4f46e5;
         margin-bottom: 6px;
     }
 
@@ -452,9 +453,9 @@
         gap: 4px;
     }
 
-    .pv-normal  { color: #34d399; font-size: 12px; font-weight: 600; }
-    .pv-warn    { color: #fbbf24; font-size: 12px; }
-    .pv-danger  { color: #f87171; font-size: 12px; }
+    .pv-normal  { color: #059669; font-size: 12px; font-weight: 600; }
+    .pv-warn    { color: #d97706; font-size: 12px; }
+    .pv-danger  { color: #dc2626; font-size: 12px; }
     .pv-unit    { color: #64748b; font-size: 11px; font-style: italic; }
 }
 
@@ -479,16 +480,16 @@
 
 // ── Modal Footer Buttons ──────────────────────────────────────────────────────
 .btn-cancel {
-    background: rgba(100,116,139,0.15);
-    color: #94a3b8;
-    border: 1px solid rgba(100,116,139,0.3);
+    background: #e2e8f0;
+    color: #475569;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     padding: 7px 18px;
     font-size: 13px;
     font-weight: 600;
     transition: all 0.15s;
 
-    &:hover { background: rgba(100,116,139,0.25); color: #cbd5e1; }
+    &:hover { background: #cbd5e1; color: #334155; }
 }
 
 .btn-save {
@@ -507,3 +508,110 @@
         box-shadow: 0 6px 18px rgba(99,102,241,0.5);
     }
 }
+
+// ── Dark Mode Overrides ────────────────────────────────────────────────────────
+::ng-deep html[data-theme="dark"], ::ng-deep body.lpx-theme-dark {
+    .modal-section {
+        background: #1e2330 !important;
+        border-color: #2a3142 !important;
+        
+        .section-title {
+            color: #94a3b8 !important;
+            border-bottom-color: #2a3142 !important;
+        }
+        
+        .field-label {
+            color: #cbd5e1 !important;
+        }
+
+        .field-disabled {
+            background-color: #151923 !important;
+            border-color: #2a3142 !important;
+            color: #64748b !important;
+        }
+    }
+
+    .form-control, .form-select, .input-group-text {
+        background-color: #151923 !important;
+        border-color: #2a3142 !important;
+        color: #e2e8f0 !important;
+        
+        &::placeholder {
+            color: #475569 !important;
+        }
+        
+        &:focus {
+            background-color: #1e2330 !important;
+            border-color: #6366f1 !important;
+        }
+    }
+
+    .input-group-text {
+        color: #818cf8 !important;
+    }
+
+    .ranges-table-wrap {
+        border-color: #2a3142 !important;
+    }
+
+    .ranges-table {
+        thead tr {
+            background: #151923 !important;
+            th {
+                color: #94a3b8 !important;
+                border-bottom-color: #2a3142 !important;
+            }
+        }
+        tbody tr.range-row {
+            background: #1e2330 !important;
+            &:hover {
+                background: #252b3b !important;
+            }
+            td {
+                border-bottom-color: #2a3142 !important;
+                
+                .form-control, .form-select {
+                    background-color: #151923 !important;
+                    border-color: #2a3142 !important;
+                    color: #e2e8f0 !important;
+                }
+            }
+        }
+    }
+
+    .empty-ranges-state {
+        background: #151923 !important;
+        border-color: #2a3142 !important;
+        color: #64748b !important;
+    }
+
+    // Preview Cards Dark Mode
+    .ranges-preview {
+        background: rgba(15, 23, 42, 0.4) !important;
+        border-color: rgba(255,255,255,0.05) !important;
+    }
+
+    .preview-card {
+        background: rgba(30, 41, 59, 0.7) !important;
+        border-color: rgba(99, 102, 241, 0.2) !important;
+        box-shadow: none !important;
+
+        .preview-card-label { color: #818cf8 !important; }
+        .pv-normal  { color: #34d399 !important; }
+        .pv-warn    { color: #fbbf24 !important; }
+        .pv-danger  { color: #f87171 !important; }
+    }
+}
+
+::ng-deep .wide-modal .modal-dialog { max-width: 95vw !important; width: 95vw !important; }
+
+
+::ng-deep html[data-theme="dark"], ::ng-deep body.lpx-theme-dark {
+    .btn-cancel {
+        background: rgba(100,116,139,0.15) !important;
+        color: #94a3b8 !important;
+        border: 1px solid rgba(100,116,139,0.3) !important;
+        &:hover { background: rgba(100,116,139,0.25) !important; color: #cbd5e1 !important; }
+    }
+}
+

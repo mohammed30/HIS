@@ -20,10 +20,11 @@ export class InvoiceService {
     { apiName: this.apiName,...config });
   
 
-  cancel = (id: string, config?: Partial<Rest.Config>) =>
+  cancel = (id: string, reason: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, InvoiceDto>({
       method: 'POST',
       url: `/api/app/invoice/${id}/cancel`,
+      params: { reason },
     },
     { apiName: this.apiName,...config });
   

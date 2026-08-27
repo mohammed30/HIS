@@ -400,7 +400,7 @@
                             <label class="col-4 small text-end fw-bold">نسبة التأمين (%)</label>
                             <div class="col-8"><input type="number"
                                     class="form-control form-control-sm text-center fw-bold text-success"
-                                    [(ngModel)]="labInsurancePercentage" (ngModelChange)="calculateBillingTotals()" placeholder="0" disabled>
+                                    [(ngModel)]="labInsurancePercentage" (ngModelChange)="calculateBillingTotals()" placeholder="0" [disabled]="!patientInfo.insuranceCompanyId">
                             </div>
                         </div>
                         <div class="row g-1 mb-1 align-items-center">
@@ -823,7 +823,7 @@
                         </div>
                         <div class="mb-2">
                             <label class="small fw-bold mb-1">نسبة التأمين (%)</label>
-                            <input type="number" class="form-control form-control-sm text-success fw-bold" [(ngModel)]="clinicsInsurancePercentage">
+                            <input type="number" class="form-control form-control-sm text-success fw-bold" [(ngModel)]="clinicsInsurancePercentage" (ngModelChange)="updateConsultationFee()" [readonly]="!patientInfo.insuranceCompanyId">
                         </div>
                         <div class="mb-2">
                             <label class="small fw-bold mb-1">شركة التأمين (حصة التأمين)</label>

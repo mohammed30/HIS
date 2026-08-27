@@ -1,4 +1,4 @@
-﻿using HIS.General;
+using HIS.General;
 using HIS.Nursing;
 using HIS.HR;
 using HIS.ActivityLogs;
@@ -65,6 +65,7 @@ public class HISDbContext :
     // Laboratory Module (New)
     public DbSet<HIS.Laboratory.LabTestCategory> LabTestCategories { get; set; }
     public DbSet<HIS.Laboratory.LabTest> LabTests { get; set; }
+    public DbSet<HIS.Laboratory.LabTestNormalRange> LabTestNormalRanges { get; set; }
     public DbSet<HIS.Laboratory.LabRequest> LabRequests { get; set; }
     public DbSet<HIS.Laboratory.LabAppointment> LabAppointments { get; set; }
 
@@ -503,6 +504,23 @@ public class HISDbContext :
             b.Property(x => x.Instructions).HasMaxLength(1024);
             b.HasIndex(x => x.Code).IsUnique();
             b.HasIndex(x => x.CategoryId);
+
+            b.HasMany(x => x.NormalRanges)
+             .WithOne(x => x.LabTest)
+             .HasForeignKey(x => x.LabTestId)
+             .IsRequired();
+        });
+
+        builder.Entity<HIS.Laboratory.LabTestNormalRange>(b =>
+        {
+            b.ToTable(HISConsts.DbTablePrefix + "LabTestNormalRanges", HISConsts.DbSchema);
+            b.ConfigureByConvention();
+            
+            b.Property(x => x.MinValue).HasPrecision(18, 4);
+            b.Property(x => x.MaxValue).HasPrecision(18, 4);
+            b.Property(x => x.NormalStringValue).HasMaxLength(256);
+            
+            b.HasIndex(x => x.LabTestId);
         });
 
         builder.Entity<HIS.Laboratory.LabRequest>(b =>

@@ -5548,6 +5548,9 @@ namespace HIS.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<string>("Machine")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -5558,6 +5561,9 @@ namespace HIS.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ReferenceRange")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TurnaroundTime")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Unit")
@@ -5647,6 +5653,75 @@ namespace HIS.Migrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("AppLabTestCategories", (string)null);
+                });
+
+            modelBuilder.Entity("HIS.Laboratory.LabTestNormalRange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<Guid>("LabTestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<int?>("MaxAgeDays")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MaxValue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int?>("MinAgeDays")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MinValue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("NormalStringValue")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("ResultType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TargetGender")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LabTestId");
+
+                    b.ToTable("AppLabTestNormalRanges", (string)null);
                 });
 
             modelBuilder.Entity("HIS.MedicalRecords.Allergy", b =>
@@ -10675,6 +10750,17 @@ namespace HIS.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("HIS.Laboratory.LabTestNormalRange", b =>
+                {
+                    b.HasOne("HIS.Laboratory.LabTest", "LabTest")
+                        .WithMany("NormalRanges")
+                        .HasForeignKey("LabTestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LabTest");
+                });
+
             modelBuilder.Entity("HIS.Patients.Patient", b =>
                 {
                     b.HasOne("HIS.General.Contract", null)
@@ -11027,6 +11113,11 @@ namespace HIS.Migrations
             modelBuilder.Entity("HIS.Inventory.PurchaseRequisition", b =>
                 {
                     b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("HIS.Laboratory.LabTest", b =>
+                {
+                    b.Navigation("NormalRanges");
                 });
 
             modelBuilder.Entity("HIS.Pharmacy.StockTransfer", b =>

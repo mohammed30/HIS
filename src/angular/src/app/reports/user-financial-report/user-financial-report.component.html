@@ -1,8 +1,13 @@
-<div class="card">
+<div class="card d-print-none">
   <div class="card-header">
     <div class="row align-items-center">
       <div class="col">
         <h3 class="card-title mb-0">تقرير التعاملات المالية للمستخدمين</h3>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-dark" (click)="printReport()" [disabled]="!filter.userId">
+            <i class="fas fa-print me-1"></i> طباعة العهدة
+        </button>
       </div>
     </div>
   </div>
@@ -40,31 +45,32 @@
       </div>
     </div>
 
-    <!-- Totals -->
+    <!-- Screen Totals -->
     <div class="row mb-4">
       <div class="col-md-4 mb-3 mb-md-0">
         <div class="alert alert-success h-100 d-flex flex-column justify-content-center m-0">
-          <h6 class="mb-2"><i class="fas fa-arrow-down me-1"></i> إجمالي المقبوضات</h6>
-          <h4 class="mb-0 fw-bold" dir="ltr">{{ totalIncoming | number:'1.2-2' }} <small class="fs-6">جنيه مصري</small></h4>
+          <h6 class="mb-2"><i class="fas fa-arrow-down me-1"></i> إجمالي المقبوضات (نقدي)</h6>
+          <h4 class="mb-0 fw-bold" dir="ltr">{{ cashTotalIncoming | number:'1.2-2' }} <small class="fs-6">جنيه</small></h4>
         </div>
       </div>
       <div class="col-md-4 mb-3 mb-md-0">
-        <div class="alert alert-danger h-100 d-flex flex-column justify-content-center m-0">
-          <h6 class="mb-2"><i class="fas fa-arrow-up me-1"></i> إجمالي المصروفات</h6>
-          <h4 class="mb-0 fw-bold" dir="ltr">{{ totalOutgoing | number:'1.2-2' }} <small class="fs-6">جنيه مصري</small></h4>
+        <div class="alert alert-info h-100 d-flex flex-column justify-content-center m-0">
+          <h6 class="mb-2"><i class="fas fa-arrow-down me-1"></i> إجمالي المقبوضات (بنك)</h6>
+          <h4 class="mb-0 fw-bold" dir="ltr">{{ bankTotalIncoming | number:'1.2-2' }} <small class="fs-6">جنيه</small></h4>
         </div>
       </div>
       <div class="col-md-4">
         <div class="alert h-100 d-flex flex-column justify-content-center m-0 text-white" 
-             [ngClass]="{'bg-success': netTotal > 0, 'bg-danger': netTotal < 0, 'bg-secondary': netTotal === 0}">
-          <h6 class="mb-2"><i class="fas fa-balance-scale me-1"></i> الصافي المطلوب من المستخدم</h6>
-          <h4 class="mb-0 fw-bold" dir="ltr">{{ netTotal | number:'1.2-2' }} <small class="fs-6">جنيه مصري</small></h4>
+             [ngClass]="{'bg-success': cashNetTotal > 0, 'bg-danger': cashNetTotal < 0, 'bg-secondary': cashNetTotal === 0}">
+          <h6 class="mb-2"><i class="fas fa-balance-scale me-1"></i> صافي العهدة (نقدي مطلوب)</h6>
+          <h4 class="mb-0 fw-bold" dir="ltr">{{ cashNetTotal | number:'1.2-2' }} <small class="fs-6">جنيه</small></h4>
         </div>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="table-responsive">
+    <div class="table-responsive mb-4">
+      <h5 class="mb-3 text-primary"><i class="fas fa-money-bill-wave me-2"></i> المعاملات النقدية (Cash)</h5>
       <table class="table table-bordered table-striped table-hover align-middle">
         <thead class="table-light">
           <tr>
@@ -77,36 +83,48 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="isTableLoading">
-            <td colspan="6" class="text-center py-4">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="!isTableLoading && items.length === 0">
-            <td colspan="6" class="text-center py-4 text-muted">
-              لا توجد بيانات
-            </td>
-          </tr>
-          <tr *ngFor="let item of items">
+          <tr *ngIf="isTableLoading"><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>
+          <tr *ngIf="!isTableLoading && cashItems.length === 0"><td colspan="6" class="text-center py-4 text-muted">لا توجد بيانات نقدية</td></tr>
+          <tr *ngFor="let item of cashItems">
             <td>{{ item.transactionDate | date:'yyyy/MM/dd hh:mm a' }}</td>
             <td>{{ item.userName }}</td>
-            <td>
-              <span class="badge" [ngClass]="item.amount > 0 ? 'bg-success' : 'bg-danger'">
-                {{ item.transactionType }}
-              </span>
-            </td>
+            <td><span class="badge" [ngClass]="item.amount > 0 ? 'bg-success' : 'bg-danger'">{{ item.transactionType }}</span></td>
             <td>{{ item.referenceNumber }}</td>
             <td>{{ item.description }}</td>
-            <td dir="ltr">
-              <span class="amount-badge" [ngClass]="item.amount > 0 ? 'amount-positive' : 'amount-negative'">
-                {{ item.amount > 0 ? '+' : '' }}{{ item.amount | number:'1.2-2' }}
-              </span>
-            </td>
+            <td dir="ltr"><span class="amount-badge" [ngClass]="item.amount > 0 ? 'amount-positive' : 'amount-negative'">{{ item.amount > 0 ? '+' : '' }}{{ item.amount | number:'1.2-2' }}</span></td>
           </tr>
         </tbody>
       </table>
     </div>
+    
+    <div class="table-responsive">
+      <h5 class="mb-3 text-info"><i class="fas fa-credit-card me-2"></i> المعاملات البنكية (Bank / POS)</h5>
+      <table class="table table-bordered table-striped table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>التاريخ والوقت</th>
+            <th>المستخدم</th>
+            <th>نوع المعاملة</th>
+            <th>رقم المرجع</th>
+            <th>البيان</th>
+            <th>المبلغ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="isTableLoading"><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>
+          <tr *ngIf="!isTableLoading && bankItems.length === 0"><td colspan="6" class="text-center py-4 text-muted">لا توجد بيانات بنكية</td></tr>
+          <tr *ngFor="let item of bankItems">
+            <td>{{ item.transactionDate | date:'yyyy/MM/dd hh:mm a' }}</td>
+            <td>{{ item.userName }}</td>
+            <td><span class="badge" [ngClass]="item.amount > 0 ? 'bg-success' : 'bg-danger'">{{ item.transactionType }}</span></td>
+            <td>{{ item.referenceNumber }}</td>
+            <td>{{ item.description }}</td>
+            <td dir="ltr"><span class="amount-badge" [ngClass]="item.amount > 0 ? 'amount-positive' : 'amount-negative'">{{ item.amount > 0 ? '+' : '' }}{{ item.amount | number:'1.2-2' }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </div>
+

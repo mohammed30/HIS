@@ -68,11 +68,20 @@
                 <ng-template let-row="row" ngx-datatable-cell-template>
                     <ng-container *ngIf="hasStructuredRanges(row.referenceRange); else plainRange">
                         <div class="d-flex flex-wrap gap-1">
-                            <span *ngFor="let r of parseReferenceRanges(row.referenceRange)"
+                            <span *ngFor="let r of parseTestParameters(row.referenceRange)"
                                 class="struct-range-chip" [title]="r.label">
                                 <span class="chip-label">{{ r.label }}</span>
-                                <span class="chip-normal" *ngIf="r.min !== null && r.max !== null">
+                                <span class="chip-normal" *ngIf="r.type === 'Text' && r.normalString">
+                                    {{ r.normalString }}
+                                </span>
+                                <span class="chip-normal" *ngIf="r.type === 'Numeric' && r.operator === 'Between' && r.min !== null && r.max !== null">
                                     {{ r.min }}–{{ r.max }}
+                                </span>
+                                <span class="chip-normal" *ngIf="r.type === 'Numeric' && r.operator === 'LessThan' && r.max !== null">
+                                    < {{ r.max }}
+                                </span>
+                                <span class="chip-normal" *ngIf="r.type === 'Numeric' && r.operator === 'GreaterThan' && r.min !== null">
+                                    > {{ r.min }}
                                 </span>
                                 <span class="chip-unit" *ngIf="r.unit">{{ r.unit }}</span>
                             </span>
@@ -103,7 +112,7 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!--                         MODAL                                  -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<abp-modal [(visible)]="isModalOpen" [options]="{ size: 'xl' }">
+<abp-modal [(visible)]="isModalOpen" [options]="{ size: 'xl', windowClass: 'wide-modal' }">
     <ng-template #abpHeader>
         <div class="d-flex align-items-center gap-2">
             <div class="modal-icon">
@@ -122,7 +131,7 @@
             <div class="section-title">
                 <i class="fas fa-info-circle me-2"></i>المعلومات الأساسية
             </div>
-            <div class="row g-3">
+            <div class="row g-3 mb-3">
                 <div class="col-md-3" *ngIf="selectedId">
                     <label class="field-label">{{ '::Code' | abpLocalization }}</label>
                     <input class="form-control form-control-sm field-disabled" [(ngModel)]="selectedTest.code" readonly disabled>
@@ -143,14 +152,24 @@
                     <input class="form-control form-control-sm" [(ngModel)]="selectedTest.unit" placeholder="mg/dL">
                 </div>
             </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="field-label">الجهاز (Machine)</label>
+                    <input class="form-control form-control-sm" [(ngModel)]="selectedTest.machine" placeholder="مثال: Cobas 6000">
+                </div>
+                <div class="col-md-4">
+                    <label class="field-label">وقت النتيجة (Turnaround Time)</label>
+                    <input class="form-control form-control-sm" [(ngModel)]="selectedTest.turnaroundTime" placeholder="مثال: ساعتين">
+                </div>
+            </div>
         </div>
 
-        <!-- ── Section 2: Reference Ranges ── -->
+        <!-- ── Section 2: Parameters & Ranges ── -->
         <div class="modal-section mb-4">
             <div class="section-title d-flex align-items-center justify-content-between">
-                <span><i class="fas fa-sliders-h me-2"></i>المراجع الطبيعية</span>
-                <button type="button" class="btn btn-sm btn-add-range" (click)="addReferenceRange()">
-                    <i class="fas fa-plus me-1"></i> إضافة مرجع
+                <span><i class="fas fa-sliders-h me-2"></i>مكونات التحليل والمراجع (Parameters & Ranges)</span>
+                <button type="button" class="btn btn-sm btn-add-range" (click)="addTestParameter()">
+                    <i class="fas fa-plus me-1"></i> إضافة مكون
                 </button>
             </div>
 
@@ -168,55 +187,80 @@
             </div>
 
             <!-- Ranges Table -->
-            <div *ngIf="referenceRanges.length > 0" class="ranges-table-wrap">
+            <div *ngIf="testParameters.length > 0" class="ranges-table-wrap">
                 <table class="table table-sm mb-0 ranges-table">
                     <thead>
                         <tr>
-                            <th class="col-label">التسمية</th>
-                            <th class="col-normal">
-                                <span class="th-dot normal"></span> أدنى طبيعي
+                            <th class="col-label" style="width: 20%">التسمية (Name)</th>
+                            <th class="col-type" style="width: 15%">النوع (Type)</th>
+                            <th class="col-operator" style="width: 15%">الشرط</th>
+                            <th class="col-normal" style="width: 12%">
+                                <span class="th-dot normal"></span> طبيعي (أدنى)
                             </th>
-                            <th class="col-normal">
-                                <span class="th-dot normal"></span> أقصى طبيعي
+                            <th class="col-normal" style="width: 12%">
+                                <span class="th-dot normal"></span> طبيعي (أقصى)
                             </th>
-                            <th class="col-warn">
-                                <span class="th-dot warning"></span> حد أدنى حرج
+                            <th class="col-warn" style="width: 15%">
+                                <span class="th-dot warning"></span> حرج (أدنى/أقصى)
                             </th>
-                            <th class="col-warn">
-                                <span class="th-dot warning"></span> حد أقصى حرج
-                            </th>
-                            <th class="col-unit">الوحدة</th>
-                            <th class="col-del"></th>
+                            <th class="col-unit" style="width: 8%">الوحدة</th>
+                            <th class="col-del" style="width: 3%"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let r of referenceRanges; let i = index" class="range-row">
+                        <ng-container *ngFor="let r of testParameters; let i = index">
+                            <tr class="range-row">
                             <td>
                                 <input type="text" class="form-control form-control-sm"
                                     [(ngModel)]="r.label"
-                                    placeholder="اسم المرجع"
+                                    placeholder="مثال: WBC, Colour"
                                     [ngModelOptions]="{standalone: true}">
                             </td>
                             <td>
-                                <input type="number" class="form-control form-control-sm text-center input-normal"
-                                    [(ngModel)]="r.min" placeholder="—"
-                                    [ngModelOptions]="{standalone: true}">
+                                <select class="form-select form-select-sm" [(ngModel)]="r.type" (change)="onTypeChange(r)" [ngModelOptions]="{standalone: true}">
+                                    <option value="Numeric">رقمي (Numeric)</option>
+                                    <option value="Text">وصفي (Text)</option>
+                                </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control form-control-sm text-center input-normal"
-                                    [(ngModel)]="r.max" placeholder="—"
+                                <select *ngIf="r.type === 'Numeric'" class="form-select form-select-sm" [(ngModel)]="r.operator" [ngModelOptions]="{standalone: true}">
+                                    <option value="Between">بين (Between)</option>
+                                    <option value="LessThan">أقل من (<)</option>
+                                    <option value="GreaterThan">أكبر من (>)</option>
+                                </select>
+                                <span *ngIf="r.type === 'Text'" class="text-muted" style="font-size: 11px;">قيمة نصية</span>
+                            </td>
+                            
+                            <!-- Normal Inputs -->
+                            <td colspan="2" *ngIf="r.type === 'Text'">
+                                <input type="text" class="form-control form-control-sm text-center input-normal"
+                                    [(ngModel)]="r.normalString" placeholder="مثال: Negative, Clear, Yellow"
                                     [ngModelOptions]="{standalone: true}">
                             </td>
-                            <td>
-                                <input type="number" class="form-control form-control-sm text-center input-warn"
-                                    [(ngModel)]="r.criticalMin" placeholder="—"
-                                    [ngModelOptions]="{standalone: true}">
+                            <ng-container *ngIf="r.type === 'Numeric'">
+                                <td>
+                                    <input *ngIf="r.operator !== 'LessThan'" type="number" class="form-control form-control-sm text-center input-normal"
+                                        [(ngModel)]="r.min" placeholder="—" [ngModelOptions]="{standalone: true}">
+                                </td>
+                                <td>
+                                    <input *ngIf="r.operator !== 'GreaterThan'" type="number" class="form-control form-control-sm text-center input-normal"
+                                        [(ngModel)]="r.max" placeholder="—" [ngModelOptions]="{standalone: true}">
+                                </td>
+                            </ng-container>
+
+                            <!-- Critical Inputs -->
+                            <td *ngIf="r.type === 'Text'">
+                                <span class="text-muted">—</span>
                             </td>
-                            <td>
-                                <input type="number" class="form-control form-control-sm text-center input-warn"
-                                    [(ngModel)]="r.criticalMax" placeholder="—"
-                                    [ngModelOptions]="{standalone: true}">
+                            <td *ngIf="r.type === 'Numeric'">
+                                <div class="d-flex gap-1">
+                                    <input type="number" class="form-control form-control-sm text-center input-warn"
+                                        [(ngModel)]="r.criticalMin" placeholder="أدنى" [ngModelOptions]="{standalone: true}">
+                                    <input type="number" class="form-control form-control-sm text-center input-warn"
+                                        [(ngModel)]="r.criticalMax" placeholder="أقصى" [ngModelOptions]="{standalone: true}">
+                                </div>
                             </td>
+
                             <td>
                                 <select class="form-select form-select-sm text-center"
                                     [(ngModel)]="r.unit"
@@ -251,47 +295,93 @@
                             </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-del-range"
-                                    (click)="removeReferenceRange(i)">
+                                    (click)="removeTestParameter(i)">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </td>
                         </tr>
+                            <tr class="range-row-details">
+                                <td colspan="8" class="p-2 border-bottom" style="background-color: rgba(0, 0, 0, 0.015);">
+                                    <div class="d-flex align-items-center gap-4 px-2">
+                                        <div class="d-flex align-items-center">
+                                            <label class="small text-muted me-2 mb-0 fw-bold">النوع (Gender):</label>
+                                            <select class="form-select form-select-sm" style="width: 120px" [(ngModel)]="r.targetGender" [ngModelOptions]="{standalone: true}">
+                                                <option [ngValue]="null">الكل (All)</option>
+                                                <option [ngValue]="1">ذكر (Male)</option>
+                                                <option [ngValue]="2">أنثى (Female)</option>
+                                            </select>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <label class="small text-muted me-2 mb-0 fw-bold">السن (Age):</label>
+                                            <div class="input-group input-group-sm" style="width: 250px">
+                                                <span class="input-group-text">من</span>
+                                                <input type="number" class="form-control text-center" [(ngModel)]="r.minAgeUI" (change)="onAgeChange(r)" placeholder="0" [ngModelOptions]="{standalone: true}">
+                                                <span class="input-group-text">إلى</span>
+                                                <input type="number" class="form-control text-center" [(ngModel)]="r.maxAgeUI" (change)="onAgeChange(r)" placeholder="أقصى" [ngModelOptions]="{standalone: true}">
+                                            </div>
+                                            <select class="form-select form-select-sm ms-2" style="width: 100px" [(ngModel)]="r.ageUnit" (change)="onAgeChange(r)" [ngModelOptions]="{standalone: true}">
+                                                <option value="Years">سنة (Years)</option>
+                                                <option value="Months">شهر (Months)</option>
+                                                <option value="Days">يوم (Days)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
                     </tbody>
                 </table>
             </div>
 
             <!-- Empty state -->
-            <div *ngIf="referenceRanges.length === 0" class="empty-ranges-state">
+            <div *ngIf="testParameters.length === 0" class="empty-ranges-state">
                 <i class="fas fa-chart-bar mb-2 d-block fs-4 opacity-50"></i>
-                لا توجد مراجع طبيعية<br>
+                لا توجد مكونات للتحليل<br>
                 <small>اضغط "إضافة مرجع" لإضافة نطاق طبيعي</small>
             </div>
 
             <!-- Live Preview -->
-            <div *ngIf="referenceRanges.length > 0" class="ranges-preview">
+            <div *ngIf="testParameters && testParameters.length > 0" class="ranges-preview">
                 <div class="preview-title">
-                    <i class="fas fa-eye me-1"></i> معاينة النطاقات
+                    <i class="fas fa-eye me-1"></i> معاينة المكونات
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <ng-container *ngFor="let r of referenceRanges">
-                        <div *ngIf="r.label || r.min !== null" class="preview-card">
-                            <div class="preview-card-label">{{ r.label || '—' }}</div>
+                    <ng-container *ngFor="let r of testParameters">
+                        <div *ngIf="r.label" class="preview-card">
+                            <div class="preview-card-label">{{ r.label }}</div>
                             <div class="preview-card-body">
-                                <span class="pv-normal" *ngIf="r.min !== null">
-                                    🟢 {{ r.min }}–{{ r.max }}
+                                <!-- Text Type Preview -->
+                                <span class="pv-normal" *ngIf="r.type === 'Text' && r.normalString">
+                                    🟢 {{ r.normalString }}
                                 </span>
-                                <span class="pv-warn" *ngIf="r.criticalMin !== null && r.min !== null">
-                                    🟠 {{ r.criticalMin }}–{{ r.min }}
-                                </span>
-                                <span class="pv-warn" *ngIf="r.criticalMax !== null && r.max !== null">
-                                    🟠 {{ r.max }}–{{ r.criticalMax }}
-                                </span>
-                                <span class="pv-danger" *ngIf="r.criticalMin !== null">
-                                    🔴 &lt; {{ r.criticalMin }}
-                                </span>
-                                <span class="pv-danger" *ngIf="r.criticalMax !== null">
-                                    🔴 &gt; {{ r.criticalMax }}
-                                </span>
+                                
+                                <!-- Numeric Type Preview -->
+                                <ng-container *ngIf="r.type === 'Numeric'">
+                                    <span class="pv-normal" *ngIf="r.operator === 'Between' && r.min !== null && r.max !== null">
+                                        🟢 {{ r.min }}–{{ r.max }}
+                                    </span>
+                                    <span class="pv-normal" *ngIf="r.operator === 'LessThan' && r.max !== null">
+                                        🟢 < {{ r.max }}
+                                    </span>
+                                    <span class="pv-normal" *ngIf="r.operator === 'GreaterThan' && r.min !== null">
+                                        🟢 > {{ r.min }}
+                                    </span>
+
+                                    <!-- Warnings/Dangers -->
+                                    <span class="pv-warn" *ngIf="r.criticalMin !== null && r.min !== null && r.operator === 'Between'">
+                                        🟠 {{ r.criticalMin }}–{{ r.min }}
+                                    </span>
+                                    <span class="pv-warn" *ngIf="r.criticalMax !== null && r.max !== null && r.operator === 'Between'">
+                                        🟠 {{ r.max }}–{{ r.criticalMax }}
+                                    </span>
+                                    <span class="pv-danger" *ngIf="r.criticalMin !== null">
+                                        🔴 &lt; {{ r.criticalMin }}
+                                    </span>
+                                    <span class="pv-danger" *ngIf="r.criticalMax !== null">
+                                        🔴 &gt; {{ r.criticalMax }}
+                                    </span>
+                                </ng-container>
+                                
                                 <span class="pv-unit" *ngIf="r.unit">{{ r.unit }}</span>
                             </div>
                         </div>

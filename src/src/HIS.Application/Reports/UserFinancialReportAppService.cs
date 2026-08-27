@@ -9,6 +9,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
+using QuestPDF.Fluent;
 
 namespace HIS.Reports
 {
@@ -66,7 +67,8 @@ namespace HIS.Reports
                     Amount = x.Amount,
                     TransactionDate = x.PaymentDate,
                     Description = x.Notes ?? "سداد فاتورة",
-                    ReferenceNumber = x.PaymentNumber
+                    ReferenceNumber = x.PaymentNumber,
+                    PaymentCategory = x.PaymentMethod == HIS.Billing.PaymentMethod.Cash ? "Cash" : "Bank"
                 }));
             }
 
@@ -89,7 +91,8 @@ namespace HIS.Reports
                     Amount = x.Amount,
                     TransactionDate = x.DepositDate,
                     Description = x.Notes ?? "مبلغ تأمين",
-                    ReferenceNumber = x.ReceiptNumber
+                    ReferenceNumber = x.ReceiptNumber,
+                    PaymentCategory = x.PaymentMethod == HIS.Billing.PaymentMethod.Cash ? "Cash" : "Bank"
                 }));
             }
 
@@ -112,7 +115,8 @@ namespace HIS.Reports
                     Amount = x.Amount,
                     TransactionDate = x.Date,
                     Description = x.Description,
-                    ReferenceNumber = x.VoucherNumber
+                    ReferenceNumber = x.VoucherNumber,
+                    PaymentCategory = x.PaymentMethodId == null ? "Cash" : "Bank"
                 }));
             }
 
@@ -135,14 +139,15 @@ namespace HIS.Reports
                     Amount = -x.Amount, // Negative to indicate outgoing
                     TransactionDate = x.Date,
                     Description = x.Description,
-                    ReferenceNumber = x.VoucherNumber
+                    ReferenceNumber = x.VoucherNumber,
+                    PaymentCategory = x.PaymentMethodId == null ? "Cash" : "Bank"
                 }));
             }
 
             // Map User Names
             var userIds = transactions.Where(x => x.UserId.HasValue).Select(x => x.UserId.Value).Distinct().ToList();
             var users = await _userRepository.GetListByIdsAsync(userIds);
-            var userDict = users.ToDictionary(x => x.Id, x => x.Name ?? x.UserName);
+            var userDict = (users ?? new List<IdentityUser>()).ToDictionary(x => x.Id, x => x.Name ?? x.UserName);
 
             foreach (var tx in transactions)
             {
@@ -165,6 +170,39 @@ namespace HIS.Reports
                 .ToList();
 
             return new PagedResultDto<UserFinancialTransactionDto>(sortedTransactions.Count, paginatedTransactions);
+        }
+
+        public async Task<byte[]> GetPrintDocumentAsync(GetUserFinancialTransactionsInput input)
+        {
+            // Override maxResultCount to get all data for printing
+            input.MaxResultCount = 10000;
+            input.SkipCount = 0;
+
+            var result = await GetListAsync(input);
+
+            var printData = new UserFinancialReportPrintDataDto
+            {
+                Transactions = result.Items.ToList(),
+                StartDate = input.StartDate,
+                EndDate = input.EndDate,
+                PrintDate = DateTime.Now
+            };
+
+            if (input.UserId.HasValue)
+            {
+                var user = await _userRepository.FindAsync(input.UserId.Value);
+                if (user != null)
+                {
+                    printData.UserName = user.Name ?? user.UserName;
+                }
+            }
+
+            var document = new HIS.Reports.Printing.UserFinancialReportDocument
+            {
+                ReportData = printData
+            };
+
+            return document.GeneratePdf();
         }
     }
 }

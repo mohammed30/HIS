@@ -27,6 +27,22 @@ public class LabTestDto : AuditedEntityDto<Guid>
     public Guid? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public bool IsActive { get; set; }
+    public string? Machine { get; set; }
+    public string? TurnaroundTime { get; set; }
+
+    public List<LabTestNormalRangeDto> NormalRanges { get; set; } = new();
+}
+
+public class LabTestNormalRangeDto : EntityDto<Guid>
+{
+    public Guid LabTestId { get; set; }
+    public HIS.Patients.Gender? TargetGender { get; set; }
+    public int? MinAgeDays { get; set; }
+    public int? MaxAgeDays { get; set; }
+    public LabResultType ResultType { get; set; }
+    public decimal? MinValue { get; set; }
+    public decimal? MaxValue { get; set; }
+    public string? NormalStringValue { get; set; }
 }
 
 public class CreateUpdateLabTestDto
@@ -42,6 +58,21 @@ public class CreateUpdateLabTestDto
     public string? Unit { get; set; }
     public Guid? CategoryId { get; set; }
     public bool IsActive { get; set; }
+    public string? Machine { get; set; }
+    public string? TurnaroundTime { get; set; }
+
+    public List<CreateLabTestNormalRangeDto> NormalRanges { get; set; } = new();
+}
+
+public class CreateLabTestNormalRangeDto
+{
+    public HIS.Patients.Gender? TargetGender { get; set; }
+    public int? MinAgeDays { get; set; }
+    public int? MaxAgeDays { get; set; }
+    public LabResultType ResultType { get; set; }
+    public decimal? MinValue { get; set; }
+    public decimal? MaxValue { get; set; }
+    public string? NormalStringValue { get; set; }
 }
 
 public class LabRequestDto : AuditedEntityDto<Guid>

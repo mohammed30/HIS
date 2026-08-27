@@ -1,0 +1,167 @@
+<div class="premium-card card">
+  <div class="premium-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">تقرير مطالبات شركات التأمين</h3>
+    <div>
+      <button class="btn btn-print" (click)="printReport()" [disabled]="isDownloading">
+        <i class="fa fa-print me-1"></i>
+        {{ isDownloading ? 'جاري المعالجة...' : 'طباعة التقرير' }}
+      </button>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <form [formGroup]="form" (ngSubmit)="search()" class="mb-5">
+      <div class="row g-3 align-items-end border p-3 rounded">
+        <div class="col-md-3">
+          <label class="form-label text-muted fw-bold" for="companyId">شركة التأمين</label>
+          <select id="companyId" class="form-select" formControlName="insuranceCompanyId">
+            <option [ngValue]="null">جميع الشركات</option>
+            <option *ngFor="let company of companies" [ngValue]="company.id">
+              {{ company.nameAr }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-muted fw-bold" for="startDate">تاريخ البدء</label>
+          <input type="date" id="startDate" class="form-control" formControlName="startDate" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-muted fw-bold" for="endDate">تاريخ النهاية</label>
+          <input type="date" id="endDate" class="form-control" formControlName="endDate" />
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+            <i class="fa fa-search me-1"></i> بحث واستعلام
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-5" *ngIf="companyGroups.length > 0">
+      <div class="col-md-3">
+        <div class="summary-card card-primary text-center">
+          <div class="summary-icon mx-auto bg-primary-light">
+              <i class="fa fa-file-invoice"></i>
+            </div>
+            <div class="summary-label">إجمالي الفواتير</div>
+            <h4 class="summary-value">{{ totalClaimsCount }}</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="summary-card card-info text-center">
+          <div class="summary-icon mx-auto bg-info-light">
+              <i class="fa fa-money-bill-wave"></i>
+            </div>
+            <div class="summary-label">الإجمالي العام (قبل التحمل)</div>
+            <h4 class="summary-value">{{ grandTotalAmount | number:'1.2-2' }}</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="summary-card card-warning text-center">
+          <div class="summary-icon mx-auto bg-warning-light">
+              <i class="fa fa-user-injured"></i>
+            </div>
+            <div class="summary-label">إجمالي تحمل المرضى</div>
+            <h4 class="summary-value">{{ grandTotalCoPay | number:'1.2-2' }}</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="summary-card card-success text-center">
+          <div class="summary-icon mx-auto bg-success-light">
+              <i class="fa fa-shield-alt"></i>
+            </div>
+            <div class="summary-label">إجمالي المستحق من التأمين</div>
+            <h4 class="summary-value">{{ grandTotalInsurance | number:'1.2-2' }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="companyGroups.length === 0" class="text-center py-5">
+      <i class="fa fa-folder-open text-muted mb-3" style="font-size: 3rem;"></i>
+      <h5 class="text-muted">لا توجد مطالبات متطابقة مع معايير البحث</h5>
+    </div>
+
+    <!-- Grouped Accordion -->
+    <div class="company-accordion" *ngIf="companyGroups.length > 0">
+      <div ngbAccordion>
+        <div ngbAccordionItem *ngFor="let group of companyGroups; let i = index" [collapsed]="i !== 0">
+          <h2 ngbAccordionHeader>
+            <button ngbAccordionButton>
+              <div class="d-flex justify-content-between w-100 pe-3">
+                <span class="fw-bold"><i class="fa fa-building me-2 text-primary"></i> {{ group.companyName }}</span>
+                <span class="badge bg-success rounded-pill align-self-center fs-6">
+                  مستحق: {{ group.totalInsurance | number:'1.2-2' }}
+                </span>
+              </div>
+            </button>
+          </h2>
+          <div ngbAccordionCollapse>
+            <div ngbAccordionBody class="p-0">
+              
+              <div class="group-stats-bar p-3 border-bottom d-flex justify-content-around">
+                <div class="text-center"><small class="text-muted d-block">عدد الفواتير</small><span class="fw-bold">{{ group.claims.length }}</span></div>
+                <div class="text-center"><small class="text-muted d-block">إجمالي الفواتير</small><span class="fw-bold">{{ group.totalAmount | number:'1.2-2' }}</span></div>
+                <div class="text-center"><small class="text-muted d-block">تحمل المرضى</small><span class="fw-bold text-warning">{{ group.totalCoPay | number:'1.2-2' }}</span></div>
+                <div class="text-center"><small class="text-muted d-block">مستحق التأمين</small><span class="fw-bold text-success">{{ group.totalInsurance | number:'1.2-2' }}</span></div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-premium w-100">
+                  <thead>
+                    <tr>
+                      <th>التاريخ</th>
+                      <th>المريض / رقم الملف</th>
+                      <th>رقم التأمين / بوليصة</th>
+                      <th>الخدمات المقدمة</th>
+                      <th class="text-end">الإجمالي</th>
+                      <th class="text-end">تحمل المريض</th>
+                      <th class="text-end">تحمل التأمين</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor="let claim of group.claims">
+                      <tr class="invoice-row" *ngIf="claim">
+                        <td>{{ claim?.invoiceDate | date:'dd/MM/yyyy' }}<br><small class="text-muted">فاتورة: {{ claim?.invoiceNumber }}</small></td>
+                        <td>{{ claim?.patientName }}<br><small class="text-muted">ملف: {{ claim?.patientFileNumber }}</small></td>
+                        <td>{{ claim?.policyNumber || '-' }}</td>
+                        <td colspan="4" class="p-0 border-0">
+                          <!-- Nested Table for Items -->
+                          <table class="table table-sm table-borderless m-0">
+                            <tbody>
+                              <tr *ngFor="let item of claim?.items" class="border-bottom">
+                                <td style="width: 40%">
+                                  {{ item?.departmentName }} - {{ item?.serviceName }}<br>
+                                  <small class="text-muted">كود: {{ item?.serviceCode }}</small>
+                                </td>
+                                <td class="text-end fw-bold" style="width: 20%">{{ item?.totalPrice | number:'1.2-2' }}</td>
+                                <td class="text-end text-warning" style="width: 20%">{{ item?.patientCoPay | number:'1.2-2' }}</td>
+                                <td class="text-end text-success" style="width: 20%">{{ item?.insuranceCoverage | number:'1.2-2' }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4 d-flex justify-content-end" *ngIf="list.totalCount > list.maxResultCount">
+      <ngb-pagination
+        [collectionSize]="list.totalCount"
+        [(page)]="list.page"
+        [pageSize]="list.maxResultCount"
+        (pageChange)="list.get()"
+        class="d-flex justify-content-end"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

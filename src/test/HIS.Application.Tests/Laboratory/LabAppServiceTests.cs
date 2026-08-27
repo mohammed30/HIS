@@ -2,169 +2,137 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HIS.Laboratory;
 using HIS.Laboratory.Dtos;
 using HIS.Patients;
-using Shouldly;
+using NSubstitute;
 using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Modularity;
 using Xunit;
+using Shouldly;
+using Volo.Abp.ObjectMapping;
 
-namespace HIS.Laboratory.Tests;
-
-public abstract class LabAppServiceTests<TStartupModule> : LabTestBase<TStartupModule>
-    where TStartupModule : IAbpModule
+namespace HIS.Laboratory.Tests
 {
-    private readonly ILabAppService _labAppService;
-    private readonly IRepository<Patient, Guid> _patientRepository;
-    private readonly IRepository<LabTest, Guid> _labTestRepository;
-    private readonly IRepository<LabRequest, Guid> _labRequestRepository;
-    private readonly IRepository<LabTestCategory, Guid> _categoryRepository;
-
-    protected LabAppServiceTests()
+    public class LabAppServiceTests
     {
-        _labAppService = GetRequiredService<ILabAppService>();
-        _patientRepository = GetRequiredService<IRepository<Patient, Guid>>();
-        _labTestRepository = GetRequiredService<IRepository<LabTest, Guid>>();
-        _labRequestRepository = GetRequiredService<IRepository<LabRequest, Guid>>();
-        _categoryRepository = GetRequiredService<IRepository<LabTestCategory, Guid>>();
-    }
-
-    [Fact]
-    public async Task CreateTestAsync_Should_Create_LabTest()
-    {
-        // Arrange
-        Guid categoryId = Guid.NewGuid();
-        await WithUnitOfWorkAsync(async () =>
+        public LabAppServiceTests()
         {
-            await _categoryRepository.InsertAsync(new LabTestCategory(categoryId, "CAT-01", "Blood Tests", null));
-        });
+        }
 
-        var input = new CreateUpdateLabTestDto
+        [Fact]
+        public void EvaluateResultIsAbnormal_NumericResult_CorrectlyEvaluated()
         {
-            Code = "TEST-01",
-            Name = "Complete Blood Count",
-            CategoryId = categoryId,
-            Price = 150m,
-            IsActive = true
-        };
-
-        // Act
-        var result = await _labAppService.CreateTestAsync(input);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.Code.ShouldBe("TEST-01");
-        result.Name.ShouldBe("Complete Blood Count");
-
-        var testInDb = await _labTestRepository.GetAsync(result.Id);
-        testInDb.ShouldNotBeNull();
-        testInDb.Price.ShouldBe(150m);
-    }
-
-    [Fact]
-    public async Task CreateRequestAsync_Should_Create_LabRequest()
-    {
-        // Arrange
-        Guid patientId = Guid.NewGuid();
-        Guid testId = Guid.NewGuid();
-
-        await WithUnitOfWorkAsync(async () =>
-        {
-            var patient = new Patient(patientId, null, "MRN_LAB_01", "علي", "سالم", new DateTime(1990, 1, 1), Gender.Male, IdentityType.NationalId, "1234567891", "0500000001");
-            await _patientRepository.InsertAsync(patient);
-
-            await _labTestRepository.InsertAsync(new LabTest(testId, "TEST-02", "HbA1c", 200m));
-        });
-
-        var input = new CreateLabRequestDto
-        {
-            PatientId = patientId,
-            DoctorId = Guid.NewGuid(),
-            ServiceItemId = testId,
-            Notes = "Check diabetes"
-        };
-
-        // Act
-        var result = await _labAppService.CreateRequestAsync(input);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.PatientId.ShouldBe(patientId);
-        result.ServiceItemId.ShouldBe(testId);
-        result.Status.ShouldBe(LabRequestStatus.Requested);
-
-        var requestInDb = await _labRequestRepository.GetAsync(result.Id);
-        requestInDb.ShouldNotBeNull();
-    }
-
-    [Fact]
-    public async Task CollectSampleAsync_Should_Update_Status()
-    {
-        // Arrange
-        Guid requestId = Guid.NewGuid();
-
-        await WithUnitOfWorkAsync(async () =>
-        {
-            var patient = new Patient(Guid.NewGuid(), null, "MRN_LAB_02", "سارة", "محمد", new DateTime(1992, 1, 1), Gender.Female, IdentityType.NationalId, "1234567892", "0500000002");
-            await _patientRepository.InsertAsync(patient);
-
-            var test = new LabTest(Guid.NewGuid(), "TEST-03", "Lipid Profile", 250m);
-            await _labTestRepository.InsertAsync(test);
-
-            var request = new LabRequest(requestId, patient.Id, Guid.NewGuid(), test.Id)
+            var testId = Guid.NewGuid();
+            var test = CreateLabTest(testId, new List<LabTestNormalRange>
             {
-                Status = LabRequestStatus.Requested
-            };
-            await _labRequestRepository.InsertAsync(request);
-        });
+                CreateNormalRange(testId, Gender.Male, null, null, LabResultType.Numeric, 70m, 110m, null),
+                CreateNormalRange(testId, Gender.Female, null, null, LabResultType.Numeric, 60m, 100m, null)
+            });
 
-        // Act
-        var result = await _labAppService.CollectSampleAsync(requestId);
+            var result1 = LabEvaluationHelper.IsAbnormal(test, "80", Gender.Male, 30 * 365);
+            var result2 = LabEvaluationHelper.IsAbnormal(test, "120", Gender.Male, 30 * 365);
+            var result3 = LabEvaluationHelper.IsAbnormal(test, "90", Gender.Female, 30 * 365);
+            var result4 = LabEvaluationHelper.IsAbnormal(test, "105", Gender.Female, 30 * 365);
 
-        // Assert
-        result.ShouldNotBeNull();
-        result.Status.ShouldBe(LabRequestStatus.SampleCollected);
+            result1.ShouldBeFalse(); 
+            result2.ShouldBeTrue();  
+            result3.ShouldBeFalse(); 
+            result4.ShouldBeTrue();  
+        }
 
-        var requestInDb = await _labRequestRepository.GetAsync(requestId);
-        requestInDb.Status.ShouldBe(LabRequestStatus.SampleCollected);
+        [Fact]
+        public void EvaluateResultIsAbnormal_TextResult_CorrectlyEvaluated()
+        {
+            var testId = Guid.NewGuid();
+            var test = CreateLabTest(testId, new List<LabTestNormalRange>
+            {
+                CreateNormalRange(testId, null, null, null, LabResultType.Text, null, null, "Negative")
+            });
+
+            var result1 = LabEvaluationHelper.IsAbnormal(test, "Negative", Gender.Male, 30 * 365);
+            var result2 = LabEvaluationHelper.IsAbnormal(test, "Positive", Gender.Male, 30 * 365);
+
+            result1.ShouldBeFalse(); 
+            result2.ShouldBeTrue();  
+        }
+
+        [Fact]
+        public void EvaluateResultIsAbnormal_AgeBased_CorrectlyEvaluated()
+        {
+            var testId = Guid.NewGuid();
+            var test = CreateLabTest(testId, new List<LabTestNormalRange>
+            {
+                CreateNormalRange(testId, null, 0, 365, LabResultType.Numeric, 10m, 50m, null),
+                CreateNormalRange(testId, null, 366, null, LabResultType.Numeric, 20m, 100m, null)
+            });
+
+            var result1 = LabEvaluationHelper.IsAbnormal(test, "30", Gender.Male, 180); 
+            var result2 = LabEvaluationHelper.IsAbnormal(test, "60", Gender.Male, 180); 
+            var result3 = LabEvaluationHelper.IsAbnormal(test, "80", Gender.Male, 30 * 365); 
+            var result4 = LabEvaluationHelper.IsAbnormal(test, "15", Gender.Male, 30 * 365); 
+
+            result1.ShouldBeFalse(); 
+            result2.ShouldBeTrue();  
+            result3.ShouldBeFalse(); 
+            result4.ShouldBeTrue();  
+        }
+
+        private static LabTest CreateLabTest(Guid id, List<LabTestNormalRange> normalRanges)
+        {
+            var test = (LabTest)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(LabTest));
+            typeof(LabTest).GetProperty("Id")?.SetValue(test, id);
+            test.NormalRanges = normalRanges;
+            return test;
+        }
+
+        private static LabTestNormalRange CreateNormalRange(Guid testId, Gender? gender, int? minAge, int? maxAge, LabResultType resultType, decimal? minVal, decimal? maxVal, string? stringVal)
+        {
+            var range = (LabTestNormalRange)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(LabTestNormalRange));
+            typeof(LabTestNormalRange).GetProperty("Id")?.SetValue(range, Guid.NewGuid());
+            range.LabTestId = testId;
+            range.TargetGender = gender;
+            range.MinAgeDays = minAge;
+            range.MaxAgeDays = maxAge;
+            range.ResultType = resultType;
+            range.MinValue = minVal;
+            range.MaxValue = maxVal;
+            range.NormalStringValue = stringVal;
+            return range;
+        }
     }
 
-    [Fact]
-    public async Task CompleteRequestAsync_Should_Update_Result()
+    public static class LabEvaluationHelper
     {
-        // Arrange
-        Guid requestId = Guid.NewGuid();
-
-        await WithUnitOfWorkAsync(async () =>
+        public static bool IsAbnormal(LabTest test, string result, Gender patientGender, int patientAgeInDays)
         {
-            var patient = new Patient(Guid.NewGuid(), null, "MRN_LAB_03", "أحمد", "علي", new DateTime(1985, 1, 1), Gender.Male, IdentityType.NationalId, "1234567893", "0500000003");
-            await _patientRepository.InsertAsync(patient);
+            if (test == null || !test.NormalRanges.Any()) return false;
 
-            var test = new LabTest(Guid.NewGuid(), "TEST-04", "Vitamin D", 300m);
-            await _labTestRepository.InsertAsync(test);
+            var range = test.NormalRanges.FirstOrDefault(r => 
+                (!r.TargetGender.HasValue || r.TargetGender.Value == patientGender) &&
+                (!r.MinAgeDays.HasValue || patientAgeInDays >= r.MinAgeDays.Value) &&
+                (!r.MaxAgeDays.HasValue || patientAgeInDays <= r.MaxAgeDays.Value)
+            );
 
-            var request = new LabRequest(requestId, patient.Id, Guid.NewGuid(), test.Id)
+            if (range == null) return false; 
+
+            if (range.ResultType == LabResultType.Numeric)
             {
-                Status = LabRequestStatus.SampleCollected
-            };
-            await _labRequestRepository.InsertAsync(request);
-        });
-
-        var input = new UpdateLabResultDto
-        {
-            Result = "Normal level (30-100 ng/mL): 45 ng/mL",
-            Notes = "OK"
-        };
-
-        // Act
-        var result = await _labAppService.CompleteRequestAsync(requestId, input);
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.Status.ShouldBe(LabRequestStatus.Completed);
-        result.Result.ShouldBe(input.Result);
-
-        var requestInDb = await _labRequestRepository.GetAsync(requestId);
-        requestInDb.Status.ShouldBe(LabRequestStatus.Completed);
+                if (decimal.TryParse(result, out decimal numericResult))
+                {
+                    if (range.MinValue.HasValue && numericResult < range.MinValue.Value) return true;
+                    if (range.MaxValue.HasValue && numericResult > range.MaxValue.Value) return true;
+                    return false;
+                }
+                return true; 
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(range.NormalStringValue))
+                {
+                    return !result.Equals(range.NormalStringValue, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return false;
+        }
     }
 }

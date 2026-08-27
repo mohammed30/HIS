@@ -120,7 +120,7 @@ public class LabAppService : ApplicationService, ILabAppService
 
     public async Task<PagedResultDto<LabTestDto>> GetTestsAsync(PagedAndSortedResultRequestDto input)
     {
-        var query = await _testRepository.GetQueryableAsync();
+        var query = await _testRepository.WithDetailsAsync(x => x.NormalRanges);
         
         var totalCount = await AsyncExecuter.CountAsync(query);
         
@@ -163,8 +163,27 @@ public class LabAppService : ApplicationService, ILabAppService
             ReferenceRange = input.ReferenceRange,
             Unit = input.Unit,
             CategoryId = input.CategoryId,
-            IsActive = input.IsActive
+            IsActive = input.IsActive,
+            Machine = input.Machine,
+            TurnaroundTime = input.TurnaroundTime
         };
+
+        if (input.NormalRanges != null && input.NormalRanges.Any())
+        {
+            foreach (var nr in input.NormalRanges)
+            {
+                var normalRange = new LabTestNormalRange(GuidGenerator.Create(), test.Id, nr.ResultType)
+                {
+                    TargetGender = nr.TargetGender,
+                    MinAgeDays = nr.MinAgeDays,
+                    MaxAgeDays = nr.MaxAgeDays,
+                    MinValue = nr.MinValue,
+                    MaxValue = nr.MaxValue,
+                    NormalStringValue = nr.NormalStringValue
+                };
+                test.NormalRanges.Add(normalRange);
+            }
+        }
 
         await _testRepository.InsertAsync(test);
         return ObjectMapper.Map<LabTest, LabTestDto>(test);
@@ -181,10 +200,31 @@ public class LabAppService : ApplicationService, ILabAppService
     [Route("api/app/lab/test/{id}")]
     public async Task<LabTestDto> UpdateTestAsync(Guid id, CreateUpdateLabTestDto input)
     {
-        var test = await _testRepository.GetAsync(id);
+        var query = await _testRepository.WithDetailsAsync(x => x.NormalRanges);
+        var test = await AsyncExecuter.FirstOrDefaultAsync(query.Where(x => x.Id == id));
+        if (test == null) throw new Volo.Abp.Domain.Entities.EntityNotFoundException(typeof(LabTest), id);
         
-        test.UpdateInfo(input.Name, input.Price, input.Instructions, input.ReferenceRange, input.Unit);
+        test.UpdateInfo(input.Name, input.Price, input.Instructions, input.ReferenceRange, input.Unit, input.Machine, input.TurnaroundTime);
         test.IsActive = input.IsActive;
+
+        // Update NormalRanges
+        test.NormalRanges.Clear();
+        if (input.NormalRanges != null && input.NormalRanges.Any())
+        {
+            foreach (var nr in input.NormalRanges)
+            {
+                var normalRange = new LabTestNormalRange(GuidGenerator.Create(), test.Id, nr.ResultType)
+                {
+                    TargetGender = nr.TargetGender,
+                    MinAgeDays = nr.MinAgeDays,
+                    MaxAgeDays = nr.MaxAgeDays,
+                    MinValue = nr.MinValue,
+                    MaxValue = nr.MaxValue,
+                    NormalStringValue = nr.NormalStringValue
+                };
+                test.NormalRanges.Add(normalRange);
+            }
+        }
 
         await _testRepository.UpdateAsync(test);
         return ObjectMapper.Map<LabTest, LabTestDto>(test);
@@ -389,6 +429,44 @@ public class LabAppService : ApplicationService, ILabAppService
         }
 
         return ObjectMapper.Map<LabRequest, LabRequestDto>(request);
+    }
+
+    [Microsoft.AspNetCore.Mvc.HttpPost]
+    [Microsoft.AspNetCore.Mvc.Route("api/app/lab/evaluate-result")]
+    public async Task<bool> EvaluateResultIsAbnormalAsync(Guid labTestId, string result, Gender patientGender, int patientAgeInDays)
+    {
+        var testQuery = await _testRepository.WithDetailsAsync(x => x.NormalRanges);
+        var test = await AsyncExecuter.FirstOrDefaultAsync(testQuery.Where(x => x.Id == labTestId));
+        if (test == null || !test.NormalRanges.Any()) return false;
+
+        // Find applicable normal range
+        var range = test.NormalRanges.FirstOrDefault(r => 
+            (!r.TargetGender.HasValue || r.TargetGender.Value == patientGender) &&
+            (!r.MinAgeDays.HasValue || patientAgeInDays >= r.MinAgeDays.Value) &&
+            (!r.MaxAgeDays.HasValue || patientAgeInDays <= r.MaxAgeDays.Value)
+        );
+
+        if (range == null) return false; // No matching range
+
+        if (range.ResultType == LabResultType.Numeric)
+        {
+            if (decimal.TryParse(result, out decimal numericResult))
+            {
+                if (range.MinValue.HasValue && numericResult < range.MinValue.Value) return true;
+                if (range.MaxValue.HasValue && numericResult > range.MaxValue.Value) return true;
+                return false;
+            }
+            return true; // Could not parse as numeric but expected numeric
+        }
+        else
+        {
+            if (!string.IsNullOrWhiteSpace(range.NormalStringValue))
+            {
+                return !result.Equals(range.NormalStringValue, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        
+        return false;
     }
 
     [Microsoft.AspNetCore.Mvc.HttpGet]

@@ -29,6 +29,19 @@ export interface CreateUpdateLabTestDto {
   unit?: string | null;
   categoryId?: string | null;
   isActive?: boolean;
+  machine?: string | null;
+  turnaroundTime?: string | null;
+  normalRanges?: CreateLabTestNormalRangeDto[];
+}
+
+export interface CreateLabTestNormalRangeDto {
+  targetGender?: number | null; // GenderType
+  minAgeDays?: number | null;
+  maxAgeDays?: number | null;
+  resultType?: number; // LabResultType
+  minValue?: number | null;
+  maxValue?: number | null;
+  normalStringValue?: string | null;
 }
 
 export interface GetLabRequestsInput extends PagedAndSortedResultRequestDto {
@@ -93,6 +106,9 @@ export interface LabTestDto extends AuditedEntityDto<string> {
   categoryId?: string | null;
   categoryName?: string | null;
   isActive?: boolean;
+  machine?: string | null;
+  turnaroundTime?: string | null;
+  normalRanges?: CreateLabTestNormalRangeDto[];
 }
 
 export interface UpdateLabAppointmentDto {

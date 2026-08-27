@@ -207,20 +207,29 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
     {
         if (amount <= 0) return;
 
-        var arAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
+        var patientArMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.PatientsReceivable);
+        var patientArAccount = patientArMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == patientArMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
+            
+        var insuranceArMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.InsuranceReceivable);
+        var insuranceArAccount = insuranceArMapping?.AccountId.HasValue == true
+            ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == insuranceArMapping.AccountId.Value)
+            : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "1120");
         
         var vatOutputMapping = await _accountMappingRepository.FirstOrDefaultAsync(x => x.MappingType == AccountMappingType.VATOutput);
         var taxAccount = vatOutputMapping?.AccountId.HasValue == true
             ? await _accountRepository.FirstOrDefaultAsync(x => x.Id == vatOutputMapping.AccountId.Value)
             : await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2200");
 
-        arAccount = await GetLeafAccountAsync(arAccount);
+        patientArAccount = await GetLeafAccountAsync(patientArAccount);
+        insuranceArAccount = await GetLeafAccountAsync(insuranceArAccount);
         taxAccount = await GetLeafAccountAsync(taxAccount);
 
         var patient = await _patientRepository.FindAsync(invoice.PatientId);
         var patientName = patient != null ? patient.FullNameAr : invoice.PatientId.ToString();
 
-        if (arAccount != null)
+        if (patientArAccount != null && insuranceArAccount != null)
         {
             var je = new HIS.Accounting.JournalEntry(
                 GuidGenerator.Create(),
@@ -240,8 +249,24 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
             decimal itemDiscounts = invoiceItems.Sum(i => i.DiscountAmount);
             decimal totalDiscount = itemDiscounts + invoice.DiscountAmount;
             
-            // Debit AR for Gross + Tax
-            je.AddLine(GuidGenerator, arAccount.Id, grossAmount + invoice.TaxAmount, 0);
+            decimal totalDebitAmount = grossAmount + invoice.TaxAmount;
+            
+            // Distribute AR Debit between Patient and Insurance
+            if (invoice.InsuranceCoverage > 0)
+            {
+                decimal insuranceShare = invoice.InsuranceCoverage;
+                decimal patientShare = totalDebitAmount - insuranceShare;
+                
+                if (patientShare > 0)
+                    je.AddLine(GuidGenerator, patientArAccount.Id, patientShare, 0);
+                    
+                if (insuranceShare > 0)
+                    je.AddLine(GuidGenerator, insuranceArAccount.Id, insuranceShare, 0);
+            }
+            else
+            {
+                je.AddLine(GuidGenerator, patientArAccount.Id, totalDebitAmount, 0);
+            }
 
             // Calculate Doctor Share Info
             decimal doctorPercentage = 0;
@@ -254,10 +279,39 @@ public class InvoiceAppService : CrudAppService<Invoice, InvoiceDto, Guid, GetIn
                 if (appointment != null)
                 {
                     var doctor = await doctorRepo.FindAsync(appointment.DoctorId);
-                    if (doctor != null && doctor.AccountId.HasValue && doctor.DoctorPercentage > 0)
+                    if (doctor != null && doctor.DoctorPercentage > 0)
                     {
                         doctorPercentage = (decimal)doctor.DoctorPercentage;
-                        doctorAccountId = doctor.AccountId.Value;
+                        
+                        if (doctor.AccountId.HasValue)
+                        {
+                            var doctorAccount = await _accountRepository.FindAsync(doctor.AccountId.Value);
+                            if (doctorAccount != null)
+                            {
+                                doctorAccountId = doctorAccount.Id;
+                            }
+                        }
+
+                        if (!doctorAccountId.HasValue)
+                        {
+                            var parentAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Code == "2110");
+                            string docCode = doctor.Id.ToString().Substring(0, 4).ToUpper();
+                            var newAccountId = GuidGenerator.Create();
+                            var newAccount = new HIS.Accounting.Account(
+                                newAccountId,
+                                (parentAccount != null ? parentAccount.Code : "2110") + "-DR-" + docCode,
+                                $"Dr. {doctor.NameAr ?? doctor.NameEn} Dues",
+                                $"مستحقات - {doctor.NameAr ?? doctor.NameEn}",
+                                HIS.Accounting.AccountType.Liability,
+                                parentAccount?.Id
+                            );
+                            
+                            await _accountRepository.InsertAsync(newAccount, autoSave: true);
+                            doctor.AccountId = newAccountId;
+                            await doctorRepo.UpdateAsync(doctor, autoSave: true);
+                            
+                            doctorAccountId = newAccountId;
+                        }
                     }
                 }
             }

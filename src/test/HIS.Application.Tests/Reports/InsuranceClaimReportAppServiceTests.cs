@@ -1,0 +1,188 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using HIS.Billing;
+using HIS.Insurance;
+using HIS.Patients;
+using HIS.Reports;
+using NSubstitute;
+using Volo.Abp.Domain.Repositories;
+using Xunit;
+using Volo.Abp.Users;
+using System.Runtime.Serialization;
+
+namespace HIS.Application.Tests.Reports
+{
+    public class InsuranceClaimReportAppServiceTests
+    {
+        private readonly IRepository<Invoice, Guid> _invoiceRepository;
+        private readonly IRepository<PatientInsurance, Guid> _patientInsuranceRepository;
+        private readonly IRepository<InsurancePlan, Guid> _insurancePlanRepository;
+        private readonly IRepository<InsuranceCompany, Guid> _insuranceCompanyRepository;
+        private readonly IRepository<Patient, Guid> _patientRepository;
+        private readonly InsuranceClaimReportAppService _service;
+
+        public InsuranceClaimReportAppServiceTests()
+        {
+            _invoiceRepository = Substitute.For<IRepository<Invoice, Guid>>();
+            _patientInsuranceRepository = Substitute.For<IRepository<PatientInsurance, Guid>>();
+            _insurancePlanRepository = Substitute.For<IRepository<InsurancePlan, Guid>>();
+            _insuranceCompanyRepository = Substitute.For<IRepository<InsuranceCompany, Guid>>();
+            _patientRepository = Substitute.For<IRepository<Patient, Guid>>();
+
+            _service = new InsuranceClaimReportAppService(
+                _invoiceRepository,
+                _patientInsuranceRepository,
+                _insurancePlanRepository,
+                _insuranceCompanyRepository,
+                _patientRepository
+            );
+        }
+
+        private T CreateEntity<T>(Guid id)
+        {
+            var entity = (T)FormatterServices.GetUninitializedObject(typeof(T));
+            var idProperty = entity.GetType().GetProperty("Id");
+            if (idProperty != null && idProperty.CanWrite)
+            {
+                idProperty.SetValue(entity, id);
+            }
+            return entity;
+        }
+
+        [Fact]
+        public async Task GetListAsync_Should_Filter_By_Date_And_Company()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var planId = Guid.NewGuid();
+            var patientId = Guid.NewGuid();
+            var patientInsuranceId = Guid.NewGuid();
+            var today = DateTime.UtcNow.Date;
+
+            // Mock Data
+            var company = CreateEntity<InsuranceCompany>(companyId);
+            company.NameAr = "Prime Health";
+
+            var plan = CreateEntity<InsurancePlan>(planId);
+            plan.InsuranceCompanyId = companyId;
+            plan.NameAr = "Gold Plan";
+            plan.CoveragePercentage = 80;
+            
+            var patientInsurance = CreateEntity<PatientInsurance>(patientInsuranceId);
+            patientInsurance.PatientId = patientId;
+            patientInsurance.InsurancePlanId = planId;
+            patientInsurance.PolicyNumber = "POL-123";
+            
+            var invoiceId1 = Guid.NewGuid();
+            var invoice1 = CreateEntity<Invoice>(invoiceId1);
+            invoice1.PatientId = patientId;
+            invoice1.PatientInsuranceId = patientInsuranceId;
+            invoice1.InvoiceDate = today;
+            invoice1.TotalAmount = 1000;
+            
+            var patient = CreateEntity<Patient>(patientId);
+            patient.FirstNameAr = "أحمد";
+            patient.LastNameAr = "محمد";
+            
+            var invoiceItem1 = CreateEntity<InvoiceItem>(Guid.NewGuid());
+            invoiceItem1.InvoiceId = invoiceId1;
+            invoiceItem1.Description = "CBC";
+            invoiceItem1.UnitPrice = 1000;
+            invoiceItem1.Quantity = 1;
+            invoiceItem1.IsCoveredByInsurance = true;
+            invoiceItem1.InsurancePercentage = 80;
+            invoiceItem1.ServiceCode = "85025";
+            
+            invoice1.Items = new List<InvoiceItem> { invoiceItem1 };
+
+            // Set up repositories
+            var invoiceList = new List<Invoice> { invoice1 }.AsQueryable();
+            _invoiceRepository.WithDetailsAsync(Arg.Any<System.Linq.Expressions.Expression<Func<Invoice, object>>[]>()).Returns(Task.FromResult(invoiceList));
+            _patientInsuranceRepository.FindAsync(patientInsuranceId).Returns(Task.FromResult(patientInsurance));
+            _insurancePlanRepository.FindAsync(planId).Returns(Task.FromResult(plan));
+            _insuranceCompanyRepository.FindAsync(companyId).Returns(Task.FromResult(company));
+            _patientRepository.FindAsync(patientId).Returns(Task.FromResult(patient));
+
+            var input = new GetInsuranceClaimsInput
+            {
+                InsuranceCompanyId = companyId,
+                StartDate = today.AddDays(-1),
+                EndDate = today.AddDays(1),
+                SkipCount = 0,
+                MaxResultCount = 10
+            };
+
+            // Act
+            var result = await _service.GetListAsync(input);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.TotalCount);
+            var claim = result.Items.First();
+            Assert.Equal("أحمد محمد", claim.PatientName);
+            Assert.Equal("POL-123", claim.PolicyNumber);
+            Assert.Single(claim.Items);
+            Assert.Equal(800, claim.Items.First().InsuranceCoverage);
+        }
+
+        [Fact]
+        public async Task GetListAsync_EmptyResult_When_Company_Mismatches()
+        {
+            // Arrange
+            var companyId = Guid.NewGuid();
+            var differentCompanyId = Guid.NewGuid(); // Mismatch
+            var planId = Guid.NewGuid();
+            var patientId = Guid.NewGuid();
+            var patientInsuranceId = Guid.NewGuid();
+            var today = DateTime.UtcNow.Date;
+
+            var company = CreateEntity<InsuranceCompany>(differentCompanyId);
+            company.NameAr = "Different Health";
+
+            var plan = CreateEntity<InsurancePlan>(planId);
+            plan.InsuranceCompanyId = differentCompanyId;
+            plan.NameAr = "Gold Plan";
+            plan.CoveragePercentage = 80;
+            
+            var patientInsurance = CreateEntity<PatientInsurance>(patientInsuranceId);
+            patientInsurance.PatientId = patientId;
+            patientInsurance.InsurancePlanId = planId;
+            patientInsurance.PolicyNumber = "POL-123";
+            
+            var invoiceId1 = Guid.NewGuid();
+            var invoice1 = CreateEntity<Invoice>(invoiceId1);
+            invoice1.PatientId = patientId;
+            invoice1.PatientInsuranceId = patientInsuranceId;
+            invoice1.InvoiceDate = today;
+            invoice1.TotalAmount = 1000;
+            invoice1.Items = new List<InvoiceItem>();
+            
+            var patient = CreateEntity<Patient>(patientId);
+            patient.FirstNameAr = "أحمد";
+            patient.LastNameAr = "محمد";
+            
+            var invoiceList = new List<Invoice> { invoice1 }.AsQueryable();
+            _invoiceRepository.WithDetailsAsync(Arg.Any<System.Linq.Expressions.Expression<Func<Invoice, object>>[]>()).Returns(Task.FromResult(invoiceList));
+            _patientInsuranceRepository.FindAsync(patientInsuranceId).Returns(Task.FromResult(patientInsurance));
+            _insurancePlanRepository.FindAsync(planId).Returns(Task.FromResult(plan));
+            _insuranceCompanyRepository.FindAsync(differentCompanyId).Returns(Task.FromResult(company));
+            _patientRepository.FindAsync(patientId).Returns(Task.FromResult(patient));
+
+            var input = new GetInsuranceClaimsInput
+            {
+                InsuranceCompanyId = companyId, // Querying for companyId, but data is differentCompanyId
+                StartDate = today.AddDays(-1),
+                EndDate = today.AddDays(1)
+            };
+
+            // Act
+            var result = await _service.GetListAsync(input);
+
+            // Assert
+            Assert.Equal(0, result.TotalCount);
+            Assert.Empty(result.Items);
+        }
+    }
+}

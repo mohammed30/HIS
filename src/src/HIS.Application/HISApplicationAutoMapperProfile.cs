@@ -174,6 +174,8 @@ public class HISApplicationAutoMapperProfile : Profile
         CreateMap<Pricing.CreateUpdateServicePriceDto, Pricing.ServicePrice>();
 
         // Laboratory (Module)
+        CreateMap<HIS.Laboratory.LabTestNormalRange, HIS.Laboratory.Dtos.LabTestNormalRangeDto>();
+        CreateMap<HIS.Laboratory.Dtos.CreateLabTestNormalRangeDto, HIS.Laboratory.LabTestNormalRange>();
         CreateMap<HIS.Laboratory.LabTest, HIS.Laboratory.Dtos.LabTestDto>();
         CreateMap<HIS.Laboratory.Dtos.CreateUpdateLabTestDto, HIS.Laboratory.LabTest>();
         

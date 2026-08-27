@@ -12,6 +12,7 @@ const routes: Routes = [
   { path: 'insurance-reports', component: InsuranceReportsComponent },
   { path: 'user-financial-report', component: UserFinancialReportComponent },
   { path: 'user-activity-report', component: UserActivityReportComponent },
+  { path: 'insurance-claims-report', loadComponent: () => import('./insurance-claims-report/insurance-claims-report.component').then(m => m.InsuranceClaimsReportComponent) },
 ];
 
 @NgModule({

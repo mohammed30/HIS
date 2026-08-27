@@ -1,5 +1,12 @@
 import type { PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
+export interface GetInsuranceClaimsInput extends PagedAndSortedResultRequestDto {
+  insuranceCompanyId?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  serviceType?: string | null;
+}
+
 export interface GetPaidTicketsInput extends PagedAndSortedResultRequestDto {
   fromDate?: string | null;
   toDate?: string | null;
@@ -23,6 +30,36 @@ export interface GetUserFinancialTransactionsInput extends PagedAndSortedResultR
   moduleName?: string | null;
   startDate?: string | null;
   endDate?: string | null;
+}
+
+export interface InsuranceClaimItemDto {
+  invoiceItemId?: string;
+  departmentName?: string;
+  serviceCode?: string;
+  serviceName?: string;
+  diagnosisCode?: string;
+  approvalNumber?: string;
+  doctorName?: string;
+  totalPrice?: number;
+  patientCoPay?: number;
+  insuranceCoverage?: number;
+}
+
+export interface InsuranceClaimReportDto {
+  invoiceId?: string;
+  invoiceNumber?: string;
+  invoiceDate?: string;
+  patientId?: string;
+  patientName?: string;
+  patientFileNumber?: string;
+  insuranceCompanyId?: string | null;
+  insuranceCompanyName?: string;
+  policyNumber?: string;
+  sponsorName?: string;
+  items?: InsuranceClaimItemDto[];
+  totalPatientAmount?: number;
+  totalInsuranceAmount?: number;
+  totalInvoiceAmount?: number;
 }
 
 export interface PaidTicketDto {
@@ -71,4 +108,5 @@ export interface UserFinancialTransactionDto {
   transactionDate?: string;
   description?: string | null;
   referenceNumber?: string | null;
+  paymentCategory?: string | null;
 }

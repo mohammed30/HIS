@@ -373,10 +373,13 @@ export class LaboratoryReceptionComponent implements OnInit {
         if (!companyId) {
             this.insurancePlans = [];
             this.patientInfo.insurancePlanId = null;
+            this.onInsurancePlanChange(null);
             return;
         }
         this.insurancePlanService.getList({ insuranceCompanyId: companyId, maxResultCount: 1000 } as any).subscribe(res => {
             this.insurancePlans = res.items || [];
+            // Optional: trigger calculation if a company is selected but plan is null
+            this.onInsurancePlanChange(this.patientInfo.insurancePlanId);
         });
     }
 
@@ -395,6 +398,7 @@ export class LaboratoryReceptionComponent implements OnInit {
             this.operationsInsurancePercentage = 0;
             this.inpatientInsurancePercentage = 0;
         }
+        this.calculateBillingTotals();
     }
 
     currentDoctorSharePercent: number = 0;
