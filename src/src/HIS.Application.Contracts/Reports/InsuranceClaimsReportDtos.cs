@@ -57,5 +57,6 @@ namespace HIS.Reports
         public DateTime? EndDate { get; set; }
         public string? InsuranceCompanyName { get; set; }
         public DateTime PrintDate { get; set; }
+        public int? PatientType { get; set; }
     }
 }

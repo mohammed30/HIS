@@ -53,6 +53,10 @@ namespace HIS.Reports.Printing
 
                     var period = $"الفترة: {ReportData.StartDate:dd/MM/yyyy} - {ReportData.EndDate:dd/MM/yyyy}";
                     column.Item().Text(period).FontSize(13).FontColor(Colors.Grey.Darken2);
+
+                    string patientTypeStr = ReportData.PatientType == 1 ? "منوم" : 
+                                            ReportData.PatientType == 2 ? "خارجي" : "الكل";
+                    column.Item().Text($"نوع المريض: {patientTypeStr}").FontSize(13).FontColor(Colors.Grey.Darken2);
                 });
 
                 var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo", "asia-logo-light.png");
@@ -126,14 +130,20 @@ namespace HIS.Reports.Printing
                             rowIndex++;
                             
                             // Invoice Total Row
-                            table.Cell().ColumnSpan(4).Element(TotalStyle).AlignRight().Text("إجمالي الفاتورة:");
+                            table.Cell().Element(TotalStyle);
+                            table.Cell().Element(TotalStyle);
+                            table.Cell().Element(TotalStyle);
+                            table.Cell().Element(TotalStyle).AlignLeft().Text("إجمالي الفاتورة:");
                             table.Cell().Element(TotalStyle).AlignRight().Text(claim.TotalInvoiceAmount.ToString("N2"));
                             table.Cell().Element(TotalStyle).AlignRight().Text(claim.TotalPatientAmount.ToString("N2")).FontColor(Colors.Orange.Darken2);
                             table.Cell().Element(TotalStyle).AlignRight().Text(claim.TotalInsuranceAmount.ToString("N2")).FontColor(Colors.Green.Darken2);
                         }
                         
                         // Company Total Row
-                        table.Cell().ColumnSpan(4).Element(CompanyTotalStyle).AlignRight().Text($"إجمالي {companyGroup.Key}:");
+                        table.Cell().Element(CompanyTotalStyle);
+                        table.Cell().Element(CompanyTotalStyle);
+                        table.Cell().Element(CompanyTotalStyle);
+                        table.Cell().Element(CompanyTotalStyle).AlignLeft().Text($"إجمالي {companyGroup.Key}:");
                         table.Cell().Element(CompanyTotalStyle).AlignRight().Text(companyGroup.Sum(x => x.TotalInvoiceAmount).ToString("N2"));
                         table.Cell().Element(CompanyTotalStyle).AlignRight().Text(companyGroup.Sum(x => x.TotalPatientAmount).ToString("N2"));
                         table.Cell().Element(CompanyTotalStyle).AlignRight().Text(companyGroup.Sum(x => x.TotalInsuranceAmount).ToString("N2"));
@@ -224,6 +234,8 @@ namespace HIS.Reports.Printing
         private static IContainer TotalStyle(IContainer container)
         {
             return container
+                .BorderTop(1).BorderColor(Colors.Grey.Lighten2)
+                .BorderBottom(3).BorderColor(Colors.White) // Thick white border to separate invoices
                 .Background(Colors.Grey.Lighten4)
                 .PaddingVertical(6).PaddingHorizontal(8)
                 .DefaultTextStyle(x => x.SemiBold());

@@ -185,7 +185,8 @@ namespace HIS.Reports
                 StartDate = input.StartDate,
                 EndDate = input.EndDate,
                 InsuranceCompanyName = companyName,
-                PrintDate = DateTime.Now
+                PrintDate = DateTime.Now,
+                PatientType = input.PatientType
             };
 
             var document = new HIS.Reports.Printing.InsuranceClaimReportDocument
