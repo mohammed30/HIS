@@ -15,7 +15,7 @@ export class InsuranceClaimReportService {
     this.restService.request<any, PagedResultDto<InsuranceClaimReportDto>>({
       method: 'GET',
       url: '/api/app/insurance-claim-report',
-      params: { insuranceCompanyId: input.insuranceCompanyId, startDate: input.startDate, endDate: input.endDate, serviceType: input.serviceType, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { insuranceCompanyId: input.insuranceCompanyId, startDate: input.startDate, endDate: input.endDate, serviceType: input.serviceType, patientType: input.patientType, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -24,7 +24,7 @@ export class InsuranceClaimReportService {
     this.restService.request<any, number[]>({
       method: 'GET',
       url: '/api/app/insurance-claim-report/print-document',
-      params: { insuranceCompanyId: input.insuranceCompanyId, startDate: input.startDate, endDate: input.endDate, serviceType: input.serviceType, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { insuranceCompanyId: input.insuranceCompanyId, startDate: input.startDate, endDate: input.endDate, serviceType: input.serviceType, patientType: input.patientType, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
 }

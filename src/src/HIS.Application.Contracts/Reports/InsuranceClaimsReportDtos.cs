@@ -10,6 +10,7 @@ namespace HIS.Reports
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? ServiceType { get; set; }
+        public int? PatientType { get; set; } // 1 = منوم, 2 = خارجي
     }
 
     public class InsuranceClaimReportDto

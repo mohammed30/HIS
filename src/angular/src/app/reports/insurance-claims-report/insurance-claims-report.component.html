@@ -20,11 +20,19 @@
             </option>
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+          <label class="form-label text-muted fw-bold" for="patientType">نوع المريض</label>
+          <select id="patientType" class="form-select" formControlName="patientType">
+            <option [ngValue]="null">الكل</option>
+            <option [ngValue]="1">منوم</option>
+            <option [ngValue]="2">خارجي</option>
+          </select>
+        </div>
+        <div class="col-md-2">
           <label class="form-label text-muted fw-bold" for="startDate">تاريخ البدء</label>
           <input type="date" id="startDate" class="form-control" formControlName="startDate" />
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label text-muted fw-bold" for="endDate">تاريخ النهاية</label>
           <input type="date" id="endDate" class="form-control" formControlName="endDate" />
         </div>

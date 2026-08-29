@@ -48,7 +48,8 @@ export class InsuranceClaimsReportComponent implements OnInit {
     this.form = this.fb.group({
       startDate: [null],
       endDate: [null],
-      insuranceCompanyId: [null]
+      insuranceCompanyId: [null],
+      patientType: [null]
     });
 
     this.companyService.getList({ maxResultCount: 1000 }).subscribe(res => {

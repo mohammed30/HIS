@@ -21,6 +21,7 @@ namespace HIS.Application.Tests.Reports
         private readonly IRepository<InsurancePlan, Guid> _insurancePlanRepository;
         private readonly IRepository<InsuranceCompany, Guid> _insuranceCompanyRepository;
         private readonly IRepository<Patient, Guid> _patientRepository;
+        private readonly IRepository<HIS.Inpatient.Admission, Guid> _admissionRepository;
         private readonly InsuranceClaimReportAppService _service;
 
         public InsuranceClaimReportAppServiceTests()
@@ -30,13 +31,17 @@ namespace HIS.Application.Tests.Reports
             _insurancePlanRepository = Substitute.For<IRepository<InsurancePlan, Guid>>();
             _insuranceCompanyRepository = Substitute.For<IRepository<InsuranceCompany, Guid>>();
             _patientRepository = Substitute.For<IRepository<Patient, Guid>>();
+            _admissionRepository = Substitute.For<IRepository<HIS.Inpatient.Admission, Guid>>();
+            _admissionRepository.GetListAsync(Arg.Any<System.Linq.Expressions.Expression<Func<HIS.Inpatient.Admission, bool>>>(), Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+                .Returns(Task.FromResult(new List<HIS.Inpatient.Admission>()));
 
             _service = new InsuranceClaimReportAppService(
                 _invoiceRepository,
                 _patientInsuranceRepository,
                 _insurancePlanRepository,
                 _insuranceCompanyRepository,
-                _patientRepository
+                _patientRepository,
+                _admissionRepository
             );
         }
 
@@ -183,6 +188,108 @@ namespace HIS.Application.Tests.Reports
             // Assert
             Assert.Equal(0, result.TotalCount);
             Assert.Empty(result.Items);
+        }
+
+        [Fact]
+        public async Task GetListAsync_Should_Filter_By_PatientType_Inpatient()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var today = DateTime.UtcNow.Date;
+            
+            var invoiceId1 = Guid.NewGuid();
+            var invoice1 = CreateEntity<Invoice>(invoiceId1);
+            invoice1.PatientId = patientId;
+            invoice1.PatientInsuranceId = Guid.NewGuid();
+            invoice1.InvoiceDate = today;
+            invoice1.TotalAmount = 1000;
+            
+            var invoiceItem1 = CreateEntity<InvoiceItem>(Guid.NewGuid());
+            invoiceItem1.InvoiceId = invoiceId1;
+            invoiceItem1.UnitPrice = 1000;
+            invoiceItem1.Quantity = 1;
+            invoiceItem1.IsCoveredByInsurance = true;
+            invoiceItem1.InsurancePercentage = 100;
+            invoice1.Items = new List<InvoiceItem> { invoiceItem1 };
+
+            var admission = CreateEntity<HIS.Inpatient.Admission>(Guid.NewGuid());
+            admission.PatientId = patientId;
+            admission.AdmissionDate = today.AddDays(-1);
+            admission.DischargeDate = today.AddDays(1);
+
+            var invoiceList = new List<Invoice> { invoice1 }.AsQueryable();
+            _invoiceRepository.WithDetailsAsync(Arg.Any<System.Linq.Expressions.Expression<Func<Invoice, object>>[]>()).Returns(Task.FromResult(invoiceList));
+            
+            _patientInsuranceRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<PatientInsurance>(Guid.NewGuid())));
+            _insurancePlanRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<InsurancePlan>(Guid.NewGuid())));
+            _insuranceCompanyRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<InsuranceCompany>(Guid.NewGuid())));
+            _patientRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<Patient>(Guid.NewGuid())));
+            
+            // Mock admission
+            _admissionRepository.GetListAsync(Arg.Any<System.Linq.Expressions.Expression<Func<HIS.Inpatient.Admission, bool>>>(), Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+                .Returns(Task.FromResult(new List<HIS.Inpatient.Admission> { admission }));
+
+            var input = new GetInsuranceClaimsInput { PatientType = 1 }; // Inpatient
+
+            // Act
+            var result = await _service.GetListAsync(input);
+
+            // Assert
+            Assert.Equal(1, result.TotalCount);
+        }
+
+        [Fact]
+        public async Task GetListAsync_Should_Filter_By_PatientType_Outpatient()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var today = DateTime.UtcNow.Date;
+            
+            var invoiceId1 = Guid.NewGuid();
+            var invoice1 = CreateEntity<Invoice>(invoiceId1);
+            invoice1.PatientId = patientId;
+            invoice1.PatientInsuranceId = Guid.NewGuid();
+            invoice1.InvoiceDate = today;
+            invoice1.TotalAmount = 1000;
+            
+            var invoiceItem1 = CreateEntity<InvoiceItem>(Guid.NewGuid());
+            invoiceItem1.InvoiceId = invoiceId1;
+            invoiceItem1.UnitPrice = 1000;
+            invoiceItem1.Quantity = 1;
+            invoiceItem1.IsCoveredByInsurance = true;
+            invoiceItem1.InsurancePercentage = 100;
+            invoice1.Items = new List<InvoiceItem> { invoiceItem1 };
+
+            // Outpatient = no admission covering the invoice date
+            var admission = CreateEntity<HIS.Inpatient.Admission>(Guid.NewGuid());
+            admission.PatientId = patientId;
+            admission.AdmissionDate = today.AddDays(-10);
+            admission.DischargeDate = today.AddDays(-9); // Not overlapping with 'today'
+
+            var invoiceList = new List<Invoice> { invoice1 }.AsQueryable();
+            _invoiceRepository.WithDetailsAsync(Arg.Any<System.Linq.Expressions.Expression<Func<Invoice, object>>[]>()).Returns(Task.FromResult(invoiceList));
+            
+            _patientInsuranceRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<PatientInsurance>(Guid.NewGuid())));
+            _insurancePlanRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<InsurancePlan>(Guid.NewGuid())));
+            _insuranceCompanyRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<InsuranceCompany>(Guid.NewGuid())));
+            _patientRepository.FindAsync(Arg.Any<Guid>()).Returns(Task.FromResult(CreateEntity<Patient>(Guid.NewGuid())));
+            
+            // Mock admission
+            _admissionRepository.GetListAsync(Arg.Any<System.Linq.Expressions.Expression<Func<HIS.Inpatient.Admission, bool>>>(), Arg.Any<bool>(), Arg.Any<System.Threading.CancellationToken>())
+                .Returns(Task.FromResult(new List<HIS.Inpatient.Admission> { admission }));
+
+            var input = new GetInsuranceClaimsInput { PatientType = 2 }; // Outpatient
+
+            // Act
+            var result = await _service.GetListAsync(input);
+
+            // Assert
+            Assert.Equal(1, result.TotalCount);
+            
+            // Test Inpatient for same data should be 0
+            var inputInpatient = new GetInsuranceClaimsInput { PatientType = 1 };
+            var resultInpatient = await _service.GetListAsync(inputInpatient);
+            Assert.Equal(0, resultInpatient.TotalCount);
         }
     }
 }

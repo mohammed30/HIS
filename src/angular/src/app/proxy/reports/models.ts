@@ -5,6 +5,7 @@ export interface GetInsuranceClaimsInput extends PagedAndSortedResultRequestDto 
   startDate?: string | null;
   endDate?: string | null;
   serviceType?: string | null;
+  patientType?: number | null;
 }
 
 export interface GetPaidTicketsInput extends PagedAndSortedResultRequestDto {

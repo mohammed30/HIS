@@ -19,19 +19,22 @@ namespace HIS.Reports
         private readonly IRepository<InsurancePlan, Guid> _insurancePlanRepository;
         private readonly IRepository<InsuranceCompany, Guid> _insuranceCompanyRepository;
         private readonly IRepository<Patient, Guid> _patientRepository;
+        private readonly IRepository<HIS.Inpatient.Admission, Guid> _admissionRepository;
 
         public InsuranceClaimReportAppService(
             IRepository<Invoice, Guid> invoiceRepository,
             IRepository<PatientInsurance, Guid> patientInsuranceRepository,
             IRepository<InsurancePlan, Guid> insurancePlanRepository,
             IRepository<InsuranceCompany, Guid> insuranceCompanyRepository,
-            IRepository<Patient, Guid> patientRepository)
+            IRepository<Patient, Guid> patientRepository,
+            IRepository<HIS.Inpatient.Admission, Guid> admissionRepository)
         {
             _invoiceRepository = invoiceRepository;
             _patientInsuranceRepository = patientInsuranceRepository;
             _insurancePlanRepository = insurancePlanRepository;
             _insuranceCompanyRepository = insuranceCompanyRepository;
             _patientRepository = patientRepository;
+            _admissionRepository = admissionRepository;
         }
 
         public async Task<PagedResultDto<InsuranceClaimReportDto>> GetListAsync(GetInsuranceClaimsInput input)
@@ -43,6 +46,42 @@ namespace HIS.Reports
                 .WhereIf(input.EndDate.HasValue, x => x.InvoiceDate <= input.EndDate.Value.Date.AddDays(1).AddTicks(-1))
                 .Where(x => x.PatientInsuranceId != null) 
                 .ToList();
+
+            var patientIds = invoices.Select(x => x.PatientId).Distinct().ToList();
+            
+            // Chunking the patientIds to avoid SQL parameter limits
+            var admissions = new List<HIS.Inpatient.Admission>();
+            int chunkSize = 1000;
+            for (int i = 0; i < patientIds.Count; i += chunkSize)
+            {
+                var chunk = patientIds.Skip(i).Take(chunkSize).ToList();
+                var chunkAdmissions = await _admissionRepository.GetListAsync(x => chunk.Contains(x.PatientId));
+                admissions.AddRange(chunkAdmissions);
+            }
+
+            var inpatientInvoiceIds = new HashSet<Guid>();
+            foreach (var invoice in invoices)
+            {
+                bool isAdmitted = admissions.Any(a => 
+                    a.PatientId == invoice.PatientId && 
+                    invoice.InvoiceDate >= a.AdmissionDate.Date && 
+                    (a.DischargeDate == null || invoice.InvoiceDate <= a.DischargeDate.Value.Date.AddDays(1).AddTicks(-1))
+                );
+
+                if (isAdmitted)
+                {
+                    inpatientInvoiceIds.Add(invoice.Id);
+                }
+            }
+
+            if (input.PatientType == 1) // Inpatient (منوم)
+            {
+                invoices = invoices.Where(x => inpatientInvoiceIds.Contains(x.Id)).ToList();
+            }
+            else if (input.PatientType == 2) // Outpatient (خارجي)
+            {
+                invoices = invoices.Where(x => !inpatientInvoiceIds.Contains(x.Id)).ToList();
+            }
 
             var result = new List<InsuranceClaimReportDto>();
 
