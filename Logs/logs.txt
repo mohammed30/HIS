@@ -203,3 +203,56 @@ CREATE DATABASE [HISDB];
 2026-08-28 00:28:12.028 +03:00 [INF] Seeding Account Mappings...
 2026-08-28 00:28:14.659 +03:00 [INF] Successfully completed host database migrations.
 2026-08-28 00:28:14.659 +03:00 [INF] You can safely end this process...
+2026-09-01 23:11:04.079 +03:00 [INF] Environment: Development
+2026-09-01 23:11:04.083 +03:00 [INF] Config files loaded: appsettings.json → appsettings.Development.json → appsettings.secrets.json
+2026-09-01 23:11:09.301 +03:00 [INF] Started database migrations...
+2026-09-01 23:11:09.302 +03:00 [INF] Migrating schema for host database...
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'InsurancePercentage' on entity type 'InvoiceItem'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'ConsultationCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'InpatientCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'LabCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'MedicalServiceCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'MedicationsCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'OperationsCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'RadiologyCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:10.316 +03:00 [WRN] No store type was specified for the decimal property 'DoctorPercentage' on entity type 'Doctor'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:11:13.267 +03:00 [ERR] Failed executing DbCommand (182ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [AppLabTestNormalRanges] (
+    [Id] uniqueidentifier NOT NULL,
+    [LabTestId] uniqueidentifier NOT NULL,
+    [TargetGender] int NULL,
+    [MinAgeDays] int NULL,
+    [MaxAgeDays] int NULL,
+    [ResultType] int NOT NULL,
+    [MinValue] decimal(18,4) NULL,
+    [MaxValue] decimal(18,4) NULL,
+    [NormalStringValue] nvarchar(256) NULL,
+    [CreationTime] datetime2 NOT NULL,
+    [CreatorId] uniqueidentifier NULL,
+    [LastModificationTime] datetime2 NULL,
+    [LastModifierId] uniqueidentifier NULL,
+    [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
+    [DeleterId] uniqueidentifier NULL,
+    [DeletionTime] datetime2 NULL,
+    CONSTRAINT [PK_AppLabTestNormalRanges] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_AppLabTestNormalRanges_AppLabTests_LabTestId] FOREIGN KEY ([LabTestId]) REFERENCES [AppLabTests] ([Id]) ON DELETE CASCADE
+);
+2026-09-01 23:15:29.150 +03:00 [INF] Environment: Development
+2026-09-01 23:15:29.153 +03:00 [INF] Config files loaded: appsettings.json → appsettings.Development.json → appsettings.secrets.json
+2026-09-01 23:15:30.822 +03:00 [INF] Started database migrations...
+2026-09-01 23:15:30.824 +03:00 [INF] Migrating schema for host database...
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'InsurancePercentage' on entity type 'InvoiceItem'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'ConsultationCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'InpatientCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'LabCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'MedicalServiceCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'MedicationsCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'OperationsCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'RadiologyCoveragePercentage' on entity type 'InsurancePlan'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:31.841 +03:00 [WRN] No store type was specified for the decimal property 'DoctorPercentage' on entity type 'Doctor'. This will cause values to be silently truncated if they do not fit in the default precision and scale. Explicitly specify the SQL server column type that can accommodate all the values in 'OnModelCreating' using 'HasColumnType', specify precision and scale using 'HasPrecision', or configure a value converter using 'HasConversion'.
+2026-09-01 23:15:34.868 +03:00 [INF] Executing host database seed...
+2026-09-01 23:17:55.200 +03:00 [INF] Starting Financial Data Patch...
+2026-09-01 23:17:59.795 +03:00 [INF] Financial Data Patch Completed.
+2026-09-01 23:17:59.797 +03:00 [INF] Seeding Account Mappings...
+2026-09-01 23:18:02.429 +03:00 [INF] Successfully completed host database migrations.
+2026-09-01 23:18:02.430 +03:00 [INF] You can safely end this process...

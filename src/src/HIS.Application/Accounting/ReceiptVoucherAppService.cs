@@ -81,6 +81,17 @@ namespace HIS.Accounting
         {
             var query = await Repository.WithDetailsAsync(x => x.Lines);
 
+            if (input.DateFrom.HasValue)
+            {
+                var dateFrom = input.DateFrom.Value.Date;
+                query = query.Where(x => x.Date >= dateFrom);
+            }
+            if (input.DateTo.HasValue)
+            {
+                var dateTo = input.DateTo.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(x => x.Date <= dateTo);
+            }
+
             if (!string.IsNullOrWhiteSpace(input.Filter))
             {
                 long? parsedFilter = null;

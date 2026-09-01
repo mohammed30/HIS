@@ -95,6 +95,14 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
             input.Code = $"DEP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
         }
 
+        // The frontend incorrectly sends an AccountId in the CostCenterId field.
+        // We must clear it to avoid FK constraint violations on the CostCenter table.
+        var frontendSentAccountId = input.CostCenterId;
+        input.CostCenterId = null; 
+
+        // Create department first with CostCenterId = null
+        var dto = await base.CreateAsync(input);
+
         if (input.CreateCostCenterAccount && input.ParentAccountId.HasValue)
         {
             var parentAccount = await _accountRepository.FirstOrDefaultAsync(x => x.Id == input.ParentAccountId.Value);
@@ -128,11 +136,16 @@ public class DepartmentAppService : CrudAppService<Department, DepartmentDto, Gu
                 );
                 await _costCenterRepository.InsertAsync(costCenter, autoSave: true);
 
-                input.CostCenterId = costCenterId;
+                // Update department with the new CostCenterId
+                var department = await Repository.GetAsync(dto.Id);
+                department.CostCenterId = costCenterId;
+                await Repository.UpdateAsync(department, autoSave: true);
+                
+                dto.CostCenterId = costCenterId;
             }
         }
 
-        return await base.CreateAsync(input);
+        return dto;
     }
 
     public async Task<List<LookupDto>> GetLookupAsync()

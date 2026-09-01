@@ -6,9 +6,25 @@
             </div>
             <div class="text-end col col-md-6">
                 <div class="text-lg-end pt-2 d-flex justify-content-end align-items-center">
-                    <div class="input-group w-auto me-3">
-                        <span class="input-group-text"><i class="fa fa-search"></i></span>
-                        <input type="text" class="form-control" placeholder="بحث..." [(ngModel)]="list.filter" />
+                    <div class="d-flex align-items-center me-3">
+                        <!-- Date From -->
+                        <div class="input-group w-auto me-2" style="max-width: 150px;">
+                            <input class="form-control" placeholder="من تاريخ" name="df" ngbDatepicker #df="ngbDatepicker" [(ngModel)]="dateFrom">
+                            <button class="btn btn-outline-secondary fa fa-calendar" (click)="df.toggle()" type="button"></button>
+                        </div>
+                        <!-- Date To -->
+                        <div class="input-group w-auto me-2" style="max-width: 150px;">
+                            <input class="form-control" placeholder="إلى تاريخ" name="dt" ngbDatepicker #dt="ngbDatepicker" [(ngModel)]="dateTo">
+                            <button class="btn btn-outline-secondary fa fa-calendar" (click)="dt.toggle()" type="button"></button>
+                        </div>
+                        <button class="btn btn-primary me-2" (click)="search()" title="بحث بالتاريخ"><i class="fa fa-search"></i></button>
+                        <button class="btn btn-outline-secondary me-2" *ngIf="dateFrom || dateTo" (click)="clearDates()" title="مسح التواريخ"><i class="fa fa-times"></i></button>
+
+                        <!-- Text Search -->
+                        <div class="input-group w-auto">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="بحث..." [(ngModel)]="list.filter" />
+                        </div>
                     </div>
                     <button id="create" class="btn btn-primary" type="button" (click)="create()">
                         <i class="fa fa-plus me-1"></i>

@@ -39,6 +39,9 @@ export class ReceiptVouchers implements OnInit {
   isModalOpen = false;
   isCancelModalOpen = false;
   selectedVoucherId: string | null = null;
+  
+  dateFrom: Date | null = null;
+  dateTo: Date | null = null;
 
   public readonly list = inject(ListService);
   private readonly service = inject(ReceiptVoucherService);
@@ -49,7 +52,12 @@ export class ReceiptVouchers implements OnInit {
   private readonly restService = inject(RestService);
 
   ngOnInit() {
-    const stream = (query: any) => this.service.getList(query);
+    const stream = (query: any) => {
+      let params = { ...query };
+      if (this.dateFrom) params.dateFrom = this.formatDate(this.dateFrom);
+      if (this.dateTo) params.dateTo = this.formatDate(this.dateTo);
+      return this.service.getList(params);
+    };
 
     this.list.hookToQuery(stream).subscribe((response: PagedResultDto<ReceiptVoucherDto>) => {
       this.items = response.items;
@@ -168,5 +176,23 @@ export class ReceiptVouchers implements OnInit {
       this.list.sortOrder = 'asc';
     }
     this.list.get();
+  }
+
+  search() {
+    this.list.get();
+  }
+
+  clearDates() {
+    this.dateFrom = null;
+    this.dateTo = null;
+    this.list.get();
+  }
+
+  private formatDate(date: Date): string {
+    const d = new Date(date);
+    const month = '' + (d.getMonth() + 1);
+    const day = '' + d.getDate();
+    const year = d.getFullYear();
+    return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
   }
 }
